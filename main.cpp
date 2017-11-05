@@ -14,6 +14,16 @@ using std::vector;
 namespace {
 struct Point2D {
   float x,y;
+
+  Point2D()
+  : x(0), y(0)
+  {
+  }
+
+  Point2D(float x_arg,float y_arg)
+  : x(x_arg), y(y_arg)
+  {
+  }
 };
 }
 
@@ -267,6 +277,7 @@ class GLWidget : public QGLWidget {
     void mousePressEvent(QMouseEvent *event_ptr) override
     {
       Point2D p = screenToGLCoords(event_ptr->x(),event_ptr->y());
+      mouse_press_position = p;
 
       if (!current_text.text.empty()) {
         Node node;
@@ -295,6 +306,7 @@ class GLWidget : public QGLWidget {
 
         if (i>=0) {
           selectNode(i);
+          original_node_position = nodes[i].text_object.position;
           update();
           return;
         }
@@ -320,10 +332,17 @@ class GLWidget : public QGLWidget {
 
     void mouseMoveEvent(QMouseEvent * event_ptr) override
     {
+      Point2D mouse_position = screenToGLCoords(event_ptr->x(),event_ptr->y());
       if (!selected_node_input_index.isNull()) {
-        temp_source_pos = screenToGLCoords(event_ptr->x(),event_ptr->y());
+        temp_source_pos = mouse_position;
         update();
         return;
+      }
+
+      if (selected_node_index>=0) {
+        nodes[selected_node_index].text_object.position =
+          original_node_position + (mouse_position - mouse_press_position);
+        update();
       }
     }
 
@@ -637,6 +656,8 @@ class GLWidget : public QGLWidget {
       }
     }
 
+    Point2D mouse_press_position;
+    Point2D original_node_position;
     TextObject current_text;
     int selected_node_index = -1;
     NodeInputIndex selected_node_input_index = NodeInputIndex::null();
