@@ -1,0 +1,19 @@
+I'm looking at how dataflow expression editing can be added to charmapper.
+One of the main ideas is that we can have three modes for editing expressions:
+* Interactive mode
+  * There are predefined expression types and all the inputs for that
+    expression type are presented like a propery editor.
+* Expression mode
+  * A text area is provided to type in the expression.
+  * Expressions are
+    a = b + c;
+    d = e + f;
+    a + d
+* Node mode
+  * The expression is represented as a set of nodes that represent
+    an expression tree.
+  * Each node has a single output and zero or more inputs.
+  * Outputs can be expanded to extract members.
+  * The default operation for dragging on a node is making a connection.
+    * Moving a node involves selecting it, which produces something like
+      a title-bar that you can drag to move the node.
