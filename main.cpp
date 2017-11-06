@@ -203,24 +203,36 @@ class GLWidget : public QGLWidget {
       return QSize(640,480);
     }
 
+    string &currentText()
+    {
+      if (focused_node_index>=0) {
+        return nodes[focused_node_index].text_object.text;
+      }
+      else {
+        return current_text.text;
+      }
+    }
+
     void keyPressEvent(QKeyEvent *key_event_ptr) override
     {
       assert(key_event_ptr);
+
       if (key_event_ptr->key()==Qt::Key_Backspace) {
         if (selected_node_index>=0) {
-          nodes.erase(nodes.begin()+selected_node_index);
+          deleteNode(selected_node_index);
           selected_node_index = -1;
           update();
           return;
         }
 
-        if (!current_text.text.empty()) {
-          current_text.text.erase(current_text.text.end()-1);
+        if (!currentText().empty()) {
+          currentText().erase(currentText().end()-1);
         }
       }
       else {
-        current_text.text += key_event_ptr->text().toStdString();
+        currentText() += key_event_ptr->text().toStdString();
       }
+
       update();
     }
 
@@ -276,19 +288,36 @@ class GLWidget : public QGLWidget {
       return NodeInputIndex::null();
     }
 
+    void deleteNode(int index)
+    {
+      nodes.erase(nodes.begin()+index);
+    }
+
+    void addNode(const TextObject &text_object)
+    {
+      Node node;
+      node.text_object = text_object;
+      nodes.push_back(node);
+    }
+
     void mousePressEvent(QMouseEvent *event_ptr) override
     {
       Point2D p = screenToGLCoords(event_ptr->x(),event_ptr->y());
       mouse_press_position = p;
 
       if (!current_text.text.empty()) {
-        Node node;
-        node.text_object = current_text;
-        nodes.push_back(node);
+        addNode(current_text);
+        current_text.text.clear();
+      }
+
+      if (selected_node_index>=0) {
+        if (nodes[selected_node_index].text_object.text.empty()) {
+          deleteNode(selected_node_index);
+          selected_node_index = -1;
+        }
       }
 
       assert(event_ptr);
-      current_text.text = "";
 
       {
         NodeInputIndex i = indexOfNodeInputContaining(p);
@@ -306,7 +335,13 @@ class GLWidget : public QGLWidget {
         int i = indexOfNodeContaining(p);
 
         if (i>=0) {
-          selectNode(i);
+          if (i==selected_node_index) {
+            node_was_selected = true;
+          }
+          else {
+            node_was_selected = false;
+            selectNode(i);
+          }
           original_node_position = nodes[i].text_object.position;
           update();
           return;
@@ -328,6 +363,11 @@ class GLWidget : public QGLWidget {
           selected_node_input_index.input_index].source_node_index =
             source_node_index;
         selected_node_input_index.clear();
+        update();
+      }
+      else if (node_was_selected) {
+        focused_node_index = selected_node_index;
+        selected_node_index = -1;
         update();
       }
     }
@@ -537,13 +577,12 @@ class GLWidget : public QGLWidget {
       return fontMetrics().width(qString(s));
     }
 
-    void drawCursor()
+    void drawCursor(const TextObject &text_object)
     {
       float cursor_height = textHeight();
-      float text_width = textWidth(current_text.text);
+      float text_width = textWidth(text_object.text);
       float descent = fontMetrics().descent();
-      Point2D p =
-        current_text.position + Point2D{text_width,-descent};
+      Point2D p = text_object.position + Point2D{text_width,-descent};
       drawLine(p,p+Point2D{0,cursor_height});
     }
 
@@ -644,8 +683,13 @@ class GLWidget : public QGLWidget {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       if (selected_node_index<0 && selected_node_input_index.isNull()) {
-        drawBoxedText(current_text,/*is_selected*/false);
-        drawCursor();
+        if (focused_node_index>=0) {
+          drawCursor(nodes[focused_node_index].text_object);
+        }
+        else {
+          drawBoxedText(current_text,/*is_selected*/false);
+          drawCursor(current_text);
+        }
       }
 
       int n_text_objects = nodes.size();
@@ -661,7 +705,9 @@ class GLWidget : public QGLWidget {
     Point2D mouse_press_position;
     Point2D original_node_position;
     TextObject current_text;
+    bool node_was_selected = false;
     int selected_node_index = -1;
+    int focused_node_index = -1;
     NodeInputIndex selected_node_input_index = NodeInputIndex::null();
     Point2D temp_source_pos;
 
