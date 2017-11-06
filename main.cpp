@@ -9,6 +9,8 @@
 using std::cerr;
 using std::string;
 using std::vector;
+using std::cos;
+using std::sin;
 
 
 namespace {
@@ -445,11 +447,6 @@ class GLWidget : public QGLWidget {
       glDisableClientState(GL_VERTEX_ARRAY);
     }
 
-    void drawRect(const Rect &arg)
-    {
-      drawClosedLine(verticesOf(arg));
-    }
-
     static vector<Point2D> verticesOf(const Rect &rect)
     {
       vector<Point2D> vertices;
@@ -465,6 +462,33 @@ class GLWidget : public QGLWidget {
       vertices.push_back(Point2D{x1,y2});
 
       return vertices;
+    }
+
+    vector<Point2D> verticesOf(const Circle &circle)
+    {
+      Point2D center = circle.center;
+      float radius = circle.radius;
+      vector<Point2D> vertices;
+
+      for (int i=0; i!=10; ++i) {
+        float fraction = i/10.0;
+        float angle = 2*M_PI * fraction;
+        float x = center.x + cos(angle)*radius;
+        float y = center.y + sin(angle)*radius;
+        vertices.push_back(Point2D{x,y});
+      }
+
+      return vertices;
+    }
+
+    void drawRect(const Rect &arg)
+    {
+      drawClosedLine(verticesOf(arg));
+    }
+
+    void drawCircle(const Circle &circle)
+    {
+      drawClosedLine(verticesOf(circle));
     }
 
     void drawFilledRect(const Rect &rect)
@@ -521,28 +545,6 @@ class GLWidget : public QGLWidget {
       Point2D p =
         current_text.position + Point2D{text_width,-descent};
       drawLine(p,p+Point2D{0,cursor_height});
-    }
-
-    vector<Point2D> verticesOf(const Circle &circle)
-    {
-      Point2D center = circle.center;
-      float radius = circle.radius;
-      vector<Point2D> vertices;
-
-      for (int i=0; i!=10; ++i) {
-        float fraction = i/10.0;
-        float angle = 2*M_PI * fraction;
-        float x = center.x + cos(angle)*radius;
-        float y = center.y + sin(angle)*radius;
-        vertices.push_back(Point2D{x,y});
-      }
-
-      return vertices;
-    }
-
-    void drawCircle(const Circle &circle)
-    {
-      drawClosedLine(verticesOf(circle));
     }
 
     static constexpr float node_input_radius = 5;
