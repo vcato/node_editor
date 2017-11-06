@@ -287,7 +287,6 @@ class GLWidget : public QGLWidget {
 
       assert(event_ptr);
       current_text.text = "";
-      current_text.position = p;
 
       {
         NodeInputIndex i = indexOfNodeInputContaining(p);
@@ -314,6 +313,7 @@ class GLWidget : public QGLWidget {
 
       selected_node_index = -1;
       selected_node_input_index = NodeInputIndex::null();
+      current_text.position = p;
 
       update();
     }
