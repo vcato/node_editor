@@ -108,6 +108,10 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
           focusedText().erase(focusedText().end()-1);
         }
       }
+      else if (key_event_ptr->key()==Qt::Key_Return) {
+        enterPressed();
+        return;
+      }
       else {
         if (focused_node_index>=0) {
           focusedText() += key_event_ptr->text().toStdString();
@@ -577,6 +581,11 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
         drawBoxedText(text_object,is_selected);
         drawNodeInputs(index);
       }
+    }
+
+    virtual void redraw()
+    {
+      update();
     }
 };
 }

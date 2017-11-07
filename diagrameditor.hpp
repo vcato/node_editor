@@ -119,7 +119,9 @@ class DiagramEditor {
     Point2D temp_source_pos;
     std::vector<Node> nodes;
 
+    virtual void redraw() = 0;
     int addNode(const TextObject &text_object);
     void deleteNode(int index);
     std::string &focusedText();
+    void enterPressed();
 };

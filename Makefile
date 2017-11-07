@@ -16,7 +16,7 @@ diagrameditor_test.pass: diagrameditor_test
 	./diagrameditor_test
 	touch $@
 
-diagrameditor_test: diagrameditor_test.o
+diagrameditor_test: diagrameditor_test.o diagrameditor.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
