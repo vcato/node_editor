@@ -1,3 +1,6 @@
 .vimrc
 *.o
+*.d
+*.pass
 main
+diagrameditor_test

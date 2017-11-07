@@ -13,20 +13,6 @@ using std::vector;
 using std::cos;
 using std::sin;
 
-namespace {
-struct Rect {
-  Point2D start, end;
-
-  bool contains(const Point2D &p)
-  {
-    return
-      p.x >= start.x && p.x <= end.x &&
-      p.y >= start.y && p.y <= end.y;
-  }
-};
-}
-
-
 static float distanceBetween(const Point2D &a,const Point2D &b)
 {
   float dx = a.x - b.x;
@@ -99,22 +85,11 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     }
 
   private:
-    void initializeGL() override {
-    }
+    void initializeGL() override { }
 
     QSize sizeHint() const override
     {
       return QSize(640,480);
-    }
-
-    string &currentText()
-    {
-      if (focused_node_index>=0) {
-        return nodes[focused_node_index].text_object.text;
-      }
-      else {
-        return current_text.text;
-      }
     }
 
     void keyPressEvent(QKeyEvent *key_event_ptr) override
@@ -129,12 +104,14 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
           return;
         }
 
-        if (!currentText().empty()) {
-          currentText().erase(currentText().end()-1);
+        if (!focusedText().empty()) {
+          focusedText().erase(focusedText().end()-1);
         }
       }
       else {
-        currentText() += key_event_ptr->text().toStdString();
+        if (focused_node_index>=0) {
+          focusedText() += key_event_ptr->text().toStdString();
+        }
       }
 
       update();
@@ -192,29 +169,21 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       return NodeInputIndex::null();
     }
 
-    void deleteNode(int index)
+    void mousePressedAt(Point2D p)
     {
-      nodes.erase(nodes.begin()+index);
-    }
-
-    void addNode(const TextObject &text_object)
-    {
-      Node node;
-      node.text_object = text_object;
-      if (text_object.text=="+") {
-        node.inputs.resize(2);
-      }
-      nodes.push_back(node);
-    }
-
-    void mousePressEvent(QMouseEvent *event_ptr) override
-    {
-      Point2D p = screenToGLCoords(event_ptr->x(),event_ptr->y());
       mouse_press_position = p;
+      node_was_selected = false;
 
-      if (!current_text.text.empty()) {
-        addNode(current_text);
-        current_text.text.clear();
+      if (focused_node_index>=0) {
+        if (nodes[focused_node_index].text_object.text.empty()) {
+          deleteNode(focused_node_index);
+        }
+        else {
+          if (nodes[focused_node_index].text_object.text=="+") {
+            nodes[focused_node_index].inputs.resize(2);
+          }
+        }
+        focused_node_index = -1;
       }
 
       if (selected_node_index>=0) {
@@ -224,15 +193,13 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
         }
       }
 
-      assert(event_ptr);
-
       {
-        NodeInputIndex i = indexOfNodeInputContaining(p);
+        NodeInputIndex i = indexOfNodeInputContaining(mouse_press_position);
 
         if (i!=NodeInputIndex::null()) {
           selected_node_input_index = i;
           selected_node_index = -1;
-          temp_source_pos = screenToGLCoords(event_ptr->x(),event_ptr->y());
+          temp_source_pos = mouse_press_position;
           update();
           return;
         }
@@ -258,9 +225,21 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       selected_node_index = -1;
       selected_node_input_index = NodeInputIndex::null();
 
-      current_text.position = p;
+      TextObject new_text_object;
+      new_text_object.position = mouse_press_position;
+      new_text_object.text = "";
+
+      int new_node_index = addNode(new_text_object);
+      focused_node_index = new_node_index;
 
       update();
+    }
+
+    void mousePressEvent(QMouseEvent *event_ptr) override
+    {
+      assert(event_ptr);
+      Point2D p = screenToGLCoords(event_ptr->x(),event_ptr->y());
+      mousePressedAt(p);
     }
 
     void mouseReleaseEvent(QMouseEvent *) override
@@ -449,12 +428,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       drawPolygon(verticesOf(circle));
     }
 
-    Rect withMargin(const Rect &rect,float margin)
-    {
-      auto offset = Point2D{margin,margin};
-      return Rect{rect.start-offset,rect.end+offset};
-    }
-
     Rect nodeRect(const TextObject &text_object)
     {
       return withMargin(rectAroundText(text_object,*this),5);
@@ -593,10 +566,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       if (selected_node_index<0 && selected_node_input_index.isNull()) {
         if (focused_node_index>=0) {
           drawCursor(nodes[focused_node_index].text_object);
-        }
-        else {
-          drawBoxedText(current_text,/*is_selected*/false);
-          drawCursor(current_text);
         }
       }
 

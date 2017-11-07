@@ -1,3 +1,7 @@
+#include <string>
+#include <vector>
+
+
 struct Point2D {
   float x,y;
 
@@ -13,7 +17,7 @@ struct Point2D {
 };
 
 
-static Point2D operator-(const Point2D &a,const Point2D &b)
+inline Point2D operator-(const Point2D &a,const Point2D &b)
 {
   float x = a.x - b.x;
   float y = a.y - b.y;
@@ -21,11 +25,30 @@ static Point2D operator-(const Point2D &a,const Point2D &b)
 }
 
 
-static Point2D operator+(const Point2D &a,const Point2D &b)
+inline Point2D operator+(const Point2D &a,const Point2D &b)
 {
   float x = a.x + b.x;
   float y = a.y + b.y;
   return Point2D{x,y};
+}
+
+
+struct Rect {
+  Point2D start, end;
+
+  bool contains(const Point2D &p)
+  {
+    return
+      p.x >= start.x && p.x <= end.x &&
+      p.y >= start.y && p.y <= end.y;
+  }
+};
+
+
+inline Rect withMargin(const Rect &rect,float margin)
+{
+  auto offset = Point2D{margin,margin};
+  return Rect{rect.start-offset,rect.end+offset};
 }
 
 
@@ -89,11 +112,14 @@ class DiagramEditor {
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;
-    TextObject current_text;
     bool node_was_selected = false;
     int selected_node_index = -1;
     int focused_node_index = -1;
     NodeInputIndex selected_node_input_index = NodeInputIndex::null();
     Point2D temp_source_pos;
     std::vector<Node> nodes;
+
+    int addNode(const TextObject &text_object);
+    void deleteNode(int index);
+    std::string &focusedText();
 };
