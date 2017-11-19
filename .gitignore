@@ -4,4 +4,5 @@
 *.pass
 main
 diagrameditor_test
+linetext_test
 moc_*.cpp

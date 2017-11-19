@@ -134,6 +134,9 @@ struct Node1 {
 };
 
 
+#include "linetext.hpp"
+
+
 struct Node2 {
   TextObject header_text_object;
 
@@ -190,8 +193,8 @@ struct Node2 {
     void updateInputsAndOutputs()
     {
       for (auto &line : lines) {
-        line.has_input = hasInput(line.text);
-        line.has_output = hasOutput(line.text);
+        line.has_input = lineTextHasInput(line.text);
+        line.has_output = lineTextHasOutput(line.text);
       }
 
       updateNInputs();
@@ -239,23 +242,6 @@ struct Node2 {
   int n_outputs = 0;
   std::vector<Line> lines;
 
-  static bool hasInput(const std::string &text)
-  {
-    if (endsWith(text,"$")) {
-      return true;
-    }
-
-    return false;
-  }
-
-  static bool hasOutput(const std::string &text)
-  {
-    if (startsWith(text,"$")) {
-      return true;
-    }
-
-    return false;
-  }
 };
 
 
