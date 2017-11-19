@@ -139,9 +139,16 @@ struct Node2 {
   TextObject header_text_object;
 
   struct Input {
-    std::string label;
     int source_node_index = -1;
     int source_output_index = -1;
+  };
+
+  struct Line {
+    std::string text;
+    bool has_input = false;
+    bool has_output = false;
+
+    Line(const char *text_arg) : text(text_arg) { }
   };
 
   int nInputs() const
@@ -149,39 +156,38 @@ struct Node2 {
     return inputs.size();
   }
 
-  const std::string &inputLabel(int input_index)
+  void setNInputs(size_t n_inputs)
   {
-    return inputs[input_index].label;
+    inputs.resize(n_inputs);
   }
 
-  std::vector<std::string> inputLabels() const
-  {
-    std::vector<std::string> labels;
-    int n_inputs = inputs.size();
-
-    for (int i=0; i!=n_inputs; ++i) {
-      labels.push_back(inputs[i].label);
-    }
-
-    return labels;
-  }
-
+#if 0
   void setInputLabels(const std::vector<std::string> &arg)
   {
-    size_t n_inputs = arg.size();
-    inputs.resize(n_inputs);
+    setNInputs(arg.size());
+  }
+#endif
 
-    for (size_t i=0; i!=n_inputs; ++i) {
-      inputs[i].label = arg[i];
+  std::vector<std::string> strings() const
+  {
+    std::vector<std::string> result;
+
+    for (const auto &line : lines) {
+      result.push_back(line.text);
     }
+
+    return result;
   }
 
   std::vector<Input> inputs;
   std::vector<std::string> outputs;
+  std::vector<Line> lines;
 };
 
 
 class DiagramEditor {
+  public:
+    void addTestNode();
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;

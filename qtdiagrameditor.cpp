@@ -87,7 +87,11 @@ int QtDiagramEditor::indexOfNode2Containing(const Point2D &p)
   int n_nodes = node2s.size();
 
   for (int i=0; i!=n_nodes; ++i) {
-    if (contains(node2s[i].header_text_object,p)) {
+    Node2RenderInfo render_info = nodeRenderInfo(node2s[i]);
+    if (render_info.header_rect.contains(p)) {
+      return i;
+    }
+    if (render_info.body_rect.contains(p)) {
       return i;
     }
   }
@@ -574,6 +578,17 @@ Rect QtDiagramEditor::nodeRect(const TextObject &text_object) const
 }
 
 
+Rect QtDiagramEditor::nodeHeaderRect(const TextObject &text_object) const
+{
+  if (text_object.text=="") {
+    Point2D start = text_object.position;
+    Point2D end = start;
+    return Rect{start,end};
+  }
+  return nodeRect(text_object);
+}
+
+
 Point2D
   QtDiagramEditor::alignmentPoint(
     const Rect &rect,
@@ -634,19 +649,29 @@ void QtDiagramEditor::drawText(const TextObject &text_object)
 
 
 void
-  QtDiagramEditor::drawBoxedText(
+  QtDiagramEditor::drawBoxedText2(
     const TextObject &text_object,
-    bool is_selected
+    bool is_selected,
+    const Rect &rect
   )
 {
-  Rect rect = nodeRect(text_object);
-
   if (is_selected) {
     drawFilledRect(rect);
   }
 
   drawRect(rect);
   drawText(text_object);
+}
+
+
+void
+  QtDiagramEditor::drawBoxedText(
+    const TextObject &text_object,
+    bool is_selected
+  )
+{
+  Rect rect = nodeRect(text_object);
+  drawBoxedText2(text_object,is_selected,rect);
 }
 
 
@@ -727,12 +752,15 @@ Circle QtDiagramEditor::nodeOutputCircle(const Node2 &node,int output_index)
 Circle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
 {
   Node2RenderInfo render_info = nodeRenderInfo(node2s[index.node_index]);
+
   if (index.input_index>=0) {
     return render_info.input_connector_circles[index.input_index];
   }
+
   if (index.output_index>=0) {
     return render_info.output_connector_circles[index.output_index];
   }
+
   assert(false);
   return Circle{};
 }
@@ -826,13 +854,12 @@ TextObject
   return t;
 }
 
-Rect QtDiagramEditor::nodeBodyRect(const Node2 &node) const
+Rect
+  QtDiagramEditor::nodeBodyRect(
+    const Node2 &node,
+    const Rect &header_rect
+  ) const
 {
-  const TextObject &header_text_object = node.header_text_object;
-
-  // We need to determine a rectangle that fits around the contents.
-  Rect header_rect = nodeRect(header_text_object);
-
   // The top of the rectangle should be the bottom of the header text
   // object.
   float top_y = header_rect.start.y;
@@ -845,9 +872,7 @@ Rect QtDiagramEditor::nodeBodyRect(const Node2 &node) const
   // to the bottom of that rectangle.
   float bottom_y = top_y;
 
-  const vector<string> &inputs = node.inputLabels();
-  const vector<string> &outputs = node.outputs;
-  vector<string> strings = inputs + outputs;
+  vector<string> strings = node.strings();
 
   for (const auto& s : strings) {
     Rect r =
@@ -864,14 +889,16 @@ Rect QtDiagramEditor::nodeBodyRect(const Node2 &node) const
   // text objects.
   float right_x = header_rect.end.x;
 
-  for (const auto& s : strings) {
+  for (const auto &s : strings) {
     Rect r =
-      rectAroundText(alignedTextObject(
-        s,
-        Point2D(left_x,top_y),
-        /*horizontal_alignment*/0,
-        /*vertical_alignment*/1
-      ));
+      rectAroundText(
+        alignedTextObject(
+          s,
+          Point2D(left_x,top_y),
+          /*horizontal_alignment*/0,
+          /*vertical_alignment*/1
+        )
+      );
     if (r.end.x > right_x) {
       right_x = r.end.x;
     }
@@ -890,28 +917,30 @@ Rect QtDiagramEditor::nodeBodyRect(const Node2 &node) const
 
 Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
 {
+  const TextObject &header_text_object = node.header_text_object;
+
+  // We need to determine a rectangle that fits around the contents.
+  Rect header_rect = nodeHeaderRect(header_text_object);
+
   Node2RenderInfo render_info;
-  {
-    Rect body_rect = nodeBodyRect(node);
+  Rect body_rect = nodeBodyRect(node,header_rect);
+  render_info.header_rect = header_rect;
 
-    float left_x = body_rect.start.x;
-    // float bottom_y = body_rect.start.y;
-    float right_x = body_rect.end.x;
-    float top_y = body_rect.end.y;
+  float left_x = body_rect.start.x;
+  float right_x = body_rect.end.x;
 
-    render_info.body_rect = body_rect;
+  // float bottom_y = body_rect.start.y;
+  float top_y = body_rect.end.y;
 
-    float y = top_y;
+  render_info.body_rect = body_rect;
 
-    // Draw the input names
-    const vector<string> &inputs = node.inputLabels();
+  float y = top_y;
 
-    for (const auto &s : inputs) {
-      TextObject t = inputTextObject(s,left_x,y);
-      render_info.input_text_objects.push_back(t);
-
-      Rect r = rectAroundText(t);
-
+  for (const auto &line : node.lines) {
+    TextObject t = inputTextObject(line.text,left_x,y);
+    Rect r = rectAroundText(t);
+    render_info.text_objects.push_back(t);
+    if (line.has_input) {
       float connector_x = (left_x - connector_radius - 5);
       float connector_y = (r.start.y + r.end.y)/2;
 
@@ -920,17 +949,8 @@ Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
       c.radius = connector_radius;
       render_info.input_connector_circles.push_back(c);
 
-      y = r.start.y;
     }
-
-    const vector<string> &outputs = node.outputs;
-
-    for (const auto &s : outputs) {
-      TextObject t = outputTextObject(s,right_x,y);
-
-      render_info.output_text_objects.push_back(t);
-      Rect r = rectAroundText(t);
-
+    if (line.has_output) {
       float connector_x = (right_x + connector_radius + 5);
       float connector_y = (r.start.y + r.end.y)/2;
 
@@ -938,9 +958,8 @@ Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
       c.center = Point2D(connector_x,connector_y);
       c.radius = connector_radius;
       render_info.output_connector_circles.push_back(c);
-
-      y = r.start.y;
     }
+    y = r.start.y;
   }
 
   return render_info;
@@ -954,17 +973,23 @@ void QtDiagramEditor::drawNode2(int node2_index)
 
   bool is_selected = (selected_node2_index == node2_index);
   const TextObject &header_text_object = node.header_text_object;
-  drawBoxedText(header_text_object,is_selected);
+  drawBoxedText2(header_text_object,is_selected,render_info.header_rect);
 
   // Draw the rectangle around all the inputs and outputs.
+  if (is_selected) {
+    drawFilledRect(render_info.body_rect);
+  }
   drawRect(render_info.body_rect);
 
   // Draw the input labels
 
   int n_inputs = node.nInputs();
 
-  for (int input_index=0; input_index!=n_inputs; ++input_index) {
-    drawText(render_info.input_text_objects[input_index]);
+  const vector<string> &outputs = node.outputs;
+  int n_outputs = outputs.size();
+
+  for (const auto &t : render_info.text_objects) {
+    drawText(t);
   }
 
   // Draw the input connectors
@@ -972,26 +997,20 @@ void QtDiagramEditor::drawNode2(int node2_index)
   for (int i=0; i!=n_inputs; ++i) {
     Circle c = render_info.input_connector_circles[i];
     drawCircle(c);
+
     if (node2_index==selected_node2_connector_index.node_index &&
         i==selected_node2_connector_index.input_index) {
       drawFilledCircle(c);
     }
-    if (node.inputs[i].source_node_index>=0) {
-      const Node2& source_node = node2s[node.inputs[i].source_node_index];
-      int source_output_index = node.inputs[i].source_output_index;
+
+    const Node2::Input &input = node.inputs[i];
+
+    if (input.source_node_index>=0) {
+      const Node2& source_node = node2s[input.source_node_index];
+      int source_output_index = input.source_output_index;
       Circle source_circle = nodeOutputCircle(source_node,source_output_index);
       drawLine(source_circle.center,c.center);
     }
-  }
-
-  // Draw the output labels
-
-  const vector<string> &outputs = node.outputs;
-  int n_outputs = outputs.size();
-
-  for (int i=0; i!=n_outputs; ++i) {
-    const TextObject &t = render_info.output_text_objects[i];
-    drawText(t);
   }
 
   // Draw the output connectors
@@ -1057,15 +1076,4 @@ void QtDiagramEditor::paintGL()
       temp_source_pos
     );
   }
-}
-
-
-void QtDiagramEditor::addTestNode()
-{
-  node2s.emplace_back();
-  Node2 &node = node2s.back();
-  node.header_text_object.text = "Add";
-  node.header_text_object.position = Point2D(100,200);
-  node.setInputLabels({"a","b"});
-  node.outputs = {"a+b"};
 }

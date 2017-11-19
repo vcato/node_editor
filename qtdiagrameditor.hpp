@@ -10,9 +10,9 @@
 
 
 struct Node2RenderInfo {
+  Rect header_rect;
   Rect body_rect;
-  std::vector<TextObject> input_text_objects;
-  std::vector<TextObject> output_text_objects;
+  std::vector<TextObject> text_objects;
   std::vector<Circle> input_connector_circles;
   std::vector<Circle> output_connector_circles;
 };
@@ -22,7 +22,6 @@ struct Node2RenderInfo {
 class QtDiagramEditor : public QGLWidget, public DiagramEditor {
   public:
     QtDiagramEditor();
-    void addTestNode();
 
   private:
     void initializeGL() override { }
@@ -61,6 +60,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawFilledCircle(const Circle &circle);
     Rect rectAroundText(const TextObject &text_object) const;
     Rect nodeRect(const TextObject &text_object) const;
+    Rect nodeHeaderRect(const TextObject &text_object) const;
 
     Point2D
       alignmentPoint(
@@ -86,6 +86,12 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       );
 
     void drawText(const TextObject &text_object);
+    void
+      drawBoxedText2(
+        const TextObject &text_object,
+        bool is_selected,
+        const Rect &
+      );
     void drawBoxedText(const TextObject &text_object,bool is_selected);
     int textHeight() const;
     int textWidth(const std::string &s) const;
@@ -110,7 +116,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       inputTextObject(const std::string &s,float left_x,float y) const;
     TextObject
       outputTextObject(const std::string &s,float right_x,float y) const;
-    Rect nodeBodyRect(const Node2 &) const;
+    Rect nodeBodyRect(const Node2 &,const Rect &header_rect) const;
     Node2RenderInfo nodeRenderInfo(const Node2 &node) const;
     void drawNode2(int node2_index);
     void paintGL() override;

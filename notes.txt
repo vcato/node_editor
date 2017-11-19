@@ -79,3 +79,131 @@ Maybe I should work on a node system that has both inputs and outputs.
 Inputs are names.
 Outputs are expressions.
 Seems like you could do a decent amount with just that.
+----
+Nodes have regular inputs and outputs on the left and right.
+Nodes have an environment input on the top and an environment output on
+the bottom.
+
+A special code node contains internal logic.
+It only has one output, which is the code.
+Internally, it has an env input at the top and an env output at the bottom.
+
+Let's call it a block.
+
+You can have text blocks or diagram blocks.
+
+{a = x;b = y;} // text block
+
+A block is a function which takes an environment and returns an environment.
+
+Functions can be created from blocks:
+  function(inputs=['x','y'],outputs=['a','b'],code={a=x;b=y;})
+
+You could have a node which was a sequence of statements.
+
+  *|let x = $| 
+  *|let y = $| 
+   |      x+y|*
+
+$ represents an input.  If the $ appears in the statement, then there is
+an input connector there.
+If the statement has a value, then an output connector appears.
+
+A statement may have both an input and an output connector.
+  *|$ + 5|*
+
+Example of extracting x,y members from a point:
+
+  *|let p = $|
+   |      p.x|*
+   |      p.y|*
+
+It seems like we have two basic operations: Abstract and Apply.
+Abstract creates a function, Apply applies a function.
+
+Visually, we can takes nodes and abstract them, which creates a function
+which takes an environment and returns and environment.
+
+
+function(inputs=['a','b'],outputs=['x','y'],code={x=a;y=b;})(a=1,b=2)
+
+this produces the tuple (x=1,y=2)
+
+We can have a function node, we coverts a block into a function.
+
+* Creating a block
+* Creating a function from a block
+* Applying a function
+
+*|let a=$|
+*|let b=$|
+     |
+  |a + b|*
+
+We have to be careful about scope.  Do we want a statement node to return 
+a modified verison of the original environment, or to return a new
+environment?
+
+
+*|x=input   |
+*|y=input   |
+ |output x+y|*
+
+*|condition=input                                  |
+*|then_block=input                                 |
+*|else_block=input                                 |
+ |then_block(env) if condition else else_block(env)|*
+
+*|if input:  |
+*|  exec     |
+ |else:      |
+*|  exec     |
+
+ |ikPos(         |
+*|  global=input,|
+*|  local=input, |
+*|  weight=input |
+ |)              |
+
+ |output list(|*
+*|  input,    |
+*|  input,    |
+*|  input     |
+ |)           |
+
+Maybe if we have an output inside a loop, it creates a list:
+
+  *|for x in input:|
+   |  output x     |*--*|list(*input)|*
+
+Inputting an outputting lists:
+
+  *|let [x,y,z]=input   |
+   |      output [z,y,x]|*
+
+We could have special connectors which look like outputs, but are actually
+inputs.  They form a block from whatever they are connected to.
+
+Should we have a scope node that creates a new environment with the current
+environment as its parent?
+
+|let y = 4      |
+|let x = 4      |
+|scope{continue}|*----+
+|output y       |*----|---- (6)
+|output x       |*----|---- (4)
+                      *
+                 |let x = 5|
+                 |y = 6    |
+
+
+If we have continuations, can we create blocks like this?
+
+      |let block={continue}|*---- (connect to nodes which form the block)
+      |        output block|*---- (this is the resulting block)
+
+
+ *|let yes=input                  |
+ *|let no=input                   |
+ *|let condition=input            |
+  |output yes if condition else no|*
