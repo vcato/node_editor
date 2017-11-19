@@ -7,7 +7,7 @@ LDFLAGS=`pkg-config --libs $(PACKAGES)`
 all: run_unit_tests main
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
-  qtdiagrameditor.o circle.o
+  qtdiagrameditor.o circle.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_qtmainwindow.cpp: qtmainwindow.hpp
@@ -20,7 +20,7 @@ diagrameditor_test.pass: diagrameditor_test
 	./diagrameditor_test
 	touch $@
 
-diagrameditor_test: diagrameditor_test.o diagrameditor.o
+diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

@@ -28,6 +28,10 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
 {
   assert(key_event_ptr);
 
+  bool a_node_is_focused =
+    (focused_node_index >= 0) ||
+    (focused_node2_index >= 0);
+
   if (key_event_ptr->key()==Qt::Key_Backspace) {
     if (selected_node1_index>=0) {
       deleteNode(selected_node1_index);
@@ -36,19 +40,48 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
       return;
     }
 
-    bool a_node_is_focused = (focused_node_index >= 0);
-
     if (a_node_is_focused) {
-      focusedText().erase(focusedText().end()-1);
+      if (!focusedText().empty()) {
+        focusedText().erase(focusedText().end()-1);
+        if (focused_node2_index>=0) {
+          node2s[focused_node2_index].updateInputsAndOutputs();
+        }
+        update();
+        return;
+      }
+      if (focused_node2_index>=0) {
+        if (focused_node2_line_index>0) {
+          Node2& node = node2s[focused_node2_index];
+          node.lines.erase(node.lines.begin() + focused_node2_line_index);
+          node.updateInputsAndOutputs();
+          --focused_node2_line_index;
+          update();
+          return;
+        }
+      }
     }
   }
   else if (key_event_ptr->key()==Qt::Key_Return) {
     enterPressed();
     return;
   }
+  else if (key_event_ptr->key()==Qt::Key_Up) {
+    if (focused_node2_line_index>0) {
+      --focused_node2_line_index;
+    }
+  }
+  else if (key_event_ptr->key()==Qt::Key_Down) {
+    int n_lines = node2s[focused_node2_index].lines.size();
+    if (focused_node2_line_index+1 < n_lines) {
+      ++focused_node2_line_index;
+    }
+  }
   else {
-    if (focused_node_index>=0) {
+    if (a_node_is_focused) {
       focusedText() += key_event_ptr->text().toStdString();
+      if (focused_node2_index>=0) {
+        node2s[focused_node2_index].updateInputsAndOutputs();
+      }
     }
   }
 
@@ -168,7 +201,7 @@ NodeConnectorIndex
         return index;
       }
     }
-    int n_outputs = node2s[i].outputs.size();
+    int n_outputs = node2s[i].nOutputs();
     for (int j=0; j!=n_outputs; ++j) {
       if (node2OutputContains(i,j,p)) {
         NodeConnectorIndex index;
@@ -188,6 +221,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
 {
   mouse_press_position = p;
   node_was_selected = false;
+  node2_was_selected = false;
 
   if (focused_node_index>=0) {
     if (node1s[focused_node_index].text_object.text.empty()) {
@@ -204,10 +238,6 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
       deleteNode(selected_node1_index);
       selected_node1_index = -1;
     }
-  }
-
-  if (selected_node2_index>=0) {
-    selected_node2_index = -1;
   }
 
   {
@@ -241,19 +271,21 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
 
   selected_node1_index = -1;
   selected_node_input_index = NodeInputIndex::null();
-  selected_node2_index = -1;
-  selected_node2_connector_index = NodeConnectorIndex::null();
 
   {
     int i = indexOfNode2Containing(p);
 
     if (i>=0) {
+      node2_was_selected = (i==selected_node2_index);
       selected_node2_index = i;
       original_node_position = node2s[i].header_text_object.position;
       update();
       return;
     }
   }
+
+  selected_node2_index = -1;
+  selected_node2_connector_index = NodeConnectorIndex::null();
 
   {
     NodeConnectorIndex i = indexOfNodeConnectorContaining(p);
@@ -345,6 +377,11 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
   else if (node_was_selected) {
     focused_node_index = selected_node1_index;
     selected_node1_index = -1;
+    update();
+  }
+  else if (node2_was_selected) {
+    focused_node2_index = selected_node2_index;
+    selected_node2_index = -1;
     update();
   }
 }
@@ -984,9 +1021,7 @@ void QtDiagramEditor::drawNode2(int node2_index)
   // Draw the input labels
 
   int n_inputs = node.nInputs();
-
-  const vector<string> &outputs = node.outputs;
-  int n_outputs = outputs.size();
+  int n_outputs = node.nOutputs();
 
   for (const auto &t : render_info.text_objects) {
     drawText(t);
@@ -1049,6 +1084,11 @@ void QtDiagramEditor::paintGL()
     if (focused_node_index>=0) {
       drawCursor(node1s[focused_node_index].text_object);
     }
+  }
+
+  if (focused_node2_index>=0) {
+    Node2RenderInfo render_info = nodeRenderInfo(node2s[focused_node2_index]);
+    drawCursor(render_info.text_objects[focused_node2_line_index]);
   }
 
   {

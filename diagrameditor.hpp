@@ -3,9 +3,8 @@
 
 #include <string>
 #include <vector>
-
-
 #include "point2d.hpp"
+#include "stringutil.hpp"
 
 
 inline Point2D operator-(const Point2D &a,const Point2D &b)
@@ -156,17 +155,43 @@ struct Node2 {
     return inputs.size();
   }
 
-  void setNInputs(size_t n_inputs)
+  int nOutputs() const
   {
-    inputs.resize(n_inputs);
+    return n_outputs;
   }
 
-#if 0
-  void setInputLabels(const std::vector<std::string> &arg)
+  void setNInputs(size_t arg)
   {
-    setNInputs(arg.size());
+    inputs.resize(arg);
   }
-#endif
+
+  void setNOutputs(size_t arg)
+  {
+    n_outputs = arg;
+  }
+
+  private:
+    void updateNInputs()
+    {
+      setNInputs(countInputs(*this));
+    }
+
+    void updateNOutputs()
+    {
+      setNOutputs(countOutputs(*this));
+    }
+
+  public:
+    void updateInputsAndOutputs()
+    {
+      for (auto &line : lines) {
+        line.has_input = hasInput(line.text);
+        line.has_output = hasOutput(line.text);
+      }
+
+      updateNInputs();
+      updateNOutputs();
+    }
 
   std::vector<std::string> strings() const
   {
@@ -179,9 +204,53 @@ struct Node2 {
     return result;
   }
 
+  static size_t countInputs(const Node2 &node)
+  {
+    size_t n_inputs = 0;
+
+    for (auto &line : node.lines) {
+      if (line.has_input) {
+        ++n_inputs;
+      }
+    }
+
+    return n_inputs;
+  }
+
+  static size_t countOutputs(const Node2 &node)
+  {
+    size_t n_outputs = 0;
+
+    for (auto &line : node.lines) {
+      if (line.has_output) {
+        ++n_outputs;
+      }
+    }
+
+    return n_outputs;
+  }
+
   std::vector<Input> inputs;
-  std::vector<std::string> outputs;
+  int n_outputs = 0;
   std::vector<Line> lines;
+
+  static bool hasInput(const std::string &text)
+  {
+    if (endsWith(text,"$")) {
+      return true;
+    }
+
+    return false;
+  }
+
+  static bool hasOutput(const std::string &text)
+  {
+    if (startsWith(text,"$")) {
+      return true;
+    }
+
+    return false;
+  }
 };
 
 
@@ -192,9 +261,12 @@ class DiagramEditor {
     Point2D mouse_press_position;
     Point2D original_node_position;
     bool node_was_selected = false;
+    bool node2_was_selected = false;
     int selected_node1_index = -1;
     int selected_node2_index = -1;
     int focused_node_index = -1;
+    int focused_node2_index = -1;
+    int focused_node2_line_index = 0;
     NodeInputIndex selected_node_input_index = NodeInputIndex::null();
     NodeConnectorIndex selected_node2_connector_index =
       NodeConnectorIndex::null();

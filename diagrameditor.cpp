@@ -24,8 +24,13 @@ void DiagramEditor::deleteNode(int index)
 
 string &DiagramEditor::focusedText()
 {
-  assert(focused_node_index>=0);
-  return node1s[focused_node_index].text_object.text;
+  if (focused_node_index>=0) {
+    return node1s[focused_node_index].text_object.text;
+  }
+  else {
+    assert(focused_node2_index>=0);
+    return node2s[focused_node2_index].lines[focused_node2_line_index].text;
+  }
 }
 
 
@@ -36,6 +41,15 @@ void DiagramEditor::enterPressed()
     selected_node1_index = node_index;
     focused_node_index = -1;
     updateNodeInputs(node_index);
+    redraw();
+  }
+  if (focused_node2_index>=0) {
+    Node2& node = node2s[focused_node2_index];
+    node.lines.insert(
+      node.lines.begin() + focused_node2_line_index + 1,
+      Node2::Line("")
+    );
+    ++focused_node2_line_index;
     redraw();
   }
 }
@@ -54,30 +68,13 @@ void DiagramEditor::updateNodeInputs(int node_index)
 }
 
 
-static size_t countInputs(const Node2 &node)
-{
-  size_t n_inputs = 0;
-
-  for (auto &line : node.lines) {
-    if (line.has_input) {
-      ++n_inputs;
-    }
-  }
-
-  return n_inputs;
-}
-
-
 void DiagramEditor::addTestNode()
 {
   node2s.emplace_back();
   Node2 &node = node2s.back();
   node.lines = {"a = $","b = $","$ = a+b"};
-  node.lines[0].has_input = true;
-  node.lines[1].has_input = true;
-  node.lines[2].has_output = true;
   node.header_text_object.text = "";
   node.header_text_object.position = Point2D(100,200);
-  node.setNInputs(countInputs(node));
-  node.outputs = {"a+b"};
+  node.updateInputsAndOutputs();
+  assert(node.lines[0].has_input);
 }
