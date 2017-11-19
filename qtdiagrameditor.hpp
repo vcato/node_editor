@@ -38,6 +38,13 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     bool node2OutputContains(int node_index,int output_index,const Point2D &p);
     NodeInputIndex indexOfNodeInputContaining(const Point2D &p);
     NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
+    void
+      connectNodes(
+        int input_node_index,
+        int input_index,
+        int output_node_index,
+        int output_index
+      );
     void mousePressedAt(Point2D p);
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
@@ -95,6 +102,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     Circle defaultNodeInputCircle(int node_index,int input_index);
     Circle nodeInputCircle(const Node2 &,int input_index);
     Circle nodeOutputCircle(const Node2 &node,int output_index);
+    Circle connectorCircle(NodeConnectorIndex) const;
     Point2D nodeOutputPosition(int node_index);
     void drawNodeInput(int node_index,int input_index);
     void drawNodeInputs(int node_index);

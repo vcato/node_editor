@@ -90,6 +90,16 @@ struct NodeConnectorIndex {
     return NodeConnectorIndex{};
   }
 
+  bool isNull() const
+  {
+    return *this==null();
+  }
+
+  void clear()
+  {
+    *this = null();
+  }
+
   bool operator==(const NodeConnectorIndex &arg) const
   {
     return
@@ -127,7 +137,46 @@ struct Node1 {
 
 struct Node2 {
   TextObject header_text_object;
-  std::vector<std::string> inputs;
+
+  struct Input {
+    std::string label;
+    int source_node_index = -1;
+    int source_output_index = -1;
+  };
+
+  int nInputs() const
+  {
+    return inputs.size();
+  }
+
+  const std::string &inputLabel(int input_index)
+  {
+    return inputs[input_index].label;
+  }
+
+  std::vector<std::string> inputLabels() const
+  {
+    std::vector<std::string> labels;
+    int n_inputs = inputs.size();
+
+    for (int i=0; i!=n_inputs; ++i) {
+      labels.push_back(inputs[i].label);
+    }
+
+    return labels;
+  }
+
+  void setInputLabels(const std::vector<std::string> &arg)
+  {
+    size_t n_inputs = arg.size();
+    inputs.resize(n_inputs);
+
+    for (size_t i=0; i!=n_inputs; ++i) {
+      inputs[i].label = arg[i];
+    }
+  }
+
+  std::vector<Input> inputs;
   std::vector<std::string> outputs;
 };
 

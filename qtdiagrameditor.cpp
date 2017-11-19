@@ -154,7 +154,7 @@ NodeConnectorIndex
   int n_nodes = node2s.size();
 
   for (int i=0; i!=n_nodes; ++i) {
-    int n_inputs = node2s[i].inputs.size();
+    int n_inputs = node2s[i].nInputs();
     for (int j=0; j!=n_inputs; ++j) {
       if (node2InputContains(i,j,p)) {
         NodeConnectorIndex index;
@@ -255,10 +255,8 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     NodeConnectorIndex i = indexOfNodeConnectorContaining(p);
 
     if (i!=NodeConnectorIndex::null()) {
-      cerr << "i.node_index=" << i.node_index << "\n";
-      cerr << "i.input_index=" << i.input_index << "\n";
-      cerr << "i.output_index=" << i.output_index << "\n";
       selected_node2_connector_index = i;
+      temp_source_pos = mouse_press_position;
       update();
       return;
     }
@@ -286,6 +284,20 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 }
 
 
+void
+  QtDiagramEditor::connectNodes(
+    int input_node_index,
+    int input_index,
+    int output_node_index,
+    int output_index
+  )
+{
+  node2s[input_node_index].inputs[input_index].source_node_index =
+    output_node_index;
+  node2s[input_node_index].inputs[input_index].source_output_index =
+    output_index;
+}
+
 void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
 {
   if (!selected_node_input_index.isNull()) {
@@ -294,6 +306,36 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
       selected_node_input_index.input_index].source_node_index =
         source_node_index;
     selected_node_input_index.clear();
+    update();
+  }
+  else if (!selected_node2_connector_index.isNull()) {
+    NodeConnectorIndex release_index =
+      indexOfNodeConnectorContaining(temp_source_pos);
+    if (!release_index.isNull()) {
+      if (selected_node2_connector_index.input_index>=0 &&
+          release_index.output_index>=0) {
+        // Connected an input to an output
+        int input_node_index = selected_node2_connector_index.node_index;
+        int input_index = selected_node2_connector_index.input_index;
+        int output_node_index = release_index.node_index;
+        int output_index = release_index.output_index;
+        connectNodes(
+          input_node_index,input_index,output_node_index,output_index
+        );
+      }
+      else if (selected_node2_connector_index.output_index>=0 &&
+               release_index.input_index>=0) {
+        // Connected an output to an input
+        int input_node_index = release_index.node_index;
+        int input_index = release_index.input_index;
+        int output_node_index = selected_node2_connector_index.node_index;
+        int output_index = selected_node2_connector_index.output_index;
+        connectNodes(
+          input_node_index,input_index,output_node_index,output_index
+        );
+      }
+    }
+    selected_node2_connector_index.clear();
     update();
   }
   else if (node_was_selected) {
@@ -309,6 +351,12 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
   Point2D mouse_position = screenToGLCoords(event_ptr->x(),event_ptr->y());
 
   if (!selected_node_input_index.isNull()) {
+    temp_source_pos = mouse_position;
+    update();
+    return;
+  }
+
+  if (!selected_node2_connector_index.isNull()) {
     temp_source_pos = mouse_position;
     update();
     return;
@@ -676,6 +724,20 @@ Circle QtDiagramEditor::nodeOutputCircle(const Node2 &node,int output_index)
 }
 
 
+Circle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
+{
+  Node2RenderInfo render_info = nodeRenderInfo(node2s[index.node_index]);
+  if (index.input_index>=0) {
+    return render_info.input_connector_circles[index.input_index];
+  }
+  if (index.output_index>=0) {
+    return render_info.output_connector_circles[index.output_index];
+  }
+  assert(false);
+  return Circle{};
+}
+
+
 Point2D QtDiagramEditor::nodeOutputPosition(int node_index)
 {
   Rect rect = nodeRect(node1s[node_index].text_object);
@@ -783,7 +845,7 @@ Rect QtDiagramEditor::nodeBodyRect(const Node2 &node) const
   // to the bottom of that rectangle.
   float bottom_y = top_y;
 
-  const vector<string> &inputs = node.inputs;
+  const vector<string> &inputs = node.inputLabels();
   const vector<string> &outputs = node.outputs;
   vector<string> strings = inputs + outputs;
 
@@ -842,7 +904,7 @@ Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
     float y = top_y;
 
     // Draw the input names
-    const vector<string> &inputs = node.inputs;
+    const vector<string> &inputs = node.inputLabels();
 
     for (const auto &s : inputs) {
       TextObject t = inputTextObject(s,left_x,y);
@@ -899,8 +961,7 @@ void QtDiagramEditor::drawNode2(int node2_index)
 
   // Draw the input labels
 
-  const vector<string> &inputs = node.inputs;
-  int n_inputs = inputs.size();
+  int n_inputs = node.nInputs();
 
   for (int input_index=0; input_index!=n_inputs; ++input_index) {
     drawText(render_info.input_text_objects[input_index]);
@@ -914,6 +975,12 @@ void QtDiagramEditor::drawNode2(int node2_index)
     if (node2_index==selected_node2_connector_index.node_index &&
         i==selected_node2_connector_index.input_index) {
       drawFilledCircle(c);
+    }
+    if (node.inputs[i].source_node_index>=0) {
+      const Node2& source_node = node2s[node.inputs[i].source_node_index];
+      int source_output_index = node.inputs[i].source_output_index;
+      Circle source_circle = nodeOutputCircle(source_node,source_output_index);
+      drawLine(source_circle.center,c.center);
     }
   }
 
@@ -983,6 +1050,13 @@ void QtDiagramEditor::paintGL()
       drawNode2(index);
     }
   }
+
+  if (!selected_node2_connector_index.isNull()) {
+    drawLine(
+      connectorCircle(selected_node2_connector_index).center,
+      temp_source_pos
+    );
+  }
 }
 
 
@@ -992,6 +1066,6 @@ void QtDiagramEditor::addTestNode()
   Node2 &node = node2s.back();
   node.header_text_object.text = "Add";
   node.header_text_object.position = Point2D(100,200);
-  node.inputs = vector<string>{"a","b"};
+  node.setInputLabels({"a","b"});
   node.outputs = {"a+b"};
 }
