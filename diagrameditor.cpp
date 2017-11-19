@@ -34,9 +34,20 @@ void DiagramEditor::enterPressed()
     int node_index = focused_node_index;
     selected_node_index = node_index;
     focused_node_index = -1;
-    if (nodes[node_index].text_object.text=="+") {
-      nodes[node_index].inputs.resize(2);
-    }
+    updateNodeInputs(node_index);
     redraw();
+  }
+}
+
+
+void DiagramEditor::updateNodeInputs(int node_index)
+{
+  const string &text = nodes[node_index].text_object.text;
+  if (text=="+") {
+    nodes[node_index].inputs.resize(2);
+  }
+  else if (text=="ikPos") {
+    nodes[node_index].inputs.resize(3);
+    nodes[node_index].inputs[0].name = "global";
   }
 }

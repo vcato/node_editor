@@ -4,3 +4,4 @@
 *.pass
 main
 diagrameditor_test
+moc_*.cpp

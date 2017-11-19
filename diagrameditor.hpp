@@ -1,20 +1,11 @@
+#ifndef DIAGRAMEDITOR_HPP_
+#define DIAGRAMEDITOR_HPP_
+
 #include <string>
 #include <vector>
 
 
-struct Point2D {
-  float x,y;
-
-  Point2D()
-  : x(0), y(0)
-  {
-  }
-
-  Point2D(float x_arg,float y_arg)
-  : x(x_arg), y(y_arg)
-  {
-  }
-};
+#include "point2d.hpp"
 
 
 inline Point2D operator-(const Point2D &a,const Point2D &b)
@@ -92,6 +83,7 @@ struct NodeInputIndex {
 struct Node {
   struct Input {
     int source_node_index;
+    std::string name;
 
     Input()
     : source_node_index(-1)
@@ -108,20 +100,32 @@ struct Node {
 };
 
 
+struct Node2 {
+  TextObject header_text_object;
+  std::vector<std::string> inputs;
+  std::vector<std::string> outputs;
+};
+
+
 class DiagramEditor {
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;
     bool node_was_selected = false;
     int selected_node_index = -1;
+    int selected_node2_index = -1;
     int focused_node_index = -1;
     NodeInputIndex selected_node_input_index = NodeInputIndex::null();
     Point2D temp_source_pos;
     std::vector<Node> nodes;
+    std::vector<Node2> node2s;
 
     virtual void redraw() = 0;
     int addNode(const TextObject &text_object);
     void deleteNode(int index);
     std::string &focusedText();
     void enterPressed();
+    void updateNodeInputs(int node_index);
 };
+
+#endif /* DIAGRAMEDITOR_HPP_ */

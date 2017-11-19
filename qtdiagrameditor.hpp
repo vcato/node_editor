@@ -1,0 +1,94 @@
+#ifndef QTDIAGRAMEDITOR_HPP_
+#define QTDIAGRAMEDITOR_HPP_
+
+#include <cassert>
+#include <GL/glu.h>
+#include <QGLWidget>
+#include <QKeyEvent>
+#include "diagrameditor.hpp"
+#include "circle.hpp"
+
+
+class QtDiagramEditor : public QGLWidget, public DiagramEditor {
+  public:
+    QtDiagramEditor();
+    void addTestNode();
+
+  private:
+    void initializeGL() override { }
+    QSize sizeHint() const override { return QSize(640,480); }
+    void keyPressEvent(QKeyEvent *key_event_ptr) override;
+    Point2D screenToGLCoords(int x,int y) const;
+    bool contains(const TextObject &text_object,const Point2D &p);
+    int indexOfNodeContaining(const Point2D &p);
+    int indexOfNode2Containing(const Point2D &p);
+    void selectNode(int index) { selected_node_index = index; }
+    bool nodeInputContains(int node_index,int input_index,const Point2D &p);
+    NodeInputIndex indexOfNodeInputContaining(const Point2D &p);
+    void mousePressedAt(Point2D p);
+    void mousePressEvent(QMouseEvent *event_ptr) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent * event_ptr) override;
+    void drawLine(Point2D line_start,Point2D line_end);
+    void setupProjection(float viewport_width,float viewport_height);
+    void drawClosedLine(const std::vector<Point2D> &vertices);
+    void drawPolygon(const std::vector<Point2D> &vertices);
+    static std::vector<Point2D> verticesOf(const Rect &rect);
+    std::vector<Point2D> verticesOf(const Circle &circle);
+    void drawRect(const Rect &arg);
+    void drawCircle(const Circle &circle);
+    void drawFilledRect(const Rect &rect);
+    void drawFilledCircle(const Circle &circle);
+    Rect rectAroundText(const TextObject &text_object) const;
+    Rect nodeRect(const TextObject &text_object);
+
+    Point2D
+      alignmentPoint(
+        const Rect &rect,
+        float horizontal_alignment,
+        float vertical_alignment
+      ) const;
+
+    TextObject
+      alignedTextObject(
+        const std::string &text,
+        const Point2D &position,
+        float horizontal_alignment,
+        float vertical_alignment
+      ) const;
+
+    void
+      drawAlignedText(
+        const std::string &text,
+        const Point2D &position,
+        float horizontal_alignment,
+        float vertical_alignment
+      );
+
+    void drawText(const TextObject &text_object);
+    void drawBoxedText(const TextObject &text_object,bool is_selected);
+    int textHeight() const;
+    int textWidth(const std::string &s) const;
+    void drawCursor(const TextObject &text_object);
+    static constexpr float node_input_radius = 5;
+
+    Point2D
+      defaultNodeInputPosition(
+        int node_index,
+        int input_index
+      );
+
+    Circle defaultNodeInputCircle(int node_index,int input_index);
+    Point2D nodeOutputPosition(int node_index);
+    void drawNodeInput(int node_index,int input_index);
+    void drawNodeInputs(int node_index);
+    TextObject
+      inputTextObject(const std::string &s,float left_x,float y) const;
+    TextObject
+      outputTextObject(const std::string &s,float right_x,float y) const;
+    void drawNode2(const Node2 &node,bool is_selected);
+    void paintGL() override;
+    void redraw() override { update(); }
+};
+
+#endif /* QTDIAGRAMEDITOR_HPP_ */

@@ -17,3 +17,65 @@ One of the main ideas is that we can have three modes for editing expressions:
   * The default operation for dragging on a node is making a connection.
     * Moving a node involves selecting it, which produces something like
       a title-bar that you can drag to move the node.
+---
+If we have an input that is a function, it feels like an output.  For
+example, if we have an "if" expression, the "then" and "else" parts are
+parameters which specify functions to evaluate, but they feel like
+outputs.
+
+Drawing a square
+
+draw(square(a,b))
+
+let square(lower_left_corner,upper_right_corner) = (
+  let min_x = lower_left_corner.x;
+  let min_y = lower_left_corner.y;
+  let max_x = upper_right_corner.x;
+  let max_y = upper_right_corner.y;
+  let upper_left_corner = Point(x=min_x,y=max_y);
+  let lower_right_corner = Point(x=max_x,y=min_y);
+  let left_edge = Line(start=upper_left_corner,end=lower_left_corner);
+  let right_edge = Line(start=lower_right_corner,end=upper_right_corner);
+  let top_edge = Line(start=upper_right_corner,end=upper_left_corner);
+  let bottom_edge = Line(start=lower_left_corner,end=lower_right_corner);
+  [
+    left_edge,
+    right_edge,
+    top_edge,
+    bottom_edge
+  ]
+)
+
+let lines_for_square(lower_left_corner,upper_right_corner) = (
+  let Point = Object;
+  let Line = Object;
+  let (
+    let (
+      let min_x = lower_left_corner.x;
+      let min_y = lower_left_corner.y;
+      let max_x = upper_right_corner.x;
+      let max_y = upper_right_corner.y;
+      upper_left_corner = Point(x=min_x,y=max_y),
+      lower_right_corner = Point(x=max_x,y=min_y)
+    );
+    left_edge = Line(start=upper_left_corner,end=lower_left_corner),
+    right_edge = Line(start=lower_right_corner,end=upper_right_corner),
+    top_edge = Line(start=upper_right_corner,end=upper_left_corner),
+    bottom_edge = Line(start=lower_left_corner,end=lower_right_corner)
+  )
+  [
+    left_edge,
+    right_edge,
+    top_edge,
+    bottom_edge
+  ]
+)
+
+---
+I like the way this looks:
+  http://rawkes.com/media/noflo-introduction/quartz-composer.png
+
+Maybe I should work on a node system that has both inputs and outputs.
+Inputs are names.
+Outputs are expressions.
+Seems like you could do a decent amount with just that.

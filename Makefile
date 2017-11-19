@@ -6,8 +6,12 @@ LDFLAGS=`pkg-config --libs $(PACKAGES)`
 
 all: run_unit_tests main
 
-main: main.o diagrameditor.o
+main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
+  qtdiagrameditor.o circle.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
+
+moc_qtmainwindow.cpp: qtmainwindow.hpp
+	moc-qt4 $^ >$@
 
 run_unit_tests: \
   diagrameditor_test.pass
