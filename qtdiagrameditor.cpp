@@ -29,9 +29,9 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
   assert(key_event_ptr);
 
   if (key_event_ptr->key()==Qt::Key_Backspace) {
-    if (selected_node_index>=0) {
-      deleteNode(selected_node_index);
-      selected_node_index = -1;
+    if (selected_node1_index>=0) {
+      deleteNode(selected_node1_index);
+      selected_node1_index = -1;
       update();
       return;
     }
@@ -70,10 +70,10 @@ bool QtDiagramEditor::contains(const TextObject &text_object,const Point2D &p)
 
 int QtDiagramEditor::indexOfNodeContaining(const Point2D &p)
 {
-  int n_nodes = nodes.size();
+  int n_nodes = node1s.size();
 
   for (int i=0; i!=n_nodes; ++i) {
-    if (contains(nodes[i].text_object,p)) {
+    if (contains(node1s[i].text_object,p)) {
       return i;
     }
   }
@@ -106,12 +106,34 @@ bool
 }
 
 
+bool
+  QtDiagramEditor::node2InputContains(
+    int node_index,
+    int input_index,
+    const Point2D &p
+  )
+{
+  return nodeInputCircle(node2s[node_index],input_index).contains(p);
+}
+
+
+bool
+  QtDiagramEditor::node2OutputContains(
+    int node_index,
+    int output_index,
+    const Point2D &p
+  )
+{
+  return nodeOutputCircle(node2s[node_index],output_index).contains(p);
+}
+
+
 NodeInputIndex QtDiagramEditor::indexOfNodeInputContaining(const Point2D &p)
 {
-  int n_text_objects = nodes.size();
+  int n_text_objects = node1s.size();
 
   for (int i=0; i!=n_text_objects; ++i) {
-    int n_inputs = nodes[i].inputs.size();
+    int n_inputs = node1s[i].inputs.size();
     for (int j=0; j!=n_inputs; ++j) {
       if (nodeInputContains(i,j,p)) {
         NodeInputIndex result;
@@ -126,13 +148,45 @@ NodeInputIndex QtDiagramEditor::indexOfNodeInputContaining(const Point2D &p)
 }
 
 
+NodeConnectorIndex
+  QtDiagramEditor::indexOfNodeConnectorContaining(const Point2D &p)
+{
+  int n_nodes = node2s.size();
+
+  for (int i=0; i!=n_nodes; ++i) {
+    int n_inputs = node2s[i].inputs.size();
+    for (int j=0; j!=n_inputs; ++j) {
+      if (node2InputContains(i,j,p)) {
+        NodeConnectorIndex index;
+        index.node_index = i;
+        index.input_index = j;
+        index.output_index = -1;
+        return index;
+      }
+    }
+    int n_outputs = node2s[i].outputs.size();
+    for (int j=0; j!=n_outputs; ++j) {
+      if (node2OutputContains(i,j,p)) {
+        NodeConnectorIndex index;
+        index.node_index = i;
+        index.input_index = -1;
+        index.output_index = j;
+        return index;
+      }
+    }
+  }
+
+  return NodeConnectorIndex::null();
+}
+
+
 void QtDiagramEditor::mousePressedAt(Point2D p)
 {
   mouse_press_position = p;
   node_was_selected = false;
 
   if (focused_node_index>=0) {
-    if (nodes[focused_node_index].text_object.text.empty()) {
+    if (node1s[focused_node_index].text_object.text.empty()) {
       deleteNode(focused_node_index);
     }
     else {
@@ -141,10 +195,10 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     focused_node_index = -1;
   }
 
-  if (selected_node_index>=0) {
-    if (nodes[selected_node_index].text_object.text.empty()) {
-      deleteNode(selected_node_index);
-      selected_node_index = -1;
+  if (selected_node1_index>=0) {
+    if (node1s[selected_node1_index].text_object.text.empty()) {
+      deleteNode(selected_node1_index);
+      selected_node1_index = -1;
     }
   }
 
@@ -157,7 +211,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
 
     if (i!=NodeInputIndex::null()) {
       selected_node_input_index = i;
-      selected_node_index = -1;
+      selected_node1_index = -1;
       temp_source_pos = mouse_press_position;
       update();
       return;
@@ -168,21 +222,23 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     int i = indexOfNodeContaining(p);
 
     if (i>=0) {
-      if (i==selected_node_index) {
+      if (i==selected_node1_index) {
         node_was_selected = true;
       }
       else {
         node_was_selected = false;
         selectNode(i);
       }
-      original_node_position = nodes[i].text_object.position;
+      original_node_position = node1s[i].text_object.position;
       update();
       return;
     }
   }
 
-  selected_node_index = -1;
+  selected_node1_index = -1;
   selected_node_input_index = NodeInputIndex::null();
+  selected_node2_index = -1;
+  selected_node2_connector_index = NodeConnectorIndex::null();
 
   {
     int i = indexOfNode2Containing(p);
@@ -190,6 +246,19 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     if (i>=0) {
       selected_node2_index = i;
       original_node_position = node2s[i].header_text_object.position;
+      update();
+      return;
+    }
+  }
+
+  {
+    NodeConnectorIndex i = indexOfNodeConnectorContaining(p);
+
+    if (i!=NodeConnectorIndex::null()) {
+      cerr << "i.node_index=" << i.node_index << "\n";
+      cerr << "i.input_index=" << i.input_index << "\n";
+      cerr << "i.output_index=" << i.output_index << "\n";
+      selected_node2_connector_index = i;
       update();
       return;
     }
@@ -221,15 +290,15 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
 {
   if (!selected_node_input_index.isNull()) {
     int source_node_index = indexOfNodeContaining(temp_source_pos);
-    nodes[selected_node_input_index.node_index].inputs[
+    node1s[selected_node_input_index.node_index].inputs[
       selected_node_input_index.input_index].source_node_index =
         source_node_index;
     selected_node_input_index.clear();
     update();
   }
   else if (node_was_selected) {
-    focused_node_index = selected_node_index;
-    selected_node_index = -1;
+    focused_node_index = selected_node1_index;
+    selected_node1_index = -1;
     update();
   }
 }
@@ -245,8 +314,8 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
     return;
   }
 
-  if (selected_node_index>=0) {
-    nodes[selected_node_index].text_object.position =
+  if (selected_node1_index>=0) {
+    node1s[selected_node1_index].text_object.position =
       original_node_position + (mouse_position - mouse_press_position);
     update();
     return;
@@ -272,7 +341,7 @@ void QtDiagramEditor::drawLine(Point2D line_start,Point2D line_end)
     {1,1,1},
     {1,1,1}
   };
-  
+
   glVertexPointer(/*size*/2,/*type*/GL_FLOAT,/*stride*/0,vertices);
   glColorPointer(/*size*/3,/*type*/GL_FLOAT,/*stride*/0,colors);
 
@@ -451,7 +520,7 @@ Rect QtDiagramEditor::rectAroundText(const TextObject &text_object) const
 }
 
 
-Rect QtDiagramEditor::nodeRect(const TextObject &text_object)
+Rect QtDiagramEditor::nodeRect(const TextObject &text_object) const
 {
   return withMargin(rectAroundText(text_object),5);
 }
@@ -561,7 +630,7 @@ Point2D
     int input_index
   )
 {
-  const TextObject &text_object = nodes[node_index].text_object;
+  const TextObject &text_object = node1s[node_index].text_object;
   float radius = node_input_radius;
   float spacing = 5;
   float upper_left_x = nodeRect(text_object).start.x;
@@ -570,6 +639,16 @@ Point2D
   float y = upper_left_y - ((radius*2 + spacing) * input_index + spacing);
 
   return Point2D{x,y};
+}
+
+
+template <typename T>
+static vector<T> operator+(const vector<T> &a,const vector<T> &b)
+{
+  vector<T> result;
+  result.insert(result.end(),a.begin(),a.end());
+  result.insert(result.end(),b.begin(),b.end());
+  return result;
 }
 
 
@@ -583,9 +662,23 @@ Circle QtDiagramEditor::defaultNodeInputCircle(int node_index,int input_index)
 }
 
 
+Circle QtDiagramEditor::nodeInputCircle(const Node2 &node,int input_index)
+{
+  Node2RenderInfo render_info = nodeRenderInfo(node);
+  return render_info.input_connector_circles[input_index];
+}
+
+
+Circle QtDiagramEditor::nodeOutputCircle(const Node2 &node,int output_index)
+{
+  Node2RenderInfo render_info = nodeRenderInfo(node);
+  return render_info.output_connector_circles[output_index];
+}
+
+
 Point2D QtDiagramEditor::nodeOutputPosition(int node_index)
 {
-  Rect rect = nodeRect(nodes[node_index].text_object);
+  Rect rect = nodeRect(node1s[node_index].text_object);
   float x = rect.end.x;
   float y = (rect.start.y + rect.end.y)/2;
   return Point2D{x,y};
@@ -597,7 +690,7 @@ void QtDiagramEditor::drawNodeInput(int node_index,int input_index)
   NodeInputIndex node_input_index;
   node_input_index.node_index = node_index;
   node_input_index.input_index = input_index;
-  const Node::Input &input = nodes[node_index].inputs[input_index];
+  const Node1::Input &input = node1s[node_index].inputs[input_index];
 
   if (!input.name.empty()) {
     float horizontal_alignment = 1.0; // right side
@@ -636,7 +729,7 @@ void QtDiagramEditor::drawNodeInput(int node_index,int input_index)
 
 void QtDiagramEditor::drawNodeInputs(int node_index)
 {
-  int n_inputs = nodes[node_index].inputs.size();
+  int n_inputs = node1s[node_index].inputs.size();
 
   for (int i=0; i!=n_inputs; ++i) {
     drawNodeInput(node_index,i);
@@ -671,20 +764,9 @@ TextObject
   return t;
 }
 
-template <typename T>
-static vector<T> operator+(const vector<T> &a,const vector<T> &b)
-{
-  vector<T> result;
-  result.insert(result.end(),a.begin(),a.end());
-  result.insert(result.end(),b.begin(),b.end());
-  return result;
-}
-
-
-void QtDiagramEditor::drawNode2(const Node2 &node,bool is_selected)
+Rect QtDiagramEditor::nodeBodyRect(const Node2 &node) const
 {
   const TextObject &header_text_object = node.header_text_object;
-  drawBoxedText(header_text_object,is_selected);
 
   // We need to determine a rectangle that fits around the contents.
   Rect header_rect = nodeRect(header_text_object);
@@ -733,51 +815,127 @@ void QtDiagramEditor::drawNode2(const Node2 &node,bool is_selected)
     }
   }
 
-  // Draw the rectangle around all the inputs and outputs.
+  Rect body_rect;
+
+  body_rect.start.x = left_x;
+  body_rect.start.y = bottom_y;
+  body_rect.end.x = right_x;
+  body_rect.end.y = top_y;
+
+  return body_rect;
+}
+
+
+Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
+{
+  Node2RenderInfo render_info;
   {
-    Rect r;
-    r.start = Point2D(left_x,bottom_y);
-    r.end   = Point2D(right_x,top_y);
-    drawRect(r);
+    Rect body_rect = nodeBodyRect(node);
+
+    float left_x = body_rect.start.x;
+    // float bottom_y = body_rect.start.y;
+    float right_x = body_rect.end.x;
+    float top_y = body_rect.end.y;
+
+    render_info.body_rect = body_rect;
+
+    float y = top_y;
+
+    // Draw the input names
+    const vector<string> &inputs = node.inputs;
+
+    for (const auto &s : inputs) {
+      TextObject t = inputTextObject(s,left_x,y);
+      render_info.input_text_objects.push_back(t);
+
+      Rect r = rectAroundText(t);
+
+      float connector_x = (left_x - connector_radius - 5);
+      float connector_y = (r.start.y + r.end.y)/2;
+
+      Circle c;
+      c.center = Point2D(connector_x,connector_y);
+      c.radius = connector_radius;
+      render_info.input_connector_circles.push_back(c);
+
+      y = r.start.y;
+    }
+
+    const vector<string> &outputs = node.outputs;
+
+    for (const auto &s : outputs) {
+      TextObject t = outputTextObject(s,right_x,y);
+
+      render_info.output_text_objects.push_back(t);
+      Rect r = rectAroundText(t);
+
+      float connector_x = (right_x + connector_radius + 5);
+      float connector_y = (r.start.y + r.end.y)/2;
+
+      Circle c;
+      c.center = Point2D(connector_x,connector_y);
+      c.radius = connector_radius;
+      render_info.output_connector_circles.push_back(c);
+
+      y = r.start.y;
+    }
   }
 
-  float y = top_y;
-  float connector_radius = 5;
+  return render_info;
+}
 
-  // Draw the inputs
 
-  for (const auto &s : inputs) {
-    TextObject t = inputTextObject(s,left_x,y);
-    drawText(t);
-    Rect r = rectAroundText(t);
+void QtDiagramEditor::drawNode2(int node2_index)
+{
+  const Node2 &node = node2s[node2_index];
+  Node2RenderInfo render_info = nodeRenderInfo(node);
 
-    float connector_x = (left_x - connector_radius - 5);
-    float connector_y = (r.start.y + r.end.y)/2;
+  bool is_selected = (selected_node2_index == node2_index);
+  const TextObject &header_text_object = node.header_text_object;
+  drawBoxedText(header_text_object,is_selected);
 
-    Circle c;
-    c.center = Point2D(connector_x,connector_y);
-    c.radius = connector_radius;
-    drawCircle(c);
+  // Draw the rectangle around all the inputs and outputs.
+  drawRect(render_info.body_rect);
 
-    y = r.start.y;
+  // Draw the input labels
+
+  const vector<string> &inputs = node.inputs;
+  int n_inputs = inputs.size();
+
+  for (int input_index=0; input_index!=n_inputs; ++input_index) {
+    drawText(render_info.input_text_objects[input_index]);
   }
 
-  // Draw the outputs
+  // Draw the input connectors
 
-  for (const auto &s : outputs) {
-    TextObject t = outputTextObject(s,right_x,y);
-    drawText(t);
-    Rect r = rectAroundText(t);
-
-    float connector_x = (right_x + connector_radius + 5);
-    float connector_y = (r.start.y + r.end.y)/2;
-
-    Circle c;
-    c.center = Point2D(connector_x,connector_y);
-    c.radius = connector_radius;
+  for (int i=0; i!=n_inputs; ++i) {
+    Circle c = render_info.input_connector_circles[i];
     drawCircle(c);
+    if (node2_index==selected_node2_connector_index.node_index &&
+        i==selected_node2_connector_index.input_index) {
+      drawFilledCircle(c);
+    }
+  }
 
-    y = r.start.y;
+  // Draw the output labels
+
+  const vector<string> &outputs = node.outputs;
+  int n_outputs = outputs.size();
+
+  for (int i=0; i!=n_outputs; ++i) {
+    const TextObject &t = render_info.output_text_objects[i];
+    drawText(t);
+  }
+
+  // Draw the output connectors
+
+  for (int i=0; i!=n_outputs; ++i) {
+    Circle c = render_info.output_connector_circles[i];
+    drawCircle(c);
+    if (node2_index==selected_node2_connector_index.node_index &&
+        i==selected_node2_connector_index.output_index) {
+      drawFilledCircle(c);
+    }
   }
 }
 
@@ -801,18 +959,18 @@ void QtDiagramEditor::paintGL()
   glClearColor(red,green,blue,alpha);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if (selected_node_index<0 && selected_node_input_index.isNull()) {
+  if (selected_node1_index<0 && selected_node_input_index.isNull()) {
     if (focused_node_index>=0) {
-      drawCursor(nodes[focused_node_index].text_object);
+      drawCursor(node1s[focused_node_index].text_object);
     }
   }
 
   {
-    int n_text_objects = nodes.size();
+    int n_nodes = node1s.size();
 
-    for (int index=0; index!=n_text_objects; ++index) {
-      auto& text_object = nodes[index].text_object;
-      bool is_selected = (selected_node_index==index);
+    for (int index=0; index!=n_nodes; ++index) {
+      auto& text_object = node1s[index].text_object;
+      bool is_selected = (selected_node1_index==index);
       drawBoxedText(text_object,is_selected);
       drawNodeInputs(index);
     }
@@ -822,9 +980,7 @@ void QtDiagramEditor::paintGL()
     int n_nodes = node2s.size();
 
     for (int index=0; index!=n_nodes; ++index) {
-      const auto &node = node2s[index];
-      bool is_selected = (selected_node2_index == index);
-      drawNode2(node,is_selected);
+      drawNode2(index);
     }
   }
 }

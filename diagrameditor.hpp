@@ -80,7 +80,32 @@ struct NodeInputIndex {
 };
 
 
-struct Node {
+struct NodeConnectorIndex {
+  int node_index = -1;
+  int input_index = -1;
+  int output_index = -1;
+
+  static NodeConnectorIndex null()
+  {
+    return NodeConnectorIndex{};
+  }
+
+  bool operator==(const NodeConnectorIndex &arg) const
+  {
+    return
+      node_index==arg.node_index &&
+      input_index==arg.input_index &&
+      output_index==arg.output_index;
+  }
+
+  bool operator!=(const NodeConnectorIndex &arg) const
+  {
+    return !operator==(arg);
+  }
+};
+
+
+struct Node1 {
   struct Input {
     int source_node_index;
     std::string name;
@@ -91,7 +116,7 @@ struct Node {
     }
   };
 
-  Node()
+  Node1()
   {
   }
 
@@ -112,12 +137,14 @@ class DiagramEditor {
     Point2D mouse_press_position;
     Point2D original_node_position;
     bool node_was_selected = false;
-    int selected_node_index = -1;
+    int selected_node1_index = -1;
     int selected_node2_index = -1;
     int focused_node_index = -1;
     NodeInputIndex selected_node_input_index = NodeInputIndex::null();
+    NodeConnectorIndex selected_node2_connector_index =
+      NodeConnectorIndex::null();
     Point2D temp_source_pos;
-    std::vector<Node> nodes;
+    std::vector<Node1> node1s;
     std::vector<Node2> node2s;
 
     virtual void redraw() = 0;

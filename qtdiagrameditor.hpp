@@ -9,6 +9,16 @@
 #include "circle.hpp"
 
 
+struct Node2RenderInfo {
+  Rect body_rect;
+  std::vector<TextObject> input_text_objects;
+  std::vector<TextObject> output_text_objects;
+  std::vector<Circle> input_connector_circles;
+  std::vector<Circle> output_connector_circles;
+};
+
+
+
 class QtDiagramEditor : public QGLWidget, public DiagramEditor {
   public:
     QtDiagramEditor();
@@ -22,9 +32,12 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     bool contains(const TextObject &text_object,const Point2D &p);
     int indexOfNodeContaining(const Point2D &p);
     int indexOfNode2Containing(const Point2D &p);
-    void selectNode(int index) { selected_node_index = index; }
+    void selectNode(int index) { selected_node1_index = index; }
     bool nodeInputContains(int node_index,int input_index,const Point2D &p);
+    bool node2InputContains(int node_index,int input_index,const Point2D &p);
+    bool node2OutputContains(int node_index,int output_index,const Point2D &p);
     NodeInputIndex indexOfNodeInputContaining(const Point2D &p);
+    NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
     void mousePressedAt(Point2D p);
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
@@ -40,7 +53,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawFilledRect(const Rect &rect);
     void drawFilledCircle(const Circle &circle);
     Rect rectAroundText(const TextObject &text_object) const;
-    Rect nodeRect(const TextObject &text_object);
+    Rect nodeRect(const TextObject &text_object) const;
 
     Point2D
       alignmentPoint(
@@ -71,6 +84,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     int textWidth(const std::string &s) const;
     void drawCursor(const TextObject &text_object);
     static constexpr float node_input_radius = 5;
+    static constexpr float connector_radius = 5;
 
     Point2D
       defaultNodeInputPosition(
@@ -79,6 +93,8 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       );
 
     Circle defaultNodeInputCircle(int node_index,int input_index);
+    Circle nodeInputCircle(const Node2 &,int input_index);
+    Circle nodeOutputCircle(const Node2 &node,int output_index);
     Point2D nodeOutputPosition(int node_index);
     void drawNodeInput(int node_index,int input_index);
     void drawNodeInputs(int node_index);
@@ -86,7 +102,9 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       inputTextObject(const std::string &s,float left_x,float y) const;
     TextObject
       outputTextObject(const std::string &s,float right_x,float y) const;
-    void drawNode2(const Node2 &node,bool is_selected);
+    Rect nodeBodyRect(const Node2 &) const;
+    Node2RenderInfo nodeRenderInfo(const Node2 &node) const;
+    void drawNode2(int node2_index);
     void paintGL() override;
     void redraw() override { update(); }
 };

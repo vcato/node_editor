@@ -31,7 +31,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   bool nodeIsSelected(int node_index)
   {
-    return node_index==selected_node_index;
+    return node_index==selected_node1_index;
   }
 
   bool aNodeIsFocused() const
@@ -46,7 +46,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   int nodeInputCount(int node_index) const
   {
-    return nodes[node_index].inputs.size();
+    return node1s[node_index].inputs.size();
   }
 
   virtual void redraw()
