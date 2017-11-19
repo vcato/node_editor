@@ -29,13 +29,13 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
   assert(key_event_ptr);
 
   bool a_node_is_focused =
-    (focused_node_index >= 0) ||
-    (focused_node2_index >= 0);
+    (node1_editor.focused_node_index >= 0) ||
+    (node2_editor.focused_node_index >= 0);
 
   if (key_event_ptr->key()==Qt::Key_Backspace) {
-    if (selected_node1_index>=0) {
-      deleteNode(selected_node1_index);
-      selected_node1_index = -1;
+    if (node1_editor.selected_node_index>=0) {
+      deleteNode(node1_editor.selected_node_index);
+      node1_editor.selected_node_index = -1;
       update();
       return;
     }
@@ -43,18 +43,18 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     if (a_node_is_focused) {
       if (!focusedText().empty()) {
         focusedText().erase(focusedText().end()-1);
-        if (focused_node2_index>=0) {
-          node2s[focused_node2_index].updateInputsAndOutputs();
+        if (node2_editor.focused_node_index>=0) {
+          node2s[node2_editor.focused_node_index].updateInputsAndOutputs();
         }
         update();
         return;
       }
-      if (focused_node2_index>=0) {
-        if (focused_node2_line_index>0) {
-          Node2& node = node2s[focused_node2_index];
-          node.lines.erase(node.lines.begin() + focused_node2_line_index);
+      if (node2_editor.focused_node_index>=0) {
+        if (node2_editor.focused_node_line_index>0) {
+          Node2& node = node2s[node2_editor.focused_node_index];
+          node.removeLine(node2_editor.focused_node_line_index);
           node.updateInputsAndOutputs();
-          --focused_node2_line_index;
+          --node2_editor.focused_node_line_index;
           update();
           return;
         }
@@ -66,21 +66,21 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     return;
   }
   else if (key_event_ptr->key()==Qt::Key_Up) {
-    if (focused_node2_line_index>0) {
-      --focused_node2_line_index;
+    if (node2_editor.focused_node_line_index>0) {
+      --node2_editor.focused_node_line_index;
     }
   }
   else if (key_event_ptr->key()==Qt::Key_Down) {
-    int n_lines = node2s[focused_node2_index].lines.size();
-    if (focused_node2_line_index+1 < n_lines) {
-      ++focused_node2_line_index;
+    int n_lines = node2s[node2_editor.focused_node_index].lines.size();
+    if (node2_editor.focused_node_line_index+1 < n_lines) {
+      ++node2_editor.focused_node_line_index;
     }
   }
   else {
     if (a_node_is_focused) {
       focusedText() += key_event_ptr->text().toStdString();
-      if (focused_node2_index>=0) {
-        node2s[focused_node2_index].updateInputsAndOutputs();
+      if (node2_editor.focused_node_index>=0) {
+        node2s[node2_editor.focused_node_index].updateInputsAndOutputs();
       }
     }
   }
@@ -220,23 +220,23 @@ NodeConnectorIndex
 void QtDiagramEditor::mousePressedAt(Point2D p)
 {
   mouse_press_position = p;
-  node_was_selected = false;
-  node2_was_selected = false;
+  node1_editor.node_was_selected = false;
+  node2_editor.node_was_selected = false;
 
-  if (focused_node_index>=0) {
-    if (node1s[focused_node_index].text_object.text.empty()) {
-      deleteNode(focused_node_index);
+  if (node1_editor.focused_node_index>=0) {
+    if (node1s[node1_editor.focused_node_index].text_object.text.empty()) {
+      deleteNode(node1_editor.focused_node_index);
     }
     else {
-      updateNodeInputs(focused_node_index);
+      updateNodeInputs(node1_editor.focused_node_index);
     }
-    focused_node_index = -1;
+    node1_editor.focused_node_index = -1;
   }
 
-  if (selected_node1_index>=0) {
-    if (node1s[selected_node1_index].text_object.text.empty()) {
-      deleteNode(selected_node1_index);
-      selected_node1_index = -1;
+  if (node1_editor.selected_node_index>=0) {
+    if (node1s[node1_editor.selected_node_index].text_object.text.empty()) {
+      deleteNode(node1_editor.selected_node_index);
+      node1_editor.selected_node_index = -1;
     }
   }
 
@@ -244,8 +244,8 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     NodeInputIndex i = indexOfNodeInputContaining(mouse_press_position);
 
     if (i!=NodeInputIndex::null()) {
-      selected_node_input_index = i;
-      selected_node1_index = -1;
+      node1_editor.selected_node_input_index = i;
+      node1_editor.selected_node_index = -1;
       temp_source_pos = mouse_press_position;
       update();
       return;
@@ -256,11 +256,11 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     int i = indexOfNodeContaining(p);
 
     if (i>=0) {
-      if (i==selected_node1_index) {
-        node_was_selected = true;
+      if (i==node1_editor.selected_node_index) {
+        node1_editor.node_was_selected = true;
       }
       else {
-        node_was_selected = false;
+        node1_editor.node_was_selected = false;
         selectNode(i);
       }
       original_node_position = node1s[i].text_object.position;
@@ -269,22 +269,22 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     }
   }
 
-  selected_node1_index = -1;
-  selected_node_input_index = NodeInputIndex::null();
+  node1_editor.selected_node_index = -1;
+  node1_editor.selected_node_input_index = NodeInputIndex::null();
 
   {
     int i = indexOfNode2Containing(p);
 
     if (i>=0) {
-      node2_was_selected = (i==selected_node2_index);
-      selected_node2_index = i;
+      node2_editor.node_was_selected = (i==node2_editor.selected_node_index);
+      node2_editor.selected_node_index = i;
       original_node_position = node2s[i].header_text_object.position;
       update();
       return;
     }
   }
 
-  selected_node2_index = -1;
+  node2_editor.selected_node_index = -1;
   selected_node2_connector_index = NodeConnectorIndex::null();
 
   {
@@ -305,7 +305,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     new_text_object.text = "";
 
     int new_node_index = addNode(new_text_object);
-    focused_node_index = new_node_index;
+    node1_editor.focused_node_index = new_node_index;
   }
 
   update();
@@ -328,20 +328,20 @@ void
     int output_index
   )
 {
-  node2s[input_node_index].inputs[input_index].source_node_index =
-    output_node_index;
-  node2s[input_node_index].inputs[input_index].source_output_index =
-    output_index;
+  Node2::Input &input = node2s[input_node_index].inputs[input_index];
+  input.source_node_index = output_node_index;
+  input.source_output_index = output_index;
 }
+
 
 void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
 {
-  if (!selected_node_input_index.isNull()) {
+  if (!node1_editor.selected_node_input_index.isNull()) {
     int source_node_index = indexOfNodeContaining(temp_source_pos);
-    node1s[selected_node_input_index.node_index].inputs[
-      selected_node_input_index.input_index].source_node_index =
+    NodeInputIndex index = node1_editor.selected_node_input_index;
+    node1s[index.node_index].inputs[index.input_index].source_node_index =
         source_node_index;
-    selected_node_input_index.clear();
+    node1_editor.selected_node_input_index.clear();
     update();
   }
   else if (!selected_node2_connector_index.isNull()) {
@@ -374,14 +374,14 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
     selected_node2_connector_index.clear();
     update();
   }
-  else if (node_was_selected) {
-    focused_node_index = selected_node1_index;
-    selected_node1_index = -1;
+  else if (node1_editor.node_was_selected) {
+    node1_editor.focused_node_index = node1_editor.selected_node_index;
+    node1_editor.selected_node_index = -1;
     update();
   }
-  else if (node2_was_selected) {
-    focused_node2_index = selected_node2_index;
-    selected_node2_index = -1;
+  else if (node2_editor.node_was_selected) {
+    node2_editor.focused_node_index = node2_editor.selected_node_index;
+    node2_editor.selected_node_index = -1;
     update();
   }
 }
@@ -391,7 +391,7 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
 {
   Point2D mouse_position = screenToGLCoords(event_ptr->x(),event_ptr->y());
 
-  if (!selected_node_input_index.isNull()) {
+  if (!node1_editor.selected_node_input_index.isNull()) {
     temp_source_pos = mouse_position;
     update();
     return;
@@ -403,15 +403,15 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
     return;
   }
 
-  if (selected_node1_index>=0) {
-    node1s[selected_node1_index].text_object.position =
+  if (node1_editor.selected_node_index>=0) {
+    node1s[node1_editor.selected_node_index].text_object.position =
       original_node_position + (mouse_position - mouse_press_position);
     update();
     return;
   }
 
-  if (selected_node2_index>=0) {
-    node2s[selected_node2_index].header_text_object.position =
+  if (node2_editor.selected_node_index>=0) {
+    node2s[node2_editor.selected_node_index].header_text_object.position =
       original_node_position + (mouse_position - mouse_press_position);
     update();
     return;
@@ -840,13 +840,13 @@ void QtDiagramEditor::drawNodeInput(int node_index,int input_index)
 
   Circle circle = defaultNodeInputCircle(node_index,input_index);
 
-  if (node_input_index==selected_node_input_index) {
+  if (node_input_index==node1_editor.selected_node_input_index) {
     circle.center = temp_source_pos;
   }
 
   drawCircle(circle);
 
-  if (node_input_index==selected_node_input_index) {
+  if (node_input_index==node1_editor.selected_node_input_index) {
     drawFilledCircle(circle);
   }
 
@@ -1008,7 +1008,7 @@ void QtDiagramEditor::drawNode2(int node2_index)
   const Node2 &node = node2s[node2_index];
   Node2RenderInfo render_info = nodeRenderInfo(node);
 
-  bool is_selected = (selected_node2_index == node2_index);
+  bool is_selected = (node2_editor.selected_node_index == node2_index);
   const TextObject &header_text_object = node.header_text_object;
   drawBoxedText2(header_text_object,is_selected,render_info.header_rect);
 
@@ -1080,15 +1080,14 @@ void QtDiagramEditor::paintGL()
   glClearColor(red,green,blue,alpha);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if (selected_node1_index<0 && selected_node_input_index.isNull()) {
-    if (focused_node_index>=0) {
-      drawCursor(node1s[focused_node_index].text_object);
-    }
+  if (node1_editor.focused_node_index>=0) {
+    drawCursor(node1s[node1_editor.focused_node_index].text_object);
   }
 
-  if (focused_node2_index>=0) {
-    Node2RenderInfo render_info = nodeRenderInfo(node2s[focused_node2_index]);
-    drawCursor(render_info.text_objects[focused_node2_line_index]);
+  if (node2_editor.focused_node_index>=0) {
+    Node2RenderInfo render_info =
+      nodeRenderInfo(node2s[node2_editor.focused_node_index]);
+    drawCursor(render_info.text_objects[node2_editor.focused_node_line_index]);
   }
 
   {
@@ -1096,7 +1095,7 @@ void QtDiagramEditor::paintGL()
 
     for (int index=0; index!=n_nodes; ++index) {
       auto& text_object = node1s[index].text_object;
-      bool is_selected = (selected_node1_index==index);
+      bool is_selected = (node1_editor.selected_node_index==index);
       drawBoxedText(text_object,is_selected);
       drawNodeInputs(index);
     }

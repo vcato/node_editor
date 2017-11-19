@@ -170,6 +170,11 @@ struct Node2 {
     n_outputs = arg;
   }
 
+  void removeLine(int line_index)
+  {
+    lines.erase(lines.begin() + line_index);
+  }
+
   private:
     void updateNInputs()
     {
@@ -254,25 +259,35 @@ struct Node2 {
 };
 
 
+struct Node1Editor {
+  int selected_node_index = -1;
+  int focused_node_index = -1;
+  bool node_was_selected = false;
+  NodeInputIndex selected_node_input_index = NodeInputIndex::null();
+};
+
+
+struct Node2Editor {
+  int selected_node_index = -1;
+  int focused_node_index = -1;
+  int focused_node_line_index = 0;
+  bool node_was_selected = false;
+};
+
+
 class DiagramEditor {
   public:
     void addTestNode();
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;
-    bool node_was_selected = false;
-    bool node2_was_selected = false;
-    int selected_node1_index = -1;
-    int selected_node2_index = -1;
-    int focused_node_index = -1;
-    int focused_node2_index = -1;
-    int focused_node2_line_index = 0;
-    NodeInputIndex selected_node_input_index = NodeInputIndex::null();
     NodeConnectorIndex selected_node2_connector_index =
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
     std::vector<Node1> node1s;
     std::vector<Node2> node2s;
+    Node1Editor node1_editor;
+    Node2Editor node2_editor;
 
     virtual void redraw() = 0;
     int addNode(const TextObject &text_object);

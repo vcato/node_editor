@@ -21,7 +21,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userFocusesNode(int node_index)
   {
-    focused_node_index = node_index;
+    node1_editor.focused_node_index = node_index;
   }
 
   void userPressesEnter()
@@ -31,17 +31,17 @@ struct FakeDiagramEditor : DiagramEditor {
 
   bool nodeIsSelected(int node_index)
   {
-    return node_index==selected_node1_index;
+    return node_index==node1_editor.selected_node_index;
   }
 
   bool aNodeIsFocused() const
   {
-    return focused_node_index>=0;
+    return node1_editor.focused_node_index>=0;
   }
 
   void setFocusedNode(int node_index)
   {
-    focused_node_index = node_index;
+    node1_editor.focused_node_index = node_index;
   }
 
   int nodeInputCount(int node_index) const

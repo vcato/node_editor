@@ -31,7 +31,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     bool contains(const TextObject &text_object,const Point2D &p);
     int indexOfNodeContaining(const Point2D &p);
     int indexOfNode2Containing(const Point2D &p);
-    void selectNode(int index) { selected_node1_index = index; }
+    void selectNode(int index) { node1_editor.selected_node_index = index; }
     bool nodeInputContains(int node_index,int input_index,const Point2D &p);
     bool node2InputContains(int node_index,int input_index,const Point2D &p);
     bool node2OutputContains(int node_index,int output_index,const Point2D &p);

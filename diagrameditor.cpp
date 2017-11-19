@@ -24,32 +24,32 @@ void DiagramEditor::deleteNode(int index)
 
 string &DiagramEditor::focusedText()
 {
-  if (focused_node_index>=0) {
-    return node1s[focused_node_index].text_object.text;
+  if (node1_editor.focused_node_index>=0) {
+    return node1s[node1_editor.focused_node_index].text_object.text;
   }
   else {
-    assert(focused_node2_index>=0);
-    return node2s[focused_node2_index].lines[focused_node2_line_index].text;
+    assert(node2_editor.focused_node_index>=0);
+    return node2s[node2_editor.focused_node_index].lines[node2_editor.focused_node_line_index].text;
   }
 }
 
 
 void DiagramEditor::enterPressed()
 {
-  if (focused_node_index>=0) {
-    int node_index = focused_node_index;
-    selected_node1_index = node_index;
-    focused_node_index = -1;
+  if (node1_editor.focused_node_index>=0) {
+    int node_index = node1_editor.focused_node_index;
+    node1_editor.selected_node_index = node_index;
+    node1_editor.focused_node_index = -1;
     updateNodeInputs(node_index);
     redraw();
   }
-  if (focused_node2_index>=0) {
-    Node2& node = node2s[focused_node2_index];
+  if (node2_editor.focused_node_index>=0) {
+    Node2& node = node2s[node2_editor.focused_node_index];
     node.lines.insert(
-      node.lines.begin() + focused_node2_line_index + 1,
+      node.lines.begin() + node2_editor.focused_node_line_index + 1,
       Node2::Line("")
     );
-    ++focused_node2_line_index;
+    ++node2_editor.focused_node_line_index;
     redraw();
   }
 }
