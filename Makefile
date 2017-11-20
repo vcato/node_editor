@@ -10,10 +10,11 @@ run_unit_tests: \
   diagrameditor_test.pass \
   node2texteditor_test.pass \
   linetext_test.pass \
-  node2_test.pass
+  node2_test.pass \
+  diagram_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
-  qtdiagrameditor.o circle.o stringutil.o linetext.o node2.o
+  qtdiagrameditor.o circle.o stringutil.o linetext.o node2.o diagram.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_qtmainwindow.cpp: qtmainwindow.hpp
@@ -24,7 +25,7 @@ moc_qtmainwindow.cpp: qtmainwindow.hpp
 	touch $@
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
-  linetext.o node2.o
+  linetext.o node2.o diagram.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 node2texteditor_test: node2texteditor_test.o linetext.o stringutil.o node2.o
@@ -34,6 +35,9 @@ linetext_test: linetext_test.o linetext.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 node2_test: node2_test.o node2.o linetext.o stringutil.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+diagram_test: diagram_test.o diagram.o node2.o linetext.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

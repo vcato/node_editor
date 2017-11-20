@@ -7,6 +7,7 @@
 using std::vector;
 using std::string;
 using std::istringstream;
+using std::cerr;
 
 
 void Node2::removeLine(int line_index)
@@ -47,7 +48,7 @@ void Node2::setNInputs(size_t arg)
 
 void Node2::setNOutputs(size_t arg)
 {
-  n_outputs = arg;
+  outputs.resize(arg);
 }
 
 
@@ -107,8 +108,12 @@ void Node2::setText(const std::string &text)
 {
   Node2 &node = *this;
   if (text=="") {
+    node.lines.clear();
     node.lines.resize(1,Node2::Line(""));
     node.updateInputsAndOutputs();
+    assert(node.nLines()==1);
+    assert(!node.lines[0].has_output);
+    assert(node.nOutputs()==0);
     return;
   }
 

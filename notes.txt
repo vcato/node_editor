@@ -207,3 +207,6 @@ If we have continuations, can we create blocks like this?
  *|let no=input                   |
  *|let condition=input            |
   |output yes if condition else no|*
+
+If nodes become disconnected because we temporarily have an invalid value,
+it is inconvenient.

@@ -10,8 +10,10 @@
 #include "textobject.hpp"
 #include "node2.hpp"
 #include "node2texteditor.hpp"
+#include "diagram.hpp"
 
 #define USE_NODE1 0
+
 
 
 inline Point2D operator-(const Point2D &a,const Point2D &b)
@@ -193,18 +195,25 @@ struct Node2Editor {
 
 class DiagramEditor {
   public:
-    int nNode2s() { return node2s.size(); }
+    DiagramEditor(Diagram &diagram_arg)
+    : diagram(diagram_arg)
+    {
+    }
+
+    int nNode2s() { return node2s().size(); }
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;
     NodeConnectorIndex selected_node2_connector_index =
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
+    std::vector<Node2> &node2s() { return diagram._node2s; }
+    const std::vector<Node2> &node2s() const { return diagram._node2s; }
 #if USE_NODE1
     std::vector<Node1> node1s;
     Node1Editor node1_editor;
 #endif
-    std::vector<Node2> node2s;
+    Diagram &diagram;
     Node2Editor node2_editor;
 
     virtual void redraw() = 0;
@@ -218,6 +227,14 @@ class DiagramEditor {
     void backspacePressed();
     void updateNodeInputs(int node_index);
     int addNode2(const std::string &text,const Point2D &position);
+
+    void
+      connectNodes(
+        int input_node_index,
+        int input_index,
+        int output_node_index,
+        int output_index
+      );
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */

@@ -9,15 +9,18 @@
 class Node2 {
   public:
     struct Input;
+    struct Output;
     struct Line;
 
     std::vector<Input> inputs;
+    std::vector<Output> outputs;
     std::vector<Line> lines;
     TextObject header_text_object;
 
     void setText(const std::string &text);
+    int nLines() const { return lines.size(); }
     int nInputs() const { return inputs.size(); }
-    int nOutputs() const { return n_outputs; }
+    int nOutputs() const { return outputs.size(); }
     void removeLine(int line_index);
     void updateInputsAndOutputs();
     bool isEmpty() const;
@@ -26,6 +29,10 @@ class Node2 {
     struct Input {
       int source_node_index = -1;
       int source_output_index = -1;
+    };
+
+    struct Output {
+      float value = 0;
     };
 
     struct Line {
@@ -38,8 +45,6 @@ class Node2 {
     };
 
   private:
-    int n_outputs = 0;
-
     void setNInputs(size_t arg);
     void setNOutputs(size_t arg);
     void updateNInputs();

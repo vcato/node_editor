@@ -28,7 +28,7 @@ void DiagramEditor::deleteNode(int index)
 
 void DiagramEditor::deleteNode2(int index)
 {
-  node2s.erase(node2s.begin()+index);
+  node2s().erase(node2s().begin()+index);
 }
 
 
@@ -39,7 +39,7 @@ string &DiagramEditor::focusedText()
     return node1s[node1_editor.focused_node_index].text_object.text;
   }
 #endif
-  return node2_editor.focusedText(node2s);
+  return node2_editor.focusedText(node2s());
 }
 
 
@@ -91,6 +91,7 @@ void DiagramEditor::backspacePressed()
 
   if (node2_editor.aNodeIsFocused()) {
     node2_editor.text_editor.backspace();
+    diagram.removeInvalidInputs();
     redraw();
     return;
   }
@@ -114,13 +115,24 @@ void DiagramEditor::updateNodeInputs(int node_index)
 
 int DiagramEditor::addNode2(const std::string &text,const Point2D &position)
 {
-  int node_index = node2s.size();
+  // The node editor keeps a pointer to a node, but Nodes may move in memory.
+  assert(!node2_editor.aNodeIsFocused());
 
-  node2s.emplace_back();
-  Node2 &node = node2s[node_index];
-  node.setText(text);
-  node.header_text_object.text = "";
-  node.header_text_object.position = position;
-
+  int node_index = diagram.addNode(text);
+  diagram.node(node_index).header_text_object.position = position;
   return node_index;
+}
+
+
+void
+  DiagramEditor::connectNodes(
+    int input_node_index,
+    int input_index,
+    int output_node_index,
+    int output_index
+  )
+{
+  diagram.connectNodes(
+    input_node_index,input_index,output_node_index,output_index
+  );
 }

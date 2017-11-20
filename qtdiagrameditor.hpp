@@ -26,7 +26,7 @@ struct Color {
 
 class QtDiagramEditor : public QGLWidget, public DiagramEditor {
   public:
-    QtDiagramEditor();
+    QtDiagramEditor(Diagram &);
 
   private:
     void initializeGL() override { }
@@ -44,13 +44,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     bool node2InputContains(int node_index,int input_index,const Point2D &p);
     bool node2OutputContains(int node_index,int output_index,const Point2D &p);
     NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
-    void
-      connectNodes(
-        int input_node_index,
-        int input_index,
-        int output_node_index,
-        int output_index
-      );
     void mousePressedAt(Point2D p);
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;

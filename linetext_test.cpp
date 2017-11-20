@@ -9,4 +9,6 @@ int main()
   assert(lineTextHasInput("cos($)"));
   assert(!lineTextHasOutput("x=$"));
   assert(!lineTextHasOutput(""));
+  assert(lineTextValue("5")==5);
+  assert(lineTextValue("t")==0);
 }

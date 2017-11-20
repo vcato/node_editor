@@ -12,5 +12,6 @@ class QtMainWindow : public QMainWindow {
 
   private:
     QMenu menu{"Tools"};
+    Diagram diagram;
     QtDiagramEditor diagram_editor;
 };
