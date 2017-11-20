@@ -28,8 +28,7 @@ string &DiagramEditor::focusedText()
     return node1s[node1_editor.focused_node_index].text_object.text;
   }
   else {
-    assert(node2_editor.focused_node_index>=0);
-    return node2s[node2_editor.focused_node_index].lines[node2_editor.focused_node_line_index].text;
+    return node2_editor.focusedText(node2s);
   }
 }
 
@@ -44,12 +43,7 @@ void DiagramEditor::enterPressed()
     redraw();
   }
   if (node2_editor.focused_node_index>=0) {
-    Node2& node = node2s[node2_editor.focused_node_index];
-    node.lines.insert(
-      node.lines.begin() + node2_editor.focused_node_line_index + 1,
-      Node2::Line("")
-    );
-    ++node2_editor.focused_node_line_index;
+    node2_editor.text_editor.enter();
     redraw();
   }
 }

@@ -28,10 +28,6 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
 {
   assert(key_event_ptr);
 
-  bool a_node_is_focused =
-    (node1_editor.focused_node_index >= 0) ||
-    (node2_editor.focused_node_index >= 0);
-
   if (key_event_ptr->key()==Qt::Key_Backspace) {
     if (node1_editor.selected_node_index>=0) {
       deleteNode(node1_editor.selected_node_index);
@@ -40,25 +36,18 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
       return;
     }
 
-    if (a_node_is_focused) {
+    if (node1_editor.focused_node_index>=0) {
       if (!focusedText().empty()) {
         focusedText().erase(focusedText().end()-1);
-        if (node2_editor.focused_node_index>=0) {
-          node2s[node2_editor.focused_node_index].updateInputsAndOutputs();
-        }
         update();
         return;
       }
-      if (node2_editor.focused_node_index>=0) {
-        if (node2_editor.focused_node_line_index>0) {
-          Node2& node = node2s[node2_editor.focused_node_index];
-          node.removeLine(node2_editor.focused_node_line_index);
-          node.updateInputsAndOutputs();
-          --node2_editor.focused_node_line_index;
-          update();
-          return;
-        }
-      }
+    }
+
+    if (node2_editor.aNodeIsFocused()) {
+      node2_editor.text_editor.backspace();
+      update();
+      return;
     }
   }
   else if (key_event_ptr->key()==Qt::Key_Return) {
@@ -66,26 +55,45 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     return;
   }
   else if (key_event_ptr->key()==Qt::Key_Up) {
-    if (node2_editor.focused_node_line_index>0) {
-      --node2_editor.focused_node_line_index;
-    }
+    node2_editor.text_editor.up();
+    update();
+    return;
   }
   else if (key_event_ptr->key()==Qt::Key_Down) {
-    int n_lines = node2s[node2_editor.focused_node_index].lines.size();
-    if (node2_editor.focused_node_line_index+1 < n_lines) {
-      ++node2_editor.focused_node_line_index;
+    if (node2_editor.aNodeIsFocused()) {
+      node2_editor.text_editor.down();
+      update();
     }
+    return;
+  }
+  else if (key_event_ptr->key()==Qt::Key_Left) {
+    if (node2_editor.aNodeIsFocused()) {
+      node2_editor.text_editor.left();
+      update();
+    }
+    return;
+  }
+  else if (key_event_ptr->key()==Qt::Key_Right) {
+    if (node2_editor.aNodeIsFocused()) {
+      node2_editor.text_editor.right();
+      update();
+    }
+    return;
   }
   else {
-    if (a_node_is_focused) {
+    if (node1_editor.focused_node_index>=0) {
       focusedText() += key_event_ptr->text().toStdString();
-      if (node2_editor.focused_node_index>=0) {
-        node2s[node2_editor.focused_node_index].updateInputsAndOutputs();
-      }
+      update();
+      return;
     }
+    if (node2_editor.aNodeIsFocused()) {
+      std::string new_text = key_event_ptr->text().toStdString();
+      node2_editor.text_editor.textTyped(new_text);
+      update();
+      return;
+    }
+    return;
   }
-
-  update();
 }
 
 
@@ -233,6 +241,10 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     node1_editor.focused_node_index = -1;
   }
 
+  if (node2_editor.aNodeIsFocused()) {
+    node2_editor.unfocus();
+  }
+
   if (node1_editor.selected_node_index>=0) {
     if (node1s[node1_editor.selected_node_index].text_object.text.empty()) {
       deleteNode(node1_editor.selected_node_index);
@@ -278,6 +290,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     if (i>=0) {
       node2_editor.node_was_selected = (i==node2_editor.selected_node_index);
       node2_editor.selected_node_index = i;
+      node2_editor.focused_node_index = -1;
       original_node_position = node2s[i].header_text_object.position;
       update();
       return;
@@ -380,7 +393,7 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
     update();
   }
   else if (node2_editor.node_was_selected) {
-    node2_editor.focused_node_index = node2_editor.selected_node_index;
+    node2_editor.focusNode(node2_editor.selected_node_index,node2s);
     node2_editor.selected_node_index = -1;
     update();
   }
@@ -724,13 +737,19 @@ int QtDiagramEditor::textWidth(const std::string &s) const
 }
 
 
-void QtDiagramEditor::drawCursor(const TextObject &text_object)
+void QtDiagramEditor::drawCursor(const TextObject &text_object,int column_index)
 {
   float cursor_height = textHeight();
-  float text_width = textWidth(text_object.text);
+  float text_width = textWidth(text_object.text.substr(0,column_index));
   float descent = fontMetrics().descent();
   Point2D p = text_object.position + Point2D{text_width,-descent};
   drawLine(p,p+Point2D{0,cursor_height});
+}
+
+
+void QtDiagramEditor::drawCursor(const TextObject &text_object)
+{
+  drawCursor(text_object,text_object.text.length());
 }
 
 
@@ -1087,7 +1106,9 @@ void QtDiagramEditor::paintGL()
   if (node2_editor.focused_node_index>=0) {
     Node2RenderInfo render_info =
       nodeRenderInfo(node2s[node2_editor.focused_node_index]);
-    drawCursor(render_info.text_objects[node2_editor.focused_node_line_index]);
+    int line_index = node2_editor.text_editor.cursor_line_index;
+    int column_index = node2_editor.text_editor.cursor_column_index;
+    drawCursor(render_info.text_objects[line_index],column_index);
   }
 
   {

@@ -96,6 +96,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     int textHeight() const;
     int textWidth(const std::string &s) const;
     void drawCursor(const TextObject &text_object);
+    void drawCursor(const TextObject &text_object,int column_index);
     static constexpr float node_input_radius = 5;
     static constexpr float connector_radius = 5;
 

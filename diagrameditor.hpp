@@ -3,8 +3,13 @@
 
 #include <string>
 #include <vector>
+#include <cassert>
 #include "point2d.hpp"
 #include "stringutil.hpp"
+#include "linetext.hpp"
+#include "textobject.hpp"
+#include "node2.hpp"
+#include "node2texteditor.hpp"
 
 
 inline Point2D operator-(const Point2D &a,const Point2D &b)
@@ -40,12 +45,6 @@ inline Rect withMargin(const Rect &rect,float margin)
   auto offset = Point2D{margin,margin};
   return Rect{rect.start-offset,rect.end+offset};
 }
-
-
-struct TextObject {
-  std::string text;
-  Point2D position;
-};
 
 
 struct NodeInputIndex {
@@ -134,115 +133,6 @@ struct Node1 {
 };
 
 
-#include "linetext.hpp"
-
-
-struct Node2 {
-  TextObject header_text_object;
-
-  struct Input {
-    int source_node_index = -1;
-    int source_output_index = -1;
-  };
-
-  struct Line {
-    std::string text;
-    bool has_input = false;
-    bool has_output = false;
-
-    Line(const char *text_arg) : text(text_arg) { }
-  };
-
-  int nInputs() const
-  {
-    return inputs.size();
-  }
-
-  int nOutputs() const
-  {
-    return n_outputs;
-  }
-
-  void setNInputs(size_t arg)
-  {
-    inputs.resize(arg);
-  }
-
-  void setNOutputs(size_t arg)
-  {
-    n_outputs = arg;
-  }
-
-  void removeLine(int line_index)
-  {
-    lines.erase(lines.begin() + line_index);
-  }
-
-  private:
-    void updateNInputs()
-    {
-      setNInputs(countInputs(*this));
-    }
-
-    void updateNOutputs()
-    {
-      setNOutputs(countOutputs(*this));
-    }
-
-  public:
-    void updateInputsAndOutputs()
-    {
-      for (auto &line : lines) {
-        line.has_input = lineTextHasInput(line.text);
-        line.has_output = lineTextHasOutput(line.text);
-      }
-
-      updateNInputs();
-      updateNOutputs();
-    }
-
-  std::vector<std::string> strings() const
-  {
-    std::vector<std::string> result;
-
-    for (const auto &line : lines) {
-      result.push_back(line.text);
-    }
-
-    return result;
-  }
-
-  static size_t countInputs(const Node2 &node)
-  {
-    size_t n_inputs = 0;
-
-    for (auto &line : node.lines) {
-      if (line.has_input) {
-        ++n_inputs;
-      }
-    }
-
-    return n_inputs;
-  }
-
-  static size_t countOutputs(const Node2 &node)
-  {
-    size_t n_outputs = 0;
-
-    for (auto &line : node.lines) {
-      if (line.has_output) {
-        ++n_outputs;
-      }
-    }
-
-    return n_outputs;
-  }
-
-  std::vector<Input> inputs;
-  int n_outputs = 0;
-  std::vector<Line> lines;
-
-};
 
 
 struct Node1Editor {
@@ -256,8 +146,38 @@ struct Node1Editor {
 struct Node2Editor {
   int selected_node_index = -1;
   int focused_node_index = -1;
-  int focused_node_line_index = 0;
   bool node_was_selected = false;
+  Node2TextEditor text_editor;
+
+  bool aNodeIsFocused() const
+  {
+    return focused_node_index>=0;
+  }
+
+  void unfocus()
+  {
+    text_editor.endEditing();
+    focused_node_index = -1;
+  }
+
+  Node2& focusedNode(std::vector<Node2> &node2s)
+  {
+    assert(focused_node_index>=0);
+    return node2s[focused_node_index];
+  }
+
+  void focusNode(int node_index,std::vector<Node2> &node2s)
+  {
+    focused_node_index = node_index;
+    text_editor.beginEditing(focusedNode(node2s));
+  }
+
+  std::string &focusedText(std::vector<Node2> &node2s)
+  {
+    assert(focused_node_index>=0);
+    Node2 &node = focusedNode(node2s);
+    return text_editor.focusedText(node);
+  }
 };
 
 

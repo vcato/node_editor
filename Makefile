@@ -8,6 +8,7 @@ all: run_unit_tests main
 
 run_unit_tests: \
   diagrameditor_test.pass \
+  node2texteditor_test.pass \
   linetext_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
@@ -23,6 +24,9 @@ moc_qtmainwindow.cpp: qtmainwindow.hpp
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
   linetext.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+node2texteditor_test: node2texteditor_test.o linetext.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 linetext_test: linetext_test.o linetext.o stringutil.o
