@@ -11,7 +11,7 @@
 
 struct Node2RenderInfo {
   Rect header_rect;
-  Rect body_rect;
+  Rect body_outer_rect;
   std::vector<TextObject> text_objects;
   std::vector<Circle> input_connector_circles;
   std::vector<Circle> output_connector_circles;

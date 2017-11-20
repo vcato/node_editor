@@ -117,7 +117,7 @@ int QtDiagramEditor::indexOfNode2Containing(const Point2D &p)
     if (render_info.header_rect.contains(p)) {
       return i;
     }
-    if (render_info.body_rect.contains(p)) {
+    if (render_info.body_outer_rect.contains(p)) {
       return i;
     }
   }
@@ -1008,10 +1008,12 @@ Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
   float left_x = body_rect.start.x;
   float right_x = body_rect.end.x;
 
-  // float bottom_y = body_rect.start.y;
-  float top_y = body_rect.end.y;
+  float margin = 5;
 
-  render_info.body_rect = body_rect;
+  float left_outer_x = left_x - margin;
+  float right_outer_x = right_x + margin;
+
+  float top_y = body_rect.end.y;
 
   float y = top_y;
 
@@ -1020,7 +1022,7 @@ Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
     Rect r = rectAroundText(t);
     render_info.text_objects.push_back(t);
     if (line.has_input) {
-      float connector_x = (left_x - connector_radius - 5);
+      float connector_x = (left_outer_x - connector_radius - 5);
       float connector_y = (r.start.y + r.end.y)/2;
 
       Circle c;
@@ -1030,7 +1032,7 @@ Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
 
     }
     if (line.has_output) {
-      float connector_x = (right_x + connector_radius + 5);
+      float connector_x = (right_outer_x + connector_radius + 5);
       float connector_y = (r.start.y + r.end.y)/2;
 
       Circle c;
@@ -1040,6 +1042,10 @@ Node2RenderInfo QtDiagramEditor::nodeRenderInfo(const Node2 &node) const
     }
     y = r.start.y;
   }
+
+  render_info.body_outer_rect = body_rect;
+  render_info.body_outer_rect.start.x = left_outer_x;
+  render_info.body_outer_rect.end.x = right_outer_x;
 
   return render_info;
 }
@@ -1056,9 +1062,9 @@ void QtDiagramEditor::drawNode2(int node2_index)
 
   // Draw the rectangle around all the inputs and outputs.
   if (is_selected) {
-    drawFilledRect(render_info.body_rect);
+    drawFilledRect(render_info.body_outer_rect);
   }
-  drawRect(render_info.body_rect);
+  drawRect(render_info.body_outer_rect);
 
   // Draw the input labels
 
