@@ -94,6 +94,7 @@ static bool isAssignment(const std::string &text)
 
 bool lineTextHasOutput(const std::string &text)
 {
+  if (text=="") return false;
   if (isAssignment(text)) return false;
 
   return true;

@@ -22,6 +22,12 @@ void DiagramEditor::deleteNode(int index)
 }
 
 
+void DiagramEditor::deleteNode2(int index)
+{
+  node2s.erase(node2s.begin()+index);
+}
+
+
 string &DiagramEditor::focusedText()
 {
   if (node1_editor.focused_node_index>=0) {
@@ -49,6 +55,38 @@ void DiagramEditor::enterPressed()
 }
 
 
+void DiagramEditor::backspacePressed()
+{
+  if (node1_editor.selected_node_index>=0) {
+    deleteNode(node1_editor.selected_node_index);
+    node1_editor.selected_node_index = -1;
+    redraw();
+    return;
+  }
+
+  if (node2_editor.selected_node_index>=0) {
+    deleteNode2(node2_editor.selected_node_index);
+    node2_editor.selected_node_index = -1;
+    redraw();
+    return;
+  }
+
+  if (node1_editor.focused_node_index>=0) {
+    if (!focusedText().empty()) {
+      focusedText().erase(focusedText().end()-1);
+      redraw();
+      return;
+    }
+  }
+
+  if (node2_editor.aNodeIsFocused()) {
+    node2_editor.text_editor.backspace();
+    redraw();
+    return;
+  }
+}
+
+
 void DiagramEditor::updateNodeInputs(int node_index)
 {
   const string &text = node1s[node_index].text_object.text;
@@ -62,13 +100,15 @@ void DiagramEditor::updateNodeInputs(int node_index)
 }
 
 
-void DiagramEditor::addTestNode()
+int DiagramEditor::addNode2(const std::string &text,const Point2D &position)
 {
+  int node_index = node2s.size();
+
   node2s.emplace_back();
-  Node2 &node = node2s.back();
-  node.lines = {"a = $","b = $","$ = a+b"};
+  Node2 &node = node2s[node_index];
+  node.setText(text);
   node.header_text_object.text = "";
-  node.header_text_object.position = Point2D(100,200);
-  node.updateInputsAndOutputs();
-  assert(node.lines[0].has_input);
+  node.header_text_object.position = position;
+
+  return node_index;
 }

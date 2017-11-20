@@ -6,4 +6,5 @@ main
 diagrameditor_test
 linetext_test
 node2texteditor_test
+node2_test
 moc_*.cpp

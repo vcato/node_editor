@@ -29,26 +29,7 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
   assert(key_event_ptr);
 
   if (key_event_ptr->key()==Qt::Key_Backspace) {
-    if (node1_editor.selected_node_index>=0) {
-      deleteNode(node1_editor.selected_node_index);
-      node1_editor.selected_node_index = -1;
-      update();
-      return;
-    }
-
-    if (node1_editor.focused_node_index>=0) {
-      if (!focusedText().empty()) {
-        focusedText().erase(focusedText().end()-1);
-        update();
-        return;
-      }
-    }
-
-    if (node2_editor.aNodeIsFocused()) {
-      node2_editor.text_editor.backspace();
-      update();
-      return;
-    }
+    backspacePressed();
   }
   else if (key_event_ptr->key()==Qt::Key_Return) {
     enterPressed();
@@ -241,6 +222,13 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     node1_editor.focused_node_index = -1;
   }
 
+  if (node2_editor.focused_node_index>=0) {
+    if (node2_editor.focusedNode(node2s).isEmpty()) {
+      deleteNode2(node2_editor.focused_node_index);
+    }
+    node2_editor.focused_node_index = -1;
+  }
+
   if (node2_editor.aNodeIsFocused()) {
     node2_editor.unfocus();
   }
@@ -311,15 +299,8 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     }
   }
 
-  // Add a new node and focus it.
-  {
-    TextObject new_text_object;
-    new_text_object.position = mouse_press_position;
-    new_text_object.text = "";
-
-    int new_node_index = addNode(new_text_object);
-    node1_editor.focused_node_index = new_node_index;
-  }
+  int new_node_index = addNode2("",mouse_press_position);
+  node2_editor.focusNode(new_node_index,node2s);
 
   update();
 }

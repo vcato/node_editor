@@ -10,9 +10,6 @@ class QtMainWindow : public QMainWindow {
   public:
     QtMainWindow();
 
-  private slots:
-    void addTestNodeClicked();
-
   private:
     QMenu menu{"Tools"};
     QtDiagramEditor diagram_editor;

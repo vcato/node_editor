@@ -19,6 +19,16 @@ struct FakeDiagramEditor : DiagramEditor {
     return node_index;
   }
 
+  int userAddsANode2WithText(const string &text)
+  {
+    return addNode2(text,Point2D(0,0));
+  }
+
+  void userSelectsNode2(int node_index)
+  {
+    node2_editor.selectNode(node_index);
+  }
+
   void userFocusesNode(int node_index)
   {
     node1_editor.focused_node_index = node_index;
@@ -27,6 +37,11 @@ struct FakeDiagramEditor : DiagramEditor {
   void userPressesEnter()
   {
     enterPressed();
+  }
+
+  void userPressesBackspace()
+  {
+    backspacePressed();
   }
 
   bool nodeIsSelected(int node_index)
@@ -101,9 +116,20 @@ static void test3()
 }
 
 
+static void testDeletingANode()
+{
+  FakeDiagramEditor editor;
+  int node_index = editor.userAddsANode2WithText("test");
+  editor.userSelectsNode2(node_index);
+  editor.userPressesBackspace();
+  assert(editor.nNode2s()==0);
+}
+
+
 int main()
 {
   test1();
   test2();
   test3();
+  testDeletingANode();
 }

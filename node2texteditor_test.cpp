@@ -9,40 +9,6 @@ using std::string;
 using std::istringstream;
 
 
-static vector<string> split(const string &text)
-{
-  istringstream stream(text);
-  vector<string> result;
-  string line;
-  while (getline(stream,line)) {
-    result.push_back(line);
-  }
-  return result;
-}
-
-
-static void setText(Node2 &node,const std::string &text)
-{
-  if (text=="") {
-    node.lines.resize(1,Node2::Line(""));
-    node.updateInputsAndOutputs();
-    return;
-  }
-
-  vector<string> lines = split(text);
-
-  for (const auto &line : lines) {
-    node.lines.push_back(Node2::Line(line));
-  }
-
-  if (endsWith(text,"\n")) {
-    node.lines.push_back(Node2::Line(""));
-  }
-
-  node.updateInputsAndOutputs();
-}
-
-
 namespace {
 struct Tester {
   Node2TextEditor editor;
@@ -56,7 +22,7 @@ struct Tester {
 
   void beginEditing(const char *text)
   {
-    setText(node,text);
+    node.setText(text);
     editor.beginEditing(node);
   }
 

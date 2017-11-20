@@ -172,6 +172,12 @@ struct Node2Editor {
     text_editor.beginEditing(focusedNode(node2s));
   }
 
+  void selectNode(int node_index)
+  {
+    unfocus();
+    selected_node_index = node_index;
+  }
+
   std::string &focusedText(std::vector<Node2> &node2s)
   {
     assert(focused_node_index>=0);
@@ -183,7 +189,7 @@ struct Node2Editor {
 
 class DiagramEditor {
   public:
-    void addTestNode();
+    int nNode2s() { return node2s.size(); }
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;
@@ -198,9 +204,12 @@ class DiagramEditor {
     virtual void redraw() = 0;
     int addNode(const TextObject &text_object);
     void deleteNode(int index);
+    void deleteNode2(int index);
     std::string &focusedText();
     void enterPressed();
+    void backspacePressed();
     void updateNodeInputs(int node_index);
+    int addNode2(const std::string &text,const Point2D &position);
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */
