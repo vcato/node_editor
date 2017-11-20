@@ -19,6 +19,11 @@ struct Node2RenderInfo {
 
 
 
+struct Color {
+  float r,g,b;
+};
+
+
 class QtDiagramEditor : public QGLWidget, public DiagramEditor {
   public:
     QtDiagramEditor();
@@ -54,6 +59,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void setupProjection(float viewport_width,float viewport_height);
     void drawClosedLine(const std::vector<Point2D> &vertices);
     void drawPolygon(const std::vector<Point2D> &vertices);
+    void drawPolygon(const std::vector<Point2D> &vertices,const Color &);
     static std::vector<Point2D> verticesOf(const Rect &rect);
     static std::vector<Point2D>
       roundedVerticesOf(const Rect &rect,float offset);
@@ -62,7 +68,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawRoundedRect(const Rect &arg);
     void drawCircle(const Circle &circle);
     void drawFilledRect(const Rect &rect);
-    void drawFilledRoundedRect(const Rect &rect);
+    void drawFilledRoundedRect(const Rect &rect,const Color &);
     void drawFilledCircle(const Circle &circle);
     Rect rectAroundText(const TextObject &text_object) const;
     Rect nodeRect(const TextObject &text_object) const;

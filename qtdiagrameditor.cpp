@@ -504,7 +504,7 @@ void QtDiagramEditor::drawClosedLine(const std::vector<Point2D> &vertices)
 }
 
 
-void QtDiagramEditor::drawPolygon(const std::vector<Point2D> &vertices)
+void QtDiagramEditor::drawPolygon(const std::vector<Point2D> &vertices,const Color &color)
 {
   int n_vertices = vertices.size();
   int vertex_size = 2;
@@ -518,9 +518,9 @@ void QtDiagramEditor::drawPolygon(const std::vector<Point2D> &vertices)
     vertex_data[i*vertex_size + 0] = vertices[i].x;
     vertex_data[i*vertex_size + 1] = vertices[i].y;
 
-    color_data[i*color_size + 0] = 0.5;
-    color_data[i*color_size + 1] = 0.5;
-    color_data[i*color_size + 2] = 0;
+    color_data[i*color_size + 0] = color.r;
+    color_data[i*color_size + 1] = color.g;
+    color_data[i*color_size + 2] = color.b;
   }
 
   glVertexPointer(
@@ -546,6 +546,12 @@ void QtDiagramEditor::drawPolygon(const std::vector<Point2D> &vertices)
 
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+
+void QtDiagramEditor::drawPolygon(const std::vector<Point2D> &vertices)
+{
+  drawPolygon(vertices,Color{0.5,0.5,0});
 }
 
 
@@ -652,10 +658,10 @@ void QtDiagramEditor::drawFilledRect(const Rect &rect)
 }
 
 
-void QtDiagramEditor::drawFilledRoundedRect(const Rect &rect)
+void QtDiagramEditor::drawFilledRoundedRect(const Rect &rect,const Color &color)
 {
   float offset = 0;
-  drawPolygon(roundedVerticesOf(rect,offset));
+  drawPolygon(roundedVerticesOf(rect,offset),color);
 }
 
 
@@ -1116,9 +1122,14 @@ void QtDiagramEditor::drawNode2(int node2_index)
   const TextObject &header_text_object = node.header_text_object;
   drawBoxedText2(header_text_object,is_selected,render_info.header_rect);
 
+  Color unselected_color{0.25,0.25,0.5};
+  Color selected_color{0.5,0.5,0};
   // Draw the rectangle around all the inputs and outputs.
   if (is_selected) {
-    drawFilledRoundedRect(render_info.body_outer_rect);
+    drawFilledRoundedRect(render_info.body_outer_rect,selected_color);
+  }
+  else {
+    drawFilledRoundedRect(render_info.body_outer_rect,unselected_color);
   }
   drawRoundedRect(render_info.body_outer_rect);
 
