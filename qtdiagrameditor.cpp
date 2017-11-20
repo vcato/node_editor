@@ -567,6 +567,48 @@ std::vector<Point2D> QtDiagramEditor::verticesOf(const Rect &rect)
 }
 
 
+std::vector<Point2D>
+  QtDiagramEditor::roundedVerticesOf(const Rect &rect,float offset)
+{
+  std::vector<Point2D> vertices;
+  float radius = 5;
+  float v = radius*sqrtf(2)/2;
+
+  float x1 = rect.start.x - offset;
+  float x1a = x1 + radius;
+  float x1b = x1a - v;
+  float y1 = rect.start.y - offset;
+  float y1a = y1 + radius;
+  float y1b = y1a - v;
+  float x2 = rect.end.x + offset;
+  float x2a = x2 - radius;
+  float x2b = x2a + v;
+  float y2 = rect.end.y + offset;
+  float y2a = y2 - radius;
+  float y2b = y2a + v;
+
+  vertices.push_back(Point2D{x1,y1a});
+  vertices.push_back(Point2D{x1b,y1b});
+  vertices.push_back(Point2D{x1a,y1});
+
+  vertices.push_back(Point2D{x2a,y1});
+  vertices.push_back(Point2D{x2b,y1b});
+  vertices.push_back(Point2D{x2,y1a});
+
+  vertices.push_back(Point2D{x2,y2a});
+  vertices.push_back(Point2D{x2b,y2b});
+  vertices.push_back(Point2D{x2a,y2});
+
+  vertices.push_back(Point2D{x1a,y2});
+  vertices.push_back(Point2D{x1b,y2b});
+  vertices.push_back(Point2D{x1,y2a});
+
+  return vertices;
+}
+
+
+
+
 std::vector<Point2D> QtDiagramEditor::verticesOf(const Circle &circle)
 {
   Point2D center = circle.center;
@@ -591,6 +633,13 @@ void QtDiagramEditor::drawRect(const Rect &arg)
 }
 
 
+void QtDiagramEditor::drawRoundedRect(const Rect &arg)
+{
+  float offset = 0.5;
+  drawClosedLine(roundedVerticesOf(arg,offset));
+}
+
+
 void QtDiagramEditor::drawCircle(const Circle &circle)
 {
   drawClosedLine(verticesOf(circle));
@@ -600,6 +649,13 @@ void QtDiagramEditor::drawCircle(const Circle &circle)
 void QtDiagramEditor::drawFilledRect(const Rect &rect)
 {
   drawPolygon(verticesOf(rect));
+}
+
+
+void QtDiagramEditor::drawFilledRoundedRect(const Rect &rect)
+{
+  float offset = 0;
+  drawPolygon(roundedVerticesOf(rect,offset));
 }
 
 
@@ -1062,9 +1118,9 @@ void QtDiagramEditor::drawNode2(int node2_index)
 
   // Draw the rectangle around all the inputs and outputs.
   if (is_selected) {
-    drawFilledRect(render_info.body_outer_rect);
+    drawFilledRoundedRect(render_info.body_outer_rect);
   }
-  drawRect(render_info.body_outer_rect);
+  drawRoundedRect(render_info.body_outer_rect);
 
   // Draw the input labels
 

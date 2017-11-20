@@ -55,10 +55,14 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawClosedLine(const std::vector<Point2D> &vertices);
     void drawPolygon(const std::vector<Point2D> &vertices);
     static std::vector<Point2D> verticesOf(const Rect &rect);
+    static std::vector<Point2D>
+      roundedVerticesOf(const Rect &rect,float offset);
     std::vector<Point2D> verticesOf(const Circle &circle);
     void drawRect(const Rect &arg);
+    void drawRoundedRect(const Rect &arg);
     void drawCircle(const Circle &circle);
     void drawFilledRect(const Rect &rect);
+    void drawFilledRoundedRect(const Rect &rect);
     void drawFilledCircle(const Circle &circle);
     Rect rectAroundText(const TextObject &text_object) const;
     Rect nodeRect(const TextObject &text_object) const;
