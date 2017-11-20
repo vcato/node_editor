@@ -11,6 +11,8 @@
 #include "node2.hpp"
 #include "node2texteditor.hpp"
 
+#define USE_NODE1 0
+
 
 inline Point2D operator-(const Point2D &a,const Point2D &b)
 {
@@ -113,6 +115,7 @@ struct NodeConnectorIndex {
 };
 
 
+#if USE_NODE1
 struct Node1 {
   struct Input {
     int source_node_index;
@@ -131,6 +134,7 @@ struct Node1 {
   TextObject text_object;
   std::vector<Input> inputs;
 };
+#endif
 
 
 
@@ -196,14 +200,18 @@ class DiagramEditor {
     NodeConnectorIndex selected_node2_connector_index =
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
+#if USE_NODE1
     std::vector<Node1> node1s;
-    std::vector<Node2> node2s;
     Node1Editor node1_editor;
+#endif
+    std::vector<Node2> node2s;
     Node2Editor node2_editor;
 
     virtual void redraw() = 0;
+#if USE_NODE1
     int addNode(const TextObject &text_object);
     void deleteNode(int index);
+#endif
     void deleteNode2(int index);
     std::string &focusedText();
     void enterPressed();

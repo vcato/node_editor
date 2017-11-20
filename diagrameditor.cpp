@@ -6,6 +6,7 @@ using std::string;
 using std::vector;
 
 
+#if USE_NODE1
 int DiagramEditor::addNode(const TextObject &text_object)
 {
   int node_index = node1s.size();
@@ -14,12 +15,15 @@ int DiagramEditor::addNode(const TextObject &text_object)
   node1s.push_back(node);
   return node_index;
 }
+#endif
 
 
+#if USE_NODE1
 void DiagramEditor::deleteNode(int index)
 {
   node1s.erase(node1s.begin()+index);
 }
+#endif
 
 
 void DiagramEditor::deleteNode2(int index)
@@ -30,17 +34,18 @@ void DiagramEditor::deleteNode2(int index)
 
 string &DiagramEditor::focusedText()
 {
+#if USE_NODE1
   if (node1_editor.focused_node_index>=0) {
     return node1s[node1_editor.focused_node_index].text_object.text;
   }
-  else {
-    return node2_editor.focusedText(node2s);
-  }
+#endif
+  return node2_editor.focusedText(node2s);
 }
 
 
 void DiagramEditor::enterPressed()
 {
+#if USE_NODE1
   if (node1_editor.focused_node_index>=0) {
     int node_index = node1_editor.focused_node_index;
     node1_editor.selected_node_index = node_index;
@@ -48,6 +53,7 @@ void DiagramEditor::enterPressed()
     updateNodeInputs(node_index);
     redraw();
   }
+#endif
   if (node2_editor.focused_node_index>=0) {
     node2_editor.text_editor.enter();
     redraw();
@@ -57,12 +63,14 @@ void DiagramEditor::enterPressed()
 
 void DiagramEditor::backspacePressed()
 {
+#if USE_NODE1
   if (node1_editor.selected_node_index>=0) {
     deleteNode(node1_editor.selected_node_index);
     node1_editor.selected_node_index = -1;
     redraw();
     return;
   }
+#endif
 
   if (node2_editor.selected_node_index>=0) {
     deleteNode2(node2_editor.selected_node_index);
@@ -71,6 +79,7 @@ void DiagramEditor::backspacePressed()
     return;
   }
 
+#if USE_NODE1
   if (node1_editor.focused_node_index>=0) {
     if (!focusedText().empty()) {
       focusedText().erase(focusedText().end()-1);
@@ -78,6 +87,7 @@ void DiagramEditor::backspacePressed()
       return;
     }
   }
+#endif
 
   if (node2_editor.aNodeIsFocused()) {
     node2_editor.text_editor.backspace();
@@ -87,6 +97,7 @@ void DiagramEditor::backspacePressed()
 }
 
 
+#if USE_NODE1
 void DiagramEditor::updateNodeInputs(int node_index)
 {
   const string &text = node1s[node_index].text_object.text;
@@ -98,6 +109,7 @@ void DiagramEditor::updateNodeInputs(int node_index)
     node1s[node_index].inputs[0].name = "global";
   }
 }
+#endif
 
 
 int DiagramEditor::addNode2(const std::string &text,const Point2D &position)

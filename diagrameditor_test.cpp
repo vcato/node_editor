@@ -10,6 +10,7 @@ namespace {
 struct FakeDiagramEditor : DiagramEditor {
   int redraw_count = 0;
 
+#if USE_NODE1
   int userAddsANodeWithText(const string &text)
   {
     TextObject new_text_object;
@@ -18,6 +19,7 @@ struct FakeDiagramEditor : DiagramEditor {
     int node_index = addNode(new_text_object);
     return node_index;
   }
+#endif
 
   int userAddsANode2WithText(const string &text)
   {
@@ -29,10 +31,12 @@ struct FakeDiagramEditor : DiagramEditor {
     node2_editor.selectNode(node_index);
   }
 
+#if USE_NODE1
   void userFocusesNode(int node_index)
   {
     node1_editor.focused_node_index = node_index;
   }
+#endif
 
   void userPressesEnter()
   {
@@ -44,25 +48,33 @@ struct FakeDiagramEditor : DiagramEditor {
     backspacePressed();
   }
 
+#if USE_NODE1
   bool nodeIsSelected(int node_index)
   {
     return node_index==node1_editor.selected_node_index;
   }
+#endif
 
+#if USE_NODE1
   bool aNodeIsFocused() const
   {
     return node1_editor.focused_node_index>=0;
   }
+#endif
 
+#if USE_NODE1
   void setFocusedNode(int node_index)
   {
     node1_editor.focused_node_index = node_index;
   }
+#endif
 
+#if USE_NODE1
   int nodeInputCount(int node_index) const
   {
     return node1s[node_index].inputs.size();
   }
+#endif
 
   virtual void redraw()
   {
@@ -82,6 +94,7 @@ static void test1()
 }
 
 
+#if USE_NODE1
 static void test2()
 {
   // If a node has text and is focused, then when the user presses enter,
@@ -99,8 +112,10 @@ static void test2()
   assert(!editor.aNodeIsFocused());
   assert(editor.redraw_count==1);
 }
+#endif
 
 
+#if USE_NODE1
 static void test3()
 {
   // If a node has text "+", then when the user presses enter, the node
@@ -114,6 +129,7 @@ static void test3()
   editor.userPressesEnter();
   assert(editor.nodeInputCount(node_index)==2);
 }
+#endif
 
 
 static void testDeletingANode()
@@ -129,7 +145,9 @@ static void testDeletingANode()
 int main()
 {
   test1();
+#if USE_NODE1
   test2();
   test3();
+#endif
   testDeletingANode();
 }

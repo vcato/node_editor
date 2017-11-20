@@ -29,13 +29,15 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
     Point2D screenToGLCoords(int x,int y) const;
     bool contains(const TextObject &text_object,const Point2D &p);
+#if USE_NODE1
     int indexOfNodeContaining(const Point2D &p);
-    int indexOfNode2Containing(const Point2D &p);
     void selectNode(int index) { node1_editor.selected_node_index = index; }
     bool nodeInputContains(int node_index,int input_index,const Point2D &p);
+    NodeInputIndex indexOfNodeInputContaining(const Point2D &p);
+#endif
+    int indexOfNode2Containing(const Point2D &p);
     bool node2InputContains(int node_index,int input_index,const Point2D &p);
     bool node2OutputContains(int node_index,int output_index,const Point2D &p);
-    NodeInputIndex indexOfNodeInputContaining(const Point2D &p);
     NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
     void
       connectNodes(
@@ -100,13 +102,17 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     static constexpr float node_input_radius = 5;
     static constexpr float connector_radius = 5;
 
+#if USE_NODE1
     Point2D
       defaultNodeInputPosition(
         int node_index,
         int input_index
       );
+#endif
 
+#if USE_NODE1
     Circle defaultNodeInputCircle(int node_index,int input_index);
+#endif
     Circle nodeInputCircle(const Node2 &,int input_index);
     Circle nodeOutputCircle(const Node2 &node,int output_index);
     Circle connectorCircle(NodeConnectorIndex) const;
