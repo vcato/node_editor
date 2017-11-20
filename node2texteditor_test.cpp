@@ -150,11 +150,11 @@ struct Tester {
   void testBackspace4()
   {
     beginEditing("a = $\n$ = a");
-    assert(node.nOutputs()==1);
     editor.cursor_line_index = 1;
     editor.cursor_column_index = 0;
     editor.backspace();
     assert(node.lines.size()==1);
+    assert(!lineTextHasOutput(node.lines[0].text));
     assert(node.nOutputs()==0);
   }
 
