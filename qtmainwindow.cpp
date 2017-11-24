@@ -28,6 +28,14 @@ static QTreeWidget& addTreeWidgetTo(QLayout &layout)
 }
 
 
+static QAction& addActionTo(QMenu &menu,const string &label)
+{
+  QAction *add_pass_action_ptr = new QAction(QString::fromStdString(label),0);
+  menu.addAction(add_pass_action_ptr);
+  return *add_pass_action_ptr;
+}
+
+
 static void addDiagramEditorTo(QLayout &layout,Diagram &diagram)
 {
   QtDiagramEditor *diagram_editor_ptr = new QtDiagramEditor(diagram);
@@ -35,15 +43,39 @@ static void addDiagramEditorTo(QLayout &layout,Diagram &diagram)
 }
 
 
-static void addItemTo(QTreeWidget &tree_widget,const string &label)
+static void setItemText(QTreeWidgetItem &item,const string &label)
+{
+  item.setText(/*column*/0,QString::fromStdString(label));
+}
+
+
+static QTreeWidgetItem& addItemTo(QTreeWidget &tree_widget,const string &label)
 {
   QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
-  item_ptr->setText(/*column*/0,QString::fromStdString(label));
+  setItemText(*item_ptr,label);
   tree_widget.addTopLevelItem(item_ptr);
+  item_ptr->setExpanded(true);
+  return *item_ptr;
+}
+
+
+static QTreeWidgetItem&
+  addChildItemTo(QTreeWidgetItem &parent_item,const string &label)
+{
+  QTreeWidgetItem *pass_item_ptr = new QTreeWidgetItem;
+  setItemText(*pass_item_ptr,label);
+  parent_item.addChild(pass_item_ptr);
+  QTreeWidgetItem &pass_item = *pass_item_ptr;
+  pass_item.setExpanded(true);
+  return pass_item;
 }
 
 
 QtMainWindow::QtMainWindow()
+: tree_widget_ptr(0),
+  charmapper_item_ptr(0),
+  motion_pass_item_ptr(0),
+  add_pos_expr_item_ptr(0)
 {
   QMenuBar *menu_bar_ptr = menuBar();
   assert(menu_bar_ptr);
@@ -52,7 +84,72 @@ QtMainWindow::QtMainWindow()
   QHBoxLayout &layout = ::setLayout<QHBoxLayout>(widget);
 
   QTreeWidget &tree_widget = addTreeWidgetTo(layout);
-  addItemTo(tree_widget,"charmapper");
+  tree_widget_ptr = &tree_widget;
+  tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(
+    &tree_widget,
+    SIGNAL(customContextMenuRequested(const QPoint &)),
+    SLOT(prepareMenu(const QPoint &))
+  );
+  QTreeWidgetItem &charmapper_item = addItemTo(tree_widget,"charmapper");
+  charmapper_item_ptr = &charmapper_item;
   addDiagramEditorTo(layout,diagram);
   setCentralWidget(&widget);
+}
+
+
+void QtMainWindow::prepareMenu(const QPoint &pos)
+{
+  cerr << "prepareMenu()\n";
+  QTreeWidgetItem *widget_item_ptr = treeWidget().itemAt(pos);
+
+  if (!widget_item_ptr) {
+    return;
+  }
+
+  if (widget_item_ptr==charmapper_item_ptr) {
+    QMenu menu;
+    QAction &add_pass_action = addActionTo(menu,"Add Motion Pass");
+    connect(&add_pass_action,SIGNAL(triggered()),SLOT(addPassTriggered()));
+    menu.exec(treeWidget().mapToGlobal(pos));
+    return;
+  }
+
+  if (widget_item_ptr==motion_pass_item_ptr) {
+    QMenu menu;
+    QAction &add_pos_expr_action = addActionTo(menu,"Add Pos Expr");
+    connect(
+      &add_pos_expr_action,SIGNAL(triggered()),SLOT(addPosExprTriggered())
+    );
+    menu.exec(treeWidget().mapToGlobal(pos));
+    return;
+  }
+}
+
+
+void QtMainWindow::addPassTriggered()
+{
+  assert(charmapper_item_ptr);
+
+  motion_pass_item_ptr = &addChildItemTo(*charmapper_item_ptr,"Motion Pass");
+}
+
+
+void QtMainWindow::addPosExprTriggered()
+{
+  assert(motion_pass_item_ptr);
+
+  QTreeWidgetItem &item = addChildItemTo(*motion_pass_item_ptr,"Pos Expr");
+  add_pos_expr_item_ptr = &item;
+  addChildItemTo(item,"Target Body");
+  addChildItemTo(item,"Local Position");
+  addChildItemTo(item,"Global Position");
+  addChildItemTo(item,"Weight");
+}
+
+
+QTreeWidget &QtMainWindow::treeWidget()
+{
+  assert(tree_widget_ptr);
+  return *tree_widget_ptr;
 }
