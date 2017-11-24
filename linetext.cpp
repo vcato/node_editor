@@ -244,6 +244,11 @@ float
     }
     return 0;
   }
+
+  if (line_text=="$") {
+    return input_value;
+  }
+
   cerr << "line_text=" << line_text << "\n";
   assert(false);
 

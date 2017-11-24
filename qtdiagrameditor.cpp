@@ -1188,14 +1188,6 @@ void QtDiagramEditor::paintGL()
   }
 #endif
 
-  if (node2_editor.focused_node_index>=0) {
-    Node2RenderInfo render_info =
-      nodeRenderInfo(node2s()[node2_editor.focused_node_index]);
-    int line_index = node2_editor.text_editor.cursor_line_index;
-    int column_index = node2_editor.text_editor.cursor_column_index;
-    drawCursor(render_info.text_objects[line_index],column_index);
-  }
-
 #if USE_NODE1
   {
     int n_nodes = node1s.size();
@@ -1215,6 +1207,14 @@ void QtDiagramEditor::paintGL()
     for (int index=0; index!=n_nodes; ++index) {
       drawNode2(index);
     }
+  }
+
+  if (node2_editor.focused_node_index>=0) {
+    Node2RenderInfo render_info =
+      nodeRenderInfo(node2s()[node2_editor.focused_node_index]);
+    int line_index = node2_editor.text_editor.cursor_line_index;
+    int column_index = node2_editor.text_editor.cursor_column_index;
+    drawCursor(render_info.text_objects[line_index],column_index);
   }
 
   if (!selected_node2_connector_index.isNull()) {
