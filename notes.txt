@@ -210,3 +210,14 @@ If we have continuations, can we create blocks like this?
 
 If nodes become disconnected because we temporarily have an invalid value,
 it is inconvenient.
+
+Maybe we hold on the the connection if there is one, but otherwise, we
+add or remove the connector on each keystroke.
+
+
+I think I want to start integrating this with Qt widgets.
+I want to be able to add a slider, then put in some logic that does something
+with the slider, and then show the result.
+
+Maybe something where we add three sliders for R,G,B, then use a diagram
+to turn those into a color, and then display the color.

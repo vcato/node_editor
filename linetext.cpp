@@ -196,8 +196,20 @@ static bool isNumber(const std::string &text)
 }
 
 
-bool lineTextHasOutput(const std::string &text)
+static string trimmed(const string &s)
 {
+  const char *whitespace = " ";
+  string::size_type i = s.find_first_not_of(whitespace);
+  if (i==string::npos) {
+    return "";
+  }
+  return s.substr(i);
+}
+
+
+bool lineTextHasOutput(const std::string &text_arg)
+{
+  string text = trimmed(text_arg);
   if (text=="") return false;
   if (isAssignment(text)) return false;
 
@@ -215,11 +227,13 @@ float lineTextValue(const string &line_text)
 
 float
   lineTextValue(
-    const string &line_text,
+    const string &line_text_arg,
     ostream &stream,
     const float input_value
   )
 {
+  string line_text = trimmed(line_text_arg);
+
   if (isNumber(line_text)) {
     return std::stoi(line_text);
   }

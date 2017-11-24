@@ -26,6 +26,7 @@ int main()
   assert(!lineTextHasOutput("let x=5"));
   assert(!lineTextHasOutput("x=$"));
   assert(!lineTextHasOutput(""));
+  assert(!lineTextHasOutput(" "));
   assert(lineTextValue("5")==5);
   assert(lineTextValue("t")==0);
   assert(lineTextValue("$",5)==5);
