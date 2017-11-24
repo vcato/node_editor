@@ -147,8 +147,16 @@ static bool isAssignment(const std::string &text)
 
   Parser parser{text,index};
 
-  if (!parser.skipIdentifier()) {
-    return false;
+  {
+    string identifier;
+
+    if (!parser.getIdentifier(identifier)) {
+      return false;
+    }
+
+    if (identifier=="let") {
+      return true;
+    }
   }
 
   parser.skipWhitespace();

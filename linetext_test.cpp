@@ -23,6 +23,7 @@ int main()
 {
   assert(lineTextHasInput("x=$"));
   assert(lineTextHasInput("cos($)"));
+  assert(!lineTextHasOutput("let x=5"));
   assert(!lineTextHasOutput("x=$"));
   assert(!lineTextHasOutput(""));
   assert(lineTextValue("5")==5);
