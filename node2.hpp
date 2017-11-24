@@ -23,6 +23,7 @@ class Node2 {
     int nOutputs() const { return outputs.size(); }
     void removeLine(int line_index);
     void updateInputsAndOutputs();
+    void addInputsAndOutputs();
     bool isEmpty() const;
     std::vector<std::string> strings() const;
 

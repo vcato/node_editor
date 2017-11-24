@@ -164,7 +164,7 @@ struct Node2TextEditor {
       }
       text.insert(cursor_column_index,new_text);
       cursor_column_index += new_text.length();
-      node.updateInputsAndOutputs();
+      node.addInputsAndOutputs();
     }
 
     void enter(Node2 &node,Callbacks *callbacks_ptr)

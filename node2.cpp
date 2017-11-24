@@ -28,6 +28,22 @@ void Node2::updateInputsAndOutputs()
 }
 
 
+void Node2::addInputsAndOutputs()
+{
+  for (auto &line : lines) {
+    if (!line.has_input) {
+      line.has_input = lineTextHasInput(line.text);
+    }
+    if (!line.has_output) {
+      line.has_output = lineTextHasOutput(line.text);
+    }
+  }
+
+  updateNInputs();
+  updateNOutputs();
+}
+
+
 std::vector<std::string> Node2::strings() const
 {
   std::vector<std::string> result;

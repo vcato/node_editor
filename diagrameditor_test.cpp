@@ -123,6 +123,10 @@ static void testChangingText2()
   // we move to another line to avoid disconnections due to temporary
   // text changes.
   assert(diagram.node(n1).lines[0].has_output);
+
+  editor.userTypesText("x=");
+
+  assert(diagram.node(n1).lines[0].has_output);
 }
 
 
