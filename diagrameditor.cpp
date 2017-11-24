@@ -38,7 +38,6 @@ void DiagramEditor::backspacePressed()
 
   if (node2_editor.aNodeIsFocused()) {
     node2_editor.text_editor.backspace();
-    diagram.removeInvalidInputs();
     redraw();
     return;
   }
@@ -67,4 +66,21 @@ void
   diagram.connectNodes(
     input_node_index,input_index,output_node_index,output_index
   );
+}
+
+
+void DiagramEditor::textTyped(const string &new_text)
+{
+  if (node2_editor.aNodeIsFocused()) {
+    node2_editor.text_editor.textTyped(new_text);
+    redraw();
+    return;
+  }
+}
+
+
+void DiagramEditor::unfocus()
+{
+  node2_editor.unfocus();
+  diagram.removeInvalidInputs();
 }

@@ -249,8 +249,5 @@ float
     return input_value;
   }
 
-  cerr << "line_text=" << line_text << "\n";
-  assert(false);
-
   return 0;
 }

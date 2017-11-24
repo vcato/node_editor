@@ -28,4 +28,5 @@ int main()
   assert(lineTextValue("5")==5);
   assert(lineTextValue("t")==0);
   assert(lineTextValue("$",5)==5);
+  assert(lineTextValue("")==0);
 }

@@ -129,6 +129,11 @@ struct Node2Editor {
   bool node_was_selected = false;
   Node2TextEditor text_editor;
 
+  Node2Editor()
+  : text_editor()
+  {
+  }
+
   bool aNodeIsFocused() const
   {
     return focused_node_index>=0;
@@ -154,7 +159,9 @@ struct Node2Editor {
 
   void selectNode(int node_index)
   {
-    unfocus();
+    if (aNodeIsFocused()) {
+      unfocus();
+    }
     selected_node_index = node_index;
   }
 
@@ -191,8 +198,11 @@ class DiagramEditor {
     std::string &focusedText();
     void enterPressed();
     void backspacePressed();
+    void textTyped(const std::string &new_text);
     void updateNodeInputs(int node_index);
     int addNode2(const std::string &text,const Point2D &position);
+    void unfocus();
+
 
     void
       connectNodes(

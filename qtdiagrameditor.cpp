@@ -64,13 +64,12 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     return;
   }
 
-  if (node2_editor.aNodeIsFocused()) {
-    std::string new_text = key_event_ptr->text().toStdString();
-    node2_editor.text_editor.textTyped(new_text);
-    update();
+  std::string new_text = key_event_ptr->text().toStdString();
+
+  if (new_text!="") {
+    textTyped(new_text);
     return;
   }
-  return;
 }
 
 
@@ -162,15 +161,14 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
   mouse_press_position = p;
   node2_editor.node_was_selected = false;
 
-  if (node2_editor.focused_node_index>=0) {
+  if (node2_editor.aNodeIsFocused()) {
     if (node2_editor.focusedNode(node2s()).isEmpty()) {
       deleteNode2(node2_editor.focused_node_index);
     }
-    node2_editor.focused_node_index = -1;
   }
 
   if (node2_editor.aNodeIsFocused()) {
-    node2_editor.unfocus();
+    unfocus();
   }
 
   {
@@ -939,8 +937,8 @@ void QtDiagramEditor::paintGL()
   if (node2_editor.focused_node_index>=0) {
     Node2RenderInfo render_info =
       nodeRenderInfo(node2s()[node2_editor.focused_node_index]);
-    int line_index = node2_editor.text_editor.cursor_line_index;
-    int column_index = node2_editor.text_editor.cursor_column_index;
+    int line_index = node2_editor.text_editor.cursorLineIndex();
+    int column_index = node2_editor.text_editor.cursorColumnIndex();
     drawCursor(render_info.text_objects[line_index],column_index);
   }
 

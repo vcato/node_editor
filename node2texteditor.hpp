@@ -4,9 +4,16 @@
 
 
 struct Node2TextEditor {
-  int cursor_line_index = 0;
-  int cursor_column_index = 0;
+  struct Callbacks {
+    virtual void lineUnfocused(int) = 0;
+    virtual void lineFocused(int) = 0;
+  };
+
   Node2 *node_ptr = 0;
+
+  Node2TextEditor()
+  {
+  }
 
   std::string &focusedText(Node2 &node)
   {
@@ -25,8 +32,35 @@ struct Node2TextEditor {
     node_ptr = &node;
   }
 
+  int cursorLineIndex() const
+  {
+    return cursor_line_index;
+  }
+
+  int cursorColumnIndex() const
+  {
+    return cursor_column_index;
+  }
+
+  void moveCursorToLine(int new_line_index)
+  {
+    cursor_line_index = new_line_index;
+  }
+
+  void moveCursorToColumn(int new_column_index)
+  {
+    cursor_column_index = new_column_index;
+  }
+
+  void moveCursor(int new_line_index,int new_column_index)
+  {
+    cursor_line_index = new_line_index;
+    cursor_column_index = new_column_index;
+  }
+
   void endEditing()
   {
+    node().updateInputsAndOutputs();
     node_ptr = 0;
   }
 
@@ -37,11 +71,13 @@ struct Node2TextEditor {
   }
 
   void backspace() { backspace(node()); }
-  void up() { up(node()); }
+  void up(Callbacks &callbacks) { up(node(),&callbacks); }
+  void up() { up(node(),/*callbacks_ptr*/0); }
   void down() { down(node()); }
   void left() { left(node()); }
   void right() { right(node()); }
-  void enter() { enter(node()); }
+  void enter(Callbacks &callbacks) { enter(node(),&callbacks); }
+  void enter() { enter(node(),/*callbacks_ptr*/0); }
   void textTyped(const std::string &new_text) { textTyped(node(),new_text); }
 
   private:
@@ -70,7 +106,6 @@ struct Node2TextEditor {
 
       focused_text.erase(focused_text.begin()+(cursor_column_index-1));
       --cursor_column_index;
-      node.updateInputsAndOutputs();
     }
 
     void left(Node2& node)
@@ -99,10 +134,16 @@ struct Node2TextEditor {
       ++cursor_column_index;
     }
 
-    void up(Node2 &)
+    void up(Node2 &,Callbacks * callbacks_ptr)
     {
       if (cursor_line_index>0) {
+        if (callbacks_ptr) {
+          callbacks_ptr->lineUnfocused(cursor_line_index);
+        }
         --cursor_line_index;
+        if (callbacks_ptr) {
+          callbacks_ptr->lineFocused(cursor_line_index);
+        }
       }
     }
 
@@ -126,7 +167,7 @@ struct Node2TextEditor {
       node.updateInputsAndOutputs();
     }
 
-    void enter(Node2 &node)
+    void enter(Node2 &node,Callbacks *callbacks_ptr)
     {
       {
         std::string &text = focusedText(node);
@@ -144,6 +185,16 @@ struct Node2TextEditor {
       }
       node.updateInputsAndOutputs();
       cursor_column_index = 0;
+      if (callbacks_ptr) {
+        callbacks_ptr->lineUnfocused(cursor_line_index);
+      }
       ++cursor_line_index;
+      if (callbacks_ptr) {
+        callbacks_ptr->lineFocused(cursor_line_index);
+      }
     }
+
+  private:
+    int cursor_line_index = 0;
+    int cursor_column_index = 0;
 };
