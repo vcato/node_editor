@@ -1,6 +1,7 @@
 #include <QObject>
 #include <QMainWindow>
 #include <QMenu>
+#include <QTreeWidget>
 #include "qtdiagrameditor.hpp"
 
 
@@ -13,5 +14,5 @@ class QtMainWindow : public QMainWindow {
   private:
     QMenu menu{"Tools"};
     Diagram diagram;
-    QtDiagramEditor diagram_editor;
+    QWidget widget;
 };
