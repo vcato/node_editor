@@ -4,6 +4,8 @@
 #include <iostream>
 #include <QMenuBar>
 #include <QBoxLayout>
+#include <QHeaderView>
+#include <QPushButton>
 
 
 using std::cerr;
@@ -19,12 +21,32 @@ static Layout& setLayout(QWidget &widget)
 }
 
 
+template <typename Layout>
+static Layout& addLayoutTo(QBoxLayout &parent_layout)
+{
+  Layout *layout_ptr = new Layout;
+  parent_layout.addLayout(layout_ptr);
+  return *layout_ptr;
+}
+
+
+template <typename Widget>
+static Widget& addTo(QLayout &layout,Widget *widget_ptr)
+{
+  layout.addWidget(widget_ptr);
+  return *widget_ptr;
+}
+
+
 static QTreeWidget& addTreeWidgetTo(QLayout &layout)
 {
-  QTreeWidget *tree_widget_ptr = new QTreeWidget;
+  return addTo(layout,new QTreeWidget);
+}
 
-  layout.addWidget(tree_widget_ptr);
-  return *tree_widget_ptr;
+
+static QPushButton& addPushButtonTo(QLayout &layout)
+{
+  return addTo(layout,new QPushButton);
 }
 
 
@@ -82,17 +104,27 @@ QtMainWindow::QtMainWindow()
   menu_bar_ptr->addMenu(&menu);
 
   QHBoxLayout &layout = ::setLayout<QHBoxLayout>(widget);
+  {
+    QVBoxLayout &layout2 = addLayoutTo<QVBoxLayout>(layout);
 
-  QTreeWidget &tree_widget = addTreeWidgetTo(layout);
-  tree_widget_ptr = &tree_widget;
-  tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(
-    &tree_widget,
-    SIGNAL(customContextMenuRequested(const QPoint &)),
-    SLOT(prepareMenu(const QPoint &))
-  );
-  QTreeWidgetItem &charmapper_item = addItemTo(tree_widget,"charmapper");
-  charmapper_item_ptr = &charmapper_item;
+    {
+      QTreeWidget &tree_widget = addTreeWidgetTo(layout2);
+      tree_widget_ptr = &tree_widget;
+      tree_widget.header()->close();
+      tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(
+        &tree_widget,
+        SIGNAL(customContextMenuRequested(const QPoint &)),
+        SLOT(prepareMenu(const QPoint &))
+      );
+      QTreeWidgetItem &charmapper_item = addItemTo(tree_widget,"charmapper");
+      charmapper_item_ptr = &charmapper_item;
+    }
+    {
+      QPushButton &button = addPushButtonTo(layout2);
+      button.setText("test");
+    }
+  }
   addDiagramEditorTo(layout,diagram);
   setCentralWidget(&widget);
 }
