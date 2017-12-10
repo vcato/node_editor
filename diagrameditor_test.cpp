@@ -14,22 +14,22 @@ struct FakeDiagramEditor : DiagramEditor {
 
   int userAddsANode()
   {
-    return userAddsANode2WithText("");
+    return userAddsANodeWithText("");
   }
 
-  int userAddsANode2WithText(const string &text)
+  int userAddsANodeWithText(const string &text)
   {
-    return addNode2(text,Point2D(0,0));
+    return addNode(text,Point2D(0,0));
   }
 
-  void userSelectsNode2(int node_index)
+  void userSelectsNode(int node_index)
   {
-    node2_editor.selectNode(node_index);
+    node_editor.selectNode(node_index);
   }
 
-  void userFocusesNode2(int node_index)
+  void userFocusesNode(int node_index)
   {
-    node2_editor.focusNode(node_index,diagram);
+    node_editor.focusNode(node_index,diagram);
   }
 
   void userUnfocusesNode()
@@ -88,8 +88,8 @@ static void testDeletingANode()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  int node_index = editor.userAddsANode2WithText("test");
-  editor.userSelectsNode2(node_index);
+  int node_index = editor.userAddsANodeWithText("test");
+  editor.userSelectsNode(node_index);
   editor.userPressesBackspace();
   assert(diagram.nExistingNodes()==0);
 }
@@ -99,10 +99,10 @@ static void testDeletingAConnectedNode()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  int n1 = editor.userAddsANode2WithText("5");
-  int n2 = editor.userAddsANode2WithText("a=$");
+  int n1 = editor.userAddsANodeWithText("5");
+  int n2 = editor.userAddsANodeWithText("a=$");
   editor.userConnects(n2,0,n1,0);
-  editor.userSelectsNode2(n1);
+  editor.userSelectsNode(n1);
   editor.userPressesBackspace();
   assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
 }
@@ -112,10 +112,10 @@ static void testChangingText()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  int n1 = editor.userAddsANode2WithText("5");
-  int n2 = editor.userAddsANode2WithText("show($)");
+  int n1 = editor.userAddsANodeWithText("5");
+  int n2 = editor.userAddsANodeWithText("show($)");
   editor.userConnects(n2,0,n1,0);
-  editor.userFocusesNode2(n1);
+  editor.userFocusesNode(n1);
   editor.userPressesBackspace();
   editor.userUnfocusesNode();
   assert(diagram.node(n2).inputs[0].source_node_index<0);
@@ -127,7 +127,7 @@ static void testChangingText2()
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
   int n1 = editor.userAddsANode();
-  editor.userFocusesNode2(n1);
+  editor.userFocusesNode(n1);
   editor.userTypesText("$");
   assert(diagram.node(n1).lines[0].has_output);
   editor.userPressesBackspace();

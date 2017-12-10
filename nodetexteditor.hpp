@@ -1,26 +1,26 @@
 #include <string>
 #include <cassert>
-#include "node2.hpp"
+#include "node.hpp"
 
 
-struct Node2TextEditor {
+struct NodeTextEditor {
   struct Callbacks {
     virtual void lineUnfocused(int) = 0;
     virtual void lineFocused(int) = 0;
   };
 
-  Node2 *node_ptr = 0;
+  Node *node_ptr = 0;
 
-  Node2TextEditor()
+  NodeTextEditor()
   {
   }
 
-  std::string &focusedText(Node2 &node)
+  std::string &focusedText(Node &node)
   {
     return node.lines[cursor_line_index].text;
   }
 
-  void beginEditing(Node2 &node)
+  void beginEditing(Node &node)
   {
     cursor_line_index = 0;
     if (node.lines.empty()) {
@@ -64,7 +64,7 @@ struct Node2TextEditor {
     node_ptr = 0;
   }
 
-  Node2& node()
+  Node& node()
   {
     assert(node_ptr);
     return *node_ptr;
@@ -81,7 +81,7 @@ struct Node2TextEditor {
   void textTyped(const std::string &new_text) { textTyped(node(),new_text); }
 
   private:
-    void backspace(Node2 &node)
+    void backspace(Node &node)
     {
       std::string &focused_text = focusedText(node);
       int last_column_index = focused_text.length();
@@ -108,7 +108,7 @@ struct Node2TextEditor {
       --cursor_column_index;
     }
 
-    void left(Node2& node)
+    void left(Node& node)
     {
       int last_column_index = focusedText(node).length();
 
@@ -123,7 +123,7 @@ struct Node2TextEditor {
       --cursor_column_index;
     }
 
-    void right(Node2& node)
+    void right(Node& node)
     {
       int last_column = node.lines[cursor_line_index].text.size();
 
@@ -134,7 +134,7 @@ struct Node2TextEditor {
       ++cursor_column_index;
     }
 
-    void up(Node2 &,Callbacks * callbacks_ptr)
+    void up(Node &,Callbacks * callbacks_ptr)
     {
       if (cursor_line_index>0) {
         if (callbacks_ptr) {
@@ -147,7 +147,7 @@ struct Node2TextEditor {
       }
     }
 
-    void down(Node2 &focused_node)
+    void down(Node &focused_node)
     {
       int n_lines = focused_node.lines.size();
       if (cursor_line_index+1 < n_lines) {
@@ -155,7 +155,7 @@ struct Node2TextEditor {
       }
     }
 
-    void textTyped(Node2 &node,const std::string &new_text)
+    void textTyped(Node &node,const std::string &new_text)
     {
       std::string &text = focusedText(node);
       int last_column = text.length();
@@ -167,13 +167,13 @@ struct Node2TextEditor {
       node.addInputsAndOutputs();
     }
 
-    void enter(Node2 &node,Callbacks *callbacks_ptr)
+    void enter(Node &node,Callbacks *callbacks_ptr)
     {
       {
         std::string &text = focusedText(node);
         node.lines.insert(
           node.lines.begin() + cursor_line_index + 1,
-          Node2::Line(text.substr(cursor_column_index))
+          Node::Line(text.substr(cursor_column_index))
         );
       }
       {

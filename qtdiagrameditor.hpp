@@ -9,7 +9,7 @@
 #include "circle.hpp"
 
 
-struct Node2RenderInfo {
+struct NodeRenderInfo {
   Rect header_rect;
   Rect body_outer_rect;
   std::vector<TextObject> text_objects;
@@ -34,9 +34,9 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
     Point2D screenToGLCoords(int x,int y) const;
     bool contains(const TextObject &text_object,const Point2D &p);
-    int indexOfNode2Containing(const Point2D &p);
-    bool node2InputContains(int node_index,int input_index,const Point2D &p);
-    bool node2OutputContains(int node_index,int output_index,const Point2D &p);
+    NodeIndex indexOfNodeContaining(const Point2D &p);
+    bool nodeInputContains(int node_index,int input_index,const Point2D &p);
+    bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
     NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
     void mousePressedAt(Point2D p);
     void mousePressEvent(QMouseEvent *event_ptr) override;
@@ -99,8 +99,8 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     static constexpr float node_input_radius = 5;
     static constexpr float connector_radius = 5;
 
-    Circle nodeInputCircle(const Node2 &,int input_index);
-    Circle nodeOutputCircle(const Node2 &node,int output_index);
+    Circle nodeInputCircle(const Node &,int input_index);
+    Circle nodeOutputCircle(const Node &node,int output_index);
     Circle connectorCircle(NodeConnectorIndex) const;
     Point2D nodeOutputPosition(int node_index);
     void drawNodeInput(int node_index,int input_index);
@@ -109,9 +109,9 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       inputTextObject(const std::string &s,float left_x,float y) const;
     TextObject
       outputTextObject(const std::string &s,float right_x,float y) const;
-    Rect nodeBodyRect(const Node2 &,const Rect &header_rect) const;
-    Node2RenderInfo nodeRenderInfo(const Node2 &node) const;
-    void drawNode2(int node2_index);
+    Rect nodeBodyRect(const Node &,const Rect &header_rect) const;
+    NodeRenderInfo nodeRenderInfo(const Node &node) const;
+    void drawNode(NodeIndex);
     void paintGL() override;
     void redraw() override { update(); }
 };

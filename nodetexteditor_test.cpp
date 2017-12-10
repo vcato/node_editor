@@ -1,4 +1,4 @@
-#include "node2texteditor.hpp"
+#include "nodetexteditor.hpp"
 
 #include <cassert>
 #include <sstream>
@@ -12,7 +12,7 @@ using std::ostringstream;
 
 namespace {
 struct Tester {
-  struct Callbacks : Node2TextEditor::Callbacks {
+  struct Callbacks : NodeTextEditor::Callbacks {
     ostringstream stream;
 
     virtual void lineUnfocused(int line_index)
@@ -28,8 +28,8 @@ struct Tester {
   };
 
   Callbacks callbacks;
-  Node2TextEditor editor;
-  Node2 node;
+  NodeTextEditor editor;
+  Node node;
 
   Tester()
   : editor()

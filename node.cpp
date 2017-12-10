@@ -1,4 +1,4 @@
-#include "node2.hpp"
+#include "node.hpp"
 
 #include <cassert>
 #include <sstream>
@@ -10,13 +10,13 @@ using std::istringstream;
 using std::cerr;
 
 
-void Node2::removeLine(int line_index)
+void Node::removeLine(int line_index)
 {
   lines.erase(lines.begin() + line_index);
 }
 
 
-void Node2::updateInputsAndOutputs()
+void Node::updateInputsAndOutputs()
 {
   for (auto &line : lines) {
     line.has_input = lineTextHasInput(line.text);
@@ -28,7 +28,7 @@ void Node2::updateInputsAndOutputs()
 }
 
 
-void Node2::addInputsAndOutputs()
+void Node::addInputsAndOutputs()
 {
   for (auto &line : lines) {
     if (!line.has_input) {
@@ -44,7 +44,7 @@ void Node2::addInputsAndOutputs()
 }
 
 
-std::vector<std::string> Node2::strings() const
+std::vector<std::string> Node::strings() const
 {
   std::vector<std::string> result;
 
@@ -56,31 +56,31 @@ std::vector<std::string> Node2::strings() const
 }
 
 
-void Node2::setNInputs(size_t arg)
+void Node::setNInputs(size_t arg)
 {
   inputs.resize(arg);
 }
 
 
-void Node2::setNOutputs(size_t arg)
+void Node::setNOutputs(size_t arg)
 {
   outputs.resize(arg);
 }
 
 
-void Node2::updateNInputs()
+void Node::updateNInputs()
 {
   setNInputs(countInputs(*this));
 }
 
 
-void Node2::updateNOutputs()
+void Node::updateNOutputs()
 {
   setNOutputs(countOutputs(*this));
 }
 
 
-size_t Node2::countInputs(const Node2 &node)
+size_t Node::countInputs(const Node &node)
 {
   size_t n_inputs = 0;
 
@@ -94,7 +94,7 @@ size_t Node2::countInputs(const Node2 &node)
 }
 
 
-size_t Node2::countOutputs(const Node2 &node)
+size_t Node::countOutputs(const Node &node)
 {
   size_t n_outputs = 0;
 
@@ -120,12 +120,12 @@ static vector<string> split(const string &text)
 }
 
 
-void Node2::setText(const std::string &text)
+void Node::setText(const std::string &text)
 {
-  Node2 &node = *this;
+  Node &node = *this;
   if (text=="") {
     node.lines.clear();
-    node.lines.resize(1,Node2::Line(""));
+    node.lines.resize(1,Node::Line(""));
     node.updateInputsAndOutputs();
     assert(node.nLines()==1);
     assert(!node.lines[0].has_output);
@@ -136,18 +136,18 @@ void Node2::setText(const std::string &text)
   vector<string> lines = split(text);
 
   for (const auto &line : lines) {
-    node.lines.push_back(Node2::Line(line));
+    node.lines.push_back(Node::Line(line));
   }
 
   if (endsWith(text,"\n")) {
-    node.lines.push_back(Node2::Line(""));
+    node.lines.push_back(Node::Line(""));
   }
 
   node.updateInputsAndOutputs();
 }
 
 
-bool Node2::isEmpty() const
+bool Node::isEmpty() const
 {
   if (lines.size()==1 && lines[0].text=="") return true;
   return false;

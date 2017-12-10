@@ -15,7 +15,7 @@ using std::unique_ptr;
 
 void
   Diagram::evaluateLine(
-    Node2 &node,int line_index,int output_index,ostream &stream,
+    Node &node,int line_index,int output_index,ostream &stream,
     int source_output_index,int source_node
   )
 {
@@ -29,8 +29,8 @@ void
     input_value = this->node(source_node).outputs[source_output_index].value;
   }
 
-  Node2::Line &line = node.lines[line_index];
-  Node2::Output &output = node.outputs[output_index];
+  Node::Line &line = node.lines[line_index];
+  Node::Output &output = node.outputs[output_index];
 
   output.value = lineTextValue(line.text,stream,input_value);
 }
@@ -46,7 +46,7 @@ void
   assert(node_index>=0);
 
   if (evaluated_flags[node_index]) return;
-  Node2 &node = this->node(node_index);
+  Node &node = this->node(node_index);
   int n_inputs = node.inputs.size();
 
   for (int i=0; i!=n_inputs; ++i) {
@@ -80,16 +80,16 @@ void
 }
 
 
-Node2 *Diagram::findNode(NodeIndex i)
+Node *Diagram::findNode(NodeIndex i)
 {
-  return _node2s[i].get();
+  return _node_ptrs[i].get();
 }
 
 
 void Diagram::deleteNode(NodeIndex index)
 {
   // Disconnect source inputs
-  for (const unique_ptr<Node2> &node_ptr : _node2s) {
+  for (const unique_ptr<Node> &node_ptr : _node_ptrs) {
     if (node_ptr) {
       for (auto &input : node_ptr->inputs) {
         if (input.source_node_index==index) {
@@ -99,8 +99,8 @@ void Diagram::deleteNode(NodeIndex index)
     }
   }
 
-  assert(_node2s[index]);
-  _node2s[index].reset();
+  assert(_node_ptrs[index]);
+  _node_ptrs[index].reset();
 }
 
 
@@ -115,7 +115,7 @@ void Diagram::evaluate(ostream &stream)
 {
   cerr << "In Diagram::evaluate()\n";
 
-  int n_nodes = _node2s.size();
+  int n_nodes = _node_ptrs.size();
 
   vector<bool> evaluated_flags(n_nodes,false);
 
@@ -129,10 +129,10 @@ void Diagram::evaluate(ostream &stream)
 
 int Diagram::addNode(const string &text)
 {
-  int node_index = _node2s.size();
+  int node_index = _node_ptrs.size();
 
-  _node2s.emplace_back(make_unique<Node2>());
-  Node2 &node = this->node(node_index);
+  _node_ptrs.emplace_back(make_unique<Node>());
+  Node &node = this->node(node_index);
   node.setText(text);
   node.header_text_object.text = "";
 
@@ -140,10 +140,10 @@ int Diagram::addNode(const string &text)
 }
 
 
-Node2 &Diagram::node(int node_index)
+Node &Diagram::node(int node_index)
 {
-  assert(_node2s[node_index]);
-  return *_node2s[node_index];
+  assert(_node_ptrs[node_index]);
+  return *_node_ptrs[node_index];
 }
 
 
@@ -155,7 +155,7 @@ void
     int output_index
   )
 {
-  Node2::Input &input = node(input_node_index).inputs[input_index];
+  Node::Input &input = node(input_node_index).inputs[input_index];
   input.source_node_index = output_node_index;
   input.source_output_index = output_index;
 }
@@ -170,18 +170,18 @@ void Diagram::setNodeText(int node_index,const std::string &text)
 
 void Diagram::removeInvalidInputs()
 {
-  int n_nodes = _node2s.size();
+  int n_nodes = _node_ptrs.size();
 
   for (int i=0; i!=n_nodes; ++i) {
     int n_inputs = node(i).inputs.size();
     for (int j=0; j!=n_inputs; ++j) {
-      Node2::Input &input = node(i).inputs[j];
+      Node::Input &input = node(i).inputs[j];
       int source_node_index = input.source_node_index;
       if (source_node_index>=0) {
         if (input.source_node_index>=n_nodes) {
           assert(false);
         }
-        Node2 &source_node = node(source_node_index);
+        Node &source_node = node(source_node_index);
         int n_source_outputs = source_node.outputs.size();
         if (input.source_output_index>=n_source_outputs) {
           input.source_node_index = -1;
@@ -197,10 +197,10 @@ vector<NodeIndex> Diagram::existingNodeIndices() const
 {
   vector<NodeIndex> result;
   NodeIndex index = 0;
-  NodeIndex end = _node2s.size();
+  NodeIndex end = _node_ptrs.size();
 
   for (;index!=end; ++index) {
-    if (_node2s[index]) {
+    if (_node_ptrs[index]) {
       result.push_back(index);
     }
   }
@@ -213,7 +213,7 @@ int Diagram::nExistingNodes() const
 {
   int count = 0;
 
-  for (const unique_ptr<Node2> &node_ptr : _node2s) {
+  for (const unique_ptr<Node> &node_ptr : _node_ptrs) {
     if (node_ptr) {
       ++count;
     }

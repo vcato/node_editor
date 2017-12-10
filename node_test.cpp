@@ -1,11 +1,11 @@
-#include "node2.hpp"
+#include "node.hpp"
 
 #include <cassert>
 
 
 int main()
 {
-  Node2 node;
+  Node node;
   node.setText("");
   assert(node.isEmpty());
 }

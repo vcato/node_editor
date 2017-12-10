@@ -8,8 +8,8 @@
 #include "stringutil.hpp"
 #include "linetext.hpp"
 #include "textobject.hpp"
-#include "node2.hpp"
-#include "node2texteditor.hpp"
+#include "node.hpp"
+#include "nodetexteditor.hpp"
 #include "diagram.hpp"
 
 
@@ -115,21 +115,13 @@ struct NodeConnectorIndex {
 };
 
 
-struct Node1Editor {
+struct NodeEditor {
   int selected_node_index = -1;
   int focused_node_index = -1;
   bool node_was_selected = false;
-  NodeInputIndex selected_node_input_index = NodeInputIndex::null();
-};
+  NodeTextEditor text_editor;
 
-
-struct Node2Editor {
-  int selected_node_index = -1;
-  int focused_node_index = -1;
-  bool node_was_selected = false;
-  Node2TextEditor text_editor;
-
-  Node2Editor()
+  NodeEditor()
   : text_editor()
   {
   }
@@ -145,7 +137,7 @@ struct Node2Editor {
     focused_node_index = -1;
   }
 
-  Node2& focusedNode(Diagram &diagram)
+  Node& focusedNode(Diagram &diagram)
   {
     return diagram.node(focused_node_index);
   }
@@ -167,7 +159,7 @@ struct Node2Editor {
   std::string &focusedText(Diagram &diagram)
   {
     assert(focused_node_index>=0);
-    Node2 &node = focusedNode(diagram);
+    Node &node = focusedNode(diagram);
     return text_editor.focusedText(node);
   }
 };
@@ -183,23 +175,23 @@ class DiagramEditor {
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;
-    NodeConnectorIndex selected_node2_connector_index =
+    NodeConnectorIndex selected_node_connector_index =
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
     Diagram &diagram;
-    Node2Editor node2_editor;
+    NodeEditor node_editor;
 
     virtual void redraw() = 0;
-    void deleteNode2(int index);
+    void deleteNode(int index);
     std::string &focusedText();
     void enterPressed();
     void backspacePressed();
     void textTyped(const std::string &new_text);
     void updateNodeInputs(int node_index);
-    int addNode2(const std::string &text,const Point2D &position);
+    int addNode(const std::string &text,const Point2D &position);
     void unfocus();
-    Node2 &node(NodeIndex arg) { return diagram.node(arg); }
-    const Node2 &node(NodeIndex arg) const { return diagram.node(arg); }
+    Node &node(NodeIndex arg) { return diagram.node(arg); }
+    const Node &node(NodeIndex arg) const { return diagram.node(arg); }
 
 
     void

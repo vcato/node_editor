@@ -1,12 +1,12 @@
 #include <vector>
 #include <memory>
-#include "node2.hpp"
+#include "node.hpp"
 
 
 struct Diagram {
-  std::vector<std::unique_ptr<Node2>> _node2s;
+  std::vector<std::unique_ptr<Node>> _node_ptrs;
 
-  Node2 *findNode(NodeIndex);
+  Node *findNode(NodeIndex);
   void evaluate();
   void evaluate(std::ostream &);
   void
@@ -17,7 +17,7 @@ struct Diagram {
     );
   void
     evaluateLine(
-      Node2 &node,
+      Node &node,
       int line_index,
       int output_index,
       std::ostream &,
@@ -28,7 +28,7 @@ struct Diagram {
 
   void deleteNode(NodeIndex index);
 
-  Node2 &node(NodeIndex);
+  Node &node(NodeIndex);
 
   int nExistingNodes() const;
 
