@@ -34,10 +34,10 @@ struct Diagram {
 
   void
     connectNodes(
-      NodeIndex input_node_index,
-      int input_index,
       NodeIndex output_node_index,
-      int output_index
+      int output_index,
+      NodeIndex input_node_index,
+      int input_index
     );
 
   void setNodeText(int node_index,const std::string &);

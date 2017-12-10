@@ -39,14 +39,15 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void
     userConnects(
-      int input_node_index,
-      int input_index,
       int output_node_index,
-      int output_index
+      int output_index,
+      int input_node_index,
+      int input_index
     )
   {
     connectNodes(
-      input_node_index,input_index,output_node_index,output_index
+      output_node_index,output_index,
+      input_node_index,input_index
     );
   }
 
@@ -101,7 +102,7 @@ static void testDeletingAConnectedNode()
   FakeDiagramEditor editor(diagram);
   int n1 = editor.userAddsANodeWithText("5");
   int n2 = editor.userAddsANodeWithText("a=$");
-  editor.userConnects(n2,0,n1,0);
+  editor.userConnects(n1,0,n2,0);
   editor.userSelectsNode(n1);
   editor.userPressesBackspace();
   assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
@@ -114,7 +115,7 @@ static void testChangingText()
   FakeDiagramEditor editor(diagram);
   int n1 = editor.userAddsANodeWithText("5");
   int n2 = editor.userAddsANodeWithText("show($)");
-  editor.userConnects(n2,0,n1,0);
+  editor.userConnects(n1,0,n2,0);
   editor.userFocusesNode(n1);
   editor.userPressesBackspace();
   editor.userUnfocusesNode();

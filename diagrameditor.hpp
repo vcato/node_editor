@@ -196,10 +196,10 @@ class DiagramEditor {
 
     void
       connectNodes(
-        int input_node_index,
-        int input_index,
         int output_node_index,
-        int output_index
+        int output_index,
+        int input_node_index,
+        int input_index
       );
 };
 

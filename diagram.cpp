@@ -149,10 +149,10 @@ Node &Diagram::node(int node_index)
 
 void
   Diagram::connectNodes(
-    int input_node_index,
-    int input_index,
     int output_node_index,
-    int output_index
+    int output_index,
+    int input_node_index,
+    int input_index
   )
 {
   Node::Input &input = node(input_node_index).inputs[input_index];

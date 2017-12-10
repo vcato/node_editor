@@ -225,7 +225,8 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
         int output_node_index = release_index.node_index;
         int output_index = release_index.output_index;
         connectNodes(
-          input_node_index,input_index,output_node_index,output_index
+          output_node_index,output_index,
+          input_node_index,input_index
         );
       }
       else if (selected_node_connector_index.output_index>=0 &&
@@ -236,7 +237,8 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
         int output_node_index = selected_node_connector_index.node_index;
         int output_index = selected_node_connector_index.output_index;
         connectNodes(
-          input_node_index,input_index,output_node_index,output_index
+          output_node_index,output_index,
+          input_node_index,input_index
         );
       }
     }

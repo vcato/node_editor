@@ -51,7 +51,8 @@ int main()
     int output_node_index = n1;
     int output_index = 0;
     diagram.connectNodes(
-      input_node_index,input_index,output_node_index,output_index
+      output_node_index,output_index,
+      input_node_index,input_index
     );
     ostringstream stream;
     diagram.evaluate(stream);
@@ -67,7 +68,8 @@ int main()
     int output_node_index = n1;
     int output_index = 0;
     diagram.connectNodes(
-      input_node_index,input_index,output_node_index,output_index
+      output_node_index,output_index,
+      input_node_index,input_index
     );
     diagram.setNodeText(n1,"");
     assert(diagram.node(n1).nOutputs()==0);
@@ -79,7 +81,7 @@ int main()
     Diagram diagram;
     int n1 = diagram.addNode("5");
     int n2 = diagram.addNode("b=$");
-    diagram.connectNodes(n2,0,n1,0);
+    diagram.connectNodes(n1,0,n2,0);
     diagram.deleteNode(n1);
     assert(diagram.findNode(n2));
     assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());

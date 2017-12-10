@@ -57,14 +57,15 @@ int DiagramEditor::addNode(const std::string &text,const Point2D &position)
 
 void
   DiagramEditor::connectNodes(
-    int input_node_index,
-    int input_index,
     int output_node_index,
-    int output_index
+    int output_index,
+    int input_node_index,
+    int input_index
   )
 {
   diagram.connectNodes(
-    input_node_index,input_index,output_node_index,output_index
+    output_node_index,output_index,
+    input_node_index,input_index
   );
 }
 
