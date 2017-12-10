@@ -8,13 +8,13 @@ using std::vector;
 
 void DiagramEditor::deleteNode2(int index)
 {
-  node2s().erase(node2s().begin()+index);
+  diagram.deleteNode(index);
 }
 
 
 string &DiagramEditor::focusedText()
 {
-  return node2_editor.focusedText(node2s());
+  return node2_editor.focusedText(diagram);
 }
 
 

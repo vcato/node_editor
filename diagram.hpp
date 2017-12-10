@@ -1,14 +1,17 @@
 #include <vector>
+#include <memory>
 #include "node2.hpp"
 
-struct Diagram {
-  std::vector<Node2> _node2s;
 
+struct Diagram {
+  std::vector<std::unique_ptr<Node2>> _node2s;
+
+  Node2 *findNode(NodeIndex);
   void evaluate();
   void evaluate(std::ostream &);
   void
     updateNodeEvaluation(
-      int node_index,
+      NodeIndex,
       std::vector<bool> &evaluated_flags,
       std::ostream &
     );
@@ -21,18 +24,25 @@ struct Diagram {
       int input_index,
       int input_node
     );
-  int addNode(const std::string &text);
-  Node2 &node(int node_index);
+  NodeIndex addNode(const std::string &text);
+
+  void deleteNode(NodeIndex index);
+
+  Node2 &node(NodeIndex);
+
+  int nExistingNodes() const;
 
   void
     connectNodes(
-      int input_node_index,
+      NodeIndex input_node_index,
       int input_index,
-      int output_node_index,
+      NodeIndex output_node_index,
       int output_index
     );
 
   void setNodeText(int node_index,const std::string &);
 
   void removeInvalidInputs();
+
+  std::vector<NodeIndex> existingNodeIndices() const;
 };

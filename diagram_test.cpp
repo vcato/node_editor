@@ -75,4 +75,19 @@ int main()
     ostringstream stream;
     // diagram.evaluate(stream);
   }
+  {
+    Diagram diagram;
+    int n1 = diagram.addNode("5");
+    int n2 = diagram.addNode("b=$");
+    diagram.connectNodes(n2,0,n1,0);
+    diagram.deleteNode(n1);
+    assert(diagram.findNode(n2));
+    assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
+    ostringstream stream;
+    diagram.evaluate(stream);
+  }
+  {
+    Diagram diagram;
+    assert(diagram.existingNodeIndices().size()==0);
+  }
 }

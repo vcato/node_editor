@@ -4,6 +4,7 @@
 #include <vector>
 #include "textobject.hpp"
 #include "linetext.hpp"
+#include "nodeindex.hpp"
 
 
 class Node2 {
@@ -28,7 +29,7 @@ class Node2 {
     std::vector<std::string> strings() const;
 
     struct Input {
-      int source_node_index = -1;
+      int source_node_index = nullNodeIndex();
       int source_output_index = -1;
     };
 

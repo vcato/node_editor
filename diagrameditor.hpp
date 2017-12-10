@@ -145,16 +145,15 @@ struct Node2Editor {
     focused_node_index = -1;
   }
 
-  Node2& focusedNode(std::vector<Node2> &node2s)
+  Node2& focusedNode(Diagram &diagram)
   {
-    assert(focused_node_index>=0);
-    return node2s[focused_node_index];
+    return diagram.node(focused_node_index);
   }
 
-  void focusNode(int node_index,std::vector<Node2> &node2s)
+  void focusNode(int node_index,Diagram &diagram)
   {
     focused_node_index = node_index;
-    text_editor.beginEditing(focusedNode(node2s));
+    text_editor.beginEditing(focusedNode(diagram));
   }
 
   void selectNode(int node_index)
@@ -165,10 +164,10 @@ struct Node2Editor {
     selected_node_index = node_index;
   }
 
-  std::string &focusedText(std::vector<Node2> &node2s)
+  std::string &focusedText(Diagram &diagram)
   {
     assert(focused_node_index>=0);
-    Node2 &node = focusedNode(node2s);
+    Node2 &node = focusedNode(diagram);
     return text_editor.focusedText(node);
   }
 };
@@ -181,15 +180,12 @@ class DiagramEditor {
     {
     }
 
-    int nNode2s() { return node2s().size(); }
   protected:
     Point2D mouse_press_position;
     Point2D original_node_position;
     NodeConnectorIndex selected_node2_connector_index =
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
-    std::vector<Node2> &node2s() { return diagram._node2s; }
-    const std::vector<Node2> &node2s() const { return diagram._node2s; }
     Diagram &diagram;
     Node2Editor node2_editor;
 
@@ -202,6 +198,8 @@ class DiagramEditor {
     void updateNodeInputs(int node_index);
     int addNode2(const std::string &text,const Point2D &position);
     void unfocus();
+    Node2 &node(NodeIndex arg) { return diagram.node(arg); }
+    const Node2 &node(NodeIndex arg) const { return diagram.node(arg); }
 
 
     void

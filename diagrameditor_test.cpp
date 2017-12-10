@@ -29,7 +29,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userFocusesNode2(int node_index)
   {
-    node2_editor.focusNode(node_index,node2s());
+    node2_editor.focusNode(node_index,diagram);
   }
 
   void userUnfocusesNode()
@@ -91,7 +91,20 @@ static void testDeletingANode()
   int node_index = editor.userAddsANode2WithText("test");
   editor.userSelectsNode2(node_index);
   editor.userPressesBackspace();
-  assert(editor.nNode2s()==0);
+  assert(diagram.nExistingNodes()==0);
+}
+
+
+static void testDeletingAConnectedNode()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  int n1 = editor.userAddsANode2WithText("5");
+  int n2 = editor.userAddsANode2WithText("a=$");
+  editor.userConnects(n2,0,n1,0);
+  editor.userSelectsNode2(n1);
+  editor.userPressesBackspace();
+  assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
 }
 
 
@@ -134,6 +147,7 @@ int main()
 {
   test1();
   testDeletingANode();
+  testDeletingAConnectedNode();
   testChangingText();
   testChangingText2();
 }

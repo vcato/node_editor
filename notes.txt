@@ -221,3 +221,10 @@ with the slider, and then show the result.
 
 Maybe something where we add three sliders for R,G,B, then use a diagram
 to turn those into a color, and then display the color.
+
+---
+connectNodes should take the output first and then the input.
+
+Need to have stable node indices.
+
+Need to rename Node2 to Node.

@@ -5,7 +5,10 @@
 #include <QMenuBar>
 #include <QBoxLayout>
 #include <QHeaderView>
+#include <QLabel>
 #include <QPushButton>
+#include <QComboBox>
+#include <QSpinBox>
 
 
 using std::cerr;
@@ -81,14 +84,21 @@ static QTreeWidgetItem& addItemTo(QTreeWidget &tree_widget,const string &label)
 }
 
 
+static QTreeWidgetItem& addChildItemTo(QTreeWidgetItem &parent_item)
+{
+  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
+  parent_item.addChild(item_ptr);
+  QTreeWidgetItem &item = *item_ptr;
+  item.setExpanded(true);
+  return item;
+}
+
+
 static QTreeWidgetItem&
   addChildItemTo(QTreeWidgetItem &parent_item,const string &label)
 {
-  QTreeWidgetItem *pass_item_ptr = new QTreeWidgetItem;
-  setItemText(*pass_item_ptr,label);
-  parent_item.addChild(pass_item_ptr);
-  QTreeWidgetItem &pass_item = *pass_item_ptr;
-  pass_item.setExpanded(true);
+  QTreeWidgetItem &pass_item = addChildItemTo(parent_item);
+  setItemText(pass_item,label);
   return pass_item;
 }
 
@@ -167,16 +177,64 @@ void QtMainWindow::addPassTriggered()
 }
 
 
+template <typename T>
+static T &
+  setItemWidget(
+    QTreeWidget &tree_widget,
+    QTreeWidgetItem &test_item,
+    const std::string &label
+  )
+{
+  QWidget *wrapper_widget_ptr = new QWidget();
+  QHBoxLayout &layout = ::setLayout<QHBoxLayout>(*wrapper_widget_ptr);
+  addTo(layout,new QLabel(QString::fromStdString(label)));
+  T* widget_ptr = new T();
+  addTo(layout,widget_ptr);
+  tree_widget.setItemWidget(&test_item,/*column*/0,wrapper_widget_ptr);
+  return *widget_ptr;
+}
+
+
+static void
+  addSpinBoxChildItemTo(
+    QTreeWidget &tree_widget,
+    QTreeWidgetItem &local_position_item,
+    const string &label
+  )
+{
+  QTreeWidgetItem &x_item = addChildItemTo(local_position_item);
+  setItemWidget<QSpinBox>(tree_widget,x_item,label);
+}
+
+
 void QtMainWindow::addPosExprTriggered()
 {
   assert(motion_pass_item_ptr);
 
   QTreeWidgetItem &item = addChildItemTo(*motion_pass_item_ptr,"Pos Expr");
   add_pos_expr_item_ptr = &item;
-  addChildItemTo(item,"Target Body");
-  addChildItemTo(item,"Local Position");
-  addChildItemTo(item,"Global Position");
-  addChildItemTo(item,"Weight");
+  {
+    QTreeWidgetItem &test_item = addChildItemTo(item);
+    QComboBox &combo_box =
+      setItemWidget<QComboBox>(treeWidget(),test_item,"Target Body");
+    combo_box.addItem("Body1");
+    combo_box.addItem("Body2");
+    combo_box.addItem("Body3");
+  }
+  QTreeWidgetItem &local_position_item = addChildItemTo(item,"Local Position");
+  {
+    addSpinBoxChildItemTo(treeWidget(),local_position_item,"X");
+    addSpinBoxChildItemTo(treeWidget(),local_position_item,"Y");
+    addSpinBoxChildItemTo(treeWidget(),local_position_item,"Z");
+  }
+  QTreeWidgetItem &global_position_item =
+    addChildItemTo(item,"Global Position");
+  {
+    addSpinBoxChildItemTo(treeWidget(),global_position_item,"X");
+    addSpinBoxChildItemTo(treeWidget(),global_position_item,"Y");
+    addSpinBoxChildItemTo(treeWidget(),global_position_item,"Z");
+  }
+  addSpinBoxChildItemTo(treeWidget(),item,"Weight");
 }
 
 
