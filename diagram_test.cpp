@@ -74,8 +74,6 @@ int main()
     diagram.setNodeText(n1,"");
     assert(diagram.node(n1).nOutputs()==0);
     assert(diagram.node(n2).inputs[0].source_node_index<0);
-    ostringstream stream;
-    // diagram.evaluate(stream);
   }
   {
     Diagram diagram;
@@ -86,6 +84,7 @@ int main()
     assert(diagram.findNode(n2));
     assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
     ostringstream stream;
+    diagram.removeInvalidInputs();
     diagram.evaluate(stream);
   }
   {

@@ -221,6 +221,7 @@ with the slider, and then show the result.
 
 Maybe something where we add three sliders for R,G,B, then use a diagram
 to turn those into a color, and then display the color.
-
 ---
-connectNodes should take the output first and then the input.
+It seems appealing to have it where the items in the tree represent
+expressions, and the child items represent variables that can be used in
+those expressions.

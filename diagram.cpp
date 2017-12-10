@@ -170,17 +170,12 @@ void Diagram::setNodeText(int node_index,const std::string &text)
 
 void Diagram::removeInvalidInputs()
 {
-  int n_nodes = _node_ptrs.size();
-
-  for (int i=0; i!=n_nodes; ++i) {
+  for (NodeIndex i : existingNodeIndices()) {
     int n_inputs = node(i).inputs.size();
     for (int j=0; j!=n_inputs; ++j) {
       Node::Input &input = node(i).inputs[j];
       int source_node_index = input.source_node_index;
       if (source_node_index>=0) {
-        if (input.source_node_index>=n_nodes) {
-          assert(false);
-        }
         Node &source_node = node(source_node_index);
         int n_source_outputs = source_node.outputs.size();
         if (input.source_output_index>=n_source_outputs) {
