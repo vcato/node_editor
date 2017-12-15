@@ -10,6 +10,7 @@ class Tree {
 
     Tree();
     Index createCharmapperItem();
+    Path createCharmapperItem2();
     Index createMotionPassItem(const Path &);
     Index createPosExprItem(const Path &);
     bool isCharmapperItem(const Path &path) const;
@@ -43,3 +44,10 @@ class Tree {
 
     Node _root_node;
 };
+
+
+inline Tree::Path join(Tree::Path path,Tree::Index child_index)
+{
+  path.push_back(child_index);
+  return path;
+}

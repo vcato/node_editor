@@ -229,13 +229,6 @@ QTreeWidgetItem* QtMainWindow::findSelectedItem()
 }
 
 
-static vector<int> join(vector<int> path,int child_index)
-{
-  path.push_back(child_index);
-  return path;
-}
-
-
 void QtMainWindow::addPassTriggered()
 {
   QTreeWidgetItem *selected_item_ptr = findSelectedItem();

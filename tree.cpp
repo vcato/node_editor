@@ -16,6 +16,14 @@ auto Tree::createCharmapperItem() -> Index
 }
 
 
+#if 0
+auto Tree::createCharmapperItem2() -> Path
+{
+  return join({},createCharmapperItem());
+}
+#endif
+
+
 auto Tree::createMotionPassItem(const Path &parent_path) -> Index
 {
   return createItem(parent_path,Node::Type::motion_pass);
