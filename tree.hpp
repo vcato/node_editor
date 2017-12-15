@@ -11,6 +11,7 @@ class Tree {
     Tree();
     Index createCharmapperItem();
     Index createMotionPassItem(const Path &);
+    Index createPosExprItem(const Path &);
     bool isCharmapperItem(const Path &path) const;
     bool isMotionPassItem(const Path &path) const;
 
@@ -19,7 +20,8 @@ class Tree {
       enum class Type {
         root,
         charmapper,
-        motion_pass
+        motion_pass,
+        pos_expr
       };
 
       Type type;

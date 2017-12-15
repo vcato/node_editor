@@ -290,6 +290,9 @@ void QtMainWindow::addPosExprTriggered()
   QTreeWidgetItem *motion_pass_item_ptr = findSelectedItem();
   assert(motion_pass_item_ptr);
 
+
+  Tree::Path motion_pass_path = itemPath(*motion_pass_item_ptr);
+  tree.createPosExprItem(motion_pass_path);
   QTreeWidgetItem &item = createItem(*motion_pass_item_ptr,"Pos Expr");
   {
     QTreeWidgetItem &test_item = createItem(item);

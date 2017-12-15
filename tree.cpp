@@ -22,6 +22,12 @@ auto Tree::createMotionPassItem(const Path &parent_path) -> Index
 }
 
 
+auto Tree::createPosExprItem(const Path &parent_path) -> Index
+{
+  return createItem(parent_path,Node::Type::pos_expr);
+}
+
+
 auto Tree::createItem(const Path &parent_path,Node::Type type) -> Index
 {
   return getNode(parent_path).createItem(type);
