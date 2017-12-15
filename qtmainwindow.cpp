@@ -107,10 +107,7 @@ static QTreeWidgetItem&
 
 
 QtMainWindow::QtMainWindow()
-: tree_widget_ptr(0),
-  charmapper_item_ptr(0),
-  motion_pass_item_ptr(0),
-  add_pos_expr_item_ptr(0)
+: tree_widget_ptr(0)
 {
   QMenuBar *menu_bar_ptr = menuBar();
   assert(menu_bar_ptr);
@@ -131,8 +128,7 @@ QtMainWindow::QtMainWindow()
         SLOT(prepareMenu(const QPoint &))
       );
       tree.createCharmapperItem();
-      QTreeWidgetItem &charmapper_item = createItem(tree_widget,"charmapper");
-      charmapper_item_ptr = &charmapper_item;
+      createItem(tree_widget,"charmapper");
     }
     {
       QPushButton &button = createPushButton(layout2);
@@ -242,8 +238,6 @@ static vector<int> join(vector<int> path,int child_index)
 
 void QtMainWindow::addPassTriggered()
 {
-  assert(charmapper_item_ptr);
-
   QTreeWidgetItem *selected_item_ptr = findSelectedItem();
 
   if (!selected_item_ptr) {
@@ -257,7 +251,7 @@ void QtMainWindow::addPassTriggered()
 
   cerr << "new item index: " << join(selected_item_path,index) << "\n";
   assert(tree.isMotionPassItem(join(selected_item_path,index)));
-  motion_pass_item_ptr = &createItem(*charmapper_item_ptr,"Motion Pass");
+  createItem(*selected_item_ptr,"Motion Pass");
 }
 
 
@@ -293,10 +287,10 @@ static void
 
 void QtMainWindow::addPosExprTriggered()
 {
+  QTreeWidgetItem *motion_pass_item_ptr = findSelectedItem();
   assert(motion_pass_item_ptr);
 
   QTreeWidgetItem &item = createItem(*motion_pass_item_ptr,"Pos Expr");
-  add_pos_expr_item_ptr = &item;
   {
     QTreeWidgetItem &test_item = createItem(item);
     QComboBox &combo_box =

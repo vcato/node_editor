@@ -23,9 +23,6 @@ class QtMainWindow : public QMainWindow {
     Diagram diagram;
     QWidget widget;
     QTreeWidget *tree_widget_ptr;
-    QTreeWidgetItem *charmapper_item_ptr;
-    QTreeWidgetItem *motion_pass_item_ptr;
-    QTreeWidgetItem *add_pos_expr_item_ptr;
 
     QTreeWidget &treeWidget();
     QTreeWidgetItem* findSelectedItem();
