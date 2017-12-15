@@ -7,7 +7,7 @@
 #include "nodeindex.hpp"
 
 
-class Node {
+class DiagramNode {
   public:
     struct Input;
     struct Output;
@@ -51,8 +51,8 @@ class Node {
     void setNOutputs(size_t arg);
     void updateNInputs();
     void updateNOutputs();
-    static size_t countInputs(const Node &);
-    static size_t countOutputs(const Node &);
+    static size_t countInputs(const DiagramNode &);
+    static size_t countOutputs(const DiagramNode &);
 };
 
 #endif /* NODE2_HPP_ */

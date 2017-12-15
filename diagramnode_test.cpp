@@ -1,6 +1,10 @@
-#include "node.hpp"
+#include "diagramnode.hpp"
 
 #include <cassert>
+
+
+using Node = DiagramNode;
+
 
 
 int main()

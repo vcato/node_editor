@@ -1,10 +1,12 @@
 #include <vector>
 #include <memory>
-#include "node.hpp"
+#include "diagramnode.hpp"
 
 
 class Diagram {
   public:
+    using Node = DiagramNode;
+
     Node *findNode(NodeIndex);
     void evaluate();
     void evaluate(std::ostream &);
@@ -47,5 +49,4 @@ class Diagram {
 
   private:
     std::vector<std::unique_ptr<Node>> _node_ptrs;
-
 };

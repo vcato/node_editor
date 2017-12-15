@@ -1,4 +1,4 @@
-#include "node.hpp"
+#include "diagramnode.hpp"
 
 #include <cassert>
 #include <sstream>
@@ -8,6 +8,8 @@ using std::vector;
 using std::string;
 using std::istringstream;
 using std::cerr;
+
+using Node = DiagramNode;
 
 
 void Node::removeLine(int line_index)

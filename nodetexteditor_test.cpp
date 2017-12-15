@@ -9,6 +9,8 @@ using std::string;
 using std::istringstream;
 using std::ostringstream;
 
+using Node = DiagramNode;
+
 
 namespace {
 struct Tester {

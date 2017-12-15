@@ -1,9 +1,11 @@
 #include <string>
 #include <cassert>
-#include "node.hpp"
+#include "diagramnode.hpp"
 
 
 struct NodeTextEditor {
+  using Node = DiagramNode;
+
   struct Callbacks {
     virtual void lineUnfocused(int) = 0;
     virtual void lineFocused(int) = 0;

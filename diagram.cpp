@@ -12,6 +12,7 @@ using std::ostringstream;
 using std::make_unique;
 using std::unique_ptr;
 
+using Node = DiagramNode;
 
 void
   Diagram::evaluateLine(

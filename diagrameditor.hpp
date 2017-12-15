@@ -8,10 +8,12 @@
 #include "stringutil.hpp"
 #include "linetext.hpp"
 #include "textobject.hpp"
-#include "node.hpp"
+#include "diagramnode.hpp"
 #include "nodetexteditor.hpp"
 #include "diagram.hpp"
 
+
+using Node = DiagramNode;
 
 
 inline Point2D operator-(const Point2D &a,const Point2D &b)
