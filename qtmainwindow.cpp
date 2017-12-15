@@ -16,7 +16,7 @@ using std::string;
 
 
 template <typename Layout>
-static Layout& setLayout(QWidget &widget)
+static Layout& createLayout(QWidget &widget)
 {
   Layout *layout_ptr = new Layout;
   widget.setLayout(layout_ptr);
@@ -25,7 +25,7 @@ static Layout& setLayout(QWidget &widget)
 
 
 template <typename Layout>
-static Layout& addLayoutTo(QBoxLayout &parent_layout)
+static Layout& createLayout(QBoxLayout &parent_layout)
 {
   Layout *layout_ptr = new Layout;
   parent_layout.addLayout(layout_ptr);
@@ -34,26 +34,26 @@ static Layout& addLayoutTo(QBoxLayout &parent_layout)
 
 
 template <typename Widget>
-static Widget& addTo(QLayout &layout,Widget *widget_ptr)
+static Widget& createWidget(QLayout &layout,Widget *widget_ptr)
 {
   layout.addWidget(widget_ptr);
   return *widget_ptr;
 }
 
 
-static QTreeWidget& addTreeWidgetTo(QLayout &layout)
+static QTreeWidget& createTreeWidget(QLayout &layout)
 {
-  return addTo(layout,new QTreeWidget);
+  return createWidget(layout,new QTreeWidget);
 }
 
 
-static QPushButton& addPushButtonTo(QLayout &layout)
+static QPushButton& createPushButton(QLayout &layout)
 {
-  return addTo(layout,new QPushButton);
+  return createWidget(layout,new QPushButton);
 }
 
 
-static QAction& addActionTo(QMenu &menu,const string &label)
+static QAction& createAction(QMenu &menu,const string &label)
 {
   QAction *add_pass_action_ptr = new QAction(QString::fromStdString(label),0);
   menu.addAction(add_pass_action_ptr);
@@ -61,7 +61,7 @@ static QAction& addActionTo(QMenu &menu,const string &label)
 }
 
 
-static void addDiagramEditorTo(QLayout &layout,Diagram &diagram)
+static void createDiagramEditor(QLayout &layout,Diagram &diagram)
 {
   QtDiagramEditor *diagram_editor_ptr = new QtDiagramEditor(diagram);
   layout.addWidget(diagram_editor_ptr);
@@ -74,7 +74,7 @@ static void setItemText(QTreeWidgetItem &item,const string &label)
 }
 
 
-static QTreeWidgetItem& addItemTo(QTreeWidget &tree_widget,const string &label)
+static QTreeWidgetItem& createItem(QTreeWidget &tree_widget,const string &label)
 {
   QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
   setItemText(*item_ptr,label);
@@ -84,7 +84,7 @@ static QTreeWidgetItem& addItemTo(QTreeWidget &tree_widget,const string &label)
 }
 
 
-static QTreeWidgetItem& addChildItemTo(QTreeWidgetItem &parent_item)
+static QTreeWidgetItem& createItem(QTreeWidgetItem &parent_item)
 {
   QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
   parent_item.addChild(item_ptr);
@@ -95,9 +95,9 @@ static QTreeWidgetItem& addChildItemTo(QTreeWidgetItem &parent_item)
 
 
 static QTreeWidgetItem&
-  addChildItemTo(QTreeWidgetItem &parent_item,const string &label)
+  createItem(QTreeWidgetItem &parent_item,const string &label)
 {
-  QTreeWidgetItem &pass_item = addChildItemTo(parent_item);
+  QTreeWidgetItem &pass_item = createItem(parent_item);
   setItemText(pass_item,label);
   return pass_item;
 }
@@ -113,12 +113,12 @@ QtMainWindow::QtMainWindow()
   assert(menu_bar_ptr);
   menu_bar_ptr->addMenu(&menu);
 
-  QHBoxLayout &layout = ::setLayout<QHBoxLayout>(widget);
+  QHBoxLayout &layout = createLayout<QHBoxLayout>(widget);
   {
-    QVBoxLayout &layout2 = addLayoutTo<QVBoxLayout>(layout);
+    QVBoxLayout &layout2 = createLayout<QVBoxLayout>(layout);
 
     {
-      QTreeWidget &tree_widget = addTreeWidgetTo(layout2);
+      QTreeWidget &tree_widget = createTreeWidget(layout2);
       tree_widget_ptr = &tree_widget;
       tree_widget.header()->close();
       tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
@@ -127,15 +127,15 @@ QtMainWindow::QtMainWindow()
         SIGNAL(customContextMenuRequested(const QPoint &)),
         SLOT(prepareMenu(const QPoint &))
       );
-      QTreeWidgetItem &charmapper_item = addItemTo(tree_widget,"charmapper");
+      QTreeWidgetItem &charmapper_item = createItem(tree_widget,"charmapper");
       charmapper_item_ptr = &charmapper_item;
     }
     {
-      QPushButton &button = addPushButtonTo(layout2);
+      QPushButton &button = createPushButton(layout2);
       button.setText("test");
     }
   }
-  addDiagramEditorTo(layout,diagram);
+  createDiagramEditor(layout,diagram);
   setCentralWidget(&widget);
 }
 
@@ -151,7 +151,7 @@ void QtMainWindow::prepareMenu(const QPoint &pos)
 
   if (widget_item_ptr==charmapper_item_ptr) {
     QMenu menu;
-    QAction &add_pass_action = addActionTo(menu,"Add Motion Pass");
+    QAction &add_pass_action = createAction(menu,"Add Motion Pass");
     connect(&add_pass_action,SIGNAL(triggered()),SLOT(addPassTriggered()));
     menu.exec(treeWidget().mapToGlobal(pos));
     return;
@@ -159,7 +159,7 @@ void QtMainWindow::prepareMenu(const QPoint &pos)
 
   if (widget_item_ptr==motion_pass_item_ptr) {
     QMenu menu;
-    QAction &add_pos_expr_action = addActionTo(menu,"Add Pos Expr");
+    QAction &add_pos_expr_action = createAction(menu,"Add Pos Expr");
     connect(
       &add_pos_expr_action,SIGNAL(triggered()),SLOT(addPosExprTriggered())
     );
@@ -173,7 +173,7 @@ void QtMainWindow::addPassTriggered()
 {
   assert(charmapper_item_ptr);
 
-  motion_pass_item_ptr = &addChildItemTo(*charmapper_item_ptr,"Motion Pass");
+  motion_pass_item_ptr = &createItem(*charmapper_item_ptr,"Motion Pass");
 }
 
 
@@ -186,23 +186,23 @@ static T &
   )
 {
   QWidget *wrapper_widget_ptr = new QWidget();
-  QHBoxLayout &layout = ::setLayout<QHBoxLayout>(*wrapper_widget_ptr);
-  addTo(layout,new QLabel(QString::fromStdString(label)));
+  QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
+  createWidget(layout,new QLabel(QString::fromStdString(label)));
   T* widget_ptr = new T();
-  addTo(layout,widget_ptr);
+  createWidget(layout,widget_ptr);
   tree_widget.setItemWidget(&test_item,/*column*/0,wrapper_widget_ptr);
   return *widget_ptr;
 }
 
 
 static void
-  addSpinBoxChildItemTo(
+  createItemSpinBox(
     QTreeWidget &tree_widget,
     QTreeWidgetItem &local_position_item,
     const string &label
   )
 {
-  QTreeWidgetItem &x_item = addChildItemTo(local_position_item);
+  QTreeWidgetItem &x_item = createItem(local_position_item);
   setItemWidget<QSpinBox>(tree_widget,x_item,label);
 }
 
@@ -211,30 +211,29 @@ void QtMainWindow::addPosExprTriggered()
 {
   assert(motion_pass_item_ptr);
 
-  QTreeWidgetItem &item = addChildItemTo(*motion_pass_item_ptr,"Pos Expr");
+  QTreeWidgetItem &item = createItem(*motion_pass_item_ptr,"Pos Expr");
   add_pos_expr_item_ptr = &item;
   {
-    QTreeWidgetItem &test_item = addChildItemTo(item);
+    QTreeWidgetItem &test_item = createItem(item);
     QComboBox &combo_box =
       setItemWidget<QComboBox>(treeWidget(),test_item,"Target Body");
     combo_box.addItem("Body1");
     combo_box.addItem("Body2");
     combo_box.addItem("Body3");
   }
-  QTreeWidgetItem &local_position_item = addChildItemTo(item,"Local Position");
+  QTreeWidgetItem &local_position_item = createItem(item,"Local Position");
   {
-    addSpinBoxChildItemTo(treeWidget(),local_position_item,"X");
-    addSpinBoxChildItemTo(treeWidget(),local_position_item,"Y");
-    addSpinBoxChildItemTo(treeWidget(),local_position_item,"Z");
+    createItemSpinBox(treeWidget(),local_position_item,"X");
+    createItemSpinBox(treeWidget(),local_position_item,"Y");
+    createItemSpinBox(treeWidget(),local_position_item,"Z");
   }
-  QTreeWidgetItem &global_position_item =
-    addChildItemTo(item,"Global Position");
+  QTreeWidgetItem &global_position_item = createItem(item,"Global Position");
   {
-    addSpinBoxChildItemTo(treeWidget(),global_position_item,"X");
-    addSpinBoxChildItemTo(treeWidget(),global_position_item,"Y");
-    addSpinBoxChildItemTo(treeWidget(),global_position_item,"Z");
+    createItemSpinBox(treeWidget(),global_position_item,"X");
+    createItemSpinBox(treeWidget(),global_position_item,"Y");
+    createItemSpinBox(treeWidget(),global_position_item,"Z");
   }
-  addSpinBoxChildItemTo(treeWidget(),item,"Weight");
+  createItemSpinBox(treeWidget(),item,"Weight");
 }
 
 
