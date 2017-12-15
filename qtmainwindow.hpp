@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QTreeWidget>
 #include "qtdiagrameditor.hpp"
+#include "tree.hpp"
 
 
 class QtMainWindow : public QMainWindow {
@@ -18,6 +19,7 @@ class QtMainWindow : public QMainWindow {
 
   private:
     QMenu menu{"Tools"};
+    Tree tree;
     Diagram diagram;
     QWidget widget;
     QTreeWidget *tree_widget_ptr;
@@ -26,4 +28,5 @@ class QtMainWindow : public QMainWindow {
     QTreeWidgetItem *add_pos_expr_item_ptr;
 
     QTreeWidget &treeWidget();
+    QTreeWidgetItem* findSelectedItem();
 };

@@ -14,7 +14,8 @@ run_unit_tests: \
   diagram_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
-  qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o
+  qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
+  tree.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_qtmainwindow.cpp: qtmainwindow.hpp

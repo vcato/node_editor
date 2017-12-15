@@ -13,6 +13,9 @@
 
 using std::cerr;
 using std::string;
+using std::vector;
+using std::ostream;
+
 
 
 template <typename Layout>
@@ -127,6 +130,7 @@ QtMainWindow::QtMainWindow()
         SIGNAL(customContextMenuRequested(const QPoint &)),
         SLOT(prepareMenu(const QPoint &))
       );
+      tree.createCharmapperItem();
       QTreeWidgetItem &charmapper_item = createItem(tree_widget,"charmapper");
       charmapper_item_ptr = &charmapper_item;
     }
@@ -140,6 +144,47 @@ QtMainWindow::QtMainWindow()
 }
 
 
+static void buildPath(vector<int> &path,QTreeWidgetItem &item)
+{
+  if (!item.parent()) {
+    path.push_back(0);
+    return;
+  }
+  buildPath(path,*item.parent());
+  path.push_back(item.parent()->indexOfChild(&item));
+}
+
+
+static vector<int> itemPath(QTreeWidgetItem &item)
+{
+  vector<int> path;
+  buildPath(path,item);
+  return path;
+}
+
+
+template <typename T>
+static ostream& operator<<(ostream &stream,const vector<T> &value)
+{
+  stream << "[";
+
+  if (!value.empty()) {
+    auto iter = value.begin();
+
+    stream << *iter++;
+
+    while (iter!=value.end()) {
+      stream << ",";
+      stream << *iter++;
+    }
+  }
+
+  stream << "]";
+
+  return stream;
+}
+
+
 void QtMainWindow::prepareMenu(const QPoint &pos)
 {
   cerr << "prepareMenu()\n";
@@ -149,7 +194,11 @@ void QtMainWindow::prepareMenu(const QPoint &pos)
     return;
   }
 
-  if (widget_item_ptr==charmapper_item_ptr) {
+  Tree::Path path = itemPath(*widget_item_ptr);
+
+  bool is_charmapper_item = tree.isCharmapperItem(path);
+
+  if (is_charmapper_item) {
     QMenu menu;
     QAction &add_pass_action = createAction(menu,"Add Motion Pass");
     connect(&add_pass_action,SIGNAL(triggered()),SLOT(addPassTriggered()));
@@ -157,7 +206,9 @@ void QtMainWindow::prepareMenu(const QPoint &pos)
     return;
   }
 
-  if (widget_item_ptr==motion_pass_item_ptr) {
+  bool is_motion_pass_item = tree.isMotionPassItem(path);
+
+  if (is_motion_pass_item) {
     QMenu menu;
     QAction &add_pos_expr_action = createAction(menu,"Add Pos Expr");
     connect(
@@ -169,10 +220,43 @@ void QtMainWindow::prepareMenu(const QPoint &pos)
 }
 
 
+QTreeWidgetItem* QtMainWindow::findSelectedItem()
+{
+  assert(tree_widget_ptr);
+  QList<QTreeWidgetItem*> items = tree_widget_ptr->selectedItems();
+
+  if (items.size()!=1) {
+    return nullptr;
+  }
+
+  return items.front();
+}
+
+
+static vector<int> join(vector<int> path,int child_index)
+{
+  path.push_back(child_index);
+  return path;
+}
+
+
 void QtMainWindow::addPassTriggered()
 {
   assert(charmapper_item_ptr);
 
+  QTreeWidgetItem *selected_item_ptr = findSelectedItem();
+
+  if (!selected_item_ptr) {
+    cerr << "addPassTriggered: No selected item!\n";
+    return;
+  }
+
+  Tree::Path selected_item_path = itemPath(*selected_item_ptr);
+
+  int index = tree.createMotionPassItem(selected_item_path);
+
+  cerr << "new item index: " << join(selected_item_path,index) << "\n";
+  assert(tree.isMotionPassItem(join(selected_item_path,index)));
   motion_pass_item_ptr = &createItem(*charmapper_item_ptr,"Motion Pass");
 }
 
