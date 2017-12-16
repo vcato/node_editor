@@ -122,6 +122,12 @@ static vector<string> split(const string &text)
 }
 
 
+void Node::setPosition(const Point2D &arg)
+{
+  header_text_object.position = arg;
+}
+
+
 void Node::setText(const std::string &text)
 {
   Node &node = *this;

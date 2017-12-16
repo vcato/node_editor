@@ -1,7 +1,10 @@
 #include "tree.hpp"
 
+#include <iostream>
+
 
 using std::string;
+using std::cerr;
 
 
 Tree::Tree()
@@ -73,6 +76,30 @@ auto Tree::createZItem(const Path &parent_path) -> Path
 auto Tree::createItem(const Path &parent_path,NodeType type) -> Path
 {
   return join(parent_path,getNode(parent_path).createItem(type));
+}
+
+
+Tree::Node::Node(Type type_arg)
+  : type(type_arg)
+{
+  if (type==Type::local_position) {
+    // NodeIndex node_index =
+    cerr << "Adding local position nodes\n";
+    NodeIndex vector_index = diagram.addNode("[\n$,\n$,\n$\n]");
+    diagram.node(vector_index).setPosition({100,200});
+
+    NodeIndex x_index = diagram.addNode("x");
+    diagram.connectNodes(x_index,0,vector_index,0);
+    diagram.node(x_index).setPosition({20,200});
+
+    NodeIndex y_index = diagram.addNode("y");
+    diagram.node(y_index).setPosition({20,150});
+    diagram.connectNodes(y_index,0,vector_index,1);
+
+    NodeIndex z_index = diagram.addNode("z");
+    diagram.node(z_index).setPosition({20,100});
+    diagram.connectNodes(z_index,0,vector_index,2);
+  }
 }
 
 

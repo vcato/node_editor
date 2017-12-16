@@ -44,10 +44,7 @@ class Tree {
       Diagram diagram;
       std::vector<Node> child_nodes;
 
-      Node(Type type_arg)
-      : type(type_arg)
-      {
-      }
+      Node(Type type_arg);
 
       const Node &getNode(const Path &,int depth) const;
 
