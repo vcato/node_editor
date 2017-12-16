@@ -70,6 +70,16 @@ struct FakeDiagramEditor : DiagramEditor {
   {
     ++redraw_count;
   }
+
+  virtual Rect rectAroundText(const TextObject &text_object) const
+  {
+    // Just make all text objects fit in a 10x10 square for now.
+    Point2D begin_pos = text_object.position;
+    Point2D end_pos = begin_pos;
+    end_pos.x += 10;
+    end_pos.y += 10;
+    return Rect{begin_pos,end_pos};
+  }
 };
 }
 

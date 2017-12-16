@@ -15,6 +15,11 @@ struct Point2D {
   : x(x_arg), y(y_arg)
   {
   }
+
+  bool operator==(const Point2D &arg) const
+  {
+    return x==arg.x && y==arg.y;
+  }
 };
 
 

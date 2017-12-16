@@ -9,16 +9,6 @@
 #include "circle.hpp"
 
 
-struct NodeRenderInfo {
-  Rect header_rect;
-  Rect body_outer_rect;
-  std::vector<TextObject> text_objects;
-  std::vector<Circle> input_connector_circles;
-  std::vector<Circle> output_connector_circles;
-};
-
-
-
 struct Color {
   float r,g,b;
 };
@@ -34,11 +24,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
     Point2D screenToGLCoords(int x,int y) const;
     bool contains(const TextObject &text_object,const Point2D &p);
-    NodeIndex indexOfNodeContaining(const Point2D &p);
-    bool nodeInputContains(int node_index,int input_index,const Point2D &p);
-    bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
-    NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
-    void mousePressedAt(Point2D p);
+    void mousePressedAt(Point2D);
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
@@ -58,23 +44,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawFilledRoundedRect(const Rect &rect,const Color &);
     void drawFilledCircle(const Circle &circle);
     Rect rectAroundText(const TextObject &text_object) const;
-    Rect nodeRect(const TextObject &text_object) const;
-    Rect nodeHeaderRect(const TextObject &text_object) const;
-
-    Point2D
-      alignmentPoint(
-        const Rect &rect,
-        float horizontal_alignment,
-        float vertical_alignment
-      ) const;
-
-    TextObject
-      alignedTextObject(
-        const std::string &text,
-        const Point2D &position,
-        float horizontal_alignment,
-        float vertical_alignment
-      ) const;
 
     void
       drawAlignedText(
@@ -97,20 +66,13 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawCursor(const TextObject &text_object);
     void drawCursor(const TextObject &text_object,int column_index);
     static constexpr float node_input_radius = 5;
-    static constexpr float connector_radius = 5;
 
-    Circle nodeInputCircle(const Node &,int input_index);
-    Circle nodeOutputCircle(const Node &node,int output_index);
     Circle connectorCircle(NodeConnectorIndex) const;
     Point2D nodeOutputPosition(int node_index);
     void drawNodeInput(int node_index,int input_index);
     void drawNodeInputs(int node_index);
     TextObject
-      inputTextObject(const std::string &s,float left_x,float y) const;
-    TextObject
       outputTextObject(const std::string &s,float right_x,float y) const;
-    Rect nodeBodyRect(const Node &,const Rect &header_rect) const;
-    NodeRenderInfo nodeRenderInfo(const Node &node) const;
     void drawNode(NodeIndex);
     void paintGL() override;
     void redraw() override { update(); }

@@ -85,75 +85,6 @@ bool QtDiagramEditor::contains(const TextObject &text_object,const Point2D &p)
 }
 
 
-int QtDiagramEditor::indexOfNodeContaining(const Point2D &p)
-{
-  for (NodeIndex i : diagram.existingNodeIndices()) {
-    Node &node = diagram.node(i);
-    NodeRenderInfo render_info = nodeRenderInfo(node);
-    if (render_info.header_rect.contains(p)) {
-      return i;
-    }
-    if (render_info.body_outer_rect.contains(p)) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-
-bool
-  QtDiagramEditor::nodeInputContains(
-    int node_index,
-    int input_index,
-    const Point2D &p
-  )
-{
-  return nodeInputCircle(node(node_index),input_index).contains(p);
-}
-
-
-bool
-  QtDiagramEditor::nodeOutputContains(
-    int node_index,
-    int output_index,
-    const Point2D &p
-  )
-{
-  return nodeOutputCircle(node(node_index),output_index).contains(p);
-}
-
-
-NodeConnectorIndex
-  QtDiagramEditor::indexOfNodeConnectorContaining(const Point2D &p)
-{
-  for (NodeIndex i : diagram.existingNodeIndices()) {
-    int n_inputs = node(i).nInputs();
-    for (int j=0; j!=n_inputs; ++j) {
-      if (nodeInputContains(i,j,p)) {
-        NodeConnectorIndex index;
-        index.node_index = i;
-        index.input_index = j;
-        index.output_index = -1;
-        return index;
-      }
-    }
-    int n_outputs = node(i).nOutputs();
-    for (int j=0; j!=n_outputs; ++j) {
-      if (nodeOutputContains(i,j,p)) {
-        NodeConnectorIndex index;
-        index.node_index = i;
-        index.input_index = -1;
-        index.output_index = j;
-        return index;
-      }
-    }
-  }
-
-  return NodeConnectorIndex::null();
-}
-
-
 void QtDiagramEditor::mousePressedAt(Point2D p)
 {
   mouse_press_position = p;
@@ -211,47 +142,13 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 }
 
 
-void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *)
+void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *event_ptr)
 {
-  if (!selected_node_connector_index.isNull()) {
-    NodeConnectorIndex release_index =
-      indexOfNodeConnectorContaining(temp_source_pos);
-    if (!release_index.isNull()) {
-      if (selected_node_connector_index.input_index>=0 &&
-          release_index.output_index>=0) {
-        // Connected an input to an output
-        int input_node_index = selected_node_connector_index.node_index;
-        int input_index = selected_node_connector_index.input_index;
-        int output_node_index = release_index.node_index;
-        int output_index = release_index.output_index;
-        connectNodes(
-          output_node_index,output_index,
-          input_node_index,input_index
-        );
-      }
-      else if (selected_node_connector_index.output_index>=0 &&
-               release_index.input_index>=0) {
-        // Connected an output to an input
-        int input_node_index = release_index.node_index;
-        int input_index = release_index.input_index;
-        int output_node_index = selected_node_connector_index.node_index;
-        int output_index = selected_node_connector_index.output_index;
-        connectNodes(
-          output_node_index,output_index,
-          input_node_index,input_index
-        );
-      }
-    }
-    selected_node_connector_index.clear();
-    update();
-    return;
-  }
-  if (node_editor.node_was_selected) {
-    node_editor.focusNode(node_editor.selected_node_index,diagram);
-    node_editor.selected_node_index = -1;
-    update();
-    return;
-  }
+  assert(event_ptr);
+  Point2D mouse_release_position =
+    screenToGLCoords(event_ptr->x(),event_ptr->y());
+
+  mouseReleasedAt(mouse_release_position);
 }
 
 
@@ -526,61 +423,6 @@ Rect QtDiagramEditor::rectAroundText(const TextObject &text_object) const
 }
 
 
-Rect QtDiagramEditor::nodeRect(const TextObject &text_object) const
-{
-  return withMargin(rectAroundText(text_object),5);
-}
-
-
-Rect QtDiagramEditor::nodeHeaderRect(const TextObject &text_object) const
-{
-  if (text_object.text=="") {
-    Point2D start = text_object.position;
-    Point2D end = start;
-    return Rect{start,end};
-  }
-  return nodeRect(text_object);
-}
-
-
-Point2D
-  QtDiagramEditor::alignmentPoint(
-    const Rect &rect,
-    float horizontal_alignment,
-    float vertical_alignment
-  ) const
-{
-  float h = horizontal_alignment;
-  float v = vertical_alignment;
-  float x1 = rect.start.x;
-  float x2 = rect.end.x;
-  float y1 = rect.start.y;
-  float y2 = rect.end.y;
-  float x = x1*(1-h) + x2*h;
-  float y = y1*(1-v) + y2*v;
-  return Point2D(x,y);
-}
-
-
-TextObject
-  QtDiagramEditor::alignedTextObject(
-    const std::string &text,
-    const Point2D &position,
-    float horizontal_alignment,
-    float vertical_alignment
-  ) const
-{
-  TextObject text_object;
-  text_object.text = text;
-  text_object.position = Point2D(0,0);
-  Rect rect = rectAroundText(text_object);
-  Point2D offset =
-    alignmentPoint(rect,horizontal_alignment,vertical_alignment);
-  text_object.position = position - offset;
-  return text_object;
-}
-
-
 void
   QtDiagramEditor::drawAlignedText(
     const std::string &text,
@@ -667,20 +509,6 @@ static vector<T> operator+(const vector<T> &a,const vector<T> &b)
 }
 
 
-Circle QtDiagramEditor::nodeInputCircle(const Node &node,int input_index)
-{
-  NodeRenderInfo render_info = nodeRenderInfo(node);
-  return render_info.input_connector_circles[input_index];
-}
-
-
-Circle QtDiagramEditor::nodeOutputCircle(const Node &node,int output_index)
-{
-  NodeRenderInfo render_info = nodeRenderInfo(node);
-  return render_info.output_connector_circles[output_index];
-}
-
-
 Circle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
 {
   NodeRenderInfo render_info = nodeRenderInfo(node(index.node_index));
@@ -700,20 +528,6 @@ Circle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
 
 
 TextObject
-  QtDiagramEditor::inputTextObject(const string &s,float left_x,float y) const
-{
-  TextObject t =
-    alignedTextObject(
-      s,
-      Point2D(left_x,y),
-      /*horizontal_alignment*/0,
-      /*vertical_alignment*/1
-    );
-  return t;
-}
-
-
-TextObject
   QtDiagramEditor::outputTextObject(const string &s,float right_x,float y) const
 {
   TextObject t =
@@ -724,123 +538,6 @@ TextObject
       /*vertical_alignment*/1
     );
   return t;
-}
-
-Rect
-  QtDiagramEditor::nodeBodyRect(
-    const Node &node,
-    const Rect &header_rect
-  ) const
-{
-  // The top of the rectangle should be the bottom of the header text
-  // object.
-  float top_y = header_rect.start.y;
-
-  // The left side should be the left of the header rect
-  float left_x = header_rect.start.x;
-
-  // Start with the bottom being at the top.
-  // For each string, we determine its rectangle, and then move the bottom
-  // to the bottom of that rectangle.
-  float bottom_y = top_y;
-
-  vector<string> strings = node.strings();
-
-  for (const auto& s : strings) {
-    Rect r =
-      rectAroundText(alignedTextObject(
-        s,
-        Point2D(left_x,bottom_y),
-        /*horizontal_alignment*/0,
-        /*vertical_alignment*/1
-      ));
-    bottom_y = r.start.y;
-  }
-
-  // The right side is the maximum of all the right sides of the individual
-  // text objects.
-  float right_x = header_rect.end.x;
-
-  for (const auto &s : strings) {
-    Rect r =
-      rectAroundText(
-        alignedTextObject(
-          s,
-          Point2D(left_x,top_y),
-          /*horizontal_alignment*/0,
-          /*vertical_alignment*/1
-        )
-      );
-    if (r.end.x > right_x) {
-      right_x = r.end.x;
-    }
-  }
-
-  Rect body_rect;
-
-  body_rect.start.x = left_x;
-  body_rect.start.y = bottom_y;
-  body_rect.end.x = right_x;
-  body_rect.end.y = top_y;
-
-  return body_rect;
-}
-
-
-NodeRenderInfo QtDiagramEditor::nodeRenderInfo(const Node &node) const
-{
-  const TextObject &header_text_object = node.header_text_object;
-
-  // We need to determine a rectangle that fits around the contents.
-  Rect header_rect = nodeHeaderRect(header_text_object);
-
-  NodeRenderInfo render_info;
-  Rect body_rect = nodeBodyRect(node,header_rect);
-  render_info.header_rect = header_rect;
-
-  float left_x = body_rect.start.x;
-  float right_x = body_rect.end.x;
-
-  float margin = 5;
-
-  float left_outer_x = left_x - margin;
-  float right_outer_x = right_x + margin;
-
-  float top_y = body_rect.end.y;
-
-  float y = top_y;
-
-  for (const auto &line : node.lines) {
-    TextObject t = inputTextObject(line.text,left_x,y);
-    Rect r = rectAroundText(t);
-    render_info.text_objects.push_back(t);
-    if (line.has_input) {
-      float connector_x = (left_outer_x - connector_radius - 5);
-      float connector_y = (r.start.y + r.end.y)/2;
-
-      Circle c;
-      c.center = Point2D(connector_x,connector_y);
-      c.radius = connector_radius;
-      render_info.input_connector_circles.push_back(c);
-
-    }
-    if (line.has_output) {
-      float connector_x = (right_outer_x + connector_radius + 5);
-      float connector_y = (r.start.y + r.end.y)/2;
-
-      Circle c;
-      c.center = Point2D(connector_x,connector_y);
-      c.radius = connector_radius;
-      render_info.output_connector_circles.push_back(c);
-    }
-    y = r.start.y;
-  }
-
-  render_info.body_outer_rect = body_rect;
-  render_info.body_outer_rect.start.x = left_outer_x;
-  render_info.body_outer_rect.end.x = right_outer_x;
-
-  return render_info;
 }
 
 

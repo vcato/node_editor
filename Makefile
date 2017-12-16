@@ -26,7 +26,7 @@ moc_qtmainwindow.cpp: qtmainwindow.hpp
 	touch $@
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
-  linetext.o diagramnode.o diagram.o
+  linetext.o diagramnode.o diagram.o circle.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \

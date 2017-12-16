@@ -11,6 +11,29 @@
 #include "diagramnode.hpp"
 #include "nodetexteditor.hpp"
 #include "diagram.hpp"
+#include "circle.hpp"
+
+
+struct Rect {
+  Point2D start, end;
+
+  bool contains(const Point2D &p)
+  {
+    return
+      p.x >= start.x && p.x <= end.x &&
+      p.y >= start.y && p.y <= end.y;
+  }
+};
+
+
+struct NodeRenderInfo {
+  Rect header_rect;
+  Rect body_outer_rect;
+  std::vector<TextObject> text_objects;
+  std::vector<Circle> input_connector_circles;
+  std::vector<Circle> output_connector_circles;
+};
+
 
 
 using Node = DiagramNode;
@@ -30,18 +53,6 @@ inline Point2D operator+(const Point2D &a,const Point2D &b)
   float y = a.y + b.y;
   return Point2D{x,y};
 }
-
-
-struct Rect {
-  Point2D start, end;
-
-  bool contains(const Point2D &p)
-  {
-    return
-      p.x >= start.x && p.x <= end.x &&
-      p.y >= start.y && p.y <= end.y;
-  }
-};
 
 
 inline Rect withMargin(const Rect &rect,float margin)
@@ -175,6 +186,7 @@ class DiagramEditor {
     }
 
   protected:
+    static constexpr float connector_radius = 5;
     Point2D mouse_press_position;
     Point2D original_node_position;
     NodeConnectorIndex selected_node_connector_index =
@@ -184,6 +196,7 @@ class DiagramEditor {
     NodeEditor node_editor;
 
     virtual void redraw() = 0;
+    virtual Rect rectAroundText(const TextObject &text_object) const = 0;
     void deleteNode(int index);
     std::string &focusedText();
     void enterPressed();
@@ -194,7 +207,34 @@ class DiagramEditor {
     void unfocus();
     Node &node(NodeIndex arg) { return diagram.node(arg); }
     const Node &node(NodeIndex arg) const { return diagram.node(arg); }
+    Circle nodeOutputCircle(const Node &node,int output_index);
+    bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
+    Circle nodeInputCircle(const Node &,int input_index);
+    bool nodeInputContains(int node_index,int input_index,const Point2D &p);
+    NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
+    TextObject
+      inputTextObject(const std::string &s,float left_x,float y) const;
+    Point2D
+      alignmentPoint(
+        const Rect &rect,
+        float horizontal_alignment,
+        float vertical_alignment
+      ) const;
 
+    TextObject
+      alignedTextObject(
+        const std::string &text,
+        const Point2D &position,
+        float horizontal_alignment,
+        float vertical_alignment
+      ) const;
+
+    Rect nodeBodyRect(const Node &,const Rect &header_rect) const;
+    Rect nodeRect(const TextObject &text_object) const;
+    Rect nodeHeaderRect(const TextObject &text_object) const;
+    int indexOfNodeContaining(const Point2D &p);
+    NodeRenderInfo nodeRenderInfo(const Node &node) const;
+    void mouseReleasedAt(Point2D mouse_release_position);
 
     void
       connectNodes(

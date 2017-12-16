@@ -225,5 +225,3 @@ to turn those into a color, and then display the color.
 It seems appealing to have it where the items in the tree represent
 expressions, and the child items represent variables that can be used in
 those expressions.
----
-If you drag a node, it becomes focused.
