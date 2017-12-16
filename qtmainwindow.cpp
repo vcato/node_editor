@@ -64,10 +64,10 @@ static QAction& createAction(QMenu &menu,const string &label)
 }
 
 
-static void createDiagramEditor(QLayout &layout,Diagram &diagram)
+static void createDiagramEditor(QBoxLayout &layout,int stretch,Diagram &diagram)
 {
   QtDiagramEditor *diagram_editor_ptr = new QtDiagramEditor(diagram);
-  layout.addWidget(diagram_editor_ptr);
+  layout.addWidget(diagram_editor_ptr,stretch);
 }
 
 
@@ -135,7 +135,7 @@ QtMainWindow::QtMainWindow()
       button.setText("test");
     }
   }
-  createDiagramEditor(layout,diagram);
+  createDiagramEditor(layout,/*stretch*/1,diagram);
   setCentralWidget(&widget);
 }
 
