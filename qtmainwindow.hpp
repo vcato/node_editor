@@ -2,6 +2,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QTreeWidget>
+#include <QBoxLayout>
 #include "qtdiagrameditor.hpp"
 #include "tree.hpp"
 
@@ -25,5 +26,6 @@ class QtMainWindow : public QMainWindow {
     QTreeWidget *tree_widget_ptr;
 
     QTreeWidget &treeWidget();
+    void createTree(QBoxLayout &layout);
     QTreeWidgetItem* findSelectedItem();
 };

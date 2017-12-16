@@ -64,10 +64,12 @@ static QAction& createAction(QMenu &menu,const string &label)
 }
 
 
-static void createDiagramEditor(QBoxLayout &layout,int stretch,Diagram &diagram)
+static QtDiagramEditor&
+  createDiagramEditor(QBoxLayout &layout,int stretch,Diagram &diagram)
 {
   QtDiagramEditor *diagram_editor_ptr = new QtDiagramEditor(diagram);
   layout.addWidget(diagram_editor_ptr,stretch);
+  return *diagram_editor_ptr;
 }
 
 
@@ -106,6 +108,30 @@ static QTreeWidgetItem&
 }
 
 
+void QtMainWindow::createTree(QBoxLayout &layout)
+{
+  QVBoxLayout &layout2 = createLayout<QVBoxLayout>(layout);
+
+  {
+    QTreeWidget &tree_widget = createTreeWidget(layout2);
+    tree_widget_ptr = &tree_widget;
+    tree_widget.header()->close();
+    tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(
+      &tree_widget,
+      SIGNAL(customContextMenuRequested(const QPoint &)),
+      SLOT(prepareMenu(const QPoint &))
+    );
+    tree.createCharmapperItem();
+    createItem(tree_widget,"charmapper");
+  }
+  {
+    QPushButton &button = createPushButton(layout2);
+    button.setText("test");
+  }
+}
+
+
 QtMainWindow::QtMainWindow()
 : tree_widget_ptr(0)
 {
@@ -114,27 +140,7 @@ QtMainWindow::QtMainWindow()
   menu_bar_ptr->addMenu(&menu);
 
   QHBoxLayout &layout = createLayout<QHBoxLayout>(widget);
-  {
-    QVBoxLayout &layout2 = createLayout<QVBoxLayout>(layout);
-
-    {
-      QTreeWidget &tree_widget = createTreeWidget(layout2);
-      tree_widget_ptr = &tree_widget;
-      tree_widget.header()->close();
-      tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
-      connect(
-        &tree_widget,
-        SIGNAL(customContextMenuRequested(const QPoint &)),
-        SLOT(prepareMenu(const QPoint &))
-      );
-      tree.createCharmapperItem();
-      createItem(tree_widget,"charmapper");
-    }
-    {
-      QPushButton &button = createPushButton(layout2);
-      button.setText("test");
-    }
-  }
+  createTree(layout);
   createDiagramEditor(layout,/*stretch*/1,diagram);
   setCentralWidget(&widget);
 }
