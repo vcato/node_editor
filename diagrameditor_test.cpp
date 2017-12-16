@@ -29,7 +29,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userFocusesNode(int node_index)
   {
-    node_editor.focusNode(node_index,diagram);
+    node_editor.focusNode(node_index,diagram());
   }
 
   void userUnfocusesNode()
@@ -80,6 +80,8 @@ struct FakeDiagramEditor : DiagramEditor {
     end_pos.y += 10;
     return Rect{begin_pos,end_pos};
   }
+
+  using DiagramEditor::aNodeIsFocused;
 };
 }
 
@@ -154,6 +156,24 @@ static void testChangingText2()
 }
 
 
+static void testSettingDiagramPtr()
+{
+  {
+    Diagram diagram;
+    FakeDiagramEditor editor(diagram);
+    NodeIndex n1 = editor.userAddsANode();
+    editor.userFocusesNode(n1);
+    editor.setDiagramPtr(0);
+    assert(!editor.aNodeIsFocused());
+  }
+  {
+    Diagram diagram;
+    FakeDiagramEditor editor(diagram);
+    editor.setDiagramPtr(0);
+  }
+}
+
+
 int main()
 {
   test1();
@@ -161,4 +181,5 @@ int main()
   testDeletingAConnectedNode();
   testChangingText();
   testChangingText2();
+  testSettingDiagramPtr();
 }

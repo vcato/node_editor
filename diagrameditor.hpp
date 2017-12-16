@@ -180,10 +180,8 @@ struct NodeEditor {
 
 class DiagramEditor {
   public:
-    DiagramEditor(Diagram &diagram_arg)
-    : diagram(diagram_arg)
-    {
-    }
+    DiagramEditor(Diagram &diagram_arg);
+    void setDiagramPtr(Diagram *);
 
   protected:
     static constexpr float connector_radius = 5;
@@ -192,21 +190,23 @@ class DiagramEditor {
     NodeConnectorIndex selected_node_connector_index =
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
-    Diagram &diagram;
+    Diagram *diagram_ptr;
     NodeEditor node_editor;
+    Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
 
     virtual void redraw() = 0;
     virtual Rect rectAroundText(const TextObject &text_object) const = 0;
     void deleteNode(int index);
     std::string &focusedText();
     void enterPressed();
+    bool aNodeIsFocused() const;
     void backspacePressed();
     void textTyped(const std::string &new_text);
     void updateNodeInputs(int node_index);
     int addNode(const std::string &text,const Point2D &position);
     void unfocus();
-    Node &node(NodeIndex arg) { return diagram.node(arg); }
-    const Node &node(NodeIndex arg) const { return diagram.node(arg); }
+    Node &node(NodeIndex arg) { return diagram().node(arg); }
+    const Node &node(NodeIndex arg) const { return diagram().node(arg); }
     Circle nodeOutputCircle(const Node &node,int output_index);
     bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
     Circle nodeInputCircle(const Node &,int input_index);

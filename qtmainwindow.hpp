@@ -15,6 +15,7 @@ class QtMainWindow : public QMainWindow {
 
   private slots:
     void prepareMenu(const QPoint &pos);
+    void treeItemSelectionChanged();
     void addPassTriggered();
     void addPosExprTriggered();
 
@@ -24,6 +25,7 @@ class QtMainWindow : public QMainWindow {
     Diagram diagram;
     QWidget widget;
     QTreeWidget *tree_widget_ptr;
+    QtDiagramEditor *diagram_editor_ptr;
 
     QTreeWidget &treeWidget();
     void createTree(QBoxLayout &layout);

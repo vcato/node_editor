@@ -122,6 +122,11 @@ void QtMainWindow::createTree(QBoxLayout &layout)
       SIGNAL(customContextMenuRequested(const QPoint &)),
       SLOT(prepareMenu(const QPoint &))
     );
+    connect(
+      &tree_widget,
+      SIGNAL(itemSelectionChanged()),
+      SLOT(treeItemSelectionChanged())
+    );
     tree.createCharmapperItem();
     createItem(tree_widget,"charmapper");
   }
@@ -133,7 +138,8 @@ void QtMainWindow::createTree(QBoxLayout &layout)
 
 
 QtMainWindow::QtMainWindow()
-: tree_widget_ptr(0)
+: tree_widget_ptr(0),
+  diagram_editor_ptr(0)
 {
   QMenuBar *menu_bar_ptr = menuBar();
   assert(menu_bar_ptr);
@@ -141,7 +147,7 @@ QtMainWindow::QtMainWindow()
 
   QHBoxLayout &layout = createLayout<QHBoxLayout>(widget);
   createTree(layout);
-  createDiagramEditor(layout,/*stretch*/1,diagram);
+  diagram_editor_ptr = &createDiagramEditor(layout,/*stretch*/1,diagram);
   setCentralWidget(&widget);
 }
 
@@ -219,6 +225,19 @@ void QtMainWindow::prepareMenu(const QPoint &pos)
     menu.exec(treeWidget().mapToGlobal(pos));
     return;
   }
+}
+
+
+void QtMainWindow::treeItemSelectionChanged()
+{
+  QTreeWidgetItem *selected_item_ptr = findSelectedItem();
+  Diagram *diagram_ptr = 0;
+  if (selected_item_ptr) {
+    diagram_ptr = &tree.itemDiagram(itemPath(*selected_item_ptr));
+  }
+  assert(diagram_editor_ptr);
+  QtDiagramEditor &diagram_editor = *diagram_editor_ptr;
+  diagram_editor.setDiagramPtr(diagram_ptr);
 }
 
 

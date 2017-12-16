@@ -1,6 +1,7 @@
 #include <string>
 
 #include <vector>
+#include "diagram.hpp"
 
 
 class Tree {
@@ -21,6 +22,7 @@ class Tree {
     Path createZItem(const Path &);
     bool isCharmapperItem(const Path &path) const;
     bool isMotionPassItem(const Path &path) const;
+    Diagram &itemDiagram(const Path &);
 
   private:
     struct Node {
@@ -39,6 +41,7 @@ class Tree {
       };
 
       Type type;
+      Diagram diagram;
       std::vector<Node> child_nodes;
 
       Node(Type type_arg)

@@ -1,3 +1,6 @@
+#ifndef DIAGRAM_HPP_
+#define DIAGRAM_HPP_
+
 #include <vector>
 #include <memory>
 #include "diagramnode.hpp"
@@ -50,3 +53,5 @@ class Diagram {
   private:
     std::vector<std::unique_ptr<Node>> _node_ptrs;
 };
+
+#endif /* DIAGRAM_HPP_ */

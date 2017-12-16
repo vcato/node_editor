@@ -91,7 +91,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
   node_editor.node_was_selected = false;
 
   if (node_editor.aNodeIsFocused()) {
-    if (node_editor.focusedNode(diagram).isEmpty()) {
+    if (node_editor.focusedNode(diagram()).isEmpty()) {
       deleteNode(node_editor.focused_node_index);
     }
   }
@@ -128,7 +128,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
   }
 
   int new_node_index = addNode("",mouse_press_position);
-  node_editor.focusNode(new_node_index,diagram);
+  node_editor.focusNode(new_node_index,diagram());
 
   update();
 }
@@ -623,11 +623,11 @@ void QtDiagramEditor::paintGL()
   glClearColor(red,green,blue,alpha);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for (NodeIndex index : diagram.existingNodeIndices()) {
+  for (NodeIndex index : diagram().existingNodeIndices()) {
     drawNode(index);
   }
 
-  if (node_editor.focused_node_index>=0) {
+  if (node_editor.aNodeIsFocused()) {
     NodeRenderInfo render_info =
       nodeRenderInfo(node(node_editor.focused_node_index));
     int line_index = node_editor.text_editor.cursorLineIndex();
@@ -642,5 +642,5 @@ void QtDiagramEditor::paintGL()
     );
   }
 
-  diagram.evaluate(cerr);
+  diagram().evaluate(cerr);
 }

@@ -6,15 +6,31 @@ using std::string;
 using std::vector;
 
 
+DiagramEditor::DiagramEditor(Diagram &diagram_arg)
+: diagram_ptr(&diagram_arg)
+{
+}
+
+
+void DiagramEditor::setDiagramPtr(Diagram *arg)
+{
+  if (node_editor.aNodeIsFocused()) {
+    node_editor.unfocus();
+  }
+  diagram_ptr = arg;
+  redraw();
+}
+
+
 void DiagramEditor::deleteNode(int index)
 {
-  diagram.deleteNode(index);
+  diagram().deleteNode(index);
 }
 
 
 string &DiagramEditor::focusedText()
 {
-  return node_editor.focusedText(diagram);
+  return node_editor.focusedText(diagram());
 }
 
 
@@ -24,6 +40,12 @@ void DiagramEditor::enterPressed()
     node_editor.text_editor.enter();
     redraw();
   }
+}
+
+
+bool DiagramEditor::aNodeIsFocused() const
+{
+  return node_editor.aNodeIsFocused();
 }
 
 
@@ -49,8 +71,8 @@ int DiagramEditor::addNode(const std::string &text,const Point2D &position)
   // The node editor keeps a pointer to a node, but Nodes may move in memory.
   assert(!node_editor.aNodeIsFocused());
 
-  int node_index = diagram.addNode(text);
-  diagram.node(node_index).header_text_object.position = position;
+  int node_index = diagram().addNode(text);
+  diagram().node(node_index).header_text_object.position = position;
   return node_index;
 }
 
@@ -63,7 +85,7 @@ void
     int input_index
   )
 {
-  diagram.connectNodes(
+  diagram().connectNodes(
     output_node_index,output_index,
     input_node_index,input_index
   );
@@ -83,7 +105,7 @@ void DiagramEditor::textTyped(const string &new_text)
 void DiagramEditor::unfocus()
 {
   node_editor.unfocus();
-  diagram.removeInvalidInputs();
+  diagram().removeInvalidInputs();
 }
 
 
@@ -276,8 +298,8 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 
 int DiagramEditor::indexOfNodeContaining(const Point2D &p)
 {
-  for (NodeIndex i : diagram.existingNodeIndices()) {
-    Node &node = diagram.node(i);
+  for (NodeIndex i : diagram().existingNodeIndices()) {
+    Node &node = diagram().node(i);
     NodeRenderInfo render_info = nodeRenderInfo(node);
     if (render_info.header_rect.contains(p)) {
       return i;
@@ -330,7 +352,7 @@ bool
 NodeConnectorIndex
   DiagramEditor::indexOfNodeConnectorContaining(const Point2D &p)
 {
-  for (NodeIndex i : diagram.existingNodeIndices()) {
+  for (NodeIndex i : diagram().existingNodeIndices()) {
     int n_inputs = node(i).nInputs();
     for (int j=0; j!=n_inputs; ++j) {
       if (nodeInputContains(i,j,p)) {
@@ -395,7 +417,7 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
 
   if (mouse_press_position==mouse_release_position) {
     if (node_editor.node_was_selected) {
-      node_editor.focusNode(node_editor.selected_node_index,diagram);
+      node_editor.focusNode(node_editor.selected_node_index,diagram());
       node_editor.selected_node_index = -1;
       redraw();
       return;

@@ -120,3 +120,9 @@ auto Tree::getNode(const Path &path) const -> const Node &
 {
   return _root_node.getNode(path,0);
 }
+
+
+Diagram& Tree::itemDiagram(const Path &path)
+{
+  return getNode(path).diagram;
+}
