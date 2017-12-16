@@ -5,44 +5,78 @@ using std::string;
 
 
 Tree::Tree()
-: _root_node(Node::Type::root)
+: _root_node(NodeType::root)
 {
 }
 
 
-auto Tree::createCharmapperItem() -> Index
+auto Tree::createCharmapperItem() -> Path
 {
-  return _root_node.createItem(Node::Type::charmapper);
+  return createItem({},NodeType::charmapper);
 }
 
 
-#if 0
-auto Tree::createCharmapperItem2() -> Path
+auto Tree::createMotionPassItem(const Path &parent_path) -> Path
 {
-  return join({},createCharmapperItem());
-}
-#endif
-
-
-auto Tree::createMotionPassItem(const Path &parent_path) -> Index
-{
-  return createItem(parent_path,Node::Type::motion_pass);
+  return createItem(parent_path,NodeType::motion_pass);
 }
 
 
-auto Tree::createPosExprItem(const Path &parent_path) -> Index
+auto Tree::createPosExprItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,Node::Type::pos_expr);
+  return createItem(parent_path,NodeType::pos_expr);
 }
 
 
-auto Tree::createItem(const Path &parent_path,Node::Type type) -> Index
+auto Tree::createTargetBodyItem(const Path &parent_path) -> Path
 {
-  return getNode(parent_path).createItem(type);
+  return createItem(parent_path,NodeType::target_body);
 }
 
 
-auto Tree::Node::createItem(Node::Type type) -> Index
+auto Tree::createLocalPositionItem(const Path &parent_path) -> Path
+{
+  return createItem(parent_path,NodeType::local_position);
+}
+
+
+auto Tree::createGlobalPositionItem(const Path &parent_path) -> Path
+{
+  return createItem(parent_path,NodeType::global_position);
+}
+
+
+auto Tree::createWeightItem(const Path &parent_path) -> Path
+{
+  return createItem(parent_path,NodeType::weight);
+}
+
+
+auto Tree::createXItem(const Path &parent_path) -> Path
+{
+  return createItem(parent_path,NodeType::x);
+}
+
+
+auto Tree::createYItem(const Path &parent_path) -> Path
+{
+  return createItem(parent_path,NodeType::y);
+}
+
+
+auto Tree::createZItem(const Path &parent_path) -> Path
+{
+  return createItem(parent_path,NodeType::z);
+}
+
+
+auto Tree::createItem(const Path &parent_path,NodeType type) -> Path
+{
+  return join(parent_path,getNode(parent_path).createItem(type));
+}
+
+
+auto Tree::Node::createItem(NodeType type) -> Index
 {
   Index result = child_nodes.size();
   child_nodes.push_back(Node(type));
@@ -64,13 +98,13 @@ auto Tree::Node::getNode(const Path &path,int depth) const -> const Node &
 
 bool Tree::isCharmapperItem(const Path &path) const
 {
-  return getNode(path).type==Node::Type::charmapper;
+  return getNode(path).type==NodeType::charmapper;
 }
 
 
 bool Tree::isMotionPassItem(const Path &path) const
 {
-  return getNode(path).type==Node::Type::motion_pass;
+  return getNode(path).type==NodeType::motion_pass;
 }
 
 

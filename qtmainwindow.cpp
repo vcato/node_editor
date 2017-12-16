@@ -240,10 +240,11 @@ void QtMainWindow::addPassTriggered()
 
   Tree::Path selected_item_path = itemPath(*selected_item_ptr);
 
-  int index = tree.createMotionPassItem(selected_item_path);
+  Tree::Path motion_pass_item_path =
+    tree.createMotionPassItem(selected_item_path);
 
-  cerr << "new item index: " << join(selected_item_path,index) << "\n";
-  assert(tree.isMotionPassItem(join(selected_item_path,index)));
+  cerr << "new item index: " << motion_pass_item_path << "\n";
+  assert(tree.isMotionPassItem(motion_pass_item_path));
   createItem(*selected_item_ptr,"Motion Pass");
 }
 
@@ -282,31 +283,41 @@ void QtMainWindow::addPosExprTriggered()
 {
   QTreeWidgetItem *motion_pass_item_ptr = findSelectedItem();
   assert(motion_pass_item_ptr);
+  using TreePath = Tree::Path;
 
-
-  Tree::Path motion_pass_path = itemPath(*motion_pass_item_ptr);
-  tree.createPosExprItem(motion_pass_path);
+  TreePath motion_pass_path = itemPath(*motion_pass_item_ptr);
+  TreePath pos_expr_path = tree.createPosExprItem(motion_pass_path);
   QTreeWidgetItem &item = createItem(*motion_pass_item_ptr,"Pos Expr");
   {
     QTreeWidgetItem &test_item = createItem(item);
+    tree.createTargetBodyItem(pos_expr_path);
     QComboBox &combo_box =
       setItemWidget<QComboBox>(treeWidget(),test_item,"Target Body");
     combo_box.addItem("Body1");
     combo_box.addItem("Body2");
     combo_box.addItem("Body3");
   }
+  TreePath local_position_path = tree.createLocalPositionItem(pos_expr_path);
   QTreeWidgetItem &local_position_item = createItem(item,"Local Position");
   {
+    tree.createXItem(local_position_path);
     createItemSpinBox(treeWidget(),local_position_item,"X");
+    tree.createYItem(local_position_path);
     createItemSpinBox(treeWidget(),local_position_item,"Y");
+    tree.createZItem(local_position_path);
     createItemSpinBox(treeWidget(),local_position_item,"Z");
   }
+  TreePath global_position_path = tree.createGlobalPositionItem(pos_expr_path);
   QTreeWidgetItem &global_position_item = createItem(item,"Global Position");
   {
+    tree.createXItem(global_position_path);
     createItemSpinBox(treeWidget(),global_position_item,"X");
+    tree.createYItem(global_position_path);
     createItemSpinBox(treeWidget(),global_position_item,"Y");
+    tree.createZItem(global_position_path);
     createItemSpinBox(treeWidget(),global_position_item,"Z");
   }
+  TreePath weight_path = tree.createWeightItem(pos_expr_path);
   createItemSpinBox(treeWidget(),item,"Weight");
 }
 

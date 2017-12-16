@@ -9,10 +9,16 @@ class Tree {
     using Index = int;
 
     Tree();
-    Index createCharmapperItem();
-    Path createCharmapperItem2();
-    Index createMotionPassItem(const Path &);
-    Index createPosExprItem(const Path &);
+    Path createCharmapperItem();
+    Path createMotionPassItem(const Path &);
+    Path createPosExprItem(const Path &);
+    Path createTargetBodyItem(const Path &);
+    Path createLocalPositionItem(const Path &);
+    Path createGlobalPositionItem(const Path &);
+    Path createWeightItem(const Path &);
+    Path createXItem(const Path &);
+    Path createYItem(const Path &);
+    Path createZItem(const Path &);
     bool isCharmapperItem(const Path &path) const;
     bool isMotionPassItem(const Path &path) const;
 
@@ -22,7 +28,14 @@ class Tree {
         root,
         charmapper,
         motion_pass,
-        pos_expr
+        pos_expr,
+        target_body,
+        local_position,
+        global_position,
+        weight,
+        x,
+        y,
+        z
       };
 
       Type type;
@@ -38,9 +51,11 @@ class Tree {
       Index createItem(Type type);
     };
 
+    using NodeType = Node::Type;
+
     Node &getNode(const Path &);
     const Node &getNode(const Path &) const;
-    Index createItem(const Path &parent_path,Node::Type type);
+    Path createItem(const Path &parent_path,Node::Type type);
 
     Node _root_node;
 };
