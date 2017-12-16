@@ -226,4 +226,4 @@ It seems appealing to have it where the items in the tree represent
 expressions, and the child items represent variables that can be used in
 those expressions.
 ---
-Started working on making the tree data structure parallel the tree widget.
+If you drag a node, it becomes focused.

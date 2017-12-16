@@ -27,8 +27,10 @@ int main()
   assert(!lineTextHasOutput("x=$"));
   assert(!lineTextHasOutput(""));
   assert(!lineTextHasOutput(" "));
+  assert(!lineTextHasOutput(")"));
   assert(lineTextValue("5")==5);
   assert(lineTextValue("t")==0);
   assert(lineTextValue("$",5)==5);
   assert(lineTextValue("")==0);
+  assert(lineTextHasInput("  body=$,"));
 }

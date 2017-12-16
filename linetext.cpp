@@ -20,6 +20,10 @@ bool lineTextHasInput(const std::string &text)
     return true;
   }
 
+  if (contains(text,"$,")) {
+    return true;
+  }
+
   return false;
 }
 
@@ -212,6 +216,7 @@ bool lineTextHasOutput(const std::string &text_arg)
   string text = trimmed(text_arg);
   if (text=="") return false;
   if (isAssignment(text)) return false;
+  if (text==")") return false;
 
   return true;
 }
