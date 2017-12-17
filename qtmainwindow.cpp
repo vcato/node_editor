@@ -341,8 +341,6 @@ void QtMainWindow::addPosExprTriggered()
     tree.createZItem(global_position_path);
     createItemSpinBox(treeWidget(),global_position_item,"Z");
   }
-  TreePath weight_path = tree.createWeightItem(pos_expr_path);
-  createItemSpinBox(treeWidget(),item,"Weight");
 }
 
 
