@@ -32,6 +32,11 @@ struct FakeDiagramEditor : DiagramEditor {
     node_editor.focusNode(node_index,diagram());
   }
 
+  void userMovesCursorTo(int line,int column)
+  {
+    node_editor.text_editor.moveCursor(line,column);
+  }
+
   void userClicksAt(const Point2D &p)
   {
     mousePressedAt(p);

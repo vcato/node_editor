@@ -12,19 +12,9 @@ using std::ostream;
 
 bool lineTextHasInput(const std::string &text)
 {
-  if (endsWith(text,"$")) {
-    return true;
-  }
+  if (!contains(text,"$")) return false;
 
-  if (contains(text,"$)")) {
-    return true;
-  }
-
-  if (contains(text,"$,")) {
-    return true;
-  }
-
-  return false;
+  return true;
 }
 
 

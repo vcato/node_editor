@@ -22,6 +22,7 @@ static float lineTextValue(const char *text,float input_value)
 int main()
 {
   assert(lineTextHasInput("x=$"));
+  assert(lineTextHasInput("$.pos("));
   assert(lineTextHasInput("cos($)"));
   assert(!lineTextHasOutput("let x=5"));
   assert(!lineTextHasOutput("x=$"));
