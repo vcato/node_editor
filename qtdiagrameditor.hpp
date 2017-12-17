@@ -24,7 +24,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
     Point2D screenToGLCoords(int x,int y) const;
     bool contains(const TextObject &text_object,const Point2D &p);
-    void mousePressedAt(Point2D);
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;

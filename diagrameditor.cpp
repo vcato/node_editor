@@ -459,3 +459,51 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
     }
   }
 }
+
+
+void DiagramEditor::mousePressedAt(Point2D p)
+{
+  mouse_press_position = p;
+  node_editor.node_was_selected = false;
+
+  if (node_editor.aNodeIsFocused()) {
+    NodeIndex focused_node_index = node_editor.focused_node_index;
+    Node &focused_node = node_editor.focusedNode(diagram());
+    unfocus();
+    if (focused_node.isEmpty()) {
+      deleteNode(focused_node_index);
+    }
+  }
+
+  {
+    int i = indexOfNodeContaining(p);
+
+    if (i>=0) {
+      node_editor.node_was_selected = (i==node_editor.selected_node_index);
+      node_editor.selected_node_index = i;
+      node_editor.focused_node_index = -1;
+      original_node_position = node(i).header_text_object.position;
+      redraw();
+      return;
+    }
+  }
+
+  node_editor.selected_node_index = -1;
+  selected_node_connector_index = NodeConnectorIndex::null();
+
+  {
+    NodeConnectorIndex i = indexOfNodeConnectorContaining(p);
+
+    if (i!=NodeConnectorIndex::null()) {
+      selected_node_connector_index = i;
+      temp_source_pos = mouse_press_position;
+      redraw();
+      return;
+    }
+  }
+
+  int new_node_index = addNode("",mouse_press_position);
+  node_editor.focusNode(new_node_index,diagram());
+
+  redraw();
+}

@@ -32,6 +32,12 @@ struct FakeDiagramEditor : DiagramEditor {
     node_editor.focusNode(node_index,diagram());
   }
 
+  void userClicksAt(const Point2D &p)
+  {
+    mousePressedAt(p);
+    mouseReleasedAt(p);
+  }
+
   void userUnfocusesNode()
   {
     unfocus();
@@ -178,7 +184,8 @@ static void testClickingOnBackgroundTwice()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  // editor.userClicksOnBackground();
+  editor.userClicksAt(Point2D(100,100));
+  editor.userClicksAt(Point2D(200,200));
 }
 
 
