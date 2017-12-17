@@ -14,9 +14,7 @@ DiagramEditor::DiagramEditor(Diagram &diagram_arg)
 
 void DiagramEditor::setDiagramPtr(Diagram *arg)
 {
-  if (node_editor.aNodeIsFocused()) {
-    node_editor.unfocus();
-  }
+  clearFocus();
   diagram_ptr = arg;
   redraw();
 }
@@ -462,11 +460,8 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
 }
 
 
-void DiagramEditor::mousePressedAt(Point2D p)
+void DiagramEditor::clearFocus()
 {
-  mouse_press_position = p;
-  node_editor.node_was_selected = false;
-
   if (node_editor.aNodeIsFocused()) {
     NodeIndex focused_node_index = node_editor.focused_node_index;
     Node &focused_node = node_editor.focusedNode(diagram());
@@ -475,6 +470,15 @@ void DiagramEditor::mousePressedAt(Point2D p)
       deleteNode(focused_node_index);
     }
   }
+}
+
+
+void DiagramEditor::mousePressedAt(Point2D p)
+{
+  mouse_press_position = p;
+  node_editor.node_was_selected = false;
+
+  clearFocus();
 
   {
     int i = indexOfNodeContaining(p);

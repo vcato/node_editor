@@ -185,6 +185,16 @@ static void testSettingDiagramPtr()
 }
 
 
+static void testSettingDiagramPtrWithAnEmptyFocusedNode()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  editor.userClicksAt(Point2D(100,100));
+  editor.setDiagramPtr(0);
+  assert(diagram.existingNodeIndices().empty());
+}
+
+
 static void testClickingOnBackgroundTwice()
 {
   Diagram diagram;
@@ -217,6 +227,7 @@ int main()
   testChangingText();
   testChangingText2();
   testSettingDiagramPtr();
+  testSettingDiagramPtrWithAnEmptyFocusedNode();
   testClickingOnBackgroundTwice();
   test2();
 }

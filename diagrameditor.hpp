@@ -234,6 +234,7 @@ class DiagramEditor {
     Rect nodeHeaderRect(const TextObject &text_object) const;
     int indexOfNodeContaining(const Point2D &p);
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
+    void clearFocus();
     void mousePressedAt(Point2D);
     void mouseReleasedAt(Point2D mouse_release_position);
 
