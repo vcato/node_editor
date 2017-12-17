@@ -3,10 +3,11 @@
 *.d
 *.pass
 .*.swp
+moc_*.cpp
 main
 diagrameditor_test
 linetext_test
 nodetexteditor_test
 diagramnode_test
 diagram_test
-moc_*.cpp
+expressiontext_test

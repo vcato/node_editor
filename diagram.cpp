@@ -65,10 +65,12 @@ void
     int source_output_index = -1;
     int source_node = -1;
     int output_index = -1;
-    if (node.lines[i].has_output) {
+
+    if (node.expressions[i].has_output) {
       output_index = next_output_index;
       ++next_output_index;
     }
+
     if (node.lines[i].has_input) {
       source_node = node.inputs[next_input_index].source_node_index;
       source_output_index = node.inputs[next_input_index].source_output_index;

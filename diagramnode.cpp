@@ -20,13 +20,30 @@ void Node::removeLine(int line_index)
 
 void Node::updateInputsAndOutputs()
 {
-  for (auto &line : lines) {
+  size_t n_lines = lines.size();
+  expressions.resize(n_lines);
+
+  for (size_t i=0; i!=n_lines; ++i) {
+    auto& line = lines[i];
     line.has_input = lineTextHasInput(line.text);
-    line.has_output = lineTextHasOutput(line.text);
+    expressions[i].n_lines = 1;
+    expressions[i].has_output = lineTextHasOutput(line.text);
   }
 
   updateNInputs();
   updateNOutputs();
+}
+
+
+string Node::joinLines(int start,int n_lines)
+{
+  if (n_lines==1) {
+    return lines[start].text;
+  }
+
+  cerr << "start: " << start << "\n";
+  cerr << "n_lines: " << n_lines << "\n";
+  assert(false);
 }
 
 
@@ -36,9 +53,19 @@ void Node::addInputsAndOutputs()
     if (!line.has_input) {
       line.has_input = lineTextHasInput(line.text);
     }
-    if (!line.has_output) {
-      line.has_output = lineTextHasOutput(line.text);
+  }
+
+  {
+    size_t line_index = 0;
+    for (auto &expression : expressions) {
+      auto n_lines = expression.n_lines;
+      if (!expression.has_output) {
+        expression.has_output =
+          lineTextHasOutput(joinLines(line_index,n_lines));
+      }
+      line_index += n_lines;
     }
+    assert(line_index==lines.size());
   }
 
   updateNInputs();
@@ -98,15 +125,15 @@ size_t Node::countInputs(const Node &node)
 
 size_t Node::countOutputs(const Node &node)
 {
-  size_t n_outputs = 0;
+  size_t n_expression_outputs = 0;
 
-  for (auto &line : node.lines) {
-    if (line.has_output) {
-      ++n_outputs;
+  for (auto &expression : node.expressions) {
+    if (expression.has_output) {
+      ++n_expression_outputs;
     }
   }
 
-  return n_outputs;
+  return n_expression_outputs;
 }
 
 
@@ -136,7 +163,7 @@ void Node::setText(const std::string &text)
     node.lines.resize(1,Node::Line(""));
     node.updateInputsAndOutputs();
     assert(node.nLines()==1);
-    assert(!node.lines[0].has_output);
+    assert(!node.expressions[0].has_output);
     assert(node.nOutputs()==0);
     return;
   }

@@ -108,7 +108,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
       node_editor.selected_node_index = i;
       node_editor.focused_node_index = -1;
       original_node_position = node(i).header_text_object.position;
-      update();
+      redraw();
       return;
     }
   }
@@ -122,7 +122,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
     if (i!=NodeConnectorIndex::null()) {
       selected_node_connector_index = i;
       temp_source_pos = mouse_press_position;
-      update();
+      redraw();
       return;
     }
   }
@@ -130,7 +130,7 @@ void QtDiagramEditor::mousePressedAt(Point2D p)
   int new_node_index = addNode("",mouse_press_position);
   node_editor.focusNode(new_node_index,diagram());
 
-  update();
+  redraw();
 }
 
 

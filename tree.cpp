@@ -99,6 +99,11 @@ Tree::Node::Node(Type type_arg)
     NodeIndex z_index = diagram.addNode("z");
     diagram.node(z_index).setPosition({20,100});
     diagram.connectNodes(z_index,0,vector_index,2);
+
+    NodeIndex local_postion_index = diagram.addNode("local_position=$");
+    diagram.node(local_postion_index).setPosition({200,150});
+
+    diagram.connectNodes(vector_index,0,local_postion_index,0);
   }
 }
 

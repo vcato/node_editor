@@ -10,6 +10,7 @@ run_unit_tests: \
   diagrameditor_test.pass \
   nodetexteditor_test.pass \
   linetext_test.pass \
+  expressiontext_test.pass \
   diagramnode_test.pass \
   diagram_test.pass
 
@@ -34,6 +35,9 @@ nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 linetext_test: linetext_test.o linetext.o stringutil.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+expressiontext_test: expressiontext_test.o expressiontext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramnode_test: diagramnode_test.o diagramnode.o linetext.o stringutil.o

@@ -260,32 +260,67 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 
   float top_y = body_rect.end.y;
 
-  float y = top_y;
+  size_t n_lines = node.lines.size();
 
-  for (const auto &line : node.lines) {
-    TextObject t = inputTextObject(line.text,left_x,y);
-    Rect r = rectAroundText(t);
-    render_info.text_objects.push_back(t);
+  vector<float> line_start_ys(n_lines);
+  vector<float> line_end_ys(n_lines);
+
+  {
+    float y = top_y;
+
+    for (size_t line_index=0; line_index!=n_lines; ++line_index) {
+      const auto &line = node.lines[line_index];
+      TextObject t = inputTextObject(line.text,left_x,y);
+      render_info.text_objects.push_back(t);
+      Rect r = rectAroundText(t);
+      line_start_ys[line_index] = r.start.y;
+      line_end_ys[line_index] = r.end.y;
+      y = r.start.y;
+    }
+  }
+
+  for (size_t line_index=0; line_index!=n_lines; ++line_index) {
+    const auto &line = node.lines[line_index];
+    float line_start_y = line_start_ys[line_index];
+    float line_end_y = line_end_ys[line_index];
+    float line_center_y = (line_start_y + line_end_y)/2;
+
     if (line.has_input) {
       float connector_x = (left_outer_x - connector_radius - 5);
-      float connector_y = (r.start.y + r.end.y)/2;
+      float connector_y = line_center_y;
 
       Circle c;
       c.center = Point2D(connector_x,connector_y);
       c.radius = connector_radius;
       render_info.input_connector_circles.push_back(c);
-
     }
-    if (line.has_output) {
+  }
+
+  for (
+    size_t
+      expression_index = 0,
+      n_expressions=node.expressions.size(),
+      line_index = 0;
+    expression_index!=n_expressions;
+    ++expression_index
+  ) {
+    const auto &expression = node.expressions[expression_index];
+    const auto expression_n_lines = expression.n_lines;
+    float expression_start_y =
+      line_start_ys[line_index + expression_n_lines - 1];
+    float expression_end_y = line_end_ys[line_index];
+    float expression_center_y = (expression_start_y + expression_end_y)/2;
+
+    if (expression.has_output) {
       float connector_x = (right_outer_x + connector_radius + 5);
-      float connector_y = (r.start.y + r.end.y)/2;
+      float connector_y = expression_center_y;
 
       Circle c;
       c.center = Point2D(connector_x,connector_y);
       c.radius = connector_radius;
       render_info.output_connector_circles.push_back(c);
     }
-    y = r.start.y;
+    line_index += expression_n_lines;
   }
 
   render_info.body_outer_rect = body_rect;

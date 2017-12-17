@@ -225,3 +225,26 @@ to turn those into a color, and then display the color.
 It seems appealing to have it where the items in the tree represent
 expressions, and the child items represent variables that can be used in
 those expressions.
+---
+If a diagram node has an expression that spans multiple lines, it should
+create a single output that covers those lines.
+
+Right now, the outputs are tied to individual lines.  We'll need to
+separate this somehow.
+
+Need to remove Line::has_output.
+
+Need a way to determine which lines are spanned by an output.
+
+We need a parser that can generate a vector of outputs, where each output
+indicates which lines it spans.
+
+----
+
+DiagramNode::addInputsAndOutputs()
+  It needs to go through each expression and update the has_output flag.
+  To do this, we'll need a way to determine if a group of lines has
+  an output.
+
+Crash if I click on the background then click on the background somewhere
+else.
