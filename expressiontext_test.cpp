@@ -30,9 +30,26 @@ static void testWithTwoLines()
 
 static void testWithVectorSpanningTwoLines()
 {
-  vector<int> result = expressionLineCounts("[1,2,\n3]\n");
-  vector<int> expected_result{2};
-  assert(result==expected_result);
+  {
+    vector<int> result = expressionLineCounts("[1,2,\n3]\n");
+    vector<int> expected_result{2};
+    assert(result==expected_result);
+  }
+  {
+    vector<int> result = expressionLineCounts("[x,y,z\n]\n");
+    vector<int> expected_result{2};
+    assert(result==expected_result);
+  }
+}
+
+
+static void testWithIncompleteVectorSpanningTwoLines()
+{
+  {
+    vector<int> result = expressionLineCounts("[x,y,z\n");
+    vector<int> expected_result{1};
+    assert(result==expected_result);
+  }
 }
 
 
@@ -42,4 +59,5 @@ int main()
   testWithOneLine();
   testWithTwoLines();
   testWithVectorSpanningTwoLines();
+  testWithIncompleteVectorSpanningTwoLines();
 }

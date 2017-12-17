@@ -195,7 +195,6 @@ static ostream& operator<<(ostream &stream,const vector<T> &value)
 
 void QtMainWindow::prepareMenu(const QPoint &pos)
 {
-  cerr << "prepareMenu()\n";
   QTreeWidgetItem *widget_item_ptr = treeWidget().itemAt(pos);
 
   if (!widget_item_ptr) {

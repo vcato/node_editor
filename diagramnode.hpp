@@ -27,7 +27,7 @@ class DiagramNode {
     int nOutputs() const { return outputs.size(); }
     void removeLine(int line_index);
     void updateInputsAndOutputs();
-    std::string joinLines(int start,int n_lines);
+    std::string joinLines(int start,int n_lines,char separator);
     void addInputsAndOutputs();
     bool isEmpty() const;
     std::vector<std::string> strings() const;

@@ -57,11 +57,11 @@ void
     }
   }
 
-  int n_lines = node.lines.size();
+  int n_expressions = node.expressions.size();
   int next_output_index = 0;
   int next_input_index = 0;
 
-  for (int i=0; i!=n_lines; ++i) {
+  for (int i=0; i!=n_expressions; ++i) {
     int source_output_index = -1;
     int source_node = -1;
     int output_index = -1;
@@ -116,8 +116,6 @@ void Diagram::evaluate()
 
 void Diagram::evaluate(ostream &stream)
 {
-  cerr << "In Diagram::evaluate()\n";
-
   int n_nodes = _node_ptrs.size();
 
   vector<bool> evaluated_flags(n_nodes,false);

@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include "expressiontext.hpp"
 
 
 using std::vector;
@@ -20,14 +21,27 @@ void Node::removeLine(int line_index)
 
 void Node::updateInputsAndOutputs()
 {
-  size_t n_lines = lines.size();
-  expressions.resize(n_lines);
+  {
+    size_t n_lines = lines.size();
 
-  for (size_t i=0; i!=n_lines; ++i) {
-    auto& line = lines[i];
-    line.has_input = lineTextHasInput(line.text);
-    expressions[i].n_lines = 1;
-    expressions[i].has_output = lineTextHasOutput(line.text);
+    for (size_t i=0; i!=n_lines; ++i) {
+      auto& line = lines[i];
+      line.has_input = lineTextHasInput(line.text);
+    }
+  }
+
+  auto full_text = joinLines(0,lines.size(),'\n');
+  vector<int> line_counts = expressionLineCounts(full_text);
+  size_t n_expressions = line_counts.size();
+  expressions.resize(n_expressions);
+  size_t line_index = 0;
+  for (size_t i=0; i!=n_expressions; ++i) {
+    auto n_lines = line_counts[i];
+    expressions[i].n_lines = n_lines;
+    auto &expression = expressions[i];
+    auto expression_text = joinLines(line_index,n_lines,' ');
+    expression.has_output = lineTextHasOutput(expression_text);
+    line_index += n_lines;
   }
 
   updateNInputs();
@@ -35,15 +49,19 @@ void Node::updateInputsAndOutputs()
 }
 
 
-string Node::joinLines(int start,int n_lines)
+string Node::joinLines(int start,int n_lines,char separator)
 {
   if (n_lines==1) {
-    return lines[start].text;
+    return lines[start].text + separator;
   }
 
-  cerr << "start: " << start << "\n";
-  cerr << "n_lines: " << n_lines << "\n";
-  assert(false);
+  string result("");
+
+  for (int i=0; i!=n_lines; ++i) {
+    result += lines[i].text + separator;
+  }
+
+  return result;
 }
 
 
@@ -61,12 +79,14 @@ void Node::addInputsAndOutputs()
       auto n_lines = expression.n_lines;
       if (!expression.has_output) {
         expression.has_output =
-          lineTextHasOutput(joinLines(line_index,n_lines));
+          lineTextHasOutput(joinLines(line_index,n_lines,' '));
       }
       line_index += n_lines;
     }
     assert(line_index==lines.size());
   }
+
+  assert(!expressions.empty());
 
   updateNInputs();
   updateNOutputs();

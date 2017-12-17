@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
+#include <cstring>
 
 
 using std::vector;
@@ -17,6 +18,7 @@ struct Parser {
   : line_index(0),
     p(text_arg)
   {
+    assert(p[0]=='\0' || p[strlen(p)-1]=='\n');
   }
 
   int lineIndex() const { return line_index; }
@@ -58,6 +60,9 @@ vector<int> expressionLineCounts(const string &text)
   while (!parser.atEnd()) {
     int first_line_index = parser.lineIndex();
     for (;;) {
+      if (parser.atEnd()) {
+        break;
+      }
       if (parser.nextChar()=='[') {
         parser.skipChar();
         while (!parser.atEnd() && parser.nextChar()!=']') {
