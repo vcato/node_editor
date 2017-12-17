@@ -6,6 +6,7 @@
 
 using std::vector;
 using std::string;
+using std::cerr;
 using std::istringstream;
 using std::ostringstream;
 

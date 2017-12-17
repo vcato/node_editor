@@ -38,6 +38,7 @@ void DiagramEditor::enterPressed()
 {
   if (node_editor.focused_node_index>=0) {
     node_editor.text_editor.enter();
+    diagram().removeInvalidInputs();
     redraw();
   }
 }

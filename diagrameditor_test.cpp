@@ -194,6 +194,20 @@ static void testClickingOnBackgroundTwice()
 }
 
 
+static void test2()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex n1 = editor.userAddsANodeWithText("x");
+  NodeIndex n2 = editor.userAddsANodeWithText("$");
+  editor.userConnects(n1,0,n2,0);
+  editor.userFocusesNode(n1);
+  editor.userPressesBackspace();
+  editor.userPressesEnter();
+  assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
+}
+
+
 
 int main()
 {
@@ -204,4 +218,5 @@ int main()
   testChangingText2();
   testSettingDiagramPtr();
   testClickingOnBackgroundTwice();
+  test2();
 }
