@@ -19,6 +19,23 @@ void Node::removeLine(int line_index)
 }
 
 
+vector<bool> Node::determineStatementOutputFlags() const
+{
+  size_t line_index = 0;
+  size_t n_statements = statements.size();
+  vector<bool> statement_output_flags(n_statements,false);
+
+  for (size_t i=0; i!=n_statements; ++i) {
+    auto n_lines = statements[i].n_lines;
+    auto expression_text = joinLines(line_index,n_lines,' ');
+    statement_output_flags[i] = lineTextHasOutput(expression_text);
+    line_index += n_lines;
+  }
+
+  return statement_output_flags;
+}
+
+
 void Node::updateInputsAndOutputs()
 {
   {
@@ -32,16 +49,18 @@ void Node::updateInputsAndOutputs()
 
   auto full_text = joinLines(0,lines.size(),'\n');
   vector<int> line_counts = expressionLineCounts(full_text);
-  size_t n_expressions = line_counts.size();
-  expressions.resize(n_expressions);
-  size_t line_index = 0;
-  for (size_t i=0; i!=n_expressions; ++i) {
+  size_t n_statements = line_counts.size();
+  statements.resize(n_statements);
+
+  for (size_t i=0; i!=n_statements; ++i) {
     auto n_lines = line_counts[i];
-    expressions[i].n_lines = n_lines;
-    auto &expression = expressions[i];
-    auto expression_text = joinLines(line_index,n_lines,' ');
-    expression.has_output = lineTextHasOutput(expression_text);
-    line_index += n_lines;
+    statements[i].n_lines = n_lines;
+  }
+
+  vector<bool> statement_output_flags = determineStatementOutputFlags();
+
+  for (size_t i=0; i!=n_statements; ++i) {
+    statements[i].has_output = statement_output_flags[i];
   }
 
   updateNInputs();
@@ -49,7 +68,7 @@ void Node::updateInputsAndOutputs()
 }
 
 
-string Node::joinLines(int start,int n_lines,char separator)
+string Node::joinLines(int start,int n_lines,char separator) const
 {
   if (n_lines==1) {
     return lines[start].text + separator;
@@ -73,20 +92,16 @@ void Node::addInputsAndOutputs()
     }
   }
 
-  {
-    size_t line_index = 0;
-    for (auto &expression : expressions) {
-      auto n_lines = expression.n_lines;
-      if (!expression.has_output) {
-        expression.has_output =
-          lineTextHasOutput(joinLines(line_index,n_lines,' '));
-      }
-      line_index += n_lines;
+  size_t n_statements = statements.size();
+  vector<bool> statement_output_flags = determineStatementOutputFlags();
+
+  for (size_t i=0; i!=n_statements; ++i) {
+    if (!statements[i].has_output) {
+      statements[i].has_output = statement_output_flags[i];
     }
-    assert(line_index==lines.size());
   }
 
-  assert(!expressions.empty());
+  assert(!statements.empty());
 
   updateNInputs();
   updateNOutputs();
@@ -147,8 +162,8 @@ size_t Node::countOutputs(const Node &node)
 {
   size_t n_expression_outputs = 0;
 
-  for (auto &expression : node.expressions) {
-    if (expression.has_output) {
+  for (auto &statement : node.statements) {
+    if (statement.has_output) {
       ++n_expression_outputs;
     }
   }
@@ -183,7 +198,7 @@ void Node::setText(const std::string &text)
     node.lines.resize(1,Node::Line(""));
     node.updateInputsAndOutputs();
     assert(node.nLines()==1);
-    assert(!node.expressions[0].has_output);
+    assert(!node.statements[0].has_output);
     assert(node.nOutputs()==0);
     return;
   }

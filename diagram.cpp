@@ -57,7 +57,7 @@ void
     }
   }
 
-  int n_expressions = node.expressions.size();
+  int n_expressions = node.statements.size();
   int next_output_index = 0;
   int next_input_index = 0;
 
@@ -66,7 +66,7 @@ void
     int source_node = -1;
     int output_index = -1;
 
-    if (node.expressions[i].has_output) {
+    if (node.statements[i].has_output) {
       output_index = next_output_index;
       ++next_output_index;
     }

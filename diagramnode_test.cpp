@@ -20,7 +20,7 @@ static void testMultiLineExpression()
 {
   Node node;
   node.setText("[x,y,z\n]");
-  assert(node.expressions.size()==1);
+  assert(node.statements.size()==1);
 }
 
 

@@ -148,17 +148,17 @@ static void testChangingText2()
   int n1 = editor.userAddsANode();
   editor.userFocusesNode(n1);
   editor.userTypesText("$");
-  assert(diagram.node(n1).expressions[0].has_output);
+  assert(diagram.node(n1).statements[0].has_output);
   editor.userPressesBackspace();
 
   // Once a line gets an output, we want it to keep the output until
   // we move to another line to avoid disconnections due to temporary
   // text changes.
-  assert(diagram.node(n1).expressions[0].has_output);
+  assert(diagram.node(n1).statements[0].has_output);
 
   editor.userTypesText("x=");
 
-  assert(diagram.node(n1).expressions[0].has_output);
+  assert(diagram.node(n1).statements[0].has_output);
 }
 
 

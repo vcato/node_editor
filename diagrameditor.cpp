@@ -298,20 +298,20 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 
   for (
     size_t
-      expression_index = 0,
-      n_expressions=node.expressions.size(),
+      statement_index = 0,
+      n_statements=node.statements.size(),
       line_index = 0;
-    expression_index!=n_expressions;
-    ++expression_index
+    statement_index!=n_statements;
+    ++statement_index
   ) {
-    const auto &expression = node.expressions[expression_index];
-    const auto expression_n_lines = expression.n_lines;
+    const auto &statement = node.statements[statement_index];
+    const auto statement_n_lines = statement.n_lines;
     float expression_start_y =
-      line_start_ys[line_index + expression_n_lines - 1];
+      line_start_ys[line_index + statement_n_lines - 1];
     float expression_end_y = line_end_ys[line_index];
     float expression_center_y = (expression_start_y + expression_end_y)/2;
 
-    if (expression.has_output) {
+    if (statement.has_output) {
       float connector_x = (right_outer_x + connector_radius + 5);
       float connector_y = expression_center_y;
 
@@ -320,7 +320,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       c.radius = connector_radius;
       render_info.output_connector_circles.push_back(c);
     }
-    line_index += expression_n_lines;
+    line_index += statement_n_lines;
   }
 
   render_info.body_outer_rect = body_rect;

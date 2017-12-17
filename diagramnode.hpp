@@ -12,12 +12,12 @@ class DiagramNode {
     struct Input;
     struct Output;
     struct Line;
-    struct Expression;
+    struct Statement;
 
     std::vector<Input> inputs;
     std::vector<Output> outputs;
     std::vector<Line> lines;
-    std::vector<Expression> expressions;
+    std::vector<Statement> statements;
     TextObject header_text_object;
 
     void setText(const std::string &text);
@@ -26,8 +26,9 @@ class DiagramNode {
     int nInputs() const { return inputs.size(); }
     int nOutputs() const { return outputs.size(); }
     void removeLine(int line_index);
+    std::vector<bool> determineStatementOutputFlags() const;
     void updateInputsAndOutputs();
-    std::string joinLines(int start,int n_lines,char separator);
+    std::string joinLines(int start,int n_lines,char separator) const;
     void addInputsAndOutputs();
     bool isEmpty() const;
     std::vector<std::string> strings() const;
@@ -49,7 +50,7 @@ class DiagramNode {
       Line(const std::string &text_arg) : text(text_arg) { }
     };
 
-    struct Expression {
+    struct Statement {
       int n_lines = 0;
       bool has_output = false;
     };
