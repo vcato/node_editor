@@ -10,13 +10,13 @@ run_unit_tests: \
   diagrameditor_test.pass \
   nodetexteditor_test.pass \
   linetext_test.pass \
-  expressiontext_test.pass \
+  statementtext_test.pass \
   diagramnode_test.pass \
   diagram_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
-  tree.o expressiontext.o
+  tree.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_qtmainwindow.cpp: qtmainwindow.hpp
@@ -27,25 +27,25 @@ moc_qtmainwindow.cpp: qtmainwindow.hpp
 	touch $@
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
-  linetext.o diagramnode.o diagram.o circle.o expressiontext.o
+  linetext.o diagramnode.o diagram.o circle.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
-  diagramnode.o expressiontext.o
+  diagramnode.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 linetext_test: linetext_test.o linetext.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-expressiontext_test: expressiontext_test.o expressiontext.o
+statementtext_test: statementtext_test.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramnode_test: diagramnode_test.o diagramnode.o linetext.o stringutil.o \
-  expressiontext.o
+  statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
-  expressiontext.o
+  statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

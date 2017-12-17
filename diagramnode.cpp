@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <sstream>
-#include "expressiontext.hpp"
+#include "statementtext.hpp"
 
 
 using std::vector;
@@ -48,7 +48,7 @@ void Node::updateInputsAndOutputs()
   }
 
   auto full_text = joinLines(0,lines.size(),'\n');
-  vector<int> line_counts = expressionLineCounts(full_text);
+  vector<int> line_counts = statementLineCounts(full_text);
   size_t n_statements = line_counts.size();
   statements.resize(n_statements);
 

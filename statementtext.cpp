@@ -1,4 +1,4 @@
-#include "expressiontext.hpp"
+#include "statementtext.hpp"
 
 #include <vector>
 #include <iostream>
@@ -51,7 +51,7 @@ struct Parser {
 #endif
 
 
-vector<int> expressionLineCounts(const string &text)
+vector<int> statementLineCounts(const string &text)
 {
   vector<int> result;
   if (text.empty()) return result;
