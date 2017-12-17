@@ -53,6 +53,30 @@ static void testWithIncompleteVectorSpanningTwoLines()
 }
 
 
+static void testWithFunctionCallSpanningTwoLines()
+{
+  vector<int> result = statementLineCounts("f(1,2,\n3)\n");
+  vector<int> expected_result{2};
+  assert(result==expected_result);
+}
+
+
+static void testWithNestedVector()
+{
+  vector<int> result = statementLineCounts("[\n[\n]\n]\n");
+  vector<int> expected_result = {4};
+  assert(result==expected_result);
+}
+
+
+static void testWithNestedFunctionCall()
+{
+  vector<int> result = statementLineCounts("f(\ng(\n)\n)\n");
+  vector<int> expected_result = {4};
+  assert(result==expected_result);
+}
+
+
 int main()
 {
   testWithEmptyString();
@@ -60,4 +84,7 @@ int main()
   testWithTwoLines();
   testWithVectorSpanningTwoLines();
   testWithIncompleteVectorSpanningTwoLines();
+  testWithFunctionCallSpanningTwoLines();
+  testWithNestedVector();
+  testWithNestedFunctionCall();
 }

@@ -51,6 +51,36 @@ struct Parser {
 #endif
 
 
+static void skipGroup(Parser &parser);
+
+
+static void skipToMatch(Parser &parser,char match)
+{
+  parser.skipChar();
+  while (!parser.atEnd() && parser.nextChar()!=match) {
+    skipGroup(parser);
+  }
+  if (!parser.atEnd()) {
+    assert(parser.nextChar()==match);
+    parser.skipChar();
+  }
+}
+
+
+static void skipGroup(Parser &parser)
+{
+  if (parser.nextChar()=='[') {
+    skipToMatch(parser,']');
+  }
+  else if (parser.nextChar()=='(') {
+    skipToMatch(parser,')');
+  }
+  else {
+    parser.skipChar();
+  }
+}
+
+
 vector<int> statementLineCounts(const string &text)
 {
   vector<int> result;
@@ -63,23 +93,11 @@ vector<int> statementLineCounts(const string &text)
       if (parser.atEnd()) {
         break;
       }
-      if (parser.nextChar()=='[') {
-        parser.skipChar();
-        while (!parser.atEnd() && parser.nextChar()!=']') {
-          parser.skipChar();
-        }
-        if (!parser.atEnd()) {
-          assert(parser.nextChar()==']');
-          parser.skipChar();
-        }
-      }
-      else if (parser.nextChar()=='\n') {
+      if (parser.nextChar()=='\n') {
         parser.skipChar();
         break;
       }
-      else {
-        parser.skipChar();
-      }
+      skipGroup(parser);
     }
     int last_line_index = parser.lineIndex();
     result.push_back(last_line_index-first_line_index);
