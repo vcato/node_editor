@@ -444,6 +444,13 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
         );
       }
     }
+    else {
+      if (selected_node_connector_index.input_index>=0) {
+        int input_node_index = selected_node_connector_index.node_index;
+        int input_index = selected_node_connector_index.input_index;
+        connectNodes(nullNodeIndex(),0,input_node_index,input_index);
+      }
+    }
     selected_node_connector_index.clear();
     redraw();
     return;

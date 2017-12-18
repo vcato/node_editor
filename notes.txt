@@ -225,3 +225,11 @@ to turn those into a color, and then display the color.
 It seems appealing to have it where the items in the tree represent
 expressions, and the child items represent variables that can be used in
 those expressions.
+---
+Need to have named inputs.
+Maybe the inputs should be independent of the lines:
+i.e. if you use $a on various lines, they all refer to the same input.
+---
+Maybe if we right-click on X we get a menu that lets us convert it to
+a diagram.
+Delete an input connection by dragging to an empty place.
