@@ -85,8 +85,8 @@ Tree::Node::Node(Type type_arg)
   if (type==Type::local_position) {
     // NodeIndex node_index =
     cerr << "Adding local position nodes\n";
-    NodeIndex vector_index = diagram.addNode("[\n$,\n$,\n$\n]");
-    diagram.node(vector_index).setPosition({100,200});
+    NodeIndex vector_index = diagram.addNode("[$,$,$]");
+    diagram.node(vector_index).setPosition({100,180});
 
     NodeIndex x_index = diagram.addNode("x");
     diagram.connectNodes(x_index,0,vector_index,0);
@@ -101,7 +101,7 @@ Tree::Node::Node(Type type_arg)
     diagram.connectNodes(z_index,0,vector_index,2);
 
     NodeIndex local_postion_index = diagram.addNode("local_position=$");
-    diagram.node(local_postion_index).setPosition({200,150});
+    diagram.node(local_postion_index).setPosition({230,150});
 
     diagram.connectNodes(vector_index,0,local_postion_index,0);
   }
