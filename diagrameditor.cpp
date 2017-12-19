@@ -278,23 +278,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   float top_y = body_rect.end.y;
 
   size_t n_lines = node.lines.size();
-
-  vector<float> line_start_ys(n_lines);
-  vector<float> line_end_ys(n_lines);
-
-  {
-    float y = top_y;
-
-    for (size_t line_index=0; line_index!=n_lines; ++line_index) {
-      const auto &line = node.lines[line_index];
-      TextObject t = inputTextObject(line.text,left_x,y);
-      render_info.text_objects.push_back(t);
-      Rect r = rectAroundText(t);
-      line_start_ys[line_index] = r.start.y;
-      line_end_ys[line_index] = r.end.y;
-      y = r.start.y;
-    }
-  }
+  float input_bottom_y = 0;
 
   {
     float y = top_y;
@@ -316,6 +300,40 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 
       y = r.start.y;
     }
+
+    input_bottom_y = y;
+  }
+
+  vector<float> line_start_ys(n_lines);
+  vector<float> line_end_ys(n_lines);
+  float line_bottom_y = 0;
+
+  {
+    float y = top_y;
+
+    for (size_t line_index=0; line_index!=n_lines; ++line_index) {
+      const auto &line = node.lines[line_index];
+      TextObject t = inputTextObject(line.text,left_x,y);
+      render_info.text_objects.push_back(t);
+      Rect r = rectAroundText(t);
+      line_start_ys[line_index] = r.start.y;
+      line_end_ys[line_index] = r.end.y;
+      y = r.start.y;
+    }
+
+    line_bottom_y = y;
+  }
+
+  float text_offset = 0;
+
+  if (input_bottom_y < line_bottom_y) {
+    text_offset = (line_bottom_y - input_bottom_y)/2;
+  }
+
+  for (size_t line_index=0; line_index!=n_lines; ++line_index) {
+    render_info.text_objects[line_index].position.y -= text_offset;
+    line_start_ys[line_index] -= text_offset;
+    line_end_ys[line_index] -= text_offset;
   }
 
   for (
@@ -342,6 +360,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       c.radius = connector_radius;
       render_info.output_connector_circles.push_back(c);
     }
+
     line_index += statement_n_lines;
   }
 
