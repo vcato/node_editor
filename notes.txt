@@ -232,4 +232,3 @@ i.e. if you use $a on various lines, they all refer to the same input.
 ---
 Maybe if we right-click on X we get a menu that lets us convert it to
 a diagram.
-Delete an input connection by dragging to an empty place.
