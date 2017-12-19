@@ -248,3 +248,6 @@ $input + $input  ->  $input + $input2
 We could make it so that each $ represents an input, even if it has
 the same name,  so $input + $input would produce two inputs.  This
 simplifies some things.  $ + $  would have two unnamed inputs.
+
+If we have a node that has more inputs than lines, then we should draw
+the lines centered vertically in the inputs.

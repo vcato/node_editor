@@ -4,6 +4,7 @@
 
 using std::string;
 using std::vector;
+using std::cerr;
 
 
 DiagramEditor::DiagramEditor(Diagram &diagram_arg)
@@ -192,6 +193,23 @@ Rect
         /*vertical_alignment*/1
       ));
     bottom_y = r.start.y;
+  }
+
+  int n_inputs = node.nInputs();
+  int n_lines = strings.size();
+
+  while (n_lines<n_inputs) {
+    Rect r =
+      rectAroundText(
+        alignedTextObject(
+          "$",
+          Point2D(left_x,bottom_y),
+          /*horizontal_alignment*/0,
+          /*vertical_alignment*/1
+        )
+      );
+    bottom_y = r.start.y;
+    ++n_lines;
   }
 
   // The right side is the maximum of all the right sides of the individual
