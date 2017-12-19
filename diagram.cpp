@@ -71,11 +71,12 @@ void
       ++next_output_index;
     }
 
-    if (node.lines[i].has_input) {
+    if (node.lines[i].n_inputs==1) {
       source_node = node.inputs[next_input_index].source_node_index;
       source_output_index = node.inputs[next_input_index].source_output_index;
-      ++next_input_index;
+      next_input_index += node.lines[i].n_inputs;
     }
+
     evaluateLine(node,i,output_index,stream,source_output_index,source_node);
   }
 

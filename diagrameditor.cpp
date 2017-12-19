@@ -278,13 +278,16 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
     }
   }
 
-  for (size_t line_index=0; line_index!=n_lines; ++line_index) {
-    const auto &line = node.lines[line_index];
-    float line_start_y = line_start_ys[line_index];
-    float line_end_y = line_end_ys[line_index];
-    float line_center_y = (line_start_y + line_end_y)/2;
+  {
+    float y = top_y;
+    int n_inputs = node.nInputs();
 
-    if (line.has_input) {
+    for (int i=0; i!=n_inputs; ++i) {
+      TextObject t = inputTextObject("$",left_x,y);
+      Rect r = rectAroundText(t);
+      float line_start_y = r.start.y;
+      float line_end_y = r.end.y;
+      float line_center_y = (line_start_y + line_end_y)/2;
       float connector_x = (left_outer_x - connector_radius - 5);
       float connector_y = line_center_y;
 
@@ -292,6 +295,8 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       c.center = Point2D(connector_x,connector_y);
       c.radius = connector_radius;
       render_info.input_connector_circles.push_back(c);
+
+      y = r.start.y;
     }
   }
 

@@ -1,6 +1,7 @@
 #include "linetext.hpp"
 
 #include <cassert>
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 
@@ -10,11 +11,9 @@ using std::ostringstream;
 using std::ostream;
 
 
-bool lineTextHasInput(const std::string &text)
+int lineTextInputCount(const string &text)
 {
-  if (!contains(text,"$")) return false;
-
-  return true;
+  return std::count(text.begin(),text.end(),'$');
 }
 
 

@@ -44,7 +44,7 @@ class DiagramNode {
 
     struct Line {
       std::string text;
-      bool has_input = false;
+      int n_inputs = 0;
 
       Line(const char *text_arg) : text(text_arg) { }
       Line(const std::string &text_arg) : text(text_arg) { }

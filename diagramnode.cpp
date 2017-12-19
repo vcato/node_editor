@@ -43,7 +43,7 @@ void Node::updateInputsAndOutputs()
 
     for (size_t i=0; i!=n_lines; ++i) {
       auto& line = lines[i];
-      line.has_input = lineTextHasInput(line.text);
+      line.n_inputs = lineTextInputCount(line.text);
     }
   }
 
@@ -87,8 +87,10 @@ string Node::joinLines(int start,int n_lines,char separator) const
 void Node::addInputsAndOutputs()
 {
   for (auto &line : lines) {
-    if (!line.has_input) {
-      line.has_input = lineTextHasInput(line.text);
+    int new_n_inputs = lineTextInputCount(line.text);
+
+    if (line.n_inputs<new_n_inputs) {
+      line.n_inputs = new_n_inputs;
     }
   }
 
@@ -149,9 +151,7 @@ size_t Node::countInputs(const Node &node)
   size_t n_inputs = 0;
 
   for (auto &line : node.lines) {
-    if (line.has_input) {
-      ++n_inputs;
-    }
+    n_inputs += line.n_inputs;
   }
 
   return n_inputs;

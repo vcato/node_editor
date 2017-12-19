@@ -93,6 +93,7 @@ struct FakeDiagramEditor : DiagramEditor {
   }
 
   using DiagramEditor::aNodeIsFocused;
+  using DiagramEditor::nodeRenderInfo;
 };
 }
 
@@ -218,6 +219,17 @@ static void test2()
 }
 
 
+static void testRenderInfo()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex n1 = editor.userAddsANodeWithText("$+$");
+  DiagramNode &node = diagram.node(n1);
+  auto render_info = editor.nodeRenderInfo(node);
+  int n_input_circles = render_info.input_connector_circles.size();
+  assert(n_input_circles==node.nInputs());
+}
+
 
 int main()
 {
@@ -230,4 +242,5 @@ int main()
   testSettingDiagramPtrWithAnEmptyFocusedNode();
   testClickingOnBackgroundTwice();
   test2();
+  testRenderInfo();
 }

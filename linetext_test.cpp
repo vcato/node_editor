@@ -19,6 +19,12 @@ static float lineTextValue(const char *text,float input_value)
 }
 
 
+static bool lineTextHasInput(const string &text)
+{
+  return lineTextInputCount(text)>0;
+}
+
+
 int main()
 {
   assert(lineTextHasInput("x=$"));
