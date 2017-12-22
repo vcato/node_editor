@@ -232,22 +232,7 @@ i.e. if you use $a on various lines, they all refer to the same input.
 ---
 Maybe if we right-click on X we get a menu that lets us convert it to
 a diagram.
-
-It would be nice if the inputs were maintained.
-If we change the name of an input, it should update the name but keep
-it connected.
-
-* If we add a $, then we insert a new input.
-* If we remove a $, then we delete the input.
-
-How does it work as we are typing a name and we end up using an existing
-name
-
-$input + $input  ->  $input + $input2
-
-We could make it so that each $ represents an input, even if it has
-the same name,  so $input + $input would produce two inputs.  This
-simplifies some things.  $ + $  would have two unnamed inputs.
-
-If we have a node that has more inputs than lines, then we should draw
-the lines centered vertically in the inputs.
+---
+It would be neat if you could select some text in a node, then drag it out
+and have it create a new node with the text, replace the text in the original
+node with a $ and attach the new node's output to a new input connector.

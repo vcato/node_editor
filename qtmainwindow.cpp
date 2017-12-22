@@ -50,12 +50,6 @@ static QTreeWidget& createTreeWidget(QLayout &layout)
 }
 
 
-static QPushButton& createPushButton(QLayout &layout)
-{
-  return createWidget(layout,new QPushButton);
-}
-
-
 static QAction& createAction(QMenu &menu,const string &label)
 {
   QAction *add_pass_action_ptr = new QAction(QString::fromStdString(label),0);
@@ -108,32 +102,43 @@ static QTreeWidgetItem&
 }
 
 
-void QtMainWindow::createTree(QBoxLayout &layout)
+void QtMainWindow::createTree(QBoxLayout &parent_layout)
 {
-  QVBoxLayout &layout2 = createLayout<QVBoxLayout>(layout);
+  QTreeWidget &tree_widget = createTreeWidget(parent_layout);
+  tree_widget_ptr = &tree_widget;
+  tree_widget.header()->close();
+  tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(
+    &tree_widget,
+    SIGNAL(customContextMenuRequested(const QPoint &)),
+    SLOT(prepareMenu(const QPoint &))
+  );
+  connect(
+    &tree_widget,
+    SIGNAL(itemSelectionChanged()),
+    SLOT(treeItemSelectionChanged())
+  );
+  tree.createCharmapperItem();
+  createItem(tree_widget,"charmapper");
+}
 
-  {
-    QTreeWidget &tree_widget = createTreeWidget(layout2);
-    tree_widget_ptr = &tree_widget;
-    tree_widget.header()->close();
-    tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(
-      &tree_widget,
-      SIGNAL(customContextMenuRequested(const QPoint &)),
-      SLOT(prepareMenu(const QPoint &))
-    );
-    connect(
-      &tree_widget,
-      SIGNAL(itemSelectionChanged()),
-      SLOT(treeItemSelectionChanged())
-    );
-    tree.createCharmapperItem();
-    createItem(tree_widget,"charmapper");
+
+static QTreeWidgetItem &
+  itemFromPath(const QTreeWidget &tree_widget,const vector<int> &path)
+{
+  int path_length = path.size();
+  QTreeWidgetItem *item_ptr = tree_widget.topLevelItem(path[0]);
+  assert(path_length>0);
+
+  int i = 1;
+  while (i!=path_length) {
+    item_ptr = item_ptr->child(path[i]);
+    ++i;
   }
-  {
-    QPushButton &button = createPushButton(layout2);
-    button.setText("test");
-  }
+
+  assert(item_ptr);
+
+  return *item_ptr;
 }
 
 
@@ -149,6 +154,8 @@ QtMainWindow::QtMainWindow()
   createTree(layout);
   diagram_editor_ptr = &createDiagramEditor(layout,/*stretch*/1,diagram);
   setCentralWidget(&widget);
+  assert(tree_widget_ptr);
+  itemFromPath(*tree_widget_ptr,{0}).setSelected(true);
 }
 
 
