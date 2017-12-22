@@ -16,10 +16,12 @@ run_unit_tests: \
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
-  tree.o statementtext.o
+  tree.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
+  qtcomboboxtreewidgetitemsignalmap.o \
+  moc_qttreewidget.o qttreewidget.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
-moc_qtmainwindow.cpp: qtmainwindow.hpp
+moc_%.cpp: %.hpp
 	moc-qt4 $^ >$@
 
 %.pass: %

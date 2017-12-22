@@ -9,6 +9,8 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QSpinBox>
+#include "qttreewidget.hpp"
+#include "qtwidget.hpp"
 
 
 using std::cerr;
@@ -16,15 +18,6 @@ using std::string;
 using std::vector;
 using std::ostream;
 
-
-
-template <typename Layout>
-static Layout& createLayout(QWidget &widget)
-{
-  Layout *layout_ptr = new Layout;
-  widget.setLayout(layout_ptr);
-  return *layout_ptr;
-}
 
 
 template <typename Layout>
@@ -36,17 +29,9 @@ static Layout& createLayout(QBoxLayout &parent_layout)
 }
 
 
-template <typename Widget>
-static Widget& createWidget(QLayout &layout,Widget *widget_ptr)
+static QtTreeWidget& createTreeWidget(QLayout &layout)
 {
-  layout.addWidget(widget_ptr);
-  return *widget_ptr;
-}
-
-
-static QTreeWidget& createTreeWidget(QLayout &layout)
-{
-  return createWidget(layout,new QTreeWidget);
+  return createWidget<QtTreeWidget>(layout);
 }
 
 
@@ -83,20 +68,10 @@ static QTreeWidgetItem& createItem(QTreeWidget &tree_widget,const string &label)
 }
 
 
-static QTreeWidgetItem& createItem(QTreeWidgetItem &parent_item)
-{
-  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
-  parent_item.addChild(item_ptr);
-  QTreeWidgetItem &item = *item_ptr;
-  item.setExpanded(true);
-  return item;
-}
-
-
 static QTreeWidgetItem&
   createItem(QTreeWidgetItem &parent_item,const string &label)
 {
-  QTreeWidgetItem &pass_item = createItem(parent_item);
+  QTreeWidgetItem &pass_item = QtTreeWidget::createItem(parent_item);
   setItemText(pass_item,label);
   return pass_item;
 }
@@ -104,7 +79,7 @@ static QTreeWidgetItem&
 
 void QtMainWindow::createTree(QBoxLayout &parent_layout)
 {
-  QTreeWidget &tree_widget = createTreeWidget(parent_layout);
+  QtTreeWidget &tree_widget = createTreeWidget(parent_layout);
   tree_widget_ptr = &tree_widget;
   tree_widget.header()->close();
   tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
@@ -117,6 +92,11 @@ void QtMainWindow::createTree(QBoxLayout &parent_layout)
     &tree_widget,
     SIGNAL(itemSelectionChanged()),
     SLOT(treeItemSelectionChanged())
+  );
+  connect(
+    &tree_widget,
+    SIGNAL(comboBoxItemIndexChanged(QtComboBoxTreeWidgetItem*,int)),
+    SLOT(treeComboBoxItemIndexChanged(QtComboBoxTreeWidgetItem*,int))
   );
   tree.createCharmapperItem();
   createItem(tree_widget,"charmapper");
@@ -280,36 +260,6 @@ void QtMainWindow::addPassTriggered()
 }
 
 
-template <typename T>
-static T &
-  setItemWidget(
-    QTreeWidget &tree_widget,
-    QTreeWidgetItem &test_item,
-    const std::string &label
-  )
-{
-  QWidget *wrapper_widget_ptr = new QWidget();
-  QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
-  createWidget(layout,new QLabel(QString::fromStdString(label)));
-  T* widget_ptr = new T();
-  createWidget(layout,widget_ptr);
-  tree_widget.setItemWidget(&test_item,/*column*/0,wrapper_widget_ptr);
-  return *widget_ptr;
-}
-
-
-static void
-  createItemSpinBox(
-    QTreeWidget &tree_widget,
-    QTreeWidgetItem &local_position_item,
-    const string &label
-  )
-{
-  QTreeWidgetItem &x_item = createItem(local_position_item);
-  setItemWidget<QSpinBox>(tree_widget,x_item,label);
-}
-
-
 void QtMainWindow::addPosExprTriggered()
 {
   QTreeWidgetItem *motion_pass_item_ptr = findSelectedItem();
@@ -318,40 +268,59 @@ void QtMainWindow::addPosExprTriggered()
 
   TreePath motion_pass_path = itemPath(*motion_pass_item_ptr);
   TreePath pos_expr_path = tree.createPosExprItem(motion_pass_path);
-  QTreeWidgetItem &item = createItem(*motion_pass_item_ptr,"Pos Expr");
+  QTreeWidgetItem &pos_expr_item = createItem(*motion_pass_item_ptr,"Pos Expr");
+  tree.createTargetBodyItem(pos_expr_path);
+  QtComboBoxTreeWidgetItem &target_body_item =
+    treeWidget().createComboBoxItem(pos_expr_item,"Target Body");
   {
-    QTreeWidgetItem &test_item = createItem(item);
-    tree.createTargetBodyItem(pos_expr_path);
-    QComboBox &combo_box =
-      setItemWidget<QComboBox>(treeWidget(),test_item,"Target Body");
+    QComboBox &combo_box = target_body_item.comboBox();
     combo_box.addItem("Body1");
     combo_box.addItem("Body2");
     combo_box.addItem("Body3");
   }
   TreePath local_position_path = tree.createLocalPositionItem(pos_expr_path);
-  QTreeWidgetItem &local_position_item = createItem(item,"Local Position");
+  QTreeWidgetItem &local_position_item =
+    createItem(pos_expr_item,"Local Position");
   {
     tree.createXItem(local_position_path);
-    createItemSpinBox(treeWidget(),local_position_item,"X");
+    treeWidget().createSpinBoxItem(local_position_item,"X");
     tree.createYItem(local_position_path);
-    createItemSpinBox(treeWidget(),local_position_item,"Y");
+    treeWidget().createSpinBoxItem(local_position_item,"Y");
     tree.createZItem(local_position_path);
-    createItemSpinBox(treeWidget(),local_position_item,"Z");
+    treeWidget().createSpinBoxItem(local_position_item,"Z");
   }
   TreePath global_position_path = tree.createGlobalPositionItem(pos_expr_path);
-  QTreeWidgetItem &global_position_item = createItem(item,"Global Position");
+  QtComboBoxTreeWidgetItem &global_position_item =
+    treeWidget().createComboBoxItem(pos_expr_item,"Global Position");
+  {
+    QComboBox &combo_box = global_position_item.comboBox();
+    combo_box.addItem("Components");
+    combo_box.addItem("From Body");
+  }
   {
     tree.createXItem(global_position_path);
-    createItemSpinBox(treeWidget(),global_position_item,"X");
+    treeWidget().createSpinBoxItem(global_position_item,"X");
     tree.createYItem(global_position_path);
-    createItemSpinBox(treeWidget(),global_position_item,"Y");
+    treeWidget().createSpinBoxItem(global_position_item,"Y");
     tree.createZItem(global_position_path);
-    createItemSpinBox(treeWidget(),global_position_item,"Z");
+    treeWidget().createSpinBoxItem(global_position_item,"Z");
   }
 }
 
 
-QTreeWidget &QtMainWindow::treeWidget()
+void
+  QtMainWindow::treeComboBoxItemIndexChanged(
+    QtComboBoxTreeWidgetItem *item_ptr,
+    int
+  )
+{
+  cerr << "QtMainWindow::treeComboBoxItemIndexChanged()\n";
+  assert(item_ptr);
+  cerr << itemPath(*item_ptr) << "\n";
+}
+
+
+QtTreeWidget &QtMainWindow::treeWidget()
 {
   assert(tree_widget_ptr);
   return *tree_widget_ptr;

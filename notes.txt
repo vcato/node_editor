@@ -236,3 +236,16 @@ a diagram.
 It would be neat if you could select some text in a node, then drag it out
 and have it create a new node with the text, replace the text in the original
 node with a $ and attach the new node's output to a new input connector.
+---
+Maybe each node has a combobox beside it which indicates the type of
+expression.  So for the global position, it could be switched from explicit
+to source body position.  When you do, it switched from having X,Y,Z
+children to "Source Body" and "Local Position" children.
+
+We need a way to determine which item had its value type changed
+We could set a property on the QComboBox to indicate which item it goes with.
+
+We could create a derived QTreeWidgetItem.
+
+I think we need a custom QTreeWidget so that we can have a custom signal
+for the combo box index changing.
