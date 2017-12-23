@@ -14,14 +14,8 @@ class QtMainWindow : public QMainWindow {
   public:
     QtMainWindow();
 
-  private slots:
-    void prepareMenu(const QPoint &pos);
-    void treeItemSelectionChanged();
-    void addPassTriggered();
-    void addPosExprTriggered();
-    void treeComboBoxItemIndexChanged(QtComboBoxTreeWidgetItem *,int);
-
   private:
+    using TreePath = Tree::Path;
     QMenu menu{"Tools"};
     Tree tree;
     Diagram diagram;
@@ -32,4 +26,13 @@ class QtMainWindow : public QMainWindow {
     QtTreeWidget &treeWidget();
     void createTree(QBoxLayout &layout);
     QTreeWidgetItem* findSelectedItem();
+
+  private slots:
+    void prepareMenu(const QPoint &pos);
+    void treeItemSelectionChanged();
+    void addPassTriggered();
+    void addPosExprTriggered();
+    void treeComboBoxItemIndexChanged(QtComboBoxTreeWidgetItem *,int);
+    void addTreeItem(const TreePath &parent_path,const TreeItem &item);
+    void addTreeItems(const TreePath &,const TreeItem &);
 };

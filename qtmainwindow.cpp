@@ -17,6 +17,7 @@ using std::cerr;
 using std::string;
 using std::vector;
 using std::ostream;
+using TreePath = Tree::Path;
 
 
 
@@ -260,51 +261,116 @@ void QtMainWindow::addPassTriggered()
 }
 
 
+void
+  QtMainWindow::addTreeItem(
+    const TreePath &parent_path,
+    const TreeItem &item
+  )
+{
+  QTreeWidgetItem &parent_item = itemFromPath(treeWidget(),parent_path);
+
+  switch (item.type) {
+    case TreeItem::Type::x:
+      tree.createXItem(parent_path);
+      treeWidget().createSpinBoxItem(parent_item,"X");
+      break;
+    case TreeItem::Type::y:
+      tree.createXItem(parent_path);
+      treeWidget().createSpinBoxItem(parent_item,"Y");
+      break;
+    case TreeItem::Type::z:
+      tree.createXItem(parent_path);
+      treeWidget().createSpinBoxItem(parent_item,"Y");
+      break;
+    case TreeItem::Type::global_position:
+      {
+        TreePath global_position_path =
+          tree.createGlobalPositionItem(parent_path);
+        QtComboBoxTreeWidgetItem &global_position_item =
+          treeWidget().createComboBoxItem(parent_item,"Global Position");
+        {
+          QComboBox &combo_box = global_position_item.comboBox();
+          combo_box.addItem("Components");
+          combo_box.addItem("From Body");
+        }
+        addTreeItems(global_position_path,item);
+      }
+      break;
+    case TreeItem::Type::local_position:
+      {
+        TreePath local_position_path =
+          tree.createLocalPositionItem(parent_path);
+        createItem(parent_item,"Local Position");
+        addTreeItems(local_position_path,item);
+      }
+      break;
+    case TreeItem::Type::target_body:
+      {
+        tree.createTargetBodyItem(parent_path);
+        QtComboBoxTreeWidgetItem &target_body_item =
+          treeWidget().createComboBoxItem(parent_item,"Target Body");
+        QComboBox &combo_box = target_body_item.comboBox();
+        combo_box.addItem("Body1");
+        combo_box.addItem("Body2");
+        combo_box.addItem("Body3");
+      }
+      break;
+    case TreeItem::Type::pos_expr:
+      {
+        TreePath pos_expr_path = tree.createPosExprItem(parent_path);
+        createItem(parent_item,"Pos Expr");
+        addTreeItems(pos_expr_path,item);
+      }
+      break;
+    default:
+      assert(false);
+  }
+}
+
+
+void
+  QtMainWindow::addTreeItems(
+    const TreePath &parent_path,
+    const TreeItem &tree_items
+  )
+{
+  for (const TreeItem &item : tree_items.child_items) {
+    addTreeItem(parent_path,item);
+  }
+}
+
+
+static void createXYZChildren(TreeItem &parent_item)
+{
+  using ItemType = TreeItem::Type;
+
+  parent_item.createItem2(ItemType::x);
+  parent_item.createItem2(ItemType::y);
+  parent_item.createItem2(ItemType::z);
+}
+
+
 void QtMainWindow::addPosExprTriggered()
 {
-  QTreeWidgetItem *motion_pass_item_ptr = findSelectedItem();
-  assert(motion_pass_item_ptr);
+  QTreeWidgetItem *parent_item_ptr = findSelectedItem();
+  assert(parent_item_ptr);
   using TreePath = Tree::Path;
+  using ItemType = TreeItem::Type;
 
-  TreePath motion_pass_path = itemPath(*motion_pass_item_ptr);
-  TreePath pos_expr_path = tree.createPosExprItem(motion_pass_path);
-  QTreeWidgetItem &pos_expr_item = createItem(*motion_pass_item_ptr,"Pos Expr");
-  tree.createTargetBodyItem(pos_expr_path);
-  QtComboBoxTreeWidgetItem &target_body_item =
-    treeWidget().createComboBoxItem(pos_expr_item,"Target Body");
+  TreePath parent_path = itemPath(*parent_item_ptr);
+  TreeItem pos_expr_item(ItemType::pos_expr);
+  pos_expr_item.createItem2(ItemType::target_body);
   {
-    QComboBox &combo_box = target_body_item.comboBox();
-    combo_box.addItem("Body1");
-    combo_box.addItem("Body2");
-    combo_box.addItem("Body3");
-  }
-  TreePath local_position_path = tree.createLocalPositionItem(pos_expr_path);
-  QTreeWidgetItem &local_position_item =
-    createItem(pos_expr_item,"Local Position");
-  {
-    tree.createXItem(local_position_path);
-    treeWidget().createSpinBoxItem(local_position_item,"X");
-    tree.createYItem(local_position_path);
-    treeWidget().createSpinBoxItem(local_position_item,"Y");
-    tree.createZItem(local_position_path);
-    treeWidget().createSpinBoxItem(local_position_item,"Z");
-  }
-  TreePath global_position_path = tree.createGlobalPositionItem(pos_expr_path);
-  QtComboBoxTreeWidgetItem &global_position_item =
-    treeWidget().createComboBoxItem(pos_expr_item,"Global Position");
-  {
-    QComboBox &combo_box = global_position_item.comboBox();
-    combo_box.addItem("Components");
-    combo_box.addItem("From Body");
+    TreeItem &local_position_item =
+      pos_expr_item.createItem2(ItemType::local_position);
+    createXYZChildren(local_position_item);
   }
   {
-    tree.createXItem(global_position_path);
-    treeWidget().createSpinBoxItem(global_position_item,"X");
-    tree.createYItem(global_position_path);
-    treeWidget().createSpinBoxItem(global_position_item,"Y");
-    tree.createZItem(global_position_path);
-    treeWidget().createSpinBoxItem(global_position_item,"Z");
+    TreeItem &global_position_item =
+      pos_expr_item.createItem2(ItemType::global_position);
+    createXYZChildren(global_position_item);
   }
+  addTreeItem(parent_path,pos_expr_item);
 }
 
 
@@ -314,9 +380,7 @@ void
     int
   )
 {
-  cerr << "QtMainWindow::treeComboBoxItemIndexChanged()\n";
   assert(item_ptr);
-  cerr << itemPath(*item_ptr) << "\n";
 }
 
 

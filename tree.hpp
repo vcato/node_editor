@@ -4,6 +4,37 @@
 #include "diagram.hpp"
 
 
+struct TreeItem {
+  using Path = std::vector<int>;
+  using Index = int;
+
+  enum class Type {
+    root,
+    charmapper,
+    motion_pass,
+    pos_expr,
+    target_body,
+    local_position,
+    global_position,
+    weight,
+    x,
+    y,
+    z
+  };
+
+  Type type;
+  Diagram diagram;
+  std::vector<TreeItem> child_items;
+
+  TreeItem(Type);
+
+  const TreeItem &getItem(const Path &,int depth) const;
+
+  Index createItem(Type type);
+  TreeItem& createItem2(Type type);
+};
+
+
 class Tree {
   public:
     using Path = std::vector<int>;
@@ -20,44 +51,21 @@ class Tree {
     Path createXItem(const Path &);
     Path createYItem(const Path &);
     Path createZItem(const Path &);
+    void replaceChildren(const Path &,const TreeItem &) {}
     bool isCharmapperItem(const Path &path) const;
     bool isMotionPassItem(const Path &path) const;
     Diagram &itemDiagram(const Path &);
 
   private:
-    struct Node {
-      enum class Type {
-        root,
-        charmapper,
-        motion_pass,
-        pos_expr,
-        target_body,
-        local_position,
-        global_position,
-        weight,
-        x,
-        y,
-        z
-      };
+    using Item = TreeItem;
 
-      Type type;
-      Diagram diagram;
-      std::vector<Node> child_nodes;
+    using ItemType = Item::Type;
 
-      Node(Type type_arg);
+    Item &getItem(const Path &);
+    const Item &getItem(const Path &) const;
+    Path createItem(const Path &parent_path,Item::Type type);
 
-      const Node &getNode(const Path &,int depth) const;
-
-      Index createItem(Type type);
-    };
-
-    using NodeType = Node::Type;
-
-    Node &getNode(const Path &);
-    const Node &getNode(const Path &) const;
-    Path createItem(const Path &parent_path,Node::Type type);
-
-    Node _root_node;
+    Item _root_node;
 };
 
 

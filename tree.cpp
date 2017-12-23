@@ -8,78 +8,78 @@ using std::cerr;
 
 
 Tree::Tree()
-: _root_node(NodeType::root)
+: _root_node(ItemType::root)
 {
 }
 
 
 auto Tree::createCharmapperItem() -> Path
 {
-  return createItem({},NodeType::charmapper);
+  return createItem({},ItemType::charmapper);
 }
 
 
 auto Tree::createMotionPassItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::motion_pass);
+  return createItem(parent_path,ItemType::motion_pass);
 }
 
 
 auto Tree::createPosExprItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::pos_expr);
+  return createItem(parent_path,ItemType::pos_expr);
 }
 
 
 auto Tree::createTargetBodyItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::target_body);
+  return createItem(parent_path,ItemType::target_body);
 }
 
 
 auto Tree::createLocalPositionItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::local_position);
+  return createItem(parent_path,ItemType::local_position);
 }
 
 
 auto Tree::createGlobalPositionItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::global_position);
+  return createItem(parent_path,ItemType::global_position);
 }
 
 
 auto Tree::createWeightItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::weight);
+  return createItem(parent_path,ItemType::weight);
 }
 
 
 auto Tree::createXItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::x);
+  return createItem(parent_path,ItemType::x);
 }
 
 
 auto Tree::createYItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::y);
+  return createItem(parent_path,ItemType::y);
 }
 
 
 auto Tree::createZItem(const Path &parent_path) -> Path
 {
-  return createItem(parent_path,NodeType::z);
+  return createItem(parent_path,ItemType::z);
 }
 
 
-auto Tree::createItem(const Path &parent_path,NodeType type) -> Path
+auto Tree::createItem(const Path &parent_path,ItemType type) -> Path
 {
-  return join(parent_path,getNode(parent_path).createItem(type));
+  return join(parent_path,getItem(parent_path).createItem(type));
 }
 
 
-Tree::Node::Node(Type type_arg)
+TreeItem::TreeItem(Type type_arg)
   : type(type_arg)
 {
   if (type==Type::local_position) {
@@ -108,15 +108,30 @@ Tree::Node::Node(Type type_arg)
 }
 
 
-auto Tree::Node::createItem(NodeType type) -> Index
+#if 0
+void TreeItem::addItem(const TreeItem &arg)
 {
-  Index result = child_nodes.size();
-  child_nodes.push_back(Node(type));
+  child_items.push_back(arg);
+}
+#endif
+
+
+auto TreeItem::createItem(Type type) -> Index
+{
+  Index result = child_items.size();
+  child_items.push_back(TreeItem(type));
   return result;
 }
 
 
-auto Tree::Node::getNode(const Path &path,int depth) const -> const Node &
+auto TreeItem::createItem2(Type type) -> TreeItem&
+{
+  child_items.push_back(TreeItem(type));
+  return child_items.back();
+}
+
+
+auto TreeItem::getItem(const Path &path,int depth) const -> const TreeItem &
 {
   int path_length = path.size();
 
@@ -124,37 +139,37 @@ auto Tree::Node::getNode(const Path &path,int depth) const -> const Node &
     return *this;
   }
 
-  return child_nodes[path[depth]].getNode(path,depth+1);
+  return child_items[path[depth]].getItem(path,depth+1);
 }
 
 
 bool Tree::isCharmapperItem(const Path &path) const
 {
-  return getNode(path).type==NodeType::charmapper;
+  return getItem(path).type==ItemType::charmapper;
 }
 
 
 bool Tree::isMotionPassItem(const Path &path) const
 {
-  return getNode(path).type==NodeType::motion_pass;
+  return getItem(path).type==ItemType::motion_pass;
 }
 
 
-auto Tree::getNode(const Path &path) -> Node&
+auto Tree::getItem(const Path &path) -> Item&
 {
   const Tree &const_self = *this;
-  const Node &const_node = const_self.getNode(path);
-  return const_cast<Node&>(const_node);
+  const Item &const_node = const_self.getItem(path);
+  return const_cast<Item&>(const_node);
 }
 
 
-auto Tree::getNode(const Path &path) const -> const Node &
+auto Tree::getItem(const Path &path) const -> const Item &
 {
-  return _root_node.getNode(path,0);
+  return _root_node.getItem(path,0);
 }
 
 
 Diagram& Tree::itemDiagram(const Path &path)
 {
-  return getNode(path).diagram;
+  return getItem(path).diagram;
 }
