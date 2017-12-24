@@ -265,8 +265,10 @@ void
           treeWidget().createComboBoxItem(parent_item,"Global Position");
         {
           QComboBox &combo_box = global_position_item.comboBox();
+          ignore_combo_box_signals = true;
           combo_box.addItem("Components");
           combo_box.addItem("From Body");
+          ignore_combo_box_signals = false;
         }
         addTreeItems(global_position_path,item);
       }
@@ -290,6 +292,17 @@ void
         combo_box.addItem("Body3");
       }
       break;
+    case TreeItem::Type::source_body:
+      {
+        tree.createSourceBodyItem(parent_path);
+        QtComboBoxTreeWidgetItem &source_body_item =
+          treeWidget().createComboBoxItem(parent_item,"Source Body");
+        QComboBox &combo_box = source_body_item.comboBox();
+        combo_box.addItem("Body1");
+        combo_box.addItem("Body2");
+        combo_box.addItem("Body3");
+      }
+      break;
     case TreeItem::Type::pos_expr:
       {
         TreePath pos_expr_path = tree.createPosExprItem(parent_path);
@@ -300,6 +313,29 @@ void
     default:
       assert(false);
   }
+}
+
+
+void QtMainWindow::removeChildItems(const TreePath &path)
+{
+  tree.removeChildItems(path);
+
+  QTreeWidgetItem &item = itemFromPath(treeWidget(),path);
+
+  while (item.childCount()>0) {
+    item.removeChild(item.child(item.childCount()-1));
+  }
+}
+
+
+void
+  QtMainWindow::replaceTreeItems(
+    const TreePath &parent_path,
+    const TreeItem &tree_items
+  )
+{
+  removeChildItems(parent_path);
+  addTreeItems(parent_path,tree_items);
 }
 
 
@@ -352,18 +388,41 @@ void QtMainWindow::addPosExprTriggered()
 void
   QtMainWindow::treeComboBoxItemIndexChanged(
     QtComboBoxTreeWidgetItem *item_ptr,
-    int
+    int index
   )
 {
+  if (ignore_combo_box_signals) return;
+
   assert(item_ptr);
 
-#if 0
   Tree::Path path = itemPath(*item_ptr);
-  TreeItem items(TreeItem::Type::root);
-  // items.createItem(TreeItem::Type::source_body);
-  items.createItem(TreeItem::Type::local_position);
-  // tree.replaceChildren(path,items);
-#endif
+
+  if (tree.isGlobalPositionItem(path)) {
+    switch (index) {
+      case 0:
+        // Components
+        {
+          TreeItem items(TreeItem::Type::root);
+          createXYZChildren(items);
+          replaceTreeItems(path,items);
+        }
+        break;
+      case 1:
+        // From Source Body
+        {
+          TreeItem items(TreeItem::Type::root);
+          items.createItem(TreeItem::Type::source_body);
+          TreeItem &local_position_item =
+            items.createItem2(TreeItem::Type::local_position);
+          createXYZChildren(local_position_item);
+          replaceTreeItems(path,items);
+        }
+        break;
+      default:
+        assert(false);
+    }
+  }
+
 }
 
 

@@ -22,6 +22,7 @@ class QtMainWindow : public QMainWindow {
     QWidget widget;
     QtTreeWidget *tree_widget_ptr;
     QtDiagramEditor *diagram_editor_ptr;
+    bool ignore_combo_box_signals = false;
 
     QtTreeWidget &treeWidget();
     void createTree(QBoxLayout &layout);
@@ -35,4 +36,10 @@ class QtMainWindow : public QMainWindow {
     void treeComboBoxItemIndexChanged(QtComboBoxTreeWidgetItem *,int);
     void addTreeItem(const TreePath &parent_path,const TreeItem &item);
     void addTreeItems(const TreePath &,const TreeItem &);
+    void removeChildItems(const TreePath &parent_path);
+    void
+      replaceTreeItems(
+        const TreePath &parent_path,
+        const TreeItem &tree_items
+      );
 };

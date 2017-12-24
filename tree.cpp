@@ -1,6 +1,8 @@
 #include "tree.hpp"
 
+#include <cassert>
 #include <iostream>
+#include <limits>
 
 
 using std::string;
@@ -34,6 +36,12 @@ auto Tree::createPosExprItem(const Path &parent_path) -> Path
 auto Tree::createTargetBodyItem(const Path &parent_path) -> Path
 {
   return createItem(parent_path,ItemType::target_body);
+}
+
+
+auto Tree::createSourceBodyItem(const Path &parent_path) -> Path
+{
+  return createItem(parent_path,ItemType::source_body);
 }
 
 
@@ -79,12 +87,16 @@ auto Tree::createItem(const Path &parent_path,ItemType type) -> Path
 }
 
 
+auto Tree::itemType(const Path &path) const -> ItemType
+{
+  return getItem(path).type;
+}
+
+
 TreeItem::TreeItem(Type type_arg)
   : type(type_arg)
 {
   if (type==Type::local_position) {
-    // NodeIndex node_index =
-    cerr << "Adding local position nodes\n";
     NodeIndex vector_index = diagram.addNode("[$,$,$]");
     diagram.node(vector_index).setPosition({100,180});
 
@@ -106,14 +118,6 @@ TreeItem::TreeItem(Type type_arg)
     diagram.connectNodes(vector_index,0,local_postion_index,0);
   }
 }
-
-
-#if 0
-void TreeItem::addItem(const TreeItem &arg)
-{
-  child_items.push_back(arg);
-}
-#endif
 
 
 auto TreeItem::createItem(Type type) -> Index
@@ -145,13 +149,19 @@ auto TreeItem::getItem(const Path &path,int depth) const -> const TreeItem &
 
 bool Tree::isCharmapperItem(const Path &path) const
 {
-  return getItem(path).type==ItemType::charmapper;
+  return itemType(path)==ItemType::charmapper;
 }
 
 
 bool Tree::isMotionPassItem(const Path &path) const
 {
-  return getItem(path).type==ItemType::motion_pass;
+  return itemType(path)==ItemType::motion_pass;
+}
+
+
+bool Tree::isGlobalPositionItem(const Path &path) const
+{
+  return itemType(path)==ItemType::global_position;
 }
 
 
@@ -172,4 +182,18 @@ auto Tree::getItem(const Path &path) const -> const Item &
 Diagram& Tree::itemDiagram(const Path &path)
 {
   return getItem(path).diagram;
+}
+
+
+void Tree::removeChildItems(const Path &path)
+{
+  getItem(path).child_items.clear();
+}
+
+
+auto Tree::nChildItems(const Path &path) const -> SizeType
+{
+  const TreeItem &item = getItem(path);
+  assert(item.child_items.size()<=std::numeric_limits<SizeType>::max());
+  return item.child_items.size();
 }

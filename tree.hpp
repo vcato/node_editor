@@ -14,6 +14,7 @@ struct TreeItem {
     motion_pass,
     pos_expr,
     target_body,
+    source_body,
     local_position,
     global_position,
     weight,
@@ -39,21 +40,25 @@ class Tree {
   public:
     using Path = std::vector<int>;
     using Index = int;
+    using SizeType = int;
 
     Tree();
     Path createCharmapperItem();
     Path createMotionPassItem(const Path &);
     Path createPosExprItem(const Path &);
     Path createTargetBodyItem(const Path &);
+    Path createSourceBodyItem(const Path &);
     Path createLocalPositionItem(const Path &);
     Path createGlobalPositionItem(const Path &);
     Path createWeightItem(const Path &);
     Path createXItem(const Path &);
     Path createYItem(const Path &);
     Path createZItem(const Path &);
-    // void replaceChildren(const Path &,const TreeItem &) {}
+    SizeType nChildItems(const Path &) const;
+    void removeChildItems(const Path &);
     bool isCharmapperItem(const Path &path) const;
     bool isMotionPassItem(const Path &path) const;
+    bool isGlobalPositionItem(const Path &path) const;
     Diagram &itemDiagram(const Path &);
 
   private:
@@ -64,6 +69,7 @@ class Tree {
     Item &getItem(const Path &);
     const Item &getItem(const Path &) const;
     Path createItem(const Path &parent_path,Item::Type type);
+    ItemType itemType(const Path &) const;
 
     Item _root_node;
 };
