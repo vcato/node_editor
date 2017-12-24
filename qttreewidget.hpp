@@ -45,6 +45,21 @@ class QtTreeWidget : public QTreeWidget {
     return widget;
   }
 
+  QTreeWidgetItem& createItem(const std::string &label)
+  {
+    QTreeWidgetItem &item = createItem();
+    setItemText(item,label);
+    return item;
+  }
+
+  static QTreeWidgetItem&
+    createItem(QTreeWidgetItem &parent_item,const std::string &label)
+  {
+    QTreeWidgetItem &pass_item = QtTreeWidget::createItem(parent_item);
+    setItemText(pass_item,label);
+    return pass_item;
+  }
+
   static QTreeWidgetItem& createItem(QTreeWidgetItem &parent_item)
   {
     QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
@@ -52,6 +67,20 @@ class QtTreeWidget : public QTreeWidget {
     QTreeWidgetItem &item = *item_ptr;
     item.setExpanded(true);
     return item;
+  }
+
+  QTreeWidgetItem& createItem()
+  {
+    QTreeWidget &tree_widget = *this;
+    QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
+    tree_widget.addTopLevelItem(item_ptr);
+    item_ptr->setExpanded(true);
+    return *item_ptr;
+  }
+
+  static void setItemText(QTreeWidgetItem &item,const std::string &label)
+  {
+    item.setText(/*column*/0,QString::fromStdString(label));
   }
 
   QtComboBoxTreeWidgetItem&

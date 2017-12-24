@@ -51,7 +51,7 @@ class Tree {
     Path createXItem(const Path &);
     Path createYItem(const Path &);
     Path createZItem(const Path &);
-    void replaceChildren(const Path &,const TreeItem &) {}
+    // void replaceChildren(const Path &,const TreeItem &) {}
     bool isCharmapperItem(const Path &path) const;
     bool isMotionPassItem(const Path &path) const;
     Diagram &itemDiagram(const Path &);

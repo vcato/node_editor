@@ -53,31 +53,6 @@ static QtDiagramEditor&
 }
 
 
-static void setItemText(QTreeWidgetItem &item,const string &label)
-{
-  item.setText(/*column*/0,QString::fromStdString(label));
-}
-
-
-static QTreeWidgetItem& createItem(QTreeWidget &tree_widget,const string &label)
-{
-  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
-  setItemText(*item_ptr,label);
-  tree_widget.addTopLevelItem(item_ptr);
-  item_ptr->setExpanded(true);
-  return *item_ptr;
-}
-
-
-static QTreeWidgetItem&
-  createItem(QTreeWidgetItem &parent_item,const string &label)
-{
-  QTreeWidgetItem &pass_item = QtTreeWidget::createItem(parent_item);
-  setItemText(pass_item,label);
-  return pass_item;
-}
-
-
 void QtMainWindow::createTree(QBoxLayout &parent_layout)
 {
   QtTreeWidget &tree_widget = createTreeWidget(parent_layout);
@@ -100,7 +75,7 @@ void QtMainWindow::createTree(QBoxLayout &parent_layout)
     SLOT(treeComboBoxItemIndexChanged(QtComboBoxTreeWidgetItem*,int))
   );
   tree.createCharmapperItem();
-  createItem(tree_widget,"charmapper");
+  tree_widget.createItem("charmapper");
 }
 
 
@@ -257,7 +232,7 @@ void QtMainWindow::addPassTriggered()
 
   cerr << "new item index: " << motion_pass_item_path << "\n";
   assert(tree.isMotionPassItem(motion_pass_item_path));
-  createItem(*selected_item_ptr,"Motion Pass");
+  treeWidget().createItem(*selected_item_ptr,"Motion Pass");
 }
 
 
@@ -300,7 +275,7 @@ void
       {
         TreePath local_position_path =
           tree.createLocalPositionItem(parent_path);
-        createItem(parent_item,"Local Position");
+        treeWidget().createItem(parent_item,"Local Position");
         addTreeItems(local_position_path,item);
       }
       break;
@@ -318,7 +293,7 @@ void
     case TreeItem::Type::pos_expr:
       {
         TreePath pos_expr_path = tree.createPosExprItem(parent_path);
-        createItem(parent_item,"Pos Expr");
+        treeWidget().createItem(parent_item,"Pos Expr");
         addTreeItems(pos_expr_path,item);
       }
       break;
@@ -381,6 +356,14 @@ void
   )
 {
   assert(item_ptr);
+
+#if 0
+  Tree::Path path = itemPath(*item_ptr);
+  TreeItem items(TreeItem::Type::root);
+  // items.createItem(TreeItem::Type::source_body);
+  items.createItem(TreeItem::Type::local_position);
+  // tree.replaceChildren(path,items);
+#endif
 }
 
 
