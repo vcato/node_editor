@@ -48,6 +48,23 @@ NodeIndex Diagram::addNode(const string &text)
 }
 
 
+DiagramNode &Diagram::createNode(NodeIndex node_index)
+{
+  assert(node_index>=0);
+  int n_nodes = _node_ptrs.size();
+
+  if (node_index>=n_nodes) {
+    _node_ptrs.resize(node_index+1);
+  }
+
+  assert(!_node_ptrs[node_index]);
+
+  _node_ptrs[node_index] = make_unique<Node>();
+
+  return *_node_ptrs[node_index];
+}
+
+
 Node &Diagram::node(NodeIndex node_index)
 {
   assert(_node_ptrs[node_index]);

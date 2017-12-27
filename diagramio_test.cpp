@@ -4,6 +4,7 @@
 #include <sstream>
 
 
+using std::istringstream;
 using std::ostringstream;
 using std::string;
 using std::cerr;
@@ -18,6 +19,15 @@ static string makeText(const Diagram &d)
 }
 
 
+static Diagram scanFromText(const string &text)
+{
+  Diagram diagram;
+  istringstream stream(text);
+  scanDiagramFrom(stream,diagram);
+  return diagram;
+}
+
+
 static void testWithEmptyDiagram()
 {
   Diagram d;
@@ -26,6 +36,7 @@ static void testWithEmptyDiagram()
     "diagram {\n"
     "}\n";
   assert(diagram_text==expected_text);
+  Diagram d2 = scanFromText(diagram_text);
 }
 
 
@@ -45,6 +56,10 @@ static void testWithOneNode()
     "}\n";
   string diagram_text = makeText(d);
   assert(diagram_text==expected_text);
+  Diagram d2 = scanFromText(diagram_text);
+  assert(d2.nExistingNodes()==1);
+  assert(d2.node(0).position()==Point2D(0,0));
+  assert(d2.node(0).lines[0].text=="x=5");
 }
 
 
@@ -53,12 +68,13 @@ static void testWithTwoConnectedNodes()
   Diagram d;
   NodeIndex n1 = d.addNode("x=$");
   NodeIndex n2 = d.addNode("5");
+  d.node(n1).setPosition({101,102});
   d.connectNodes(n2,0,n1,0);
   const char *expected_text =
     "diagram {\n"
     "  node {\n"
     "    id: 1\n"
-    "    position: [0,0]\n"
+    "    position: [101,102]\n"
     "    text {\n"
     "      \"x=$\"\n"
     "    }\n"
@@ -76,7 +92,11 @@ static void testWithTwoConnectedNodes()
     "    }\n"
     "  }\n"
     "}\n";
-  assert(makeText(d)==expected_text);
+  string diagram_text = makeText(d);
+  assert(diagram_text==expected_text);
+  Diagram d2 = scanFromText(diagram_text);
+  assert(d2.nExistingNodes()==2);
+  assert(d2.node(0).position()==Point2D(101,102));
 }
 
 

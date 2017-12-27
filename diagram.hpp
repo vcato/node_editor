@@ -14,6 +14,8 @@ class Diagram {
 
     NodeIndex addNode(const std::string &text);
 
+    Node &createNode(NodeIndex);
+
     void deleteNode(NodeIndex index);
 
     Node &node(NodeIndex);

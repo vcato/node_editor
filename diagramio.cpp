@@ -1,10 +1,15 @@
 #include "diagramio.hpp"
 
 #include <cassert>
+#include <sstream>
 
 
 using Node = DiagramNode;
 using std::ostream;
+using std::istream;
+using std::string;
+using std::istringstream;
+using std::cerr;
 
 
 static void printNodeOn(ostream &stream,const Node &node,int i)
@@ -54,4 +59,208 @@ void printDiagramOn(ostream &stream,const Diagram &diagram)
   }
 
   stream << "}\n";
+}
+
+
+namespace {
+struct Parser {
+  istream &stream;
+  string word;
+
+  Parser(istream &stream_arg) : stream(stream_arg) { }
+
+  void scanWord()
+  {
+    stream >> word;
+  }
+
+  void scanEndOfLine()
+  {
+    for (;;) {
+      int c = stream.get();
+      if (c==EOF || c=='\n') break;
+    }
+  }
+
+  void scanTextBody(Node &node)
+  {
+    for (;;) {
+      for (;;) {
+        int c = stream.get();
+        if (c==EOF) {
+          break;
+        }
+        if (c=='"') {
+          break;
+        }
+      }
+      string value;
+      for (;;) {
+        int c = stream.get();
+        if (c=='"') {
+          break;
+        }
+        value.push_back(c);
+      }
+      scanEndOfLine();
+      node.lines.push_back(Node::Line(value));
+      scanWord();
+      if (word=="}") {
+        scanEndOfLine();
+        break;
+      }
+      else {
+        assert(false);
+      }
+      cerr << "word: " << word << "\n";
+    }
+  }
+
+
+  void scanConnectionBody(Node &node)
+  {
+    scanWord();
+
+    if (word=="input_index:") {
+      int input_index = 0;
+      stream >> input_index;
+      scanEndOfLine();
+      int n_inputs = node.inputs.size();
+      if (input_index>=n_inputs) {
+        node.inputs.resize(n_inputs+1);
+      }
+      Node::Input &input = node.inputs[input_index];
+      scanWord();
+      if (word=="source_node_id:") {
+        int source_node_id;
+        stream >> source_node_id;
+        if (source_node_id<1) {
+          assert(false);
+        }
+        input.source_node_index = source_node_id-1;
+      }
+      scanWord();
+      if (word=="source_output_index:") {
+        int source_output_index;
+        stream >> source_output_index;
+        if (source_output_index<0) {
+          assert(false);
+        }
+        input.source_output_index = source_output_index;
+      }
+      scanWord();
+      if (word=="}") {
+      }
+      else {
+        scanWord();
+        cerr << "word: " << word << "\n";
+        assert(false);
+      }
+    }
+  }
+
+  void scanDiagramBody(Diagram &diagram)
+  {
+    for (;;) {
+      scanWord();
+      if (word=="}") {
+        return;
+      }
+      if (word=="node") {
+        scanWord();
+        if (word=="{") {
+          scanEndOfLine();
+          scanWord();
+          if (word=="id:") {
+            int id;
+            stream >> id;
+            Node &node = diagram.createNode(id-1);
+            scanEndOfLine();
+            scanWord();
+            if (word=="position:") {
+              string position_string;
+              stream >> position_string;
+              if (position_string=="[0,0]") {
+                node.setPosition(Point2D(0,0));
+              }
+              else {
+                istringstream position_stream(position_string);
+                if (position_stream.peek()!='[') {
+                  assert(false);
+                }
+                position_stream.get();
+                float x;
+                position_stream >> x;
+                if (position_stream.peek()!=',') {
+                  assert(false);
+                }
+                position_stream.get();
+                float y;
+                position_stream >> y;
+                node.setPosition({x,y});
+              }
+            }
+            scanWord();
+            if (word=="text") {
+              scanWord();
+              if (word=="{") {
+                scanEndOfLine();
+                scanTextBody(node);
+              }
+              else {
+                assert(false);
+              }
+            }
+            scanWord();
+            if (word=="}") {
+            }
+            else {
+              if (word=="connection") {
+                scanWord();
+                if (word=="{") {
+                  scanEndOfLine();
+                  scanConnectionBody(node);
+                }
+              }
+            }
+            scanWord();
+            if (word=="}") {
+            }
+            else {
+              assert(false);
+            }
+          }
+        }
+        else {
+          assert(false);
+        }
+      }
+      else {
+        cerr << "word: " << word << "\n";
+        assert(false);
+      }
+    }
+  }
+};
+}
+
+
+void scanDiagramFrom(std::istream &stream,Diagram &diagram)
+{
+  Parser parser(stream);
+  parser.scanWord();
+  string &word = parser.word;
+  if (word=="diagram") {
+    parser.scanWord();
+    if (word=="{") {
+      parser.scanEndOfLine();
+      parser.scanDiagramBody(diagram);
+    }
+    else {
+      assert(false);
+    }
+  }
+  else {
+    assert(false);
+  }
 }
