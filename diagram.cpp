@@ -35,9 +35,9 @@ void Diagram::deleteNode(NodeIndex index)
 }
 
 
-int Diagram::addNode(const string &text)
+NodeIndex Diagram::addNode(const string &text)
 {
-  int node_index = _node_ptrs.size();
+  NodeIndex node_index = _node_ptrs.size();
 
   _node_ptrs.emplace_back(make_unique<Node>());
   Node &node = this->node(node_index);
@@ -48,7 +48,14 @@ int Diagram::addNode(const string &text)
 }
 
 
-Node &Diagram::node(int node_index)
+Node &Diagram::node(NodeIndex node_index)
+{
+  assert(_node_ptrs[node_index]);
+  return *_node_ptrs[node_index];
+}
+
+
+const Node &Diagram::node(NodeIndex node_index) const
 {
   assert(_node_ptrs[node_index]);
   return *_node_ptrs[node_index];
@@ -57,9 +64,9 @@ Node &Diagram::node(int node_index)
 
 void
   Diagram::connectNodes(
-    int output_node_index,
+    NodeIndex output_node_index,
     int output_index,
-    int input_node_index,
+    NodeIndex input_node_index,
     int input_index
   )
 {

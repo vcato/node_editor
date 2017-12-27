@@ -17,6 +17,7 @@ class Diagram {
     void deleteNode(NodeIndex index);
 
     Node &node(NodeIndex);
+    const Node &node(NodeIndex) const;
 
     int nExistingNodes() const;
     int nNodes() const;

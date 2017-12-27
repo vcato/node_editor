@@ -13,6 +13,7 @@ run_unit_tests: \
   statementtext_test.pass \
   diagramnode_test.pass \
   diagram_test.pass \
+  diagramio_test.pass \
   tree_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
@@ -50,6 +51,10 @@ diagramnode_test: diagramnode_test.o diagramnode.o linetext.o stringutil.o \
 
 diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
   statementtext.o diagramevaluation.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
+  linetext.o statementtext.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 tree_test: tree_test.o tree.o diagram.o diagramnode.o linetext.o \
