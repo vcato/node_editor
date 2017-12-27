@@ -15,8 +15,13 @@ struct Color {
 
 
 class QtDiagramEditor : public QGLWidget, public DiagramEditor {
+   Q_OBJECT
+
   public:
     QtDiagramEditor(Diagram &);
+
+  private slots:
+    void exportDiagramSlot();
 
   private:
     void initializeGL() override { }

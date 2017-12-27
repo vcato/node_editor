@@ -11,6 +11,7 @@
 #include <QSpinBox>
 #include "qttreewidget.hpp"
 #include "qtwidget.hpp"
+#include "qtmenu.hpp"
 
 
 using std::cerr;
@@ -33,14 +34,6 @@ static Layout& createLayout(QBoxLayout &parent_layout)
 static QtTreeWidget& createTreeWidget(QLayout &layout)
 {
   return createWidget<QtTreeWidget>(layout);
-}
-
-
-static QAction& createAction(QMenu &menu,const string &label)
-{
-  QAction *add_pass_action_ptr = new QAction(QString::fromStdString(label),0);
-  menu.addAction(add_pass_action_ptr);
-  return *add_pass_action_ptr;
 }
 
 

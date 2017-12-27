@@ -1,11 +1,18 @@
 #include "qtdiagrameditor.hpp"
 
 #include <iostream>
+#include <fstream>
+#include <QMenu>
+#include <QFileDialog>
+#include <QMessageBox>
 #include "diagramevaluation.hpp"
+#include "diagramio.hpp"
+#include "qtmenu.hpp"
 
 using std::cerr;
 using std::vector;
 using std::string;
+using std::ofstream;
 
 
 static QString qString(const std::string &arg)
@@ -23,6 +30,27 @@ QtDiagramEditor::QtDiagramEditor(Diagram &diagram)
     setFont(font);
   }
   setFocusPolicy(Qt::StrongFocus);
+}
+
+
+void QtDiagramEditor::exportDiagramSlot()
+{
+  cerr << "QtDiagramEditor::exportDiagramSlot()\n";
+  QFileDialog file_dialog;
+  QString result =
+    file_dialog.getSaveFileName(this,"Export Diagram","diagram.dat");
+  string path = result.toStdString();
+  {
+    ofstream stream(path);
+    if (!stream) {
+      QMessageBox box;
+      box.setText(QString::fromStdString("Unable to create "+path));
+      box.exec();
+    }
+    else {
+      printDiagramOn(stream,diagram());
+    }
+  }
 }
 
 
@@ -89,8 +117,22 @@ bool QtDiagramEditor::contains(const TextObject &text_object,const Point2D &p)
 void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
-  Point2D p = screenToGLCoords(event_ptr->x(),event_ptr->y());
-  mousePressedAt(p);
+  QMouseEvent &event = *event_ptr;
+
+  if (event.button()==Qt::LeftButton) {
+    Point2D p = screenToGLCoords(event.x(),event.y());
+    mousePressedAt(p);
+  }
+  else if (event.button()==Qt::RightButton) {
+    QMenu menu;
+    QAction &export_diagram_action = createAction(menu,"Export Diagram...");
+    connect(
+      &export_diagram_action,
+      SIGNAL(triggered()),
+      SLOT(exportDiagramSlot())
+    );
+    menu.exec(mapToGlobal(event.pos()));
+  }
 }
 
 
