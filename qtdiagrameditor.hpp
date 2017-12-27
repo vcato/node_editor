@@ -22,6 +22,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
 
   private slots:
     void exportDiagramSlot();
+    void importDiagramSlot();
 
   private:
     void initializeGL() override { }

@@ -211,23 +211,20 @@ struct Parser {
                 assert(false);
               }
             }
-            scanWord();
-            if (word=="}") {
-            }
-            else {
-              if (word=="connection") {
-                scanWord();
-                if (word=="{") {
-                  scanEndOfLine();
-                  scanConnectionBody(node);
+            for (;;) {
+              scanWord();
+              if (word=="}") {
+                break;
+              }
+              else {
+                if (word=="connection") {
+                  scanWord();
+                  if (word=="{") {
+                    scanEndOfLine();
+                    scanConnectionBody(node);
+                  }
                 }
               }
-            }
-            scanWord();
-            if (word=="}") {
-            }
-            else {
-              assert(false);
             }
           }
         }
@@ -258,6 +255,10 @@ void scanDiagramFrom(std::istream &stream,Diagram &diagram)
     }
     else {
       assert(false);
+    }
+
+    for (auto i : diagram.existingNodeIndices()) {
+      diagram.node(i).updateInputsAndOutputs();
     }
   }
   else {

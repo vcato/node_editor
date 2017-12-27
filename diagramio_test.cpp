@@ -100,9 +100,23 @@ static void testWithTwoConnectedNodes()
 }
 
 
+static void testWithTwoConnections()
+{
+  Diagram d;
+  NodeIndex n1 = d.addNode("1");
+  NodeIndex n2 = d.addNode("2");
+  NodeIndex n3 = d.addNode("$+$");
+  d.connectNodes(n1,0,n3,0);
+  d.connectNodes(n2,0,n3,1);
+  Diagram d2 = scanFromText(makeText(d));
+  assert(d2.node(n1).outputs.size()==1);
+}
+
+
 int main()
 {
   testWithEmptyDiagram();
   testWithOneNode();
   testWithTwoConnectedNodes();
+  testWithTwoConnections();
 }

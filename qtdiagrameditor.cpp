@@ -12,6 +12,7 @@
 using std::cerr;
 using std::vector;
 using std::string;
+using std::ifstream;
 using std::ofstream;
 
 
@@ -46,11 +47,26 @@ void QtDiagramEditor::exportDiagramSlot()
       QMessageBox box;
       box.setText(QString::fromStdString("Unable to create "+path));
       box.exec();
+      return;
     }
-    else {
-      printDiagramOn(stream,diagram());
-    }
+    printDiagramOn(stream,diagram());
   }
+}
+
+
+void QtDiagramEditor::importDiagramSlot()
+{
+  QFileDialog file_dialog;
+  QString result = file_dialog.getOpenFileName(this,"Import Diagram");
+  string path = result.toStdString();
+  ifstream stream(path);
+  if (!stream) {
+    QMessageBox box;
+    box.setText(QString::fromStdString("Unable to open "+path));
+    box.exec();
+    return;
+  }
+  scanDiagramFrom(stream,diagram());
 }
 
 
@@ -125,12 +141,22 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
   }
   else if (event.button()==Qt::RightButton) {
     QMenu menu;
-    QAction &export_diagram_action = createAction(menu,"Export Diagram...");
-    connect(
-      &export_diagram_action,
-      SIGNAL(triggered()),
-      SLOT(exportDiagramSlot())
-    );
+    {
+      QAction &action = createAction(menu,"Import Diagram...");
+      connect(
+        &action,
+        SIGNAL(triggered()),
+        SLOT(importDiagramSlot())
+      );
+    }
+    {
+      QAction &action = createAction(menu,"Export Diagram...");
+      connect(
+        &action,
+        SIGNAL(triggered()),
+        SLOT(exportDiagramSlot())
+      );
+    }
     menu.exec(mapToGlobal(event.pos()));
   }
 }
