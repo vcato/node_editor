@@ -1,87 +1,14 @@
 #include "diagram.hpp"
 
 #include <cassert>
-#include <iostream>
-#include <sstream>
+
 
 using std::cerr;
 using std::vector;
 using std::string;
-using std::ostream;
-using std::ostringstream;
 using std::make_unique;
 using std::unique_ptr;
-
 using Node = DiagramNode;
-
-void
-  Diagram::evaluateLine(
-    Node &node,int line_index,int output_index,ostream &stream,
-    int source_output_index,int source_node
-  )
-{
-  if (output_index<0) {
-    return;
-  }
-
-  float input_value = 0;
-
-  if (source_node>=0) {
-    input_value = this->node(source_node).outputs[source_output_index].value;
-  }
-
-  Node::Line &line = node.lines[line_index];
-  Node::Output &output = node.outputs[output_index];
-
-  output.value = lineTextValue(line.text,stream,input_value);
-}
-
-
-void
-  Diagram::updateNodeEvaluation(
-    int node_index,
-    vector<bool> &evaluated_flags,
-    ostream &stream
-  )
-{
-  assert(node_index>=0);
-
-  if (evaluated_flags[node_index]) return;
-  Node &node = this->node(node_index);
-  int n_inputs = node.inputs.size();
-
-  for (int i=0; i!=n_inputs; ++i) {
-    int source_node_index = node.inputs[i].source_node_index;
-    if (source_node_index>=0) {
-      updateNodeEvaluation(source_node_index,evaluated_flags,stream);
-    }
-  }
-
-  int n_expressions = node.statements.size();
-  int next_output_index = 0;
-  int next_input_index = 0;
-
-  for (int i=0; i!=n_expressions; ++i) {
-    int source_output_index = -1;
-    int source_node = -1;
-    int output_index = -1;
-
-    if (node.statements[i].has_output) {
-      output_index = next_output_index;
-      ++next_output_index;
-    }
-
-    if (node.lines[i].n_inputs==1) {
-      source_node = node.inputs[next_input_index].source_node_index;
-      source_output_index = node.inputs[next_input_index].source_output_index;
-      next_input_index += node.lines[i].n_inputs;
-    }
-
-    evaluateLine(node,i,output_index,stream,source_output_index,source_node);
-  }
-
-  evaluated_flags[node_index] = true;
-}
 
 
 Node *Diagram::findNode(NodeIndex i)
@@ -105,27 +32,6 @@ void Diagram::deleteNode(NodeIndex index)
 
   assert(_node_ptrs[index]);
   _node_ptrs[index].reset();
-}
-
-
-void Diagram::evaluate()
-{
-  ostringstream dummy_stream;
-  evaluate(dummy_stream);
-}
-
-
-void Diagram::evaluate(ostream &stream)
-{
-  int n_nodes = _node_ptrs.size();
-
-  vector<bool> evaluated_flags(n_nodes,false);
-
-  for (int i=0; i!=n_nodes; ++i) {
-    if (findNode(i)) {
-      updateNodeEvaluation(i,evaluated_flags,stream);
-    }
-  }
 }
 
 
@@ -217,4 +123,10 @@ int Diagram::nExistingNodes() const
   }
 
   return count;
+}
+
+
+int Diagram::nNodes() const
+{
+  return _node_ptrs.size();
 }

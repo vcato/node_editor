@@ -1,6 +1,7 @@
 #include "qtdiagrameditor.hpp"
 
 #include <iostream>
+#include "diagramevaluation.hpp"
 
 using std::cerr;
 using std::vector;
@@ -595,5 +596,5 @@ void QtDiagramEditor::paintGL()
     );
   }
 
-  diagram().evaluate(cerr);
+  evaluateDiagram(diagram(),cerr);
 }

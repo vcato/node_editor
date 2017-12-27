@@ -19,7 +19,7 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
   tree.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
   qtcomboboxtreewidgetitemsignalmap.o \
-  moc_qttreewidget.o qttreewidget.o
+  moc_qttreewidget.o qttreewidget.o diagramevaluation.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -30,7 +30,8 @@ moc_%.cpp: %.hpp
 	touch $@
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
-  linetext.o diagramnode.o diagram.o circle.o statementtext.o
+  linetext.o diagramnode.o diagram.o circle.o statementtext.o \
+  diagramevaluation.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
@@ -48,11 +49,11 @@ diagramnode_test: diagramnode_test.o diagramnode.o linetext.o stringutil.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
-  statementtext.o
+  statementtext.o diagramevaluation.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 tree_test: tree_test.o tree.o diagram.o diagramnode.o linetext.o \
-  statementtext.o stringutil.o
+  statementtext.o stringutil.o diagramevaluation.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

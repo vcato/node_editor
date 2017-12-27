@@ -2,8 +2,11 @@
 
 #include <cassert>
 #include <sstream>
+#include "diagramevaluation.hpp"
+
 
 using std::ostringstream;
+using std::ostream;
 using std::string;
 using std::cerr;
 
@@ -12,7 +15,7 @@ static void testEvaluation1()
 {
   Diagram diagram;
   int node_index =  diagram.addNode("5");
-  diagram.evaluate();
+  evaluateDiagram(diagram);
   assert(diagram.node(node_index).outputs[0].value==5);
 }
 
@@ -21,8 +24,14 @@ static void testEvaluation2()
 {
   Diagram diagram;
   int node_index =  diagram.addNode("6");
-  diagram.evaluate();
+  evaluateDiagram(diagram);
   assert(diagram.node(node_index).outputs[0].value==6);
+}
+
+
+static void evaluate(Diagram &diagram,ostream &stream)
+{
+  evaluateDiagram(diagram,stream);
 }
 
 
@@ -31,7 +40,7 @@ static void testEvaluateShow()
   Diagram diagram;
   diagram.addNode("show(5)");
   ostringstream stream;
-  diagram.evaluate(stream);
+  evaluate(diagram,stream);
   string output = stream.str();
   assert(output=="5\n");
 }
@@ -42,7 +51,7 @@ static void testEvaluateEmpty()
   Diagram diagram;
   diagram.addNode("");
   ostringstream stream;
-  diagram.evaluate(stream);
+  evaluate(diagram,stream);
 }
 
 
@@ -51,7 +60,7 @@ static void testEvaluateShowDisconnectedInput()
   Diagram diagram;
   diagram.addNode("show($)");
   ostringstream stream;
-  diagram.evaluate(stream);
+  evaluate(diagram,stream);
 }
 
 
@@ -69,7 +78,7 @@ static void testEvaluateShowConnectedInput()
     input_node_index,input_index
   );
   ostringstream stream;
-  diagram.evaluate(stream);
+  evaluate(diagram,stream);
   string output = stream.str();
   assert(output=="5\n");
 }
@@ -105,7 +114,7 @@ static void testEvaluateAfterDeletingAnInput()
   assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
   ostringstream stream;
   diagram.removeInvalidInputs();
-  diagram.evaluate(stream);
+  evaluate(diagram,stream);
 }
 
 
@@ -122,7 +131,7 @@ static void testEvaluatingIncompleteVectorOverTwoLines()
   diagram.addNode("[1,2\n");
 
   ostringstream stream;
-  diagram.evaluate(stream);
+  evaluate(diagram,stream);
 }
 
 
