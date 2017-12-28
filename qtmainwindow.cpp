@@ -263,23 +263,24 @@ void
   )
 {
   QTreeWidgetItem &parent_item = itemFromPath(treeWidget(),parent_path);
+  TreePath new_item_path;
 
   switch (item.type) {
     case TreeItem::Type::x:
-      tree.createXItem(parent_path);
+      new_item_path = tree.createXItem(parent_path);
       treeWidget().createSpinBoxItem(parent_item,"X");
       break;
     case TreeItem::Type::y:
-      tree.createXItem(parent_path);
+      new_item_path = tree.createXItem(parent_path);
       treeWidget().createSpinBoxItem(parent_item,"Y");
       break;
     case TreeItem::Type::z:
-      tree.createXItem(parent_path);
+      new_item_path = tree.createXItem(parent_path);
       treeWidget().createSpinBoxItem(parent_item,"Y");
       break;
     case TreeItem::Type::global_position:
       {
-        TreePath global_position_path =
+        new_item_path =
           tree.createGlobalPositionItem(parent_path);
         QtComboBoxTreeWidgetItem &global_position_item =
           treeWidget().createComboBoxItem(parent_item,"Global Position");
@@ -290,21 +291,17 @@ void
           combo_box.addItem("From Body");
           ignore_combo_box_signals = false;
         }
-        tree.itemDiagram(global_position_path) = item.diagram;
-        addTreeItems(global_position_path,item);
       }
       break;
     case TreeItem::Type::local_position:
       {
-        TreePath local_position_path =
-          tree.createLocalPositionItem(parent_path);
+        new_item_path = tree.createLocalPositionItem(parent_path);
         treeWidget().createItem(parent_item,"Local Position");
-        addTreeItems(local_position_path,item);
       }
       break;
     case TreeItem::Type::target_body:
       {
-        tree.createTargetBodyItem(parent_path);
+        new_item_path = tree.createTargetBodyItem(parent_path);
         QtComboBoxTreeWidgetItem &target_body_item =
           treeWidget().createComboBoxItem(parent_item,"Target Body");
         QComboBox &combo_box = target_body_item.comboBox();
@@ -315,7 +312,7 @@ void
       break;
     case TreeItem::Type::source_body:
       {
-        tree.createSourceBodyItem(parent_path);
+        new_item_path = tree.createSourceBodyItem(parent_path);
         QtComboBoxTreeWidgetItem &source_body_item =
           treeWidget().createComboBoxItem(parent_item,"Source Body");
         QComboBox &combo_box = source_body_item.comboBox();
@@ -326,14 +323,16 @@ void
       break;
     case TreeItem::Type::pos_expr:
       {
-        TreePath pos_expr_path = tree.createPosExprItem(parent_path);
+        new_item_path = tree.createPosExprItem(parent_path);
         treeWidget().createItem(parent_item,"Pos Expr");
-        addTreeItems(pos_expr_path,item);
       }
       break;
     default:
       assert(false);
   }
+
+  tree.itemDiagram(new_item_path) = item.diagram;
+  addTreeItems(new_item_path,item);
 }
 
 
@@ -388,6 +387,95 @@ static Diagram makeDiagram(const char *text)
   Diagram diagram;
   scanDiagramFrom(stream,diagram);
   return diagram;
+}
+
+
+static Diagram posExprDiagram()
+{
+  const char *text = R"text(
+diagram {
+  node {
+    id: 4
+    position: [485,153]
+    text {
+      "$-$"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 5
+      source_output_index: 0
+    }
+    connection {
+      input_index: 1
+      source_node_id: 7
+      source_output_index: 0
+    }
+  }
+  node {
+    id: 5
+    position: [266,183]
+    text {
+      "global_position"
+    }
+  }
+  node {
+    id: 7
+    position: [274,108]
+    text {
+      "$.globalVec($)"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 8
+      source_output_index: 0
+    }
+    connection {
+      input_index: 1
+      source_node_id: 8
+      source_output_index: 1
+    }
+  }
+  node {
+    id: 8
+    position: [59,158]
+    text {
+      "target_body"
+      "local_position"
+    }
+  }
+  node {
+    id: 10
+    position: [559,233]
+    text {
+      "$.pos=$"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 13
+      source_output_index: 0
+    }
+    connection {
+      input_index: 1
+      source_node_id: 4
+      source_output_index: 0
+    }
+  }
+  node {
+    id: 13
+    position: [283,233]
+    text {
+      "$"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 8
+      source_output_index: 0
+    }
+  }
+}
+)text";
+
+  return makeDiagram(text);
 }
 
 
@@ -454,6 +542,7 @@ void QtMainWindow::addPosExprTriggered()
   TreePath parent_path = itemPath(*parent_item_ptr);
   TreeItem pos_expr_item(ItemType::pos_expr);
   pos_expr_item.createItem2(ItemType::target_body);
+  pos_expr_item.diagram = posExprDiagram();
   {
     TreeItem &local_position_item =
       pos_expr_item.createItem2(ItemType::local_position);
