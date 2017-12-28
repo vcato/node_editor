@@ -22,29 +22,50 @@ struct FakeDiagramEditor : DiagramEditor {
     return userAddsANodeWithText("");
   }
 
+  int userAddsANodeWithTextAt(const string &text,const Point2D &position)
+  {
+    return addNode(text,position);
+  }
+
   int userAddsANodeWithText(const string &text)
   {
-    return addNode(text,Point2D(0,0));
+    return userAddsANodeWithTextAt(text,Point2D(0,0));
+  }
+
+  void userPressesMouseAt(const Point2D &p)
+  {
+    mousePressedAt(p,/*shift_is_pressed*/false);
   }
 
   void userSelectsNode(int node_index)
   {
-    node_editor.selectNode(node_index);
+    selectNode(node_index);
+  }
+
+  void userAlsoSelectsNode(NodeIndex node_index)
+  {
+    alsoSelectNode(node_index);
   }
 
   void userFocusesNode(int node_index)
   {
-    node_editor.focusNode(node_index,diagram());
+    focusNode(node_index,diagram());
   }
 
   void userMovesCursorTo(int line,int column)
   {
-    node_editor.text_editor.moveCursor(line,column);
+    text_editor.moveCursor(line,column);
   }
 
   void userClicksAt(const Point2D &p)
   {
-    mousePressedAt(p);
+    mousePressedAt(p,/*shift_is_pressed*/false);
+    mouseReleasedAt(p);
+  }
+
+  void userClicksWithShiftPressedAt(const Point2D &p)
+  {
+    mousePressedAt(p,/*shift_is_pressed*/true);
     mouseReleasedAt(p);
   }
 
@@ -102,8 +123,15 @@ struct FakeDiagramEditor : DiagramEditor {
     return Rect{begin_pos,end_pos};
   }
 
+  Point2D nodeCenter(NodeIndex node_index)
+  {
+    return nodeRenderInfo(diagram().node(node_index)).body_outer_rect.center();
+  }
+
   using DiagramEditor::aNodeIsFocused;
   using DiagramEditor::nodeRenderInfo;
+  using DiagramEditor::nSelectedNodes;
+  using DiagramEditor::nodeIsSelected;
 };
 }
 
@@ -269,6 +297,20 @@ static void testRenderInfo()
 }
 
 
+static void testSelectingMultipleNodes()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex n1 = editor.userAddsANodeWithTextAt("test",Point2D(0,0));
+  NodeIndex n2 = editor.userAddsANodeWithTextAt("test",Point2D(0,100));
+  editor.userClicksAt(editor.nodeCenter(n1));
+  editor.userClicksWithShiftPressedAt(editor.nodeCenter(n2));
+  assert(editor.nSelectedNodes()==2);
+  assert(editor.nodeIsSelected(n1));
+  assert(editor.nodeIsSelected(n2));
+}
+
+
 int main()
 {
   test1();
@@ -283,4 +325,5 @@ int main()
   testEscape();
   test2();
   testRenderInfo();
+  testSelectingMultipleNodes();
 }

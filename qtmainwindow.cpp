@@ -141,28 +141,6 @@ static vector<int> itemPath(QTreeWidgetItem &item)
 }
 
 
-template <typename T>
-static ostream& operator<<(ostream &stream,const vector<T> &value)
-{
-  stream << "[";
-
-  if (!value.empty()) {
-    auto iter = value.begin();
-
-    stream << *iter++;
-
-    while (iter!=value.end()) {
-      stream << ",";
-      stream << *iter++;
-    }
-  }
-
-  stream << "]";
-
-  return stream;
-}
-
-
 void QtMainWindow::prepareMenu(const QPoint &pos)
 {
   QTreeWidgetItem *widget_item_ptr = treeWidget().itemAt(pos);

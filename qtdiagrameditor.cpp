@@ -87,27 +87,27 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     return;
   }
   if (key_event_ptr->key()==Qt::Key_Up) {
-    node_editor.text_editor.up();
+    text_editor.up();
     update();
     return;
   }
   if (key_event_ptr->key()==Qt::Key_Down) {
-    if (node_editor.aNodeIsFocused()) {
-      node_editor.text_editor.down();
+    if (aNodeIsFocused()) {
+      text_editor.down();
       update();
     }
     return;
   }
   if (key_event_ptr->key()==Qt::Key_Left) {
-    if (node_editor.aNodeIsFocused()) {
-      node_editor.text_editor.left();
+    if (aNodeIsFocused()) {
+      text_editor.left();
       update();
     }
     return;
   }
   if (key_event_ptr->key()==Qt::Key_Right) {
-    if (node_editor.aNodeIsFocused()) {
-      node_editor.text_editor.right();
+    if (aNodeIsFocused()) {
+      text_editor.right();
       update();
     }
     return;
@@ -141,7 +141,8 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 
   if (event.button()==Qt::LeftButton) {
     Point2D p = screenToGLCoords(event.x(),event.y());
-    mousePressedAt(p);
+    bool shift_is_pressed = event.modifiers().testFlag(Qt::ShiftModifier);
+    mousePressedAt(p,shift_is_pressed);
   }
   else if (event.button()==Qt::RightButton) {
     QMenu menu;
@@ -186,8 +187,8 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
     return;
   }
 
-  if (node_editor.selected_node_index>=0) {
-    node(node_editor.selected_node_index).header_text_object.position =
+  if (selectedNodeIndex()>=0) {
+    node(selectedNodeIndex()).header_text_object.position =
       original_node_position + (mouse_position - mouse_press_position);
     update();
     return;
@@ -570,7 +571,7 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
   const Node &node = this->node(node_index);
   NodeRenderInfo render_info = nodeRenderInfo(node);
 
-  bool is_selected = (node_editor.selected_node_index == node_index);
+  bool is_selected = nodeIsSelected(node_index);
   const TextObject &header_text_object = node.header_text_object;
   drawBoxedText2(header_text_object,is_selected,render_info.header_rect);
 
@@ -653,11 +654,11 @@ void QtDiagramEditor::paintGL()
     drawNode(index);
   }
 
-  if (node_editor.aNodeIsFocused()) {
+  if (aNodeIsFocused()) {
     NodeRenderInfo render_info =
-      nodeRenderInfo(node(node_editor.focused_node_index));
-    int line_index = node_editor.text_editor.cursorLineIndex();
-    int column_index = node_editor.text_editor.cursorColumnIndex();
+      nodeRenderInfo(node(focused_node_index));
+    int line_index = text_editor.cursorLineIndex();
+    int column_index = text_editor.cursorColumnIndex();
     drawCursor(render_info.text_objects[line_index],column_index);
   }
 

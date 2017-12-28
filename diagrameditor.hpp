@@ -23,6 +23,14 @@ struct Rect {
       p.x >= start.x && p.x <= end.x &&
       p.y >= start.y && p.y <= end.y;
   }
+
+  Point2D center() const
+  {
+    float x = (start.x + end.x)/2;
+    float y = (start.y + end.y)/2;
+
+    return Point2D(x,y);
+  }
 };
 
 
@@ -128,62 +136,37 @@ struct NodeConnectorIndex {
 };
 
 
-struct NodeEditor {
-  int selected_node_index = -1;
-  int focused_node_index = -1;
-  bool node_was_selected = false;
-  NodeTextEditor text_editor;
-
-  NodeEditor()
-  : text_editor()
-  {
-  }
-
-  bool aNodeIsFocused() const
-  {
-    return focused_node_index>=0;
-  }
-
-  void unfocus()
-  {
-    text_editor.endEditing();
-    focused_node_index = -1;
-  }
-
-  Node& focusedNode(Diagram &diagram)
-  {
-    return diagram.node(focused_node_index);
-  }
-
-  void focusNode(int node_index,Diagram &diagram)
-  {
-    focused_node_index = node_index;
-    text_editor.beginEditing(focusedNode(diagram));
-  }
-
-  void selectNode(int node_index)
-  {
-    if (aNodeIsFocused()) {
-      unfocus();
-    }
-    selected_node_index = node_index;
-  }
-
-  std::string &focusedText(Diagram &diagram)
-  {
-    assert(focused_node_index>=0);
-    Node &node = focusedNode(diagram);
-    return text_editor.focusedText(node);
-  }
-};
-
-
 class DiagramEditor {
   public:
     DiagramEditor();
     void setDiagramPtr(Diagram *);
 
   protected:
+    static NodeIndex noNodeIndex() { return -1; }
+
+    NodeIndex selectedNodeIndex() const
+    {
+      if (selected_node_indices.size()!=1) {
+        return noNodeIndex();
+      }
+      return selected_node_indices[0];
+    }
+
+    void setSelectedNodeIndex(NodeIndex arg)
+    {
+      if (arg==noNodeIndex()) {
+        selected_node_indices.clear();
+      }
+      else {
+        selected_node_indices.resize(1);
+        selected_node_indices[0] = arg;
+      }
+    }
+
+    std::vector<NodeIndex> selected_node_indices;
+    NodeIndex focused_node_index = noNodeIndex();
+    bool node_was_selected = false;
+    NodeTextEditor text_editor;
     static constexpr float connector_radius = 5;
     Point2D mouse_press_position;
     Point2D original_node_position;
@@ -191,7 +174,7 @@ class DiagramEditor {
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
     Diagram *diagram_ptr;
-    NodeEditor node_editor;
+
     Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
 
     virtual void redraw() = 0;
@@ -199,7 +182,8 @@ class DiagramEditor {
     void deleteNode(int index);
     std::string &focusedText();
     void enterPressed();
-    bool aNodeIsFocused() const;
+    int nSelectedNodes() const;
+
     void backspacePressed();
     void escapePressed();
     void textTyped(const std::string &new_text);
@@ -236,7 +220,7 @@ class DiagramEditor {
     int indexOfNodeContaining(const Point2D &p);
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
     void clearFocus();
-    void mousePressedAt(Point2D);
+    void mousePressedAt(Point2D,bool shift_is_pressed);
     void mouseReleasedAt(Point2D mouse_release_position);
 
     void
@@ -246,6 +230,14 @@ class DiagramEditor {
         int input_node_index,
         int input_index
       );
+
+    void selectNode(NodeIndex);
+    bool aNodeIsFocused() const;
+    bool nodeIsSelected(NodeIndex);
+    void focusNode(int node_index,Diagram &diagram);
+    Node& focusedNode(Diagram &diagram);
+
+    void alsoSelectNode(NodeIndex node_index);
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */

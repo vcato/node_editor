@@ -1,6 +1,8 @@
 #include "diagrameditor.hpp"
 
 #include <cassert>
+#include <algorithm>
+#include "ostreamvector.hpp"
 
 using std::string;
 using std::vector;
@@ -29,37 +31,34 @@ void DiagramEditor::deleteNode(int index)
 
 string &DiagramEditor::focusedText()
 {
-  return node_editor.focusedText(diagram());
+  Diagram &diagram = this->diagram();
+  assert(focused_node_index>=0);
+  Node &node = focusedNode(diagram);
+  return text_editor.focusedText(node);
 }
 
 
 void DiagramEditor::enterPressed()
 {
-  if (node_editor.focused_node_index>=0) {
-    node_editor.text_editor.enter();
+  if (focused_node_index>=0) {
+    text_editor.enter();
     diagram().removeInvalidInputs();
     redraw();
   }
 }
 
 
-bool DiagramEditor::aNodeIsFocused() const
-{
-  return node_editor.aNodeIsFocused();
-}
-
-
 void DiagramEditor::backspacePressed()
 {
-  if (node_editor.selected_node_index>=0) {
-    deleteNode(node_editor.selected_node_index);
-    node_editor.selected_node_index = -1;
+  if (selectedNodeIndex()>=0) {
+    deleteNode(selectedNodeIndex());
+    setSelectedNodeIndex(-1);
     redraw();
     return;
   }
 
-  if (node_editor.aNodeIsFocused()) {
-    node_editor.text_editor.backspace();
+  if (aNodeIsFocused()) {
+    text_editor.backspace();
     diagram().removeInvalidInputs();
     redraw();
     return;
@@ -69,7 +68,7 @@ void DiagramEditor::backspacePressed()
 
 void DiagramEditor::escapePressed()
 {
-  if (!node_editor.aNodeIsFocused()) return;
+  if (!aNodeIsFocused()) return;
 
   clearFocus();
   redraw();
@@ -79,7 +78,7 @@ void DiagramEditor::escapePressed()
 int DiagramEditor::addNode(const std::string &text,const Point2D &position)
 {
   // The node editor keeps a pointer to a node, but Nodes may move in memory.
-  assert(!node_editor.aNodeIsFocused());
+  assert(!aNodeIsFocused());
 
   int node_index = diagram().addNode(text);
   diagram().node(node_index).header_text_object.position = position;
@@ -104,8 +103,8 @@ void
 
 void DiagramEditor::textTyped(const string &new_text)
 {
-  if (node_editor.aNodeIsFocused()) {
-    node_editor.text_editor.textTyped(new_text);
+  if (aNodeIsFocused()) {
+    text_editor.textTyped(new_text);
     redraw();
     return;
   }
@@ -114,7 +113,8 @@ void DiagramEditor::textTyped(const string &new_text)
 
 void DiagramEditor::unfocus()
 {
-  node_editor.unfocus();
+  text_editor.endEditing();
+  focused_node_index = noNodeIndex();
   diagram().removeInvalidInputs();
 }
 
@@ -509,9 +509,9 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
   }
 
   if (mouse_press_position==mouse_release_position) {
-    if (node_editor.node_was_selected) {
-      node_editor.focusNode(node_editor.selected_node_index,diagram());
-      node_editor.selected_node_index = -1;
+    if (node_was_selected && selectedNodeIndex()!=noNodeIndex()) {
+      focusNode(selectedNodeIndex(),diagram());
+      setSelectedNodeIndex(-1);
       redraw();
       return;
     }
@@ -521,21 +521,21 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
 
 void DiagramEditor::clearFocus()
 {
-  if (node_editor.aNodeIsFocused()) {
-    NodeIndex focused_node_index = node_editor.focused_node_index;
-    Node &focused_node = node_editor.focusedNode(diagram());
+  if (aNodeIsFocused()) {
+    NodeIndex old_focused_node_index = focused_node_index;
+    Node &focused_node = focusedNode(diagram());
     unfocus();
     if (focused_node.isEmpty()) {
-      deleteNode(focused_node_index);
+      deleteNode(old_focused_node_index);
     }
   }
 }
 
 
-void DiagramEditor::mousePressedAt(Point2D p)
+void DiagramEditor::mousePressedAt(Point2D p,bool shift_is_pressed)
 {
   mouse_press_position = p;
-  node_editor.node_was_selected = false;
+  node_was_selected = false;
 
   clearFocus();
 
@@ -543,16 +543,21 @@ void DiagramEditor::mousePressedAt(Point2D p)
     int i = indexOfNodeContaining(p);
 
     if (i>=0) {
-      node_editor.node_was_selected = (i==node_editor.selected_node_index);
-      node_editor.selected_node_index = i;
-      node_editor.focused_node_index = -1;
+      node_was_selected = (i==selectedNodeIndex());
+      if (shift_is_pressed) {
+        alsoSelectNode(i);
+      }
+      else {
+        setSelectedNodeIndex(i);
+      }
+      focused_node_index = -1;
       original_node_position = node(i).header_text_object.position;
       redraw();
       return;
     }
   }
 
-  node_editor.selected_node_index = -1;
+  setSelectedNodeIndex(-1);
   selected_node_connector_index = NodeConnectorIndex::null();
 
   {
@@ -567,7 +572,61 @@ void DiagramEditor::mousePressedAt(Point2D p)
   }
 
   int new_node_index = addNode("",mouse_press_position);
-  node_editor.focusNode(new_node_index,diagram());
+  focusNode(new_node_index,diagram());
 
   redraw();
+}
+
+
+int DiagramEditor::nSelectedNodes() const
+{
+  return selected_node_indices.size();
+}
+
+
+void DiagramEditor::selectNode(NodeIndex  node_index)
+{
+  if (aNodeIsFocused()) {
+    unfocus();
+  }
+
+  setSelectedNodeIndex(node_index);
+}
+
+
+bool DiagramEditor::aNodeIsFocused() const
+{
+  return focused_node_index!=noNodeIndex();
+}
+
+
+void DiagramEditor::focusNode(int node_index,Diagram &diagram)
+{
+  focused_node_index = node_index;
+  text_editor.beginEditing(focusedNode(diagram));
+}
+
+
+Node& DiagramEditor::focusedNode(Diagram &diagram)
+{
+  return diagram.node(focused_node_index);
+}
+
+
+void DiagramEditor::alsoSelectNode(NodeIndex arg)
+{
+  selected_node_indices.push_back(arg);
+}
+
+
+template <typename T>
+static bool contains(const vector<T> &v,const T& a)
+{
+  return std::find(v.begin(),v.end(),a)!=v.end();
+}
+
+
+bool DiagramEditor::nodeIsSelected(NodeIndex arg)
+{
+  return contains(selected_node_indices,arg);
 }
