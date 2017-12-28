@@ -250,7 +250,6 @@ void QtMainWindow::addPassTriggered()
   Tree::Path motion_pass_item_path =
     tree.createMotionPassItem(selected_item_path);
 
-  cerr << "new item index: " << motion_pass_item_path << "\n";
   assert(tree.isMotionPassItem(motion_pass_item_path));
   treeWidget().createItem(*selected_item_ptr,"Motion Pass");
 }
