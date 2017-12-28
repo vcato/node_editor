@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QTreeWidget>
 #include <QBoxLayout>
+#include <QSplitter>
 #include "qtdiagrameditor.hpp"
 #include "tree.hpp"
 #include "qttreewidget.hpp"
@@ -18,13 +19,12 @@ class QtMainWindow : public QMainWindow {
     using TreePath = Tree::Path;
     QMenu menu{"Tools"};
     Tree tree;
-    QWidget widget;
     QtTreeWidget *tree_widget_ptr;
     QtDiagramEditor *diagram_editor_ptr;
     bool ignore_combo_box_signals = false;
 
     QtTreeWidget &treeWidget();
-    void createTree(QBoxLayout &layout);
+    void createTree(QSplitter &parent_splitter);
     QTreeWidgetItem* findSelectedItem();
     Diagram *selectedDiagramPtr();
     QtDiagramEditor &diagramEditor();

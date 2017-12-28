@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QSpinBox>
+#include <QSplitter>
 #include "qttreewidget.hpp"
 #include "qtwidget.hpp"
 #include "qtmenu.hpp"
@@ -34,23 +35,25 @@ static Layout& createLayout(QBoxLayout &parent_layout)
 }
 
 
-static QtTreeWidget& createTreeWidget(QLayout &layout)
+static QtTreeWidget& createTreeWidget(QSplitter &parent_splitter)
 {
-  return createWidget<QtTreeWidget>(layout);
+  return createWidget<QtTreeWidget>(parent_splitter);
 }
 
 
-static QtDiagramEditor& createDiagramEditor(QBoxLayout &layout,int stretch)
+static QtDiagramEditor& createDiagramEditor(QSplitter &splitter,int stretch)
 {
+  int index = splitter.count();
   QtDiagramEditor *diagram_editor_ptr = new QtDiagramEditor;
-  layout.addWidget(diagram_editor_ptr,stretch);
+  splitter.addWidget(diagram_editor_ptr);
+  splitter.setStretchFactor(index,stretch);
   return *diagram_editor_ptr;
 }
 
 
-void QtMainWindow::createTree(QBoxLayout &parent_layout)
+void QtMainWindow::createTree(QSplitter &parent_splitter)
 {
-  QtTreeWidget &tree_widget = createTreeWidget(parent_layout);
+  QtTreeWidget &tree_widget = createTreeWidget(parent_splitter);
   tree_widget_ptr = &tree_widget;
   tree_widget.header()->close();
   tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
@@ -93,6 +96,16 @@ static QTreeWidgetItem &
 }
 
 
+template <typename T>
+static T& createCentralWidget(QMainWindow &parent)
+{
+  T *widget_ptr = new T;
+  parent.setCentralWidget(widget_ptr);
+  T &widget = *widget_ptr;
+  return widget;
+}
+
+
 QtMainWindow::QtMainWindow()
 : tree_widget_ptr(0),
   diagram_editor_ptr(0)
@@ -101,10 +114,9 @@ QtMainWindow::QtMainWindow()
   assert(menu_bar_ptr);
   menu_bar_ptr->addMenu(&menu);
 
-  QHBoxLayout &layout = createLayout<QHBoxLayout>(widget);
-  createTree(layout);
-  diagram_editor_ptr = &createDiagramEditor(layout,/*stretch*/1);
-  setCentralWidget(&widget);
+  QSplitter &splitter = createCentralWidget<QSplitter>(*this);
+  createTree(splitter);
+  diagram_editor_ptr = &createDiagramEditor(splitter,/*stretch*/1);
   assert(tree_widget_ptr);
   itemFromPath(*tree_widget_ptr,{0}).setSelected(true);
 }

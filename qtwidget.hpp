@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <QLayout>
+#include <QSplitter>
 
 template <typename Layout>
 inline Layout& createLayout(QWidget &widget)
@@ -18,6 +19,16 @@ static Widget& createWidget(QLayout &layout)
 {
   Widget *widget_ptr = new Widget;
   layout.addWidget(widget_ptr);
+  assert(widget_ptr);
+  return *widget_ptr;
+}
+
+
+template <typename Widget>
+static Widget& createWidget(QSplitter &splitter)
+{
+  Widget *widget_ptr = new Widget;
+  splitter.addWidget(widget_ptr);
   assert(widget_ptr);
   return *widget_ptr;
 }
