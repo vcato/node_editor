@@ -77,6 +77,11 @@ struct FakeDiagramEditor : DiagramEditor {
     backspacePressed();
   }
 
+  void userPressesEscape()
+  {
+    escapePressed();
+  }
+
   void userTypesText(const std::string &text)
   {
     textTyped(text);
@@ -225,6 +230,19 @@ static void testClickingOnBackgroundTwice()
 }
 
 
+static void testEscape()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  editor.userClicksAt(Point2D(100,100));
+  int n_redraws = editor.redraw_count;
+  editor.userPressesEscape();
+  assert(!editor.aNodeIsFocused());
+  assert(diagram.nExistingNodes()==0);
+  assert(editor.redraw_count==n_redraws+1);
+}
+
+
 static void test2()
 {
   Diagram diagram;
@@ -262,6 +280,7 @@ int main()
   testSettingDiagramPtr();
   testSettingDiagramPtrWithAnEmptyFocusedNode();
   testClickingOnBackgroundTwice();
+  testEscape();
   test2();
   testRenderInfo();
 }

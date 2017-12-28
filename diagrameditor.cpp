@@ -67,6 +67,15 @@ void DiagramEditor::backspacePressed()
 }
 
 
+void DiagramEditor::escapePressed()
+{
+  if (!node_editor.aNodeIsFocused()) return;
+
+  clearFocus();
+  redraw();
+}
+
+
 int DiagramEditor::addNode(const std::string &text,const Point2D &position)
 {
   // The node editor keeps a pointer to a node, but Nodes may move in memory.

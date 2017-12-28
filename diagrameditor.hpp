@@ -201,6 +201,7 @@ class DiagramEditor {
     void enterPressed();
     bool aNodeIsFocused() const;
     void backspacePressed();
+    void escapePressed();
     void textTyped(const std::string &new_text);
     void updateNodeInputs(int node_index);
     int addNode(const std::string &text,const Point2D &position);

@@ -82,6 +82,10 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     enterPressed();
     return;
   }
+  if (key_event_ptr->key()==Qt::Key_Escape) {
+    escapePressed();
+    return;
+  }
   if (key_event_ptr->key()==Qt::Key_Up) {
     node_editor.text_editor.up();
     update();
