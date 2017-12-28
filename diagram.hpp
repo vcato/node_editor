@@ -10,6 +10,11 @@ class Diagram {
   public:
     using Node = DiagramNode;
 
+    Diagram() = default;
+    Diagram(const Diagram &);
+
+    Diagram& operator=(Diagram);
+
     Node *findNode(NodeIndex);
 
     NodeIndex addNode(const std::string &text);

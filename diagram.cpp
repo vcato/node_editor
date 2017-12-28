@@ -11,6 +11,36 @@ using std::unique_ptr;
 using Node = DiagramNode;
 
 
+
+template <typename NodeVector>
+static void copyNodes(const NodeVector &from,NodeVector &to)
+{
+  assert(to.empty());
+
+  to.resize(from.size());
+
+  for (typename NodeVector::size_type i=0, n=from.size(); i!=n; ++i) {
+    if (from[i]) {
+      to[i] = make_unique<DiagramNode>(*from[i]);
+    }
+  }
+}
+
+
+Diagram::Diagram(const Diagram &arg)
+{
+  copyNodes(arg._node_ptrs,_node_ptrs);
+}
+
+
+Diagram& Diagram::operator=(Diagram arg)
+{
+  swap(_node_ptrs,arg._node_ptrs);
+
+  return *this;
+}
+
+
 Node *Diagram::findNode(NodeIndex i)
 {
   return _node_ptrs[i].get();

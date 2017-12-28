@@ -113,10 +113,19 @@ static void testWithTwoConnections()
 }
 
 
+static void testWithMultiLineText()
+{
+  Diagram d;
+  d.addNode("5\n6");
+  Diagram d2 = scanFromText(makeText(d));
+}
+
+
 int main()
 {
   testWithEmptyDiagram();
   testWithOneNode();
   testWithTwoConnectedNodes();
   testWithTwoConnections();
+  testWithMultiLineText();
 }

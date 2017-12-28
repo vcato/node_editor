@@ -180,7 +180,7 @@ struct NodeEditor {
 
 class DiagramEditor {
   public:
-    DiagramEditor(Diagram &diagram_arg);
+    DiagramEditor();
     void setDiagramPtr(Diagram *);
 
   protected:

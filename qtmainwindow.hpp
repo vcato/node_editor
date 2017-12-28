@@ -18,7 +18,6 @@ class QtMainWindow : public QMainWindow {
     using TreePath = Tree::Path;
     QMenu menu{"Tools"};
     Tree tree;
-    Diagram diagram;
     QWidget widget;
     QtTreeWidget *tree_widget_ptr;
     QtDiagramEditor *diagram_editor_ptr;
@@ -27,6 +26,8 @@ class QtMainWindow : public QMainWindow {
     QtTreeWidget &treeWidget();
     void createTree(QBoxLayout &layout);
     QTreeWidgetItem* findSelectedItem();
+    Diagram *selectedDiagramPtr();
+    QtDiagramEditor &diagramEditor();
 
   private slots:
     void prepareMenu(const QPoint &pos);

@@ -88,10 +88,19 @@ struct Parser {
       for (;;) {
         int c = stream.get();
         if (c==EOF) {
+          assert(false);
+          break;
+        }
+        if (c=='\n') {
+          assert(false);
           break;
         }
         if (c=='"') {
           break;
+        }
+        if (c=='}') {
+          scanEndOfLine();
+          return;
         }
       }
       string value;
@@ -104,15 +113,6 @@ struct Parser {
       }
       scanEndOfLine();
       node.lines.push_back(Node::Line(value));
-      scanWord();
-      if (word=="}") {
-        scanEndOfLine();
-        break;
-      }
-      else {
-        assert(false);
-      }
-      cerr << "word: " << word << "\n";
     }
   }
 

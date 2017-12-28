@@ -7,8 +7,8 @@ using std::vector;
 using std::cerr;
 
 
-DiagramEditor::DiagramEditor(Diagram &diagram_arg)
-: diagram_ptr(&diagram_arg)
+DiagramEditor::DiagramEditor()
+: diagram_ptr(0)
 {
 }
 

@@ -10,7 +10,11 @@ namespace {
 struct FakeDiagramEditor : DiagramEditor {
   int redraw_count = 0;
 
-  FakeDiagramEditor(Diagram &diagram) : DiagramEditor(diagram) { }
+  FakeDiagramEditor(Diagram &diagram)
+  : DiagramEditor()
+  {
+    setDiagramPtr(&diagram);
+  }
 
   int userAddsANode()
   {

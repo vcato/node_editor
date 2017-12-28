@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <QMenuBar>
 #include <QBoxLayout>
 #include <QHeaderView>
@@ -12,12 +13,14 @@
 #include "qttreewidget.hpp"
 #include "qtwidget.hpp"
 #include "qtmenu.hpp"
+#include "diagramio.hpp"
 
 
 using std::cerr;
 using std::string;
 using std::vector;
 using std::ostream;
+using std::istringstream;
 using TreePath = Tree::Path;
 
 
@@ -37,10 +40,9 @@ static QtTreeWidget& createTreeWidget(QLayout &layout)
 }
 
 
-static QtDiagramEditor&
-  createDiagramEditor(QBoxLayout &layout,int stretch,Diagram &diagram)
+static QtDiagramEditor& createDiagramEditor(QBoxLayout &layout,int stretch)
 {
-  QtDiagramEditor *diagram_editor_ptr = new QtDiagramEditor(diagram);
+  QtDiagramEditor *diagram_editor_ptr = new QtDiagramEditor;
   layout.addWidget(diagram_editor_ptr,stretch);
   return *diagram_editor_ptr;
 }
@@ -101,7 +103,7 @@ QtMainWindow::QtMainWindow()
 
   QHBoxLayout &layout = createLayout<QHBoxLayout>(widget);
   createTree(layout);
-  diagram_editor_ptr = &createDiagramEditor(layout,/*stretch*/1,diagram);
+  diagram_editor_ptr = &createDiagramEditor(layout,/*stretch*/1);
   setCentralWidget(&widget);
   assert(tree_widget_ptr);
   itemFromPath(*tree_widget_ptr,{0}).setSelected(true);
@@ -183,16 +185,29 @@ void QtMainWindow::prepareMenu(const QPoint &pos)
 }
 
 
-void QtMainWindow::treeItemSelectionChanged()
+Diagram *QtMainWindow::selectedDiagramPtr()
 {
   QTreeWidgetItem *selected_item_ptr = findSelectedItem();
   Diagram *diagram_ptr = 0;
+
   if (selected_item_ptr) {
     diagram_ptr = &tree.itemDiagram(itemPath(*selected_item_ptr));
   }
+
+  return diagram_ptr;
+}
+
+
+QtDiagramEditor &QtMainWindow::diagramEditor()
+{
   assert(diagram_editor_ptr);
-  QtDiagramEditor &diagram_editor = *diagram_editor_ptr;
-  diagram_editor.setDiagramPtr(diagram_ptr);
+  return *diagram_editor_ptr;
+}
+
+
+void QtMainWindow::treeItemSelectionChanged()
+{
+  diagramEditor().setDiagramPtr(selectedDiagramPtr());
 }
 
 
@@ -263,6 +278,7 @@ void
           combo_box.addItem("From Body");
           ignore_combo_box_signals = false;
         }
+        tree.itemDiagram(global_position_path) = item.diagram;
         addTreeItems(global_position_path,item);
       }
       break;
@@ -354,6 +370,68 @@ static void createXYZChildren(TreeItem &parent_item)
 }
 
 
+static Diagram makeDiagram(const char *text)
+{
+  istringstream stream(text);
+  Diagram diagram;
+  scanDiagramFrom(stream,diagram);
+  return diagram;
+}
+
+
+static Diagram fromComponentsDiagram()
+{
+  const char *text =
+    "diagram {\n"
+    "  node {\n"
+    "    id: 1\n"
+    "    position: [71,280]\n"
+    "    text {\n"
+    "      \"x\"\n"
+    "      \"y\"\n"
+    "      \"z\"\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 2\n"
+    "    position: [183,280]\n"
+    "    text {\n"
+    "      \"[$,$,$]\"\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 0\n"
+    "      source_node_id: 1\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 1\n"
+    "      source_node_id: 1\n"
+    "      source_output_index: 1\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 2\n"
+    "      source_node_id: 1\n"
+    "      source_output_index: 2\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 4\n"
+    "    position: [331,249]\n"
+    "    text {\n"
+    "      \"return $\"\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 0\n"
+    "      source_node_id: 2\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  return makeDiagram(text);
+}
+
+
 void QtMainWindow::addPosExprTriggered()
 {
   QTreeWidgetItem *parent_item_ptr = findSelectedItem();
@@ -373,8 +451,61 @@ void QtMainWindow::addPosExprTriggered()
     TreeItem &global_position_item =
       pos_expr_item.createItem2(ItemType::global_position);
     createXYZChildren(global_position_item);
+    global_position_item.diagram = fromComponentsDiagram();
   }
   addTreeItem(parent_path,pos_expr_item);
+}
+
+
+static Diagram fromBodyDiagram()
+{
+  const char *text =
+    "diagram {\n"
+    "  node {\n"
+    "    id: 1\n"
+    "    position: [409,328]\n"
+    "    text {\n"
+    "      \"$.pos($)\"\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 0\n"
+    "      source_node_id: 2\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 1\n"
+    "      source_node_id: 3\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 2\n"
+    "    position: [121,334]\n"
+    "    text {\n"
+    "      \"source_body\"\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 3\n"
+    "    position: [117,286]\n"
+    "    text {\n"
+    "      \"local_position\"\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 4\n"
+    "    position: [563,312]\n"
+    "    text {\n"
+    "      \"return $\"\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 0\n"
+    "      source_node_id: 1\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+  return makeDiagram(text);
 }
 
 
@@ -398,10 +529,12 @@ void
           TreeItem items(TreeItem::Type::root);
           createXYZChildren(items);
           replaceTreeItems(path,items);
+          tree.itemDiagram(path) = fromComponentsDiagram();
+          diagramEditor().redraw();
         }
         break;
       case 1:
-        // From Source Body
+        // From Body
         {
           TreeItem items(TreeItem::Type::root);
           items.createItem(TreeItem::Type::source_body);
@@ -409,6 +542,8 @@ void
             items.createItem2(TreeItem::Type::local_position);
           createXYZChildren(local_position_item);
           replaceTreeItems(path,items);
+          tree.itemDiagram(path) = fromBodyDiagram();
+          diagramEditor().redraw();
         }
         break;
       default:

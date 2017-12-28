@@ -135,6 +135,21 @@ static void testEvaluatingIncompleteVectorOverTwoLines()
 }
 
 
+static void testCopy()
+{
+  Diagram d1;
+  Diagram d2(d1);
+}
+
+
+static void testAssign()
+{
+  Diagram d1;
+  Diagram d2;
+  d2 = d1;
+}
+
+
 int main()
 {
   testEvaluation1();
@@ -147,4 +162,6 @@ int main()
   testEvaluateAfterDeletingAnInput();
   testExistingNodeIndices();
   testEvaluatingIncompleteVectorOverTwoLines();
+  testCopy();
+  testAssign();
 }

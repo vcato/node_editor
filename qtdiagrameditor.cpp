@@ -22,8 +22,7 @@ static QString qString(const std::string &arg)
 }
 
 
-QtDiagramEditor::QtDiagramEditor(Diagram &diagram)
-: DiagramEditor(diagram)
+QtDiagramEditor::QtDiagramEditor()
 {
   {
     QFont font;
@@ -32,6 +31,7 @@ QtDiagramEditor::QtDiagramEditor(Diagram &diagram)
   }
   setFocusPolicy(Qt::StrongFocus);
 }
+
 
 
 void QtDiagramEditor::exportDiagramSlot()

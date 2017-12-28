@@ -18,7 +18,9 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
    Q_OBJECT
 
   public:
-    QtDiagramEditor(Diagram &);
+    QtDiagramEditor();
+
+    void redraw() override { update(); }
 
   private slots:
     void exportDiagramSlot();
@@ -80,7 +82,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       outputTextObject(const std::string &s,float right_x,float y) const;
     void drawNode(NodeIndex);
     void paintGL() override;
-    void redraw() override { update(); }
 };
 
 #endif /* QTDIAGRAMEDITOR_HPP_ */
