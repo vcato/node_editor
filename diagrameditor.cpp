@@ -60,6 +60,7 @@ void DiagramEditor::backspacePressed()
 
   if (node_editor.aNodeIsFocused()) {
     node_editor.text_editor.backspace();
+    diagram().removeInvalidInputs();
     redraw();
     return;
   }

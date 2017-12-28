@@ -4,6 +4,7 @@
 
 
 using std::string;
+using std::cerr;
 
 
 namespace {
@@ -172,6 +173,21 @@ static void testChangingText2()
 }
 
 
+static void testChangingText3()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex n1 = editor.userAddsANodeWithText("x\ny\nz");
+  NodeIndex n2 = editor.userAddsANodeWithText("$");
+  editor.userConnects(n1,2,n2,0);
+  editor.userFocusesNode(n1);
+  editor.userMovesCursorTo(/*row*/2,/*column*/0);
+  editor.userPressesBackspace();
+  assert(diagram.node(n1).nOutputs()==2);
+  assert(diagram.node(n2).inputs[0].source_output_index!=2);
+}
+
+
 static void testSettingDiagramPtr()
 {
   {
@@ -242,6 +258,7 @@ int main()
   testDeletingAConnectedNode();
   testChangingText();
   testChangingText2();
+  testChangingText3();
   testSettingDiagramPtr();
   testSettingDiagramPtrWithAnEmptyFocusedNode();
   testClickingOnBackgroundTwice();
