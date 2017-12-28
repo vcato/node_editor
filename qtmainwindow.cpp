@@ -459,52 +459,48 @@ void QtMainWindow::addPosExprTriggered()
 
 static Diagram fromBodyDiagram()
 {
-  const char *text =
-    "diagram {\n"
-    "  node {\n"
-    "    id: 1\n"
-    "    position: [409,328]\n"
-    "    text {\n"
-    "      \"$.pos($)\"\n"
-    "    }\n"
-    "    connection {\n"
-    "      input_index: 0\n"
-    "      source_node_id: 2\n"
-    "      source_output_index: 0\n"
-    "    }\n"
-    "    connection {\n"
-    "      input_index: 1\n"
-    "      source_node_id: 3\n"
-    "      source_output_index: 0\n"
-    "    }\n"
-    "  }\n"
-    "  node {\n"
-    "    id: 2\n"
-    "    position: [121,334]\n"
-    "    text {\n"
-    "      \"source_body\"\n"
-    "    }\n"
-    "  }\n"
-    "  node {\n"
-    "    id: 3\n"
-    "    position: [117,286]\n"
-    "    text {\n"
-    "      \"local_position\"\n"
-    "    }\n"
-    "  }\n"
-    "  node {\n"
-    "    id: 4\n"
-    "    position: [563,312]\n"
-    "    text {\n"
-    "      \"return $\"\n"
-    "    }\n"
-    "    connection {\n"
-    "      input_index: 0\n"
-    "      source_node_id: 1\n"
-    "      source_output_index: 0\n"
-    "    }\n"
-    "  }\n"
-    "}\n";
+  const char *text = R"text(
+diagram {
+  node {
+    id: 1
+    position: [263,328]
+    text {
+      "$.pos($)"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 5
+      source_output_index: 0
+    }
+    connection {
+      input_index: 1
+      source_node_id: 5
+      source_output_index: 1
+    }
+  }
+  node {
+    id: 4
+    position: [410,313]
+    text {
+      "return $"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 1
+      source_output_index: 0
+    }
+  }
+  node {
+    id: 5
+    position: [50,328]
+    text {
+      "source_body"
+      "local_position"
+    }
+  }
+}
+)text";
+
   return makeDiagram(text);
 }
 
