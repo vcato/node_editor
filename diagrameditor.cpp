@@ -50,8 +50,10 @@ void DiagramEditor::enterPressed()
 
 void DiagramEditor::backspacePressed()
 {
-  if (selectedNodeIndex()>=0) {
-    deleteNode(selectedNodeIndex());
+  if (aNodeIsSelected()) {
+    for (NodeIndex i : selected_node_indices) {
+      deleteNode(i);
+    }
     setSelectedNodeIndex(-1);
     redraw();
     return;

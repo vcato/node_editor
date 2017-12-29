@@ -42,6 +42,11 @@ struct FakeDiagramEditor : DiagramEditor {
     mouseMovedTo(p);
   }
 
+  void userRelasesMouseAt(const Point2D &p)
+  {
+    mouseReleasedAt(p);
+  }
+
   void userSelectsNode(int node_index)
   {
     selectNode(node_index);
@@ -321,6 +326,9 @@ static void testSelectingMultipleNodes()
   editor.userMovesMouseTo(mouse_release_position);
   assert(diagram.node(n1).position()==Point2D(10,0));
   assert(diagram.node(n2).position()==Point2D(10,100));
+  editor.userRelasesMouseAt(mouse_release_position);
+  editor.userPressesBackspace();
+  assert(diagram.nExistingNodes()==0);
 }
 
 
