@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cassert>
+#include <map>
 #include "point2d.hpp"
 #include "stringutil.hpp"
 #include "linetext.hpp"
@@ -169,7 +170,7 @@ class DiagramEditor {
     NodeTextEditor text_editor;
     static constexpr float connector_radius = 5;
     Point2D mouse_press_position;
-    Point2D original_node_position;
+    std::map<NodeIndex,Point2D> original_node_positions;
     NodeConnectorIndex selected_node_connector_index =
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
@@ -222,6 +223,7 @@ class DiagramEditor {
     void clearFocus();
     void mousePressedAt(Point2D,bool shift_is_pressed);
     void mouseReleasedAt(Point2D mouse_release_position);
+    void mouseMovedTo(const Point2D &);
 
     void
       connectNodes(
@@ -238,6 +240,7 @@ class DiagramEditor {
     Node& focusedNode(Diagram &diagram);
 
     void alsoSelectNode(NodeIndex node_index);
+    bool aNodeIsSelected() const;
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */

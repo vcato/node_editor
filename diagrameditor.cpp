@@ -543,15 +543,23 @@ void DiagramEditor::mousePressedAt(Point2D p,bool shift_is_pressed)
     int i = indexOfNodeContaining(p);
 
     if (i>=0) {
-      node_was_selected = (i==selectedNodeIndex());
+      node_was_selected = nodeIsSelected(i);
+
       if (shift_is_pressed) {
         alsoSelectNode(i);
       }
       else {
-        setSelectedNodeIndex(i);
+        if (!node_was_selected) {
+          setSelectedNodeIndex(i);
+        }
       }
+
       focused_node_index = -1;
-      original_node_position = node(i).header_text_object.position;
+      original_node_positions.clear();
+      for (auto node_index : selected_node_indices) {
+        original_node_positions[node_index] =
+          node(node_index).header_text_object.position;
+      }
       redraw();
       return;
     }
@@ -629,4 +637,30 @@ static bool contains(const vector<T> &v,const T& a)
 bool DiagramEditor::nodeIsSelected(NodeIndex arg)
 {
   return contains(selected_node_indices,arg);
+}
+
+
+bool DiagramEditor::aNodeIsSelected() const
+{
+  return !selected_node_indices.empty();
+}
+
+
+void DiagramEditor::mouseMovedTo(const Point2D &mouse_position)
+{
+  if (!selected_node_connector_index.isNull()) {
+    temp_source_pos = mouse_position;
+    redraw();
+    return;
+  }
+
+  if (aNodeIsSelected()) {
+    for (NodeIndex i : selected_node_indices) {
+      assert(original_node_positions.count(i));
+      node(i).header_text_object.position =
+        original_node_positions[i] + (mouse_position - mouse_press_position);
+    }
+    redraw();
+    return;
+  }
 }

@@ -181,18 +181,7 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
 {
   Point2D mouse_position = screenToGLCoords(event_ptr->x(),event_ptr->y());
 
-  if (!selected_node_connector_index.isNull()) {
-    temp_source_pos = mouse_position;
-    update();
-    return;
-  }
-
-  if (selectedNodeIndex()>=0) {
-    node(selectedNodeIndex()).header_text_object.position =
-      original_node_position + (mouse_position - mouse_press_position);
-    update();
-    return;
-  }
+  mouseMovedTo(mouse_position);
 }
 
 

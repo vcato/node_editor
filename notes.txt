@@ -237,4 +237,4 @@ It would be neat if you could select some text in a node, then drag it out
 and have it create a new node with the text, replace the text in the original
 node with a $ and attach the new node's output to a new input connector.
 ---
-Need to be able to select several nodes and move them at once.
+Need to be able to delete multiple selected nodes.

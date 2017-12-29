@@ -20,6 +20,11 @@ struct Point2D {
   {
     return x==arg.x && y==arg.y;
   }
+
+  bool operator!=(const Point2D &arg) const
+  {
+    return !operator==(arg);
+  }
 };
 
 
