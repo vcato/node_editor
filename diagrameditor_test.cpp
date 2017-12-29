@@ -246,6 +246,14 @@ static void testSettingDiagramPtr()
     FakeDiagramEditor editor(diagram);
     editor.setDiagramPtr(0);
   }
+  {
+    Diagram diagram;
+    FakeDiagramEditor editor(diagram);
+    NodeIndex n1 = editor.userAddsANode();
+    editor.userSelectsNode(n1);
+    editor.setDiagramPtr(0);
+    assert(editor.nSelectedNodes()==0);
+  }
 }
 
 

@@ -18,6 +18,7 @@ DiagramEditor::DiagramEditor()
 void DiagramEditor::setDiagramPtr(Diagram *arg)
 {
   clearFocus();
+  clearSelection();
   diagram_ptr = arg;
   redraw();
 }
@@ -54,7 +55,7 @@ void DiagramEditor::backspacePressed()
     for (NodeIndex i : selected_node_indices) {
       deleteNode(i);
     }
-    setSelectedNodeIndex(-1);
+    clearSelection();
     redraw();
     return;
   }
@@ -513,7 +514,7 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
   if (mouse_press_position==mouse_release_position) {
     if (node_was_selected && selectedNodeIndex()!=noNodeIndex()) {
       focusNode(selectedNodeIndex(),diagram());
-      setSelectedNodeIndex(-1);
+      clearSelection();
       redraw();
       return;
     }
@@ -531,6 +532,12 @@ void DiagramEditor::clearFocus()
       deleteNode(old_focused_node_index);
     }
   }
+}
+
+
+void DiagramEditor::clearSelection()
+{
+  selected_node_indices.clear();
 }
 
 
@@ -567,7 +574,7 @@ void DiagramEditor::mousePressedAt(Point2D p,bool shift_is_pressed)
     }
   }
 
-  setSelectedNodeIndex(-1);
+  clearSelection();
   selected_node_connector_index = NodeConnectorIndex::null();
 
   {

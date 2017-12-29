@@ -221,6 +221,7 @@ class DiagramEditor {
     int indexOfNodeContaining(const Point2D &p);
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
     void clearFocus();
+    void clearSelection();
     void mousePressedAt(Point2D,bool shift_is_pressed);
     void mouseReleasedAt(Point2D mouse_release_position);
     void mouseMovedTo(const Point2D &);
