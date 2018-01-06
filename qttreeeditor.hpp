@@ -1,5 +1,5 @@
-#ifndef QTTREEWIDGET_HPP_
-#define QTTREEWIDGET_HPP_
+#ifndef QTTREEEDITOR_HPP_
+#define QTTREEEDITOR_HPP_
 
 #include <QLabel>
 #include <QString>
@@ -28,7 +28,7 @@ struct QtComboBoxTreeWidgetItem : QTreeWidgetItem {
 };
 
 
-class QtTreeWidget : public QTreeWidget {
+class QtTreeEditor : public QTreeWidget {
   Q_OBJECT
 
   public:
@@ -55,7 +55,7 @@ class QtTreeWidget : public QTreeWidget {
   static QTreeWidgetItem&
     createItem(QTreeWidgetItem &parent_item,const std::string &label)
   {
-    QTreeWidgetItem &pass_item = QtTreeWidget::createItem(parent_item);
+    QTreeWidgetItem &pass_item = QtTreeEditor::createItem(parent_item);
     setItemText(pass_item,label);
     return pass_item;
   }
@@ -111,7 +111,7 @@ class QtTreeWidget : public QTreeWidget {
       const std::string &label
     )
   {
-    QtTreeWidget &tree_widget = *this;
+    QtTreeEditor &tree_widget = *this;
     QTreeWidgetItem &item = createItem(parent_item);
     tree_widget.setItemWidget<QSpinBox>(item,label);
   }
@@ -124,4 +124,4 @@ class QtTreeWidget : public QTreeWidget {
 
 };
 
-#endif /* QTTREEWIDGET_HPP_ */
+#endif /* QTTREEEDITOR_HPP_ */

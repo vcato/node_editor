@@ -20,7 +20,7 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
   tree.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
   qtcomboboxtreewidgetitemsignalmap.o qtmenu.o \
-  moc_qttreewidget.o qttreewidget.o diagramevaluation.o diagramio.o \
+  moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
   moc_qtdiagrameditor.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 

@@ -1,4 +1,4 @@
-#include "qttreewidget.hpp"
+#include "qttreeeditor.hpp"
 
 #include <iostream>
 
@@ -6,7 +6,7 @@ using std::cerr;
 
 
 void
-  QtTreeWidget::comboBoxItemCurrentIndexChangedSlot(
+  QtTreeEditor::comboBoxItemCurrentIndexChangedSlot(
     QtComboBoxTreeWidgetItem *item_ptr,
     int index
   )

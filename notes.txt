@@ -236,3 +236,19 @@ a diagram.
 It would be neat if you could select some text in a node, then drag it out
 and have it create a new node with the text, replace the text in the original
 node with a $ and attach the new node's output to a new input connector.
+---
+Eventually.  I think we'll want to be able to have diagrams that generate
+new items in the tree.  I can imagine a diagram whose output is a list of
+tree items.
+
+Let's say we wanted to create a spline, and then generate a baked version
+of that spline that then goes into the tree.
+
+Or we want to create a tool that lets you add a new key to the spline.
+
+Maybe a good thing to work on is being able to draw a spline.
+We'll need a way to create a window, create a drawing area within the
+window, and then provide a diagram that generates what we will draw.
+
+Need to be able to right-click on the tree when not over an existing
+item to create a new top-level item.

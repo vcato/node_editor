@@ -6,7 +6,7 @@
 #include <QSplitter>
 #include "qtdiagrameditor.hpp"
 #include "tree.hpp"
-#include "qttreewidget.hpp"
+#include "qttreeeditor.hpp"
 
 
 class QtMainWindow : public QMainWindow {
@@ -19,11 +19,11 @@ class QtMainWindow : public QMainWindow {
     using TreePath = Tree::Path;
     QMenu menu{"Tools"};
     Tree tree;
-    QtTreeWidget *tree_widget_ptr;
+    QtTreeEditor *tree_widget_ptr;
     QtDiagramEditor *diagram_editor_ptr;
     bool ignore_combo_box_signals = false;
 
-    QtTreeWidget &treeWidget();
+    QtTreeEditor &treeWidget();
     void createTree(QSplitter &parent_splitter);
     QTreeWidgetItem* findSelectedItem();
     Diagram *selectedDiagramPtr();

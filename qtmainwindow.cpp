@@ -11,7 +11,7 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QSplitter>
-#include "qttreewidget.hpp"
+#include "qttreeeditor.hpp"
 #include "qtwidget.hpp"
 #include "qtmenu.hpp"
 #include "diagramio.hpp"
@@ -35,9 +35,9 @@ static Layout& createLayout(QBoxLayout &parent_layout)
 }
 
 
-static QtTreeWidget& createTreeWidget(QSplitter &parent_splitter)
+static QtTreeEditor& createTreeWidget(QSplitter &parent_splitter)
 {
-  return createWidget<QtTreeWidget>(parent_splitter);
+  return createWidget<QtTreeEditor>(parent_splitter);
 }
 
 
@@ -53,7 +53,7 @@ static QtDiagramEditor& createDiagramEditor(QSplitter &splitter,int stretch)
 
 void QtMainWindow::createTree(QSplitter &parent_splitter)
 {
-  QtTreeWidget &tree_widget = createTreeWidget(parent_splitter);
+  QtTreeEditor &tree_widget = createTreeWidget(parent_splitter);
   tree_widget_ptr = &tree_widget;
   tree_widget.header()->close();
   tree_widget.setContextMenuPolicy(Qt::CustomContextMenu);
@@ -628,7 +628,7 @@ void
 }
 
 
-QtTreeWidget &QtMainWindow::treeWidget()
+QtTreeEditor &QtMainWindow::treeWidget()
 {
   assert(tree_widget_ptr);
   return *tree_widget_ptr;
