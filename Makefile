@@ -63,6 +63,6 @@ tree_test: tree_test.o tree.o diagram.o diagramnode.o linetext.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
-	rm -f *.o *.pass
+	rm -f *.o *.pass moc_*.cpp
 
 -include *.d

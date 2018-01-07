@@ -6,7 +6,7 @@
 #include <QSplitter>
 
 template <typename Layout>
-inline Layout& createLayout(QWidget &widget)
+Layout& createLayout(QWidget &widget)
 {
   Layout *layout_ptr = new Layout;
   widget.setLayout(layout_ptr);
@@ -15,7 +15,7 @@ inline Layout& createLayout(QWidget &widget)
 
 
 template <typename Widget>
-static Widget& createWidget(QLayout &layout)
+Widget& createWidget(QLayout &layout)
 {
   Widget *widget_ptr = new Widget;
   layout.addWidget(widget_ptr);
@@ -25,11 +25,22 @@ static Widget& createWidget(QLayout &layout)
 
 
 template <typename Widget>
-static Widget& createWidget(QSplitter &splitter)
+Widget& createWidget(QSplitter &splitter)
 {
   Widget *widget_ptr = new Widget;
   splitter.addWidget(widget_ptr);
   assert(widget_ptr);
+  return *widget_ptr;
+}
+
+
+template <typename Widget>
+Widget& createWidget(QSplitter &splitter,int stretch)
+{
+  int index = splitter.count();
+  Widget *widget_ptr = new Widget;
+  splitter.addWidget(widget_ptr);
+  splitter.setStretchFactor(index,stretch);
   return *widget_ptr;
 }
 

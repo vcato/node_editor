@@ -2,11 +2,32 @@
 
 #include <iostream>
 #include <sstream>
+#include <QMenu>
+#include <QHeaderView>
 #include "diagramio.hpp"
+#include "qtmenu.hpp"
 
 using std::cerr;
 using std::vector;
 using std::istringstream;
+
+
+QtTreeEditor::QtTreeEditor()
+{
+  header()->close();
+  setContextMenuPolicy(Qt::CustomContextMenu);
+
+  connect(
+    this,
+    SIGNAL(itemSelectionChanged()),
+    SLOT(itemSelectionChangedSlot())
+  );
+  connect(
+    this,
+    SIGNAL(customContextMenuRequested(const QPoint &)),
+    SLOT(prepareMenuSlot(const QPoint &))
+  );
+}
 
 
 void
@@ -15,7 +36,91 @@ void
     int index
   )
 {
-  emit comboBoxItemIndexChanged(item_ptr,index);
+  handleComboBoxItemIndexChanged(item_ptr,index);
+}
+
+
+QTreeWidgetItem& QtTreeEditor::createItem(const std::string &label)
+{
+  QTreeWidgetItem &item = createItem();
+  setItemText(item,label);
+  return item;
+}
+
+
+QTreeWidgetItem&
+  QtTreeEditor::createItem(
+    QTreeWidgetItem &parent_item,
+    const std::string &label
+  )
+{
+  QTreeWidgetItem &pass_item = QtTreeEditor::createItem(parent_item);
+  setItemText(pass_item,label);
+  return pass_item;
+}
+
+
+QTreeWidgetItem& QtTreeEditor::createItem(QTreeWidgetItem &parent_item)
+{
+  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
+  parent_item.addChild(item_ptr);
+  QTreeWidgetItem &item = *item_ptr;
+  item.setExpanded(true);
+  return item;
+}
+
+
+QTreeWidgetItem& QtTreeEditor::createItem()
+{
+  QTreeWidget &tree_widget = *this;
+  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
+  tree_widget.addTopLevelItem(item_ptr);
+  item_ptr->setExpanded(true);
+  return *item_ptr;
+}
+
+
+void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
+{
+  item.setText(/*column*/0,QString::fromStdString(label));
+}
+
+
+QtComboBoxTreeWidgetItem&
+  QtTreeEditor::createComboBoxItem(
+    QTreeWidgetItem &parent_item,
+    const std::string &label
+  )
+{
+  QtComboBoxTreeWidgetItem *item_ptr = new QtComboBoxTreeWidgetItem;
+  parent_item.addChild(item_ptr);
+  QtComboBoxTreeWidgetItem &item = *item_ptr;
+  item.setExpanded(true);
+  QComboBox &combo_box = createItemWidget<QComboBox>(item,label);
+  item.combo_box_ptr = &combo_box;
+  item.signal_map.connect(
+    &combo_box,
+    SIGNAL(currentIndexChanged(int)),
+    SLOT(currentIndexChangedSlot(int))
+  );
+  connect(
+    &item.signal_map,
+    SIGNAL(currentIndexChanged(QtComboBoxTreeWidgetItem*,int)),
+    SLOT(comboBoxItemCurrentIndexChangedSlot(QtComboBoxTreeWidgetItem*,int))
+  );
+  return item;
+}
+
+
+void
+  QtTreeEditor::createSpinBoxItem(
+    QTreeWidgetItem &parent_item,
+    const std::string &label
+  )
+{
+  QtTreeEditor &tree_widget = *this;
+  QTreeWidgetItem &item = createItem(parent_item);
+  tree_widget.createItemWidget<QSpinBox>(item,label);
 }
 
 
@@ -363,6 +468,25 @@ void QtTreeEditor::handleAddPosExpr()
 }
 
 
+void QtTreeEditor::handleAddPass()
+{
+  QTreeWidgetItem *selected_item_ptr = findSelectedItem();
+
+  if (!selected_item_ptr) {
+    cerr << "addPassTriggered: No selected item!\n";
+    return;
+  }
+
+  Tree::Path selected_item_path = itemPath(*selected_item_ptr);
+
+  Tree::Path motion_pass_item_path =
+    tree().createMotionPassItem(selected_item_path);
+
+  assert(tree().isMotionPassItem(motion_pass_item_path));
+  treeEditor().createItem(*selected_item_ptr,"Motion Pass");
+}
+
+
 QTreeWidgetItem* QtTreeEditor::findSelectedItem()
 {
   QList<QTreeWidgetItem*> items = treeEditor().selectedItems();
@@ -472,4 +596,89 @@ QtDiagramEditor &QtTreeEditor::diagramEditor()
 {
   assert(diagram_editor_ptr);
   return *diagram_editor_ptr;
+}
+
+
+Diagram *QtTreeEditor::maybeSelectedDiagram()
+{
+  QTreeWidgetItem *selected_item_ptr = findSelectedItem();
+  Diagram *diagram_ptr = 0;
+
+  if (selected_item_ptr) {
+    diagram_ptr = &tree().itemDiagram(itemPath(*selected_item_ptr));
+  }
+
+  return diagram_ptr;
+}
+
+
+void QtTreeEditor::itemSelectionChangedSlot()
+{
+  diagramEditor().setDiagramPtr(maybeSelectedDiagram());
+}
+
+
+void QtTreeEditor::prepareMenu(const QPoint &pos)
+{
+  QtTreeEditor &tree_editor = treeEditor();
+  QTreeWidgetItem *widget_item_ptr = tree_editor.itemAt(pos);
+
+  if (!widget_item_ptr) {
+    return;
+  }
+
+  Tree::Path path = itemPath(*widget_item_ptr);
+
+  bool is_charmapper_item = tree().isCharmapperItem(path);
+
+  if (is_charmapper_item) {
+    QMenu menu;
+    QAction &add_pass_action = createAction(menu,"Add Motion Pass");
+    connect(&add_pass_action,SIGNAL(triggered()),SLOT(addPassTriggered()));
+    menu.exec(tree_editor.mapToGlobal(pos));
+    return;
+  }
+
+  bool is_motion_pass_item = tree().isMotionPassItem(path);
+
+  if (is_motion_pass_item) {
+    QMenu menu;
+    QAction &add_pos_expr_action = createAction(menu,"Add Pos Expr");
+    connect(
+      &add_pos_expr_action,SIGNAL(triggered()),SLOT(addPosExprTriggered())
+    );
+    menu.exec(tree_editor.mapToGlobal(pos));
+    return;
+  }
+}
+
+
+void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
+{
+  prepareMenu(pos);
+}
+
+
+void QtTreeEditor::addPosExprTriggered()
+{
+  handleAddPosExpr();
+}
+
+
+void QtTreeEditor::addPassTriggered()
+{
+  handleAddPass();
+}
+
+
+void QtTreeEditor::addCharmapper()
+{
+  tree().createCharmapperItem();
+  createItem("charmapper");
+}
+
+
+void QtTreeEditor::selectItem(const TreePath &path)
+{
+  itemFromPath(path).setSelected(true);
 }

@@ -252,3 +252,7 @@ window, and then provide a diagram that generates what we will draw.
 
 Need to be able to right-click on the tree when not over an existing
 item to create a new top-level item.
+
+Move the rest of the tree editing logic into QtTreeEditor().
+
+Move the context menu logic into QtTreeEditor().
