@@ -18,12 +18,12 @@ class QtMainWindow : public QMainWindow {
   private:
     using TreePath = Tree::Path;
     QMenu menu{"Tools"};
-    Tree tree;
-    QtTreeEditor *tree_widget_ptr;
+    Tree tree_member;
+    Tree &tree() { return tree_member; }
+    QtTreeEditor *tree_editor_ptr;
     QtDiagramEditor *diagram_editor_ptr;
-    bool ignore_combo_box_signals = false;
 
-    QtTreeEditor &treeWidget();
+    QtTreeEditor &treeEditor();
     void createTree(QSplitter &parent_splitter);
     QTreeWidgetItem* findSelectedItem();
     Diagram *selectedDiagramPtr();
@@ -37,10 +37,6 @@ class QtMainWindow : public QMainWindow {
     void treeComboBoxItemIndexChanged(QtComboBoxTreeWidgetItem *,int);
     void addTreeItem(const TreePath &parent_path,const TreeItem &item);
     void addTreeItems(const TreePath &,const TreeItem &);
-    void removeChildItems(const TreePath &parent_path);
-    void
-      replaceTreeItems(
-        const TreePath &parent_path,
-        const TreeItem &tree_items
-      );
+
+    std::vector<int> itemPath(QTreeWidgetItem &item);
 };

@@ -1,3 +1,6 @@
+#ifndef TREE_HPP_
+#define TREE_HPP_
+
 #include <string>
 
 #include <vector>
@@ -61,6 +64,8 @@ class Tree {
     bool isGlobalPositionItem(const Path &path) const;
     Diagram &itemDiagram(const Path &);
 
+    void createXYZChildren(TreeItem &parent_item);
+
   private:
     using Item = TreeItem;
 
@@ -80,3 +85,5 @@ inline Tree::Path join(Tree::Path path,Tree::Index child_index)
   path.push_back(child_index);
   return path;
 }
+
+#endif /* TREE_HPP_ */

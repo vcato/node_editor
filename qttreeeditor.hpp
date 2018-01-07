@@ -7,7 +7,9 @@
 #include <QTreeWidgetItem>
 #include <QComboBox>
 #include "qtwidget.hpp"
+#include "qtdiagrameditor.hpp"
 #include "qtcomboboxtreewidgetitemsignalmap.hpp"
+#include "tree.hpp"
 
 
 struct QtComboBoxTreeWidgetItem : QTreeWidgetItem {
@@ -31,7 +33,13 @@ struct QtComboBoxTreeWidgetItem : QTreeWidgetItem {
 class QtTreeEditor : public QTreeWidget {
   Q_OBJECT
 
-  public:
+public:
+  using TreePath = Tree::Path;
+
+  void setDiagramEditorPtr(QtDiagramEditor *arg) { diagram_editor_ptr = arg; }
+
+  void setTreePtr(Tree *arg) { tree_ptr = arg; }
+
   template <typename T>
   T &setItemWidget(QTreeWidgetItem &item,const std::string &label)
   {
@@ -116,12 +124,56 @@ class QtTreeEditor : public QTreeWidget {
     tree_widget.setItemWidget<QSpinBox>(item,label);
   }
 
+  QTreeWidgetItem* findSelectedItem();
+
+  void
+    addTreeItem(
+      const TreePath &parent_path,
+      const TreeItem &item
+    );
+
+  void
+    addTreeItems(
+      const TreePath &parent_path,
+      const TreeItem &tree_items
+    );
+
+  void
+    handleComboBoxItemIndexChanged(
+      QtComboBoxTreeWidgetItem *item_ptr,
+      int index
+    );
+
+  void handleAddPosExpr();
+
+  void removeChildItems(const TreePath &path);
+
+  void
+    replaceTreeItems(
+      const TreePath &parent_path,
+      const TreeItem &tree_items
+    );
+
+
+  QtTreeEditor &treeEditor() { return *this; }
+
+  std::vector<int> itemPath(QTreeWidgetItem &item);
+
+  QTreeWidgetItem &itemFromPath(const std::vector<int> &path) const;
+
   private slots:
     void comboBoxItemCurrentIndexChangedSlot(QtComboBoxTreeWidgetItem *,int);
 
   signals:
     void comboBoxItemIndexChanged(QtComboBoxTreeWidgetItem*,int);
 
+  private:
+    bool ignore_combo_box_signals = false;
+    Tree *tree_ptr = 0;
+    Tree &tree();
+
+    QtDiagramEditor &diagramEditor();
+    QtDiagramEditor *diagram_editor_ptr = 0;
 };
 
 #endif /* QTTREEEDITOR_HPP_ */

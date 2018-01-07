@@ -197,3 +197,13 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
   assert(item.child_items.size()<=std::numeric_limits<SizeType>::max());
   return item.child_items.size();
 }
+
+
+void Tree::createXYZChildren(TreeItem &parent_item)
+{
+  using ItemType = TreeItem::Type;
+
+  parent_item.createItem2(ItemType::x);
+  parent_item.createItem2(ItemType::y);
+  parent_item.createItem2(ItemType::z);
+}
