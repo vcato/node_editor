@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
+#include "qtslot.hpp"
 
 using std::cerr;
 using std::vector;
@@ -639,15 +640,18 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
     QMenu menu;
     QAction &add_charmapper_action = createAction(menu,"Add Charmapper");
     QAction &add_scene_action = createAction(menu,"Add Scene");
-    connect(
+    QtSlot add_scene_slot([&](){handleAddScene();});
+    QtSlot add_charmapper_slot([&](){handleAddCharmapper();});
+
+    add_scene_slot.connect(
       &add_scene_action,
       SIGNAL(triggered()),
-      SLOT(addSceneTriggered())
+      SLOT(slot())
     );
-    connect(
+    add_charmapper_slot.connect(
       &add_charmapper_action,
       SIGNAL(triggered()),
-      SLOT(addCharmapperTriggered())
+      SLOT(slot())
     );
     menu.exec(tree_editor.mapToGlobal(pos));
     return;
