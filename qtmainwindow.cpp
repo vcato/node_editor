@@ -34,9 +34,7 @@ QtMainWindow::QtMainWindow()
   QtTreeEditor &tree_editor = createWidget<QtTreeEditor>(splitter);
   tree_editor_ptr = &tree_editor;
   tree_editor.setTreePtr(&tree);
-  tree_editor.addCharmapper();
 
   diagram_editor_ptr = &createWidget<QtDiagramEditor>(splitter,/*stretch*/1);
   tree_editor.setDiagramEditorPtr(diagram_editor_ptr);
-  tree_editor.selectItem({0});
 }

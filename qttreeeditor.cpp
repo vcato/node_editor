@@ -492,6 +492,13 @@ void QtTreeEditor::handleAddScene()
 }
 
 
+void QtTreeEditor::handleAddCharmapper()
+{
+  tree().createCharmapperItem();
+  treeEditor().createItem("Charmapper");
+}
+
+
 QTreeWidgetItem* QtTreeEditor::findSelectedItem()
 {
   QList<QTreeWidgetItem*> items = treeEditor().selectedItems();
@@ -630,8 +637,18 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 
   if (!widget_item_ptr) {
     QMenu menu;
+    QAction &add_charmapper_action = createAction(menu,"Add Charmapper");
     QAction &add_scene_action = createAction(menu,"Add Scene");
-    connect(&add_scene_action,SIGNAL(triggered()),SLOT(addSceneTriggered()));
+    connect(
+      &add_scene_action,
+      SIGNAL(triggered()),
+      SLOT(addSceneTriggered())
+    );
+    connect(
+      &add_charmapper_action,
+      SIGNAL(triggered()),
+      SLOT(addCharmapperTriggered())
+    );
     menu.exec(tree_editor.mapToGlobal(pos));
     return;
   }
@@ -686,10 +703,9 @@ void QtTreeEditor::addSceneTriggered()
 }
 
 
-void QtTreeEditor::addCharmapper()
+void QtTreeEditor::addCharmapperTriggered()
 {
-  tree().createCharmapperItem();
-  createItem("charmapper");
+  handleAddCharmapper();
 }
 
 

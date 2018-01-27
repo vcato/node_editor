@@ -40,7 +40,6 @@ class QtTreeEditor : public QTreeWidget {
 
     void setTreePtr(Tree *arg) { tree_ptr = arg; }
     void setDiagramEditorPtr(QtDiagramEditor *arg) { diagram_editor_ptr = arg; }
-    void addCharmapper();
     void selectItem(const TreePath &path);
 
   private slots:
@@ -50,6 +49,7 @@ class QtTreeEditor : public QTreeWidget {
     void addPosExprTriggered();
     void addPassTriggered();
     void addSceneTriggered();
+    void addCharmapperTriggered();
 
   private:
     bool ignore_combo_box_signals = false;
@@ -108,6 +108,7 @@ class QtTreeEditor : public QTreeWidget {
     void handleAddPosExpr();
     void handleAddPass();
     void handleAddScene();
+    void handleAddCharmapper();
     void removeChildItems(const TreePath &path);
 
     void
