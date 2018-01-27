@@ -14,6 +14,7 @@ struct TreeItem {
   enum class Type {
     root,
     charmapper,
+    scene,
     motion_pass,
     pos_expr,
     target_body,
@@ -47,6 +48,7 @@ class Tree {
 
     Tree();
     Path createCharmapperItem();
+    Path createSceneItem();
     Path createMotionPassItem(const Path &);
     Path createPosExprItem(const Path &);
     Path createTargetBodyItem(const Path &);
@@ -61,6 +63,7 @@ class Tree {
     void removeChildItems(const Path &);
     bool isCharmapperItem(const Path &path) const;
     bool isMotionPassItem(const Path &path) const;
+    bool isSceneItem(const Path &path) const;
     bool isGlobalPositionItem(const Path &path) const;
     Diagram &itemDiagram(const Path &);
 

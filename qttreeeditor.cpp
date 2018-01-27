@@ -10,6 +10,7 @@
 using std::cerr;
 using std::vector;
 using std::istringstream;
+using std::ostream;
 
 
 QtTreeEditor::QtTreeEditor()
@@ -244,28 +245,25 @@ void
 }
 
 
-static void buildPath(vector<int> &path,QTreeWidgetItem &item)
+void QtTreeEditor::buildPath(vector<int> &path,QTreeWidgetItem &item)
 {
-  if (!item.parent()) {
-    path.push_back(0);
+  QTreeWidgetItem *parent_item_ptr = item.parent();
+
+  if (!parent_item_ptr) {
+    path.push_back(indexOfTopLevelItem(&item));
     return;
   }
-  buildPath(path,*item.parent());
-  path.push_back(item.parent()->indexOfChild(&item));
-}
 
-
-static vector<int> itemPath(QTreeWidgetItem &item)
-{
-  vector<int> path;
-  buildPath(path,item);
-  return path;
+  buildPath(path,*parent_item_ptr);
+  path.push_back(parent_item_ptr->indexOfChild(&item));
 }
 
 
 std::vector<int> QtTreeEditor::itemPath(QTreeWidgetItem &item)
 {
-  return ::itemPath(item);
+  vector<int> path;
+  buildPath(path,item);
+  return path;
 }
 
 
@@ -487,6 +485,13 @@ void QtTreeEditor::handleAddPass()
 }
 
 
+void QtTreeEditor::handleAddScene()
+{
+  tree().createSceneItem();
+  treeEditor().createItem("Scene");
+}
+
+
 QTreeWidgetItem* QtTreeEditor::findSelectedItem()
 {
   QList<QTreeWidgetItem*> items = treeEditor().selectedItems();
@@ -624,14 +629,16 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   QTreeWidgetItem *widget_item_ptr = tree_editor.itemAt(pos);
 
   if (!widget_item_ptr) {
+    QMenu menu;
+    QAction &add_scene_action = createAction(menu,"Add Scene");
+    connect(&add_scene_action,SIGNAL(triggered()),SLOT(addSceneTriggered()));
+    menu.exec(tree_editor.mapToGlobal(pos));
     return;
   }
 
   Tree::Path path = itemPath(*widget_item_ptr);
 
-  bool is_charmapper_item = tree().isCharmapperItem(path);
-
-  if (is_charmapper_item) {
+  if (tree().isCharmapperItem(path)) {
     QMenu menu;
     QAction &add_pass_action = createAction(menu,"Add Motion Pass");
     connect(&add_pass_action,SIGNAL(triggered()),SLOT(addPassTriggered()));
@@ -639,9 +646,7 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
     return;
   }
 
-  bool is_motion_pass_item = tree().isMotionPassItem(path);
-
-  if (is_motion_pass_item) {
+  if (tree().isMotionPassItem(path)) {
     QMenu menu;
     QAction &add_pos_expr_action = createAction(menu,"Add Pos Expr");
     connect(
@@ -649,6 +654,10 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
     );
     menu.exec(tree_editor.mapToGlobal(pos));
     return;
+  }
+
+  if (tree().isSceneItem(path)) {
+    cerr << "Scene item\n";
   }
 }
 
@@ -668,6 +677,12 @@ void QtTreeEditor::addPosExprTriggered()
 void QtTreeEditor::addPassTriggered()
 {
   handleAddPass();
+}
+
+
+void QtTreeEditor::addSceneTriggered()
+{
+  handleAddScene();
 }
 
 

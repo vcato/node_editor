@@ -21,6 +21,12 @@ auto Tree::createCharmapperItem() -> Path
 }
 
 
+auto Tree::createSceneItem() -> Path
+{
+  return createItem({},ItemType::scene);
+}
+
+
 auto Tree::createMotionPassItem(const Path &parent_path) -> Path
 {
   return createItem(parent_path,ItemType::motion_pass);
@@ -156,6 +162,12 @@ bool Tree::isCharmapperItem(const Path &path) const
 bool Tree::isMotionPassItem(const Path &path) const
 {
   return itemType(path)==ItemType::motion_pass;
+}
+
+
+bool Tree::isSceneItem(const Path &path) const
+{
+  return itemType(path)==ItemType::scene;
 }
 
 

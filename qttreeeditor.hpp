@@ -49,6 +49,7 @@ class QtTreeEditor : public QTreeWidget {
     void prepareMenuSlot(const QPoint &pos);
     void addPosExprTriggered();
     void addPassTriggered();
+    void addSceneTriggered();
 
   private:
     bool ignore_combo_box_signals = false;
@@ -61,6 +62,7 @@ class QtTreeEditor : public QTreeWidget {
     Diagram *maybeSelectedDiagram();
     QTreeWidgetItem &itemFromPath(const TreePath &path) const;
     TreePath itemPath(QTreeWidgetItem &item);
+    void buildPath(TreePath &path,QTreeWidgetItem &item);
     void prepareMenu(const QPoint &pos);
 
     template <typename T>
@@ -105,6 +107,7 @@ class QtTreeEditor : public QTreeWidget {
 
     void handleAddPosExpr();
     void handleAddPass();
+    void handleAddScene();
     void removeChildItems(const TreePath &path);
 
     void
