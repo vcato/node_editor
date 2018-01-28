@@ -42,11 +42,17 @@ struct TreeItem {
 
 class Tree {
   public:
+    struct OperationHandler;
+
     using Path = std::vector<int>;
     using Index = int;
     using SizeType = int;
     using Item = TreeItem;
-
+    using PerformOperationFunction =
+      std::function<void (OperationHandler &)>;
+    using OperationName = const std::string;
+    using OperationVisitor =
+      std::function<void(const OperationName &,PerformOperationFunction)>;
 
     struct OperationHandler {
       virtual void addItem(const Path &,const TreeItem &) = 0;
@@ -54,28 +60,14 @@ class Tree {
         replaceTreeItems(const Path &path,const TreeItem &items) = 0;
     };
 
-
     Tree();
+
     Path createItem(const Path &parent_path,Item::Type type);
     void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
     Diagram &itemDiagram(const Path &);
-
-    void createXYZChildren(TreeItem &parent_item);
-
-    using PerformOperationFunction =
-      std::function<void (OperationHandler &)>;
-
-    using OperationName = const std::string;
-    using OperationVisitor =
-      std::function<void(const OperationName &,PerformOperationFunction)>;
-
     void visitOperations(const Path &,OperationVisitor visitor);
-    TreeItem posExprItem();
-    TreeItem motionPassItem();
-    TreeItem sceneItem();
-    TreeItem charmapperItem();
 
   private:
     using ItemType = Item::Type;

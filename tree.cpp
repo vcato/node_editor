@@ -11,7 +11,17 @@ using std::cerr;
 using std::function;
 
 
-static TreeItem posExprItem(Tree &tree)
+static void createXYZChildren(TreeItem &parent_item)
+{
+  using ItemType = TreeItem::Type;
+
+  parent_item.createItem2(ItemType::x);
+  parent_item.createItem2(ItemType::y);
+  parent_item.createItem2(ItemType::z);
+}
+
+
+static TreeItem posExprItem()
 {
   using ItemType = TreeItem::Type;
   TreeItem pos_expr_item(ItemType::pos_expr);
@@ -20,12 +30,12 @@ static TreeItem posExprItem(Tree &tree)
   {
     TreeItem &local_position_item =
       pos_expr_item.createItem2(ItemType::local_position);
-    tree.createXYZChildren(local_position_item);
+    createXYZChildren(local_position_item);
   }
   {
     TreeItem &global_position_item =
       pos_expr_item.createItem2(ItemType::global_position);
-    tree.createXYZChildren(global_position_item);
+    createXYZChildren(global_position_item);
     global_position_item.diagram = fromComponentsDiagram();
   }
 
@@ -33,13 +43,7 @@ static TreeItem posExprItem(Tree &tree)
 }
 
 
-TreeItem Tree::posExprItem()
-{
-  return ::posExprItem(*this);
-}
-
-
-TreeItem Tree::motionPassItem()
+static TreeItem motionPassItem()
 {
   using ItemType = TreeItem::Type;
   TreeItem motion_pass_item(ItemType::motion_pass);
@@ -47,7 +51,7 @@ TreeItem Tree::motionPassItem()
 }
 
 
-TreeItem Tree::sceneItem()
+static TreeItem sceneItem()
 {
   using ItemType = TreeItem::Type;
   TreeItem motion_pass_item(ItemType::scene);
@@ -55,7 +59,7 @@ TreeItem Tree::sceneItem()
 }
 
 
-TreeItem Tree::charmapperItem()
+static TreeItem charmapperItem()
 {
   using ItemType = TreeItem::Type;
   TreeItem motion_pass_item(ItemType::charmapper);
@@ -169,16 +173,6 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
 }
 
 
-void Tree::createXYZChildren(TreeItem &parent_item)
-{
-  using ItemType = TreeItem::Type;
-
-  parent_item.createItem2(ItemType::x);
-  parent_item.createItem2(ItemType::y);
-  parent_item.createItem2(ItemType::z);
-}
-
-
 void Tree::visitOperations(const Path &path,OperationVisitor visitor)
 {
   if (itemType(path)==ItemType::root) {
@@ -217,23 +211,23 @@ void Tree::visitOperations(const Path &path,OperationVisitor visitor)
 }
 
 
-static TreeItem globalPositionComponentsItems(Tree &tree)
+static TreeItem globalPositionComponentsItems()
 {
   TreeItem items(TreeItem::Type::root);
-  tree.createXYZChildren(items);
+  createXYZChildren(items);
   items.diagram = fromComponentsDiagram();
   return items;
 }
 
 
-static TreeItem globalPositionFromBodyItems(Tree &tree)
+static TreeItem globalPositionFromBodyItems()
 {
   TreeItem items(TreeItem::Type::root);
   items.createItem(TreeItem::Type::source_body);
   TreeItem &local_position_item =
     items.createItem2(TreeItem::Type::local_position);
   items.diagram = fromBodyDiagram();
-  tree.createXYZChildren(local_position_item);
+  createXYZChildren(local_position_item);
   return items;
 }
 
@@ -250,14 +244,14 @@ void
       case 0:
         // Components
         {
-          TreeItem items = globalPositionComponentsItems(*this);
+          TreeItem items = globalPositionComponentsItems();
           operation_handler.replaceTreeItems(path,items);
         }
         break;
       case 1:
         // From Body
         {
-          TreeItem items = globalPositionFromBodyItems(*this);
+          TreeItem items = globalPositionFromBodyItems();
           operation_handler.replaceTreeItems(path,items);
         }
         break;
