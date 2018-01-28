@@ -12,9 +12,15 @@ using std::cerr;
 using std::vector;
 using std::istringstream;
 using std::ostream;
+using std::unique_ptr;
+using std::make_unique;
+using std::string;
+using std::function;
+using std::list;
 
 
 QtTreeEditor::QtTreeEditor()
+: operation_handler(*this)
 {
   header()->close();
   setContextMenuPolicy(Qt::CustomContextMenu);
@@ -638,21 +644,23 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 
   if (!widget_item_ptr) {
     QMenu menu;
-    QAction &add_charmapper_action = createAction(menu,"Add Charmapper");
-    QAction &add_scene_action = createAction(menu,"Add Scene");
-    QtSlot add_scene_slot([&](){handleAddScene();});
-    QtSlot add_charmapper_slot([&](){handleAddCharmapper();});
+    list<QtSlot> item_slots;
 
-    add_scene_slot.connect(
-      &add_scene_action,
-      SIGNAL(triggered()),
-      SLOT(slot())
-    );
-    add_charmapper_slot.connect(
-      &add_charmapper_action,
-      SIGNAL(triggered()),
-      SLOT(slot())
-    );
+    auto add_menu_item_for_operation_function =
+      [&](
+        const string &operation_name,
+        function<void(TreeOperationHandler &)> perform_function
+      )
+    {
+      QAction &action = createAction(menu,operation_name);
+      auto perform_operation_function =
+        [perform_function,this](){ perform_function(operation_handler); };
+      item_slots.emplace_back(perform_operation_function);
+      item_slots.back().connect(&action,SIGNAL(triggered()),SLOT(slot()));
+    };
+
+    tree().visitOperations(add_menu_item_for_operation_function);
+
     menu.exec(tree_editor.mapToGlobal(pos));
     return;
   }

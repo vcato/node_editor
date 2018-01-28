@@ -7,6 +7,7 @@
 
 using std::string;
 using std::cerr;
+using std::function;
 
 
 Tree::Tree()
@@ -218,4 +219,28 @@ void Tree::createXYZChildren(TreeItem &parent_item)
   parent_item.createItem2(ItemType::x);
   parent_item.createItem2(ItemType::y);
   parent_item.createItem2(ItemType::z);
+}
+
+
+void
+  Tree::visitOperations(
+    function<
+      void(
+        const string &,
+        function<void (TreeOperationHandler &)> perform_function
+      )> visitor
+  )
+{
+  visitor(
+    "Add Charmapper",
+    [](TreeOperationHandler &handler){
+      handler.addCharmapper();
+    }
+  );
+  visitor(
+    "Add Scene",
+    [](TreeOperationHandler &handler){
+      handler.addScene();
+    }
+  );
 }

@@ -40,6 +40,12 @@ struct TreeItem {
 };
 
 
+struct TreeOperationHandler {
+  virtual void addCharmapper() = 0;
+  virtual void addScene() = 0;
+};
+
+
 class Tree {
   public:
     using Path = std::vector<int>;
@@ -68,6 +74,15 @@ class Tree {
     Diagram &itemDiagram(const Path &);
 
     void createXYZChildren(TreeItem &parent_item);
+
+    using PerformOperationFunction =
+      std::function<void (TreeOperationHandler &)>;
+
+    using OperationName = const std::string;
+    using OperationVisitor =
+      std::function<void(const OperationName &,PerformOperationFunction)>;
+
+    void visitOperations(OperationVisitor visitor);
 
   private:
     using Item = TreeItem;

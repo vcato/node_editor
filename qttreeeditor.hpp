@@ -52,9 +52,29 @@ class QtTreeEditor : public QTreeWidget {
     void addCharmapperTriggered();
 
   private:
+    struct OperationHandler : TreeOperationHandler {
+      QtTreeEditor &tree_editor;
+
+      OperationHandler(QtTreeEditor &tree_editor_arg)
+      : tree_editor(tree_editor_arg)
+      {
+      }
+
+      virtual void addCharmapper()
+      {
+        tree_editor.handleAddCharmapper();
+      }
+
+      virtual void addScene()
+      {
+        tree_editor.handleAddScene();
+      }
+    };
+
     bool ignore_combo_box_signals = false;
     Tree *tree_ptr = 0;
     QtDiagramEditor *diagram_editor_ptr = 0;
+    OperationHandler operation_handler;
 
     Tree &tree();
     QtDiagramEditor &diagramEditor();

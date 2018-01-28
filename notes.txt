@@ -311,4 +311,11 @@ struct WorldTreeItem {
 
 
 ---
-I think the first thing I need to do is change the Tree.
+If adding something to the tree is abstracted, then we have to have some way
+to update the Qt Tree to match.
+
+* Have a callback that indicates something was added to the Tree.
+* Have the tree indicate what items need to be added, and let the QtTreeEditor
+  add the items to both the QTree and the Tree.
+* Performing an operation on the tree returns a list of changes that were
+  made to the tree.
