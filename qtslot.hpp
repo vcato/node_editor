@@ -8,6 +8,11 @@ class QtSlot : public QObject {
   public:
     QtSlot(std::function<void()> function_arg);
 
+    void connectSignal(QObject &object,const char *signal)
+    {
+      connect(&object,signal,SLOT(slot()));
+    }
+
   public slots:
     void slot();
 

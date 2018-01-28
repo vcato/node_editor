@@ -448,13 +448,9 @@ diagram {
 }
 
 
-void QtTreeEditor::handleAddPosExpr()
+void QtTreeEditor::handleAddPosExpr(const TreePath &parent_path)
 {
-  QTreeWidgetItem *parent_item_ptr = findSelectedItem();
-  assert(parent_item_ptr);
   using ItemType = TreeItem::Type;
-
-  TreePath parent_path = itemPath(*parent_item_ptr);
   TreeItem pos_expr_item(ItemType::pos_expr);
   pos_expr_item.createItem2(ItemType::target_body);
   pos_expr_item.diagram = posExprDiagram();
@@ -473,22 +469,13 @@ void QtTreeEditor::handleAddPosExpr()
 }
 
 
-void QtTreeEditor::handleAddPass()
+void QtTreeEditor::handleAddPass(const TreePath &selected_item_path)
 {
-  QTreeWidgetItem *selected_item_ptr = findSelectedItem();
-
-  if (!selected_item_ptr) {
-    cerr << "addPassTriggered: No selected item!\n";
-    return;
-  }
-
-  Tree::Path selected_item_path = itemPath(*selected_item_ptr);
-
   Tree::Path motion_pass_item_path =
     tree().createMotionPassItem(selected_item_path);
 
   assert(tree().isMotionPassItem(motion_pass_item_path));
-  treeEditor().createItem(*selected_item_ptr,"Motion Pass");
+  treeEditor().createItem(itemFromPath(selected_item_path),"Motion Pass");
 }
 
 
@@ -656,7 +643,7 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
       auto perform_operation_function =
         [perform_function,this](){ perform_function(operation_handler); };
       item_slots.emplace_back(perform_operation_function);
-      item_slots.back().connect(&action,SIGNAL(triggered()),SLOT(slot()));
+      item_slots.back().connectSignal(action,SIGNAL(triggered()));
     };
 
     tree().visitOperations(add_menu_item_for_operation_function);
@@ -670,7 +657,8 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   if (tree().isCharmapperItem(path)) {
     QMenu menu;
     QAction &add_pass_action = createAction(menu,"Add Motion Pass");
-    connect(&add_pass_action,SIGNAL(triggered()),SLOT(addPassTriggered()));
+    QtSlot slot([this,path](){handleAddPass(path);});
+    slot.connectSignal(add_pass_action,SIGNAL(triggered()));
     menu.exec(tree_editor.mapToGlobal(pos));
     return;
   }
@@ -678,9 +666,8 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   if (tree().isMotionPassItem(path)) {
     QMenu menu;
     QAction &add_pos_expr_action = createAction(menu,"Add Pos Expr");
-    connect(
-      &add_pos_expr_action,SIGNAL(triggered()),SLOT(addPosExprTriggered())
-    );
+    QtSlot slot([this,path](){ handleAddPosExpr(path); });
+    slot.connectSignal(add_pos_expr_action,SIGNAL(triggered()));
     menu.exec(tree_editor.mapToGlobal(pos));
     return;
   }
@@ -694,18 +681,6 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
 {
   prepareMenu(pos);
-}
-
-
-void QtTreeEditor::addPosExprTriggered()
-{
-  handleAddPosExpr();
-}
-
-
-void QtTreeEditor::addPassTriggered()
-{
-  handleAddPass();
 }
 
 

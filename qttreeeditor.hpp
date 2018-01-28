@@ -46,8 +46,6 @@ class QtTreeEditor : public QTreeWidget {
     void comboBoxItemCurrentIndexChangedSlot(QtComboBoxTreeWidgetItem *,int);
     void itemSelectionChangedSlot();
     void prepareMenuSlot(const QPoint &pos);
-    void addPosExprTriggered();
-    void addPassTriggered();
 
   private:
     struct OperationHandler : TreeOperationHandler {
@@ -123,8 +121,8 @@ class QtTreeEditor : public QTreeWidget {
         int index
       );
 
-    void handleAddPosExpr();
-    void handleAddPass();
+    void handleAddPosExpr(const TreePath &parent_path);
+    void handleAddPass(const TreePath &selected_item_path);
     void handleAddScene();
     void handleAddCharmapper();
     void removeChildItems(const TreePath &path);
