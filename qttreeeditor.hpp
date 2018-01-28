@@ -95,14 +95,10 @@ class QtTreeEditor : public QTreeWidget {
       return widget;
     }
 
-    QTreeWidgetItem& createItem(const std::string &label);
-
     static QTreeWidgetItem&
       createItem(QTreeWidgetItem &parent_item,const std::string &label);
 
     static QTreeWidgetItem& createItem(QTreeWidgetItem &parent_item);
-
-    QTreeWidgetItem& createItem();
 
     static void setItemText(QTreeWidgetItem &item,const std::string &label);
 

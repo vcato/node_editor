@@ -49,14 +49,6 @@ void
 }
 
 
-QTreeWidgetItem& QtTreeEditor::createItem(const std::string &label)
-{
-  QTreeWidgetItem &item = createItem();
-  setItemText(item,label);
-  return item;
-}
-
-
 QTreeWidgetItem&
   QtTreeEditor::createItem(
     QTreeWidgetItem &parent_item,
@@ -76,16 +68,6 @@ QTreeWidgetItem& QtTreeEditor::createItem(QTreeWidgetItem &parent_item)
   QTreeWidgetItem &item = *item_ptr;
   item.setExpanded(true);
   return item;
-}
-
-
-QTreeWidgetItem& QtTreeEditor::createItem()
-{
-  QTreeWidget &tree_widget = *this;
-  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
-  tree_widget.addTopLevelItem(item_ptr);
-  item_ptr->setExpanded(true);
-  return *item_ptr;
 }
 
 
