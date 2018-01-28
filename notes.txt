@@ -319,3 +319,5 @@ to update the Qt Tree to match.
   add the items to both the QTree and the Tree.
 * Performing an operation on the tree returns a list of changes that were
   made to the tree.
+---
+We still need Tree::isGlobalPositionItem().  Why?

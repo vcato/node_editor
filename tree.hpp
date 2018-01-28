@@ -57,9 +57,6 @@ class Tree {
     Path createItem(const Path &parent_path,Item::Type type);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
-    bool isCharmapperItem(const Path &path) const;
-    bool isMotionPassItem(const Path &path) const;
-    bool isSceneItem(const Path &path) const;
     bool isGlobalPositionItem(const Path &path) const;
     Diagram &itemDiagram(const Path &);
 

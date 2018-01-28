@@ -135,24 +135,6 @@ auto TreeItem::getItem(const Path &path,int depth) const -> const TreeItem &
 }
 
 
-bool Tree::isCharmapperItem(const Path &path) const
-{
-  return itemType(path)==ItemType::charmapper;
-}
-
-
-bool Tree::isMotionPassItem(const Path &path) const
-{
-  return itemType(path)==ItemType::motion_pass;
-}
-
-
-bool Tree::isSceneItem(const Path &path) const
-{
-  return itemType(path)==ItemType::scene;
-}
-
-
 bool Tree::isGlobalPositionItem(const Path &path) const
 {
   return itemType(path)==ItemType::global_position;
