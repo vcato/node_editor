@@ -48,8 +48,6 @@ class QtTreeEditor : public QTreeWidget {
     void prepareMenuSlot(const QPoint &pos);
     void addPosExprTriggered();
     void addPassTriggered();
-    void addSceneTriggered();
-    void addCharmapperTriggered();
 
   private:
     struct OperationHandler : TreeOperationHandler {

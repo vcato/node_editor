@@ -709,18 +709,6 @@ void QtTreeEditor::addPassTriggered()
 }
 
 
-void QtTreeEditor::addSceneTriggered()
-{
-  handleAddScene();
-}
-
-
-void QtTreeEditor::addCharmapperTriggered()
-{
-  handleAddCharmapper();
-}
-
-
 void QtTreeEditor::selectItem(const TreePath &path)
 {
   itemFromPath(path).setSelected(true);
