@@ -319,3 +319,16 @@ to update the Qt Tree to match.
   add the items to both the QTree and the Tree.
 * Performing an operation on the tree returns a list of changes that were
   made to the tree.
+---
+I was thinking of not having an actual tree structure in the Tree, but
+just having it reflect what is in the world, however we still need a place
+to keep the diagrams.
+---
+Need to have a way for TreeItems not to have to have an explicit enumeration of
+item types.
+
+We should probably have derived classes for differnet kinds of items.
+
+Tree::createItem() should take an Item instead of an ItemType.
+That will allow the users to avoid having to assume that there is an
+enumeration for the type.

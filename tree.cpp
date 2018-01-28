@@ -11,11 +11,12 @@ using std::cerr;
 using std::function;
 using std::vector;
 
+using ItemType = TreeItem::Type;
+using Path = Tree::Path;
+
 
 static void createXYZChildren(TreeItem &parent_item)
 {
-  using ItemType = TreeItem::Type;
-
   parent_item.createItem2(ItemType::x);
   parent_item.createItem2(ItemType::y);
   parent_item.createItem2(ItemType::z);
@@ -24,7 +25,6 @@ static void createXYZChildren(TreeItem &parent_item)
 
 static TreeItem posExprItem()
 {
-  using ItemType = TreeItem::Type;
   TreeItem pos_expr_item(ItemType::pos_expr);
   pos_expr_item.createItem2(ItemType::target_body);
   pos_expr_item.diagram = posExprDiagram();
@@ -46,25 +46,25 @@ static TreeItem posExprItem()
 
 static TreeItem motionPassItem()
 {
-  using ItemType = TreeItem::Type;
-  TreeItem motion_pass_item(ItemType::motion_pass);
-  return motion_pass_item;
+  return TreeItem(ItemType::motion_pass);
 }
 
 
 static TreeItem sceneItem()
 {
-  using ItemType = TreeItem::Type;
-  TreeItem motion_pass_item(ItemType::scene);
-  return motion_pass_item;
+  return TreeItem(ItemType::scene);
 }
 
 
 static TreeItem charmapperItem()
 {
-  using ItemType = TreeItem::Type;
-  TreeItem motion_pass_item(ItemType::charmapper);
-  return motion_pass_item;
+  return TreeItem(ItemType::charmapper);
+}
+
+
+static TreeItem bodyItem()
+{
+  return TreeItem(ItemType::body);
 }
 
 
@@ -74,9 +74,9 @@ Tree::Tree()
 }
 
 
-auto Tree::createItem(const Path &parent_path,ItemType type) -> Path
+Path Tree::createItem(const Path &parent_path,const Item &item)
 {
-  return join(parent_path,getItem(parent_path).createItem(type));
+  return join(parent_path,getItem(parent_path).createItem(item));
 }
 
 
@@ -113,10 +113,10 @@ TreeItem::TreeItem(Type type_arg)
 }
 
 
-auto TreeItem::createItem(Type type) -> Index
+auto TreeItem::createItem(const TreeItem &item) -> Index
 {
   Index result = child_items.size();
-  child_items.push_back(TreeItem(type));
+  child_items.push_back(item);
   return result;
 }
 
@@ -176,7 +176,9 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
 
 void Tree::visitOperations(const Path &path,OperationVisitor visitor)
 {
-  if (itemType(path)==ItemType::root) {
+  ItemType item_type = itemType(path);
+
+  if (item_type==ItemType::root) {
     visitor(
       "Add Charmapper",
       [path,this](TreeOperationHandler &handler){
@@ -186,11 +188,13 @@ void Tree::visitOperations(const Path &path,OperationVisitor visitor)
     visitor(
       "Add Scene",
       [path,this](TreeOperationHandler &handler){
+        assert(_world_ptr);
+        _world_ptr->addScene();
         handler.addItem(path,sceneItem());
       }
     );
   }
-  else if (itemType(path)==ItemType::charmapper) {
+  else if (item_type==ItemType::charmapper) {
     visitor(
       "Add Motion Pass",
       [path,this](TreeOperationHandler &handler){
@@ -198,11 +202,19 @@ void Tree::visitOperations(const Path &path,OperationVisitor visitor)
       }
     );
   }
-  else if (itemType(path)==ItemType::motion_pass) {
+  else if (item_type==ItemType::motion_pass) {
     visitor(
       "Add Pos Expr",
       [path,this](TreeOperationHandler &handler){
         handler.addItem(path,posExprItem());
+      }
+    );
+  }
+  else if (item_type==ItemType::scene) {
+    visitor(
+      "Add Body",
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,bodyItem());
       }
     );
   }
@@ -307,6 +319,9 @@ void Tree::visitItem(const Item &item,const ItemVisitor &visitor)
       break;
     case TreeItem::Type::charmapper:
       visitor.voidItem("Charmapper");
+      break;
+    case TreeItem::Type::body:
+      visitor.voidItem("Body");
       break;
     default:
       assert(false);

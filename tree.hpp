@@ -15,6 +15,7 @@ struct TreeItem {
     root,
     charmapper,
     scene,
+    body,
     motion_pass,
     pos_expr,
     target_body,
@@ -35,8 +36,13 @@ struct TreeItem {
 
   const TreeItem &getItem(const Path &,int depth) const;
 
-  Index createItem(Type type);
+  Index createItem(const TreeItem &item);
   TreeItem& createItem2(Type type);
+};
+
+
+struct WorldInterface {
+  virtual void addScene() = 0;
 };
 
 
@@ -78,7 +84,8 @@ class Tree {
 
     Tree();
 
-    Path createItem(const Path &parent_path,Item::Type type);
+    void setWorldPtr(WorldInterface *arg) { _world_ptr = arg; }
+    Path createItem(const Path &parent_path,const Item &);
     void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
@@ -93,6 +100,7 @@ class Tree {
     const Item &getItem(const Path &) const;
     ItemType itemType(const Path &) const;
 
+    WorldInterface *_world_ptr = nullptr;
     Item _root_node;
 };
 

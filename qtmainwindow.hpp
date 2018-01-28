@@ -9,6 +9,7 @@ class QtMainWindow : public QMainWindow {
 
   public:
     QtMainWindow();
+    void setWorldPtr(WorldInterface *);
 
   private:
     QMenu menu{"Tools"};

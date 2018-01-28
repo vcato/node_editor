@@ -25,6 +25,16 @@ Widget& createWidget(QLayout &layout)
 
 
 template <typename Widget>
+Widget& createWidget(QWidget &parent_widget)
+{
+  Widget *widget_ptr = new Widget(&parent_widget);
+  assert(widget_ptr);
+  return *widget_ptr;
+}
+
+
+
+template <typename Widget>
 Widget& createWidget(QSplitter &splitter)
 {
   Widget *widget_ptr = new Widget;

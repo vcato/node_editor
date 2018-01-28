@@ -38,3 +38,9 @@ QtMainWindow::QtMainWindow()
   diagram_editor_ptr = &createWidget<QtDiagramEditor>(splitter,/*stretch*/1);
   tree_editor.setDiagramEditorPtr(diagram_editor_ptr);
 }
+
+
+void QtMainWindow::setWorldPtr(WorldInterface *world_ptr_arg)
+{
+  tree.setWorldPtr(world_ptr_arg);
+}
