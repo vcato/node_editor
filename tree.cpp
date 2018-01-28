@@ -135,12 +135,6 @@ auto TreeItem::getItem(const Path &path,int depth) const -> const TreeItem &
 }
 
 
-bool Tree::isGlobalPositionItem(const Path &path) const
-{
-  return itemType(path)==ItemType::global_position;
-}
-
-
 auto Tree::getItem(const Path &path) -> Item&
 {
   const Tree &const_self = *this;
@@ -219,5 +213,56 @@ void Tree::visitOperations(const Path &path,OperationVisitor visitor)
   }
   else {
     cerr << "Tree::visitOperations: unknown item type\n";
+  }
+}
+
+
+static TreeItem globalPositionComponentsItems(Tree &tree)
+{
+  TreeItem items(TreeItem::Type::root);
+  tree.createXYZChildren(items);
+  items.diagram = fromComponentsDiagram();
+  return items;
+}
+
+
+static TreeItem globalPositionFromBodyItems(Tree &tree)
+{
+  TreeItem items(TreeItem::Type::root);
+  items.createItem(TreeItem::Type::source_body);
+  TreeItem &local_position_item =
+    items.createItem2(TreeItem::Type::local_position);
+  items.diagram = fromBodyDiagram();
+  tree.createXYZChildren(local_position_item);
+  return items;
+}
+
+
+void
+  Tree::comboBoxItemIndexChanged(
+    const Path &path,
+    int index,
+    OperationHandler &operation_handler
+  )
+{
+  if (itemType(path)==TreeItem::Type::global_position) {
+    switch (index) {
+      case 0:
+        // Components
+        {
+          TreeItem items = globalPositionComponentsItems(*this);
+          operation_handler.replaceTreeItems(path,items);
+        }
+        break;
+      case 1:
+        // From Body
+        {
+          TreeItem items = globalPositionFromBodyItems(*this);
+          operation_handler.replaceTreeItems(path,items);
+        }
+        break;
+      default:
+        assert(false);
+    }
   }
 }

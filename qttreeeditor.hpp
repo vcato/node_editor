@@ -61,6 +61,11 @@ class QtTreeEditor : public QTreeWidget {
       {
         tree_editor.addTreeItem(path,item);
       }
+
+      virtual void replaceTreeItems(const TreePath &path,const TreeItem &items)
+      {
+        tree_editor.replaceTreeItems(path,items);
+      }
     };
 
     bool ignore_combo_box_signals = false;

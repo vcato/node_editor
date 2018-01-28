@@ -50,14 +50,16 @@ class Tree {
 
     struct OperationHandler {
       virtual void addItem(const Path &,const TreeItem &) = 0;
+      virtual void
+        replaceTreeItems(const Path &path,const TreeItem &items) = 0;
     };
 
 
     Tree();
     Path createItem(const Path &parent_path,Item::Type type);
+    void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
-    bool isGlobalPositionItem(const Path &path) const;
     Diagram &itemDiagram(const Path &);
 
     void createXYZChildren(TreeItem &parent_item);

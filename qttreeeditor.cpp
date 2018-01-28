@@ -279,6 +279,8 @@ void
 {
   removeChildItems(parent_path);
   addTreeItems(parent_path,tree_items);
+  tree().itemDiagram(parent_path) = tree_items.diagram;
+  diagramEditor().redraw();
 }
 
 
@@ -305,37 +307,8 @@ void
   assert(item_ptr);
 
   Tree::Path path = itemPath(*item_ptr);
-  Tree &tree = this->tree();
 
-  if (tree.isGlobalPositionItem(path)) {
-    switch (index) {
-      case 0:
-        // Components
-        {
-          TreeItem items(TreeItem::Type::root);
-          tree.createXYZChildren(items);
-          replaceTreeItems(path,items);
-          tree.itemDiagram(path) = fromComponentsDiagram();
-          diagramEditor().redraw();
-        }
-        break;
-      case 1:
-        // From Body
-        {
-          TreeItem items(TreeItem::Type::root);
-          items.createItem(TreeItem::Type::source_body);
-          TreeItem &local_position_item =
-            items.createItem2(TreeItem::Type::local_position);
-          tree.createXYZChildren(local_position_item);
-          replaceTreeItems(path,items);
-          tree.itemDiagram(path) = fromBodyDiagram();
-          diagramEditor().redraw();
-        }
-        break;
-      default:
-        assert(false);
-    }
-  }
+  tree().comboBoxItemIndexChanged(path,index,operation_handler);
 }
 
 
