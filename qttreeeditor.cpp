@@ -7,10 +7,11 @@
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
 #include "qtslot.hpp"
+#include "defaultdiagrams.hpp"
+
 
 using std::cerr;
 using std::vector;
-using std::istringstream;
 using std::ostream;
 using std::unique_ptr;
 using std::make_unique;
@@ -274,68 +275,6 @@ std::vector<int> QtTreeEditor::itemPath(QTreeWidgetItem &item)
 }
 
 
-static Diagram makeDiagram(const char *text)
-{
-  istringstream stream(text);
-  Diagram diagram;
-  scanDiagramFrom(stream,diagram);
-  return diagram;
-}
-
-
-static Diagram fromComponentsDiagram()
-{
-  const char *text =
-    "diagram {\n"
-    "  node {\n"
-    "    id: 1\n"
-    "    position: [71,280]\n"
-    "    text {\n"
-    "      \"x\"\n"
-    "      \"y\"\n"
-    "      \"z\"\n"
-    "    }\n"
-    "  }\n"
-    "  node {\n"
-    "    id: 2\n"
-    "    position: [183,280]\n"
-    "    text {\n"
-    "      \"[$,$,$]\"\n"
-    "    }\n"
-    "    connection {\n"
-    "      input_index: 0\n"
-    "      source_node_id: 1\n"
-    "      source_output_index: 0\n"
-    "    }\n"
-    "    connection {\n"
-    "      input_index: 1\n"
-    "      source_node_id: 1\n"
-    "      source_output_index: 1\n"
-    "    }\n"
-    "    connection {\n"
-    "      input_index: 2\n"
-    "      source_node_id: 1\n"
-    "      source_output_index: 2\n"
-    "    }\n"
-    "  }\n"
-    "  node {\n"
-    "    id: 4\n"
-    "    position: [331,249]\n"
-    "    text {\n"
-    "      \"return $\"\n"
-    "    }\n"
-    "    connection {\n"
-    "      input_index: 0\n"
-    "      source_node_id: 2\n"
-    "      source_output_index: 0\n"
-    "    }\n"
-    "  }\n"
-    "}\n";
-
-  return makeDiagram(text);
-}
-
-
 void QtTreeEditor::removeChildItems(const TreePath &path)
 {
   tree().removeChildItems(path);
@@ -359,96 +298,7 @@ void
 }
 
 
-static Diagram posExprDiagram()
-{
-  const char *text = R"text(
-diagram {
-  node {
-    id: 4
-    position: [485,153]
-    text {
-      "$-$"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 5
-      source_output_index: 0
-    }
-    connection {
-      input_index: 1
-      source_node_id: 7
-      source_output_index: 0
-    }
-  }
-  node {
-    id: 5
-    position: [266,183]
-    text {
-      "global_position"
-    }
-  }
-  node {
-    id: 7
-    position: [274,108]
-    text {
-      "$.globalVec($)"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 8
-      source_output_index: 0
-    }
-    connection {
-      input_index: 1
-      source_node_id: 8
-      source_output_index: 1
-    }
-  }
-  node {
-    id: 8
-    position: [59,158]
-    text {
-      "target_body"
-      "local_position"
-    }
-  }
-  node {
-    id: 10
-    position: [559,233]
-    text {
-      "$.pos=$"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 13
-      source_output_index: 0
-    }
-    connection {
-      input_index: 1
-      source_node_id: 4
-      source_output_index: 0
-    }
-  }
-  node {
-    id: 13
-    position: [283,233]
-    text {
-      "$"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 8
-      source_output_index: 0
-    }
-  }
-}
-)text";
-
-  return makeDiagram(text);
-}
-
-
-void QtTreeEditor::handleAddPosExpr(const TreePath &parent_path)
+TreeItem QtTreeEditor::posExprItem()
 {
   using ItemType = TreeItem::Type;
   TreeItem pos_expr_item(ItemType::pos_expr);
@@ -465,11 +315,18 @@ void QtTreeEditor::handleAddPosExpr(const TreePath &parent_path)
     tree().createXYZChildren(global_position_item);
     global_position_item.diagram = fromComponentsDiagram();
   }
-  addTreeItem(parent_path,pos_expr_item);
+
+  return pos_expr_item;
 }
 
 
-void QtTreeEditor::handleAddPass(const TreePath &selected_item_path)
+void QtTreeEditor::handleAddPosExpr(const TreePath &parent_path)
+{
+  addTreeItem(parent_path,posExprItem());
+}
+
+
+void QtTreeEditor::handleAddMotionPass(const TreePath &selected_item_path)
 {
   Tree::Path motion_pass_item_path =
     tree().createMotionPassItem(selected_item_path);
@@ -502,54 +359,6 @@ QTreeWidgetItem* QtTreeEditor::findSelectedItem()
   }
 
   return items.front();
-}
-
-
-static Diagram fromBodyDiagram()
-{
-  const char *text = R"text(
-diagram {
-  node {
-    id: 1
-    position: [263,328]
-    text {
-      "$.pos($)"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 5
-      source_output_index: 0
-    }
-    connection {
-      input_index: 1
-      source_node_id: 5
-      source_output_index: 1
-    }
-  }
-  node {
-    id: 4
-    position: [410,313]
-    text {
-      "return $"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 1
-      source_output_index: 0
-    }
-  }
-  node {
-    id: 5
-    position: [50,328]
-    text {
-      "source_body"
-      "local_position"
-    }
-  }
-}
-)text";
-
-  return makeDiagram(text);
 }
 
 

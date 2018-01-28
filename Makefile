@@ -21,7 +21,7 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   tree.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
   qtcomboboxtreewidgetitemsignalmap.o qtmenu.o \
   moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
-  moc_qtdiagrameditor.o qtslot.o moc_qtslot.o
+  moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp

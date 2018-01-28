@@ -69,7 +69,7 @@ class QtTreeEditor : public QTreeWidget {
 
       virtual void addMotionPass(const TreePath &path)
       {
-        tree_editor.handleAddPass(path);
+        tree_editor.handleAddMotionPass(path);
       }
 
       virtual void addPosExpr(const TreePath &path)
@@ -138,8 +138,10 @@ class QtTreeEditor : public QTreeWidget {
         int index
       );
 
+    TreeItem posExprItem();
+
     void handleAddPosExpr(const TreePath &parent_path);
-    void handleAddPass(const TreePath &selected_item_path);
+    void handleAddMotionPass(const TreePath &selected_item_path);
     void handleAddScene();
     void handleAddCharmapper();
     void removeChildItems(const TreePath &path);
