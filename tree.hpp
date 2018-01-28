@@ -47,16 +47,13 @@ class Tree {
     using SizeType = int;
 
     struct OperationHandler {
-      virtual void addCharmapper() = 0;
-      virtual void addScene() = 0;
-      virtual void addMotionPass(const Path &) = 0;
-      virtual void addPosExpr(const Path &) = 0;
+      virtual void addItem(const Path &,const TreeItem &) = 0;
     };
 
 
     Tree();
-    Path createCharmapperItem();
-    Path createSceneItem();
+    Path createCharmapperItem(const Path &);
+    Path createSceneItem(const Path &);
     Path createMotionPassItem(const Path &);
     Path createPosExprItem(const Path &);
     Path createTargetBodyItem(const Path &);
@@ -85,6 +82,10 @@ class Tree {
       std::function<void(const OperationName &,PerformOperationFunction)>;
 
     void visitOperations(const Path &,OperationVisitor visitor);
+    TreeItem posExprItem();
+    TreeItem motionPassItem();
+    TreeItem sceneItem();
+    TreeItem charmapperItem();
 
   private:
     using Item = TreeItem;

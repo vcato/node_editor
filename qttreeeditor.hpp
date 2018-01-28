@@ -57,24 +57,9 @@ class QtTreeEditor : public QTreeWidget {
       {
       }
 
-      virtual void addCharmapper()
+      virtual void addItem(const TreePath &path,const TreeItem &item)
       {
-        tree_editor.handleAddCharmapper();
-      }
-
-      virtual void addScene()
-      {
-        tree_editor.handleAddScene();
-      }
-
-      virtual void addMotionPass(const TreePath &path)
-      {
-        tree_editor.handleAddMotionPass(path);
-      }
-
-      virtual void addPosExpr(const TreePath &path)
-      {
-        tree_editor.handleAddPosExpr(path);
+        tree_editor.addTreeItem(path,item);
       }
     };
 
@@ -138,12 +123,6 @@ class QtTreeEditor : public QTreeWidget {
         int index
       );
 
-    TreeItem posExprItem();
-
-    void handleAddPosExpr(const TreePath &parent_path);
-    void handleAddMotionPass(const TreePath &selected_item_path);
-    void handleAddScene();
-    void handleAddCharmapper();
     void removeChildItems(const TreePath &path);
 
     void

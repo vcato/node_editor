@@ -59,7 +59,8 @@ diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 tree_test: tree_test.o tree.o diagram.o diagramnode.o linetext.o \
-  statementtext.o stringutil.o diagramevaluation.o
+  statementtext.o stringutil.o diagramevaluation.o defaultdiagrams.o \
+  diagramio.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

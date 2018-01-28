@@ -3,11 +3,64 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include "defaultdiagrams.hpp"
 
 
 using std::string;
 using std::cerr;
 using std::function;
+
+
+static TreeItem posExprItem(Tree &tree)
+{
+  using ItemType = TreeItem::Type;
+  TreeItem pos_expr_item(ItemType::pos_expr);
+  pos_expr_item.createItem2(ItemType::target_body);
+  pos_expr_item.diagram = posExprDiagram();
+  {
+    TreeItem &local_position_item =
+      pos_expr_item.createItem2(ItemType::local_position);
+    tree.createXYZChildren(local_position_item);
+  }
+  {
+    TreeItem &global_position_item =
+      pos_expr_item.createItem2(ItemType::global_position);
+    tree.createXYZChildren(global_position_item);
+    global_position_item.diagram = fromComponentsDiagram();
+  }
+
+  return pos_expr_item;
+}
+
+
+TreeItem Tree::posExprItem()
+{
+  return ::posExprItem(*this);
+}
+
+
+TreeItem Tree::motionPassItem()
+{
+  using ItemType = TreeItem::Type;
+  TreeItem motion_pass_item(ItemType::motion_pass);
+  return motion_pass_item;
+}
+
+
+TreeItem Tree::sceneItem()
+{
+  using ItemType = TreeItem::Type;
+  TreeItem motion_pass_item(ItemType::scene);
+  return motion_pass_item;
+}
+
+
+TreeItem Tree::charmapperItem()
+{
+  using ItemType = TreeItem::Type;
+  TreeItem motion_pass_item(ItemType::charmapper);
+  return motion_pass_item;
+}
 
 
 Tree::Tree()
@@ -16,15 +69,15 @@ Tree::Tree()
 }
 
 
-auto Tree::createCharmapperItem() -> Path
+auto Tree::createCharmapperItem(const Path &parent_path) -> Path
 {
-  return createItem({},ItemType::charmapper);
+  return createItem(parent_path,ItemType::charmapper);
 }
 
 
-auto Tree::createSceneItem() -> Path
+auto Tree::createSceneItem(const Path &parent_path) -> Path
 {
-  return createItem({},ItemType::scene);
+  return createItem(parent_path,ItemType::scene);
 }
 
 
@@ -235,30 +288,30 @@ void
   if (itemType(path)==ItemType::root) {
     visitor(
       "Add Charmapper",
-      [](TreeOperationHandler &handler){
-        handler.addCharmapper();
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,charmapperItem());
       }
     );
     visitor(
       "Add Scene",
-      [](TreeOperationHandler &handler){
-        handler.addScene();
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,sceneItem());
       }
     );
   }
   else if (itemType(path)==ItemType::charmapper) {
     visitor(
       "Add Motion Pass",
-      [path](TreeOperationHandler &handler){
-        handler.addMotionPass(path);
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,motionPassItem());
       }
     );
   }
   else if (itemType(path)==ItemType::motion_pass) {
     visitor(
       "Add Pos Expr",
-      [path](TreeOperationHandler &handler){
-        handler.addPosExpr(path);
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,posExprItem());
       }
     );
   }

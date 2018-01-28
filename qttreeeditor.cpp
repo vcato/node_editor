@@ -206,6 +206,24 @@ void
         tree_widget.createItem(parent_item,"Pos Expr");
       }
       break;
+    case TreeItem::Type::motion_pass:
+      {
+        new_item_path = tree.createMotionPassItem(parent_path);
+        tree_widget.createItem(parent_item,"Motion Pass");
+      }
+      break;
+    case TreeItem::Type::scene:
+      {
+        new_item_path = tree.createSceneItem(parent_path);
+        tree_widget.createItem(parent_item,"Scene");
+      }
+      break;
+    case TreeItem::Type::charmapper:
+      {
+        new_item_path = tree.createCharmapperItem(parent_path);
+        tree_widget.createItem(parent_item,"Charmapper");
+      }
+      break;
     default:
       assert(false);
   }
@@ -219,8 +237,14 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 {
   const QtTreeEditor &tree_widget = *this;
   int path_length = path.size();
-  QTreeWidgetItem *item_ptr = tree_widget.topLevelItem(path[0]);
+
+  if (path_length==0) {
+    assert(tree_widget.invisibleRootItem());
+    return *tree_widget.invisibleRootItem();
+  }
+
   assert(path_length>0);
+  QTreeWidgetItem *item_ptr = tree_widget.topLevelItem(path[0]);
 
   int i = 1;
   while (i!=path_length) {
@@ -295,58 +319,6 @@ void
 {
   removeChildItems(parent_path);
   addTreeItems(parent_path,tree_items);
-}
-
-
-TreeItem QtTreeEditor::posExprItem()
-{
-  using ItemType = TreeItem::Type;
-  TreeItem pos_expr_item(ItemType::pos_expr);
-  pos_expr_item.createItem2(ItemType::target_body);
-  pos_expr_item.diagram = posExprDiagram();
-  {
-    TreeItem &local_position_item =
-      pos_expr_item.createItem2(ItemType::local_position);
-    tree().createXYZChildren(local_position_item);
-  }
-  {
-    TreeItem &global_position_item =
-      pos_expr_item.createItem2(ItemType::global_position);
-    tree().createXYZChildren(global_position_item);
-    global_position_item.diagram = fromComponentsDiagram();
-  }
-
-  return pos_expr_item;
-}
-
-
-void QtTreeEditor::handleAddPosExpr(const TreePath &parent_path)
-{
-  addTreeItem(parent_path,posExprItem());
-}
-
-
-void QtTreeEditor::handleAddMotionPass(const TreePath &selected_item_path)
-{
-  Tree::Path motion_pass_item_path =
-    tree().createMotionPassItem(selected_item_path);
-
-  assert(tree().isMotionPassItem(motion_pass_item_path));
-  treeEditor().createItem(itemFromPath(selected_item_path),"Motion Pass");
-}
-
-
-void QtTreeEditor::handleAddScene()
-{
-  tree().createSceneItem();
-  treeEditor().createItem("Scene");
-}
-
-
-void QtTreeEditor::handleAddCharmapper()
-{
-  tree().createCharmapperItem();
-  treeEditor().createItem("Charmapper");
 }
 
 
