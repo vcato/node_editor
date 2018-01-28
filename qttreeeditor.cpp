@@ -624,57 +624,47 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
+function<
+  void(
+    const string &operation_name,
+    function<void(TreeOperationHandler &)> perform_function
+  )
+> QtTreeEditor::addMenuItemForOperationFunction(
+    QMenu &menu,
+    list<QtSlot> &item_slots
+  )
+{
+  return [&](
+    const string &operation_name,
+    function<void(TreeOperationHandler &)> perform_function
+  )
+  {
+    QAction &action = createAction(menu,operation_name);
+    auto perform_operation_function =
+      [perform_function,this](){ perform_function(operation_handler); };
+    item_slots.emplace_back(perform_operation_function);
+    item_slots.back().connectSignal(action,SIGNAL(triggered()));
+  };
+}
+
+
 void QtTreeEditor::prepareMenu(const QPoint &pos)
 {
   QtTreeEditor &tree_editor = treeEditor();
   QTreeWidgetItem *widget_item_ptr = tree_editor.itemAt(pos);
+  TreePath path;
 
-  if (!widget_item_ptr) {
-    QMenu menu;
-    list<QtSlot> item_slots;
-
-    auto add_menu_item_for_operation_function =
-      [&](
-        const string &operation_name,
-        function<void(TreeOperationHandler &)> perform_function
-      )
-    {
-      QAction &action = createAction(menu,operation_name);
-      auto perform_operation_function =
-        [perform_function,this](){ perform_function(operation_handler); };
-      item_slots.emplace_back(perform_operation_function);
-      item_slots.back().connectSignal(action,SIGNAL(triggered()));
-    };
-
-    tree().visitOperations(add_menu_item_for_operation_function);
-
-    menu.exec(tree_editor.mapToGlobal(pos));
-    return;
+  if (widget_item_ptr) {
+    path = itemPath(*widget_item_ptr);
   }
 
-  Tree::Path path = itemPath(*widget_item_ptr);
-
-  if (tree().isCharmapperItem(path)) {
-    QMenu menu;
-    QAction &add_pass_action = createAction(menu,"Add Motion Pass");
-    QtSlot slot([this,path](){handleAddPass(path);});
-    slot.connectSignal(add_pass_action,SIGNAL(triggered()));
-    menu.exec(tree_editor.mapToGlobal(pos));
-    return;
-  }
-
-  if (tree().isMotionPassItem(path)) {
-    QMenu menu;
-    QAction &add_pos_expr_action = createAction(menu,"Add Pos Expr");
-    QtSlot slot([this,path](){ handleAddPosExpr(path); });
-    slot.connectSignal(add_pos_expr_action,SIGNAL(triggered()));
-    menu.exec(tree_editor.mapToGlobal(pos));
-    return;
-  }
-
-  if (tree().isSceneItem(path)) {
-    cerr << "Scene item\n";
-  }
+  QMenu menu;
+  list<QtSlot> item_slots;
+  tree().visitOperations(
+    path,
+    addMenuItemForOperationFunction(menu,item_slots)
+  );
+  menu.exec(tree_editor.mapToGlobal(pos));
 }
 
 

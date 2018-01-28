@@ -40,17 +40,19 @@ struct TreeItem {
 };
 
 
-struct TreeOperationHandler {
-  virtual void addCharmapper() = 0;
-  virtual void addScene() = 0;
-};
-
-
 class Tree {
   public:
     using Path = std::vector<int>;
     using Index = int;
     using SizeType = int;
+
+    struct OperationHandler {
+      virtual void addCharmapper() = 0;
+      virtual void addScene() = 0;
+      virtual void addMotionPass(const Path &) = 0;
+      virtual void addPosExpr(const Path &) = 0;
+    };
+
 
     Tree();
     Path createCharmapperItem();
@@ -76,13 +78,13 @@ class Tree {
     void createXYZChildren(TreeItem &parent_item);
 
     using PerformOperationFunction =
-      std::function<void (TreeOperationHandler &)>;
+      std::function<void (OperationHandler &)>;
 
     using OperationName = const std::string;
     using OperationVisitor =
       std::function<void(const OperationName &,PerformOperationFunction)>;
 
-    void visitOperations(OperationVisitor visitor);
+    void visitOperations(const Path &,OperationVisitor visitor);
 
   private:
     using Item = TreeItem;
@@ -96,6 +98,8 @@ class Tree {
 
     Item _root_node;
 };
+
+using TreeOperationHandler = Tree::OperationHandler;
 
 
 inline Tree::Path join(Tree::Path path,Tree::Index child_index)

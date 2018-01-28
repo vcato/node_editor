@@ -224,6 +224,7 @@ void Tree::createXYZChildren(TreeItem &parent_item)
 
 void
   Tree::visitOperations(
+    const Path &path,
     function<
       void(
         const string &,
@@ -231,16 +232,37 @@ void
       )> visitor
   )
 {
-  visitor(
-    "Add Charmapper",
-    [](TreeOperationHandler &handler){
-      handler.addCharmapper();
-    }
-  );
-  visitor(
-    "Add Scene",
-    [](TreeOperationHandler &handler){
-      handler.addScene();
-    }
-  );
+  if (itemType(path)==ItemType::root) {
+    visitor(
+      "Add Charmapper",
+      [](TreeOperationHandler &handler){
+        handler.addCharmapper();
+      }
+    );
+    visitor(
+      "Add Scene",
+      [](TreeOperationHandler &handler){
+        handler.addScene();
+      }
+    );
+  }
+  else if (itemType(path)==ItemType::charmapper) {
+    visitor(
+      "Add Motion Pass",
+      [path](TreeOperationHandler &handler){
+        handler.addMotionPass(path);
+      }
+    );
+  }
+  else if (itemType(path)==ItemType::motion_pass) {
+    visitor(
+      "Add Pos Expr",
+      [path](TreeOperationHandler &handler){
+        handler.addPosExpr(path);
+      }
+    );
+  }
+  else {
+    cerr << "Tree::visitOperations: unknown item type\n";
+  }
 }

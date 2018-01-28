@@ -1,3 +1,6 @@
+#ifndef QTSLOT_HPP_
+#define QTSLOT_HPP_
+
 #include <QObject>
 #include <functional>
 
@@ -19,3 +22,5 @@ class QtSlot : public QObject {
   private:
     std::function<void()> slot_function;
 };
+
+#endif /* QTSLOT_HPP_ */

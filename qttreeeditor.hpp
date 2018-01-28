@@ -9,6 +9,7 @@
 #include "qtwidget.hpp"
 #include "qtdiagrameditor.hpp"
 #include "qtcomboboxtreewidgetitemsignalmap.hpp"
+#include "qtslot.hpp"
 #include "tree.hpp"
 
 
@@ -65,6 +66,16 @@ class QtTreeEditor : public QTreeWidget {
       {
         tree_editor.handleAddScene();
       }
+
+      virtual void addMotionPass(const TreePath &path)
+      {
+        tree_editor.handleAddPass(path);
+      }
+
+      virtual void addPosExpr(const TreePath &path)
+      {
+        tree_editor.handleAddPosExpr(path);
+      }
     };
 
     bool ignore_combo_box_signals = false;
@@ -80,6 +91,12 @@ class QtTreeEditor : public QTreeWidget {
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);
     void prepareMenu(const QPoint &pos);
+
+    Tree::OperationVisitor
+      addMenuItemForOperationFunction(
+        QMenu &menu,
+        std::list<QtSlot> &item_slots
+      );
 
     template <typename T>
     T &createItemWidget(QTreeWidgetItem &item,const std::string &label)
