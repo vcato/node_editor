@@ -20,8 +20,61 @@ using std::function;
 using std::list;
 
 
+struct QtTreeEditor::CreateItemVisitor : Tree::ItemVisitor {
+  QtTreeEditor &tree_editor;
+  const TreePath &parent_path;
+
+  CreateItemVisitor(
+    QtTreeEditor &tree_editor_arg,
+    const TreePath &parent_path_arg
+  )
+  : tree_editor(tree_editor_arg),
+    parent_path(parent_path_arg)
+  {
+  }
+
+  void voidItem(const std::string &label) const override
+  {
+    tree_editor.createVoidItem(parent_path,label);
+  }
+
+  void numericItem(const std::string &label) const override
+  {
+    tree_editor.createNumericItem(parent_path,label);
+  }
+
+  void
+    enumeratedItem(
+      const std::string &label,
+      const std::vector<std::string> &enumeration_names
+    ) const override
+  {
+    tree_editor.createEnumeratedItem(parent_path,label,enumeration_names);
+  }
+};
+
+
+struct QtTreeEditor::OperationHandler : TreeOperationHandler {
+  QtTreeEditor &tree_editor;
+
+  OperationHandler(QtTreeEditor &tree_editor_arg)
+  : tree_editor(tree_editor_arg)
+  {
+  }
+
+  virtual void addItem(const TreePath &path,const TreeItem &item)
+  {
+    tree_editor.addTreeItem(path,item);
+  }
+
+  virtual void replaceTreeItems(const TreePath &path,const TreeItem &items)
+  {
+    tree_editor.replaceTreeItems(path,items);
+  }
+};
+
+
 QtTreeEditor::QtTreeEditor()
-: operation_handler(*this)
 {
   header()->close();
   setContextMenuPolicy(Qt::CustomContextMenu);
@@ -116,77 +169,57 @@ void
 
 
 void
+  QtTreeEditor::createVoidItem(const TreePath &parent_path,const string &label)
+{  
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  createItem(parent_item,label);
+}
+
+
+void
+  QtTreeEditor::createNumericItem(
+    const TreePath &parent_path,
+    const string &label
+  )
+{
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  createSpinBoxItem(parent_item,label);
+}
+
+
+void
+  QtTreeEditor::createEnumeratedItem(
+    const TreePath &parent_path,
+    const string &label,
+    const vector<string> &enumeration_names
+  )
+{
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+
+  QtComboBoxTreeWidgetItem &global_position_item =
+    createComboBoxItem(parent_item,label);
+  {
+    QComboBox &combo_box = global_position_item.comboBox();
+    ignore_combo_box_signals = true;
+    for (auto &name : enumeration_names) {
+      combo_box.addItem(QString::fromStdString(name));
+    }
+    ignore_combo_box_signals = false;
+  }
+}
+
+
+void
   QtTreeEditor::addTreeItem(
     const TreePath &parent_path,
     const TreeItem &item
   )
 {
-  QtTreeEditor &tree_widget = *this;
   Tree &tree = this->tree();
-  QTreeWidgetItem &parent_item = tree_widget.itemFromPath(parent_path);
   TreePath new_item_path = tree.createItem(parent_path,item.type);
 
-  switch (item.type) {
-    case TreeItem::Type::x:
-      tree_widget.createSpinBoxItem(parent_item,"X");
-      break;
-    case TreeItem::Type::y:
-      tree_widget.createSpinBoxItem(parent_item,"Y");
-      break;
-    case TreeItem::Type::z:
-      tree_widget.createSpinBoxItem(parent_item,"Y");
-      break;
-    case TreeItem::Type::global_position:
-      {
-        QtComboBoxTreeWidgetItem &global_position_item =
-          tree_widget.createComboBoxItem(parent_item,"Global Position");
-        {
-          QComboBox &combo_box = global_position_item.comboBox();
-          ignore_combo_box_signals = true;
-          combo_box.addItem("Components");
-          combo_box.addItem("From Body");
-          ignore_combo_box_signals = false;
-        }
-      }
-      break;
-    case TreeItem::Type::local_position:
-      tree_widget.createItem(parent_item,"Local Position");
-      break;
-    case TreeItem::Type::target_body:
-      {
-        QtComboBoxTreeWidgetItem &target_body_item =
-          tree_widget.createComboBoxItem(parent_item,"Target Body");
-        QComboBox &combo_box = target_body_item.comboBox();
-        combo_box.addItem("Body1");
-        combo_box.addItem("Body2");
-        combo_box.addItem("Body3");
-      }
-      break;
-    case TreeItem::Type::source_body:
-      {
-        QtComboBoxTreeWidgetItem &source_body_item =
-          tree_widget.createComboBoxItem(parent_item,"Source Body");
-        QComboBox &combo_box = source_body_item.comboBox();
-        combo_box.addItem("Body1");
-        combo_box.addItem("Body2");
-        combo_box.addItem("Body3");
-      }
-      break;
-    case TreeItem::Type::pos_expr:
-      tree_widget.createItem(parent_item,"Pos Expr");
-      break;
-    case TreeItem::Type::motion_pass:
-      tree_widget.createItem(parent_item,"Motion Pass");
-      break;
-    case TreeItem::Type::scene:
-      tree_widget.createItem(parent_item,"Scene");
-      break;
-    case TreeItem::Type::charmapper:
-      tree_widget.createItem(parent_item,"Charmapper");
-      break;
-    default:
-      assert(false);
-  }
+  CreateItemVisitor create_item_visitor(*this,parent_path);
+  tree.visitItem(item,create_item_visitor);
 
   tree.itemDiagram(new_item_path) = item.diagram;
   addTreeItems(new_item_path,item);
@@ -307,6 +340,7 @@ void
   assert(item_ptr);
 
   Tree::Path path = itemPath(*item_ptr);
+  OperationHandler operation_handler(*this);
 
   tree().comboBoxItemIndexChanged(path,index,operation_handler);
 }
@@ -338,27 +372,27 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
-function<
-  void(
-    const string &operation_name,
-    function<void(TreeOperationHandler &)> perform_function
-  )
-> QtTreeEditor::addMenuItemForOperationFunction(
+static Tree::OperationVisitor
+  addMenuItemForOperationFunction(
     QMenu &menu,
-    list<QtSlot> &item_slots
+    list<QtSlot> &item_slots,
+    TreeOperationHandler &operation_handler
   )
 {
-  return [&](
-    const string &operation_name,
-    function<void(TreeOperationHandler &)> perform_function
-  )
-  {
-    QAction &action = createAction(menu,operation_name);
-    auto perform_operation_function =
-      [perform_function,this](){ perform_function(operation_handler); };
-    item_slots.emplace_back(perform_operation_function);
-    item_slots.back().connectSignal(action,SIGNAL(triggered()));
-  };
+  return
+    [&](
+      const string &operation_name,
+      function<void(TreeOperationHandler &)> perform_function
+    )
+    {
+      QAction &action = createAction(menu,operation_name);
+      auto perform_operation_function =
+        [&operation_handler,perform_function](){
+          perform_function(operation_handler);
+        };
+      item_slots.emplace_back(perform_operation_function);
+      item_slots.back().connectSignal(action,SIGNAL(triggered()));
+    };
 }
 
 
@@ -374,9 +408,10 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 
   QMenu menu;
   list<QtSlot> item_slots;
+  OperationHandler operation_handler(*this);
   tree().visitOperations(
     path,
-    addMenuItemForOperationFunction(menu,item_slots)
+    addMenuItemForOperationFunction(menu,item_slots,operation_handler)
   );
   menu.exec(tree_editor.mapToGlobal(pos));
 }

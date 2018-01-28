@@ -9,6 +9,7 @@
 using std::string;
 using std::cerr;
 using std::function;
+using std::vector;
 
 
 static void createXYZChildren(TreeItem &parent_item)
@@ -258,5 +259,56 @@ void
       default:
         assert(false);
     }
+  }
+}
+
+
+void Tree::visitItem(const Item &item,const ItemVisitor &visitor)
+{
+  switch (item.type) {
+    case TreeItem::Type::x:
+      visitor.numericItem("X");
+      break;
+    case TreeItem::Type::y:
+      visitor.numericItem("Y");
+      break;
+    case TreeItem::Type::z:
+      visitor.numericItem("Z");
+      break;
+    case TreeItem::Type::global_position:
+      {
+        vector<string> enumeration_names = {"Components","From Body"};
+        visitor.enumeratedItem("Global Position",enumeration_names);
+      }
+      break;
+    case TreeItem::Type::local_position:
+      visitor.voidItem("Local Position");
+      break;
+    case TreeItem::Type::target_body:
+      {
+        vector<string> enumeration_names = {"Body1","Body2","Body3"};
+        visitor.enumeratedItem("Target Body",enumeration_names);
+      }
+      break;
+    case TreeItem::Type::source_body:
+      {
+        vector<string> enumeration_names = {"Body1","Body2","Body3"};
+        visitor.enumeratedItem("Source Body",enumeration_names);
+      }
+      break;
+    case TreeItem::Type::pos_expr:
+      visitor.voidItem("Pos Expr");
+      break;
+    case TreeItem::Type::motion_pass:
+      visitor.voidItem("Motion Pass");
+      break;
+    case TreeItem::Type::scene:
+      visitor.voidItem("Scene");
+      break;
+    case TreeItem::Type::charmapper:
+      visitor.voidItem("Charmapper");
+      break;
+    default:
+      assert(false);
   }
 }

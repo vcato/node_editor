@@ -49,29 +49,12 @@ class QtTreeEditor : public QTreeWidget {
     void prepareMenuSlot(const QPoint &pos);
 
   private:
-    struct OperationHandler : TreeOperationHandler {
-      QtTreeEditor &tree_editor;
-
-      OperationHandler(QtTreeEditor &tree_editor_arg)
-      : tree_editor(tree_editor_arg)
-      {
-      }
-
-      virtual void addItem(const TreePath &path,const TreeItem &item)
-      {
-        tree_editor.addTreeItem(path,item);
-      }
-
-      virtual void replaceTreeItems(const TreePath &path,const TreeItem &items)
-      {
-        tree_editor.replaceTreeItems(path,items);
-      }
-    };
+    struct CreateItemVisitor;
+    struct OperationHandler;
 
     bool ignore_combo_box_signals = false;
     Tree *tree_ptr = 0;
     QtDiagramEditor *diagram_editor_ptr = 0;
-    OperationHandler operation_handler;
 
     Tree &tree();
     QtDiagramEditor &diagramEditor();
@@ -81,12 +64,6 @@ class QtTreeEditor : public QTreeWidget {
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);
     void prepareMenu(const QPoint &pos);
-
-    Tree::OperationVisitor
-      addMenuItemForOperationFunction(
-        QMenu &menu,
-        std::list<QtSlot> &item_slots
-      );
 
     template <typename T>
     T &createItemWidget(QTreeWidgetItem &item,const std::string &label)
@@ -130,6 +107,17 @@ class QtTreeEditor : public QTreeWidget {
       replaceTreeItems(
         const TreePath &parent_path,
         const TreeItem &tree_items
+      );
+
+    void createVoidItem(const TreePath &parent_path,const std::string &label);
+    void
+      createNumericItem(const TreePath &parent_path,const std::string &label);
+
+    void
+      createEnumeratedItem(
+        const TreePath &parent_path,
+        const std::string &label,
+        const std::vector<std::string> &enumeration_names
       );
 };
 

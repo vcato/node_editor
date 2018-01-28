@@ -60,6 +60,22 @@ class Tree {
         replaceTreeItems(const Path &path,const TreeItem &items) = 0;
     };
 
+    struct ItemVisitor {
+      virtual void
+        voidItem(const std::string &label) const = 0;
+
+      virtual void
+        numericItem(
+          const std::string &label
+        ) const = 0;
+
+      virtual void
+        enumeratedItem(
+          const std::string &label,
+          const std::vector<std::string> &enumeration_names
+        ) const = 0;
+    };
+
     Tree();
 
     Path createItem(const Path &parent_path,Item::Type type);
@@ -68,6 +84,7 @@ class Tree {
     void removeChildItems(const Path &);
     Diagram &itemDiagram(const Path &);
     void visitOperations(const Path &,OperationVisitor visitor);
+    void visitItem(const Item &,const ItemVisitor &visitor);
 
   private:
     using ItemType = Item::Type;
