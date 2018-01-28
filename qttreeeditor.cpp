@@ -124,25 +124,20 @@ void
   QtTreeEditor &tree_widget = *this;
   Tree &tree = this->tree();
   QTreeWidgetItem &parent_item = tree_widget.itemFromPath(parent_path);
-  TreePath new_item_path;
+  TreePath new_item_path = tree.createItem(parent_path,item.type);
 
   switch (item.type) {
     case TreeItem::Type::x:
-      new_item_path = tree.createXItem(parent_path);
       tree_widget.createSpinBoxItem(parent_item,"X");
       break;
     case TreeItem::Type::y:
-      new_item_path = tree.createXItem(parent_path);
       tree_widget.createSpinBoxItem(parent_item,"Y");
       break;
     case TreeItem::Type::z:
-      new_item_path = tree.createXItem(parent_path);
       tree_widget.createSpinBoxItem(parent_item,"Y");
       break;
     case TreeItem::Type::global_position:
       {
-        new_item_path =
-          tree.createGlobalPositionItem(parent_path);
         QtComboBoxTreeWidgetItem &global_position_item =
           tree_widget.createComboBoxItem(parent_item,"Global Position");
         {
@@ -155,14 +150,10 @@ void
       }
       break;
     case TreeItem::Type::local_position:
-      {
-        new_item_path = tree.createLocalPositionItem(parent_path);
-        tree_widget.createItem(parent_item,"Local Position");
-      }
+      tree_widget.createItem(parent_item,"Local Position");
       break;
     case TreeItem::Type::target_body:
       {
-        new_item_path = tree.createTargetBodyItem(parent_path);
         QtComboBoxTreeWidgetItem &target_body_item =
           tree_widget.createComboBoxItem(parent_item,"Target Body");
         QComboBox &combo_box = target_body_item.comboBox();
@@ -173,7 +164,6 @@ void
       break;
     case TreeItem::Type::source_body:
       {
-        new_item_path = tree.createSourceBodyItem(parent_path);
         QtComboBoxTreeWidgetItem &source_body_item =
           tree_widget.createComboBoxItem(parent_item,"Source Body");
         QComboBox &combo_box = source_body_item.comboBox();
@@ -183,28 +173,16 @@ void
       }
       break;
     case TreeItem::Type::pos_expr:
-      {
-        new_item_path = tree.createPosExprItem(parent_path);
-        tree_widget.createItem(parent_item,"Pos Expr");
-      }
+      tree_widget.createItem(parent_item,"Pos Expr");
       break;
     case TreeItem::Type::motion_pass:
-      {
-        new_item_path = tree.createMotionPassItem(parent_path);
-        tree_widget.createItem(parent_item,"Motion Pass");
-      }
+      tree_widget.createItem(parent_item,"Motion Pass");
       break;
     case TreeItem::Type::scene:
-      {
-        new_item_path = tree.createSceneItem(parent_path);
-        tree_widget.createItem(parent_item,"Scene");
-      }
+      tree_widget.createItem(parent_item,"Scene");
       break;
     case TreeItem::Type::charmapper:
-      {
-        new_item_path = tree.createCharmapperItem(parent_path);
-        tree_widget.createItem(parent_item,"Charmapper");
-      }
+      tree_widget.createItem(parent_item,"Charmapper");
       break;
     default:
       assert(false);

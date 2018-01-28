@@ -45,6 +45,8 @@ class Tree {
     using Path = std::vector<int>;
     using Index = int;
     using SizeType = int;
+    using Item = TreeItem;
+
 
     struct OperationHandler {
       virtual void addItem(const Path &,const TreeItem &) = 0;
@@ -52,18 +54,7 @@ class Tree {
 
 
     Tree();
-    Path createCharmapperItem(const Path &);
-    Path createSceneItem(const Path &);
-    Path createMotionPassItem(const Path &);
-    Path createPosExprItem(const Path &);
-    Path createTargetBodyItem(const Path &);
-    Path createSourceBodyItem(const Path &);
-    Path createLocalPositionItem(const Path &);
-    Path createGlobalPositionItem(const Path &);
-    Path createWeightItem(const Path &);
-    Path createXItem(const Path &);
-    Path createYItem(const Path &);
-    Path createZItem(const Path &);
+    Path createItem(const Path &parent_path,Item::Type type);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
     bool isCharmapperItem(const Path &path) const;
@@ -88,13 +79,10 @@ class Tree {
     TreeItem charmapperItem();
 
   private:
-    using Item = TreeItem;
-
     using ItemType = Item::Type;
 
     Item &getItem(const Path &);
     const Item &getItem(const Path &) const;
-    Path createItem(const Path &parent_path,Item::Type type);
     ItemType itemType(const Path &) const;
 
     Item _root_node;

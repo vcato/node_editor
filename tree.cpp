@@ -69,78 +69,6 @@ Tree::Tree()
 }
 
 
-auto Tree::createCharmapperItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::charmapper);
-}
-
-
-auto Tree::createSceneItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::scene);
-}
-
-
-auto Tree::createMotionPassItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::motion_pass);
-}
-
-
-auto Tree::createPosExprItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::pos_expr);
-}
-
-
-auto Tree::createTargetBodyItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::target_body);
-}
-
-
-auto Tree::createSourceBodyItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::source_body);
-}
-
-
-auto Tree::createLocalPositionItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::local_position);
-}
-
-
-auto Tree::createGlobalPositionItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::global_position);
-}
-
-
-auto Tree::createWeightItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::weight);
-}
-
-
-auto Tree::createXItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::x);
-}
-
-
-auto Tree::createYItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::y);
-}
-
-
-auto Tree::createZItem(const Path &parent_path) -> Path
-{
-  return createItem(parent_path,ItemType::z);
-}
-
-
 auto Tree::createItem(const Path &parent_path,ItemType type) -> Path
 {
   return join(parent_path,getItem(parent_path).createItem(type));
@@ -275,15 +203,7 @@ void Tree::createXYZChildren(TreeItem &parent_item)
 }
 
 
-void
-  Tree::visitOperations(
-    const Path &path,
-    function<
-      void(
-        const string &,
-        function<void (TreeOperationHandler &)> perform_function
-      )> visitor
-  )
+void Tree::visitOperations(const Path &path,OperationVisitor visitor)
 {
   if (itemType(path)==ItemType::root) {
     visitor(
