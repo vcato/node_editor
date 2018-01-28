@@ -13,6 +13,7 @@ using std::vector;
 
 using ItemType = TreeItem::Type;
 using Path = Tree::Path;
+using OperationVisitor = Tree::OperationVisitor;
 
 
 static void createXYZChildren(TreeItem &parent_item)
@@ -44,21 +45,46 @@ static TreeItem posExprItem()
 }
 
 
-static TreeItem motionPassItem()
-{
-  return TreeItem(ItemType::motion_pass);
+namespace {
+struct MotionPassPolicy {
+  void visitOperations(const Path &path,const OperationVisitor &visitor)
+  {
+    visitor(
+      "Add Pos Expr",
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,posExprItem());
+      }
+    );
+  }
+};
 }
 
 
-static TreeItem sceneItem()
+static TreeItem motionPassItem()
 {
-  return TreeItem(ItemType::scene);
+  return TreeItem(ItemType::motion_pass,MotionPassPolicy());
+}
+
+
+namespace {
+struct CharmapperPolicy {
+  void visitOperations(const Path &path,const OperationVisitor &visitor)
+  {
+    cerr << "CharmapperPolicy::visitOperations()\n";
+    visitor(
+      "Add Motion Pass",
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,motionPassItem());
+      }
+    );
+  }
+};
 }
 
 
 static TreeItem charmapperItem()
 {
-  return TreeItem(ItemType::charmapper);
+  return TreeItem(ItemType::charmapper,CharmapperPolicy());
 }
 
 
@@ -68,8 +94,84 @@ static TreeItem bodyItem()
 }
 
 
+namespace {
+struct ScenePolicy {
+  void visitOperations(const Path &path,const OperationVisitor &visitor)
+  {
+    visitor(
+      "Add Body",
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,bodyItem());
+      }
+    );
+  }
+};
+}
+
+
+
+static TreeItem sceneItem()
+{
+  return TreeItem(ItemType::scene,ScenePolicy());
+}
+
+
+void
+  TreeItem::Policy::visitOperations(
+    const Path &path,
+    const OperationVisitor &visitor
+  )
+{
+  assert(ptr);
+  ptr->visitOperations(path,visitor);
+}
+
+
+namespace {
+struct RootPolicy {
+  Tree &tree;
+
+  RootPolicy(Tree &tree_arg)
+  : tree(tree_arg)
+  {
+  }
+
+  ~RootPolicy()
+  {
+  }
+
+  void visitOperations(const Path &path,const Tree::OperationVisitor &visitor)
+  {
+    visitor(
+      "Add Charmapper",
+      [path,this](TreeOperationHandler &handler){
+        handler.addItem(path,charmapperItem());
+      }
+    );
+    visitor(
+      "Add Scene",
+      [path,this](TreeOperationHandler &handler){
+        tree.world().addScene();
+        handler.addItem(path,sceneItem());
+      }
+    );
+  }
+};
+}
+
+
+namespace {
+struct EmptyPolicy {
+  void visitOperations(const Path &,const Tree::OperationVisitor &)
+  {
+    cerr << "EmptyPolicy::visitOperations()\n";
+  }
+};
+}
+
+
 Tree::Tree()
-: _root_node(ItemType::root)
+: _root_item(ItemType::root,RootPolicy(*this))
 {
 }
 
@@ -86,8 +188,8 @@ auto Tree::itemType(const Path &path) const -> ItemType
 }
 
 
-TreeItem::TreeItem(Type type_arg)
-  : type(type_arg)
+TreeItem::TreeItem(Type type_arg,Policy policy_arg)
+  : type(type_arg), policy(policy_arg)
 {
   if (type==Type::local_position) {
     NodeIndex vector_index = diagram.addNode("[$,$,$]");
@@ -113,10 +215,70 @@ TreeItem::TreeItem(Type type_arg)
 }
 
 
+TreeItem::TreeItem(Type type_arg)
+: TreeItem(type_arg,EmptyPolicy())
+{
+}
+
+
+void TreeItem::visit(const Visitor &visitor) const
+{
+  switch (type) {
+    case ItemType::x:
+      visitor.numericItem("X");
+      break;
+    case ItemType::y:
+      visitor.numericItem("Y");
+      break;
+    case ItemType::z:
+      visitor.numericItem("Z");
+      break;
+    case ItemType::global_position:
+      {
+        vector<string> enumeration_names = {"Components","From Body"};
+        visitor.enumeratedItem("Global Position",enumeration_names);
+      }
+      break;
+    case ItemType::local_position:
+      visitor.voidItem("Local Position");
+      break;
+    case ItemType::target_body:
+      {
+        vector<string> enumeration_names = {"Body1","Body2","Body3"};
+        visitor.enumeratedItem("Target Body",enumeration_names);
+      }
+      break;
+    case ItemType::source_body:
+      {
+        vector<string> enumeration_names = {"Body1","Body2","Body3"};
+        visitor.enumeratedItem("Source Body",enumeration_names);
+      }
+      break;
+    case ItemType::pos_expr:
+      visitor.voidItem("Pos Expr");
+      break;
+    case ItemType::motion_pass:
+      visitor.voidItem("Motion Pass");
+      break;
+    case ItemType::scene:
+      visitor.voidItem("Scene");
+      break;
+    case ItemType::charmapper:
+      visitor.voidItem("Charmapper");
+      break;
+    case ItemType::body:
+      visitor.voidItem("Body");
+      break;
+    default:
+      assert(false);
+  }
+}
+
+
 auto TreeItem::createItem(const TreeItem &item) -> Index
 {
   Index result = child_items.size();
-  child_items.push_back(item);
+  child_items.push_back(TreeItem(item.type,item.policy));
   return result;
 }
 
@@ -150,7 +312,7 @@ auto Tree::getItem(const Path &path) -> Item&
 
 auto Tree::getItem(const Path &path) const -> const Item &
 {
-  return _root_node.getItem(path,0);
+  return _root_item.getItem(path,0);
 }
 
 
@@ -176,51 +338,7 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
 
 void Tree::visitOperations(const Path &path,OperationVisitor visitor)
 {
-  ItemType item_type = itemType(path);
-
-  if (item_type==ItemType::root) {
-    visitor(
-      "Add Charmapper",
-      [path,this](TreeOperationHandler &handler){
-        handler.addItem(path,charmapperItem());
-      }
-    );
-    visitor(
-      "Add Scene",
-      [path,this](TreeOperationHandler &handler){
-        assert(_world_ptr);
-        _world_ptr->addScene();
-        handler.addItem(path,sceneItem());
-      }
-    );
-  }
-  else if (item_type==ItemType::charmapper) {
-    visitor(
-      "Add Motion Pass",
-      [path,this](TreeOperationHandler &handler){
-        handler.addItem(path,motionPassItem());
-      }
-    );
-  }
-  else if (item_type==ItemType::motion_pass) {
-    visitor(
-      "Add Pos Expr",
-      [path,this](TreeOperationHandler &handler){
-        handler.addItem(path,posExprItem());
-      }
-    );
-  }
-  else if (item_type==ItemType::scene) {
-    visitor(
-      "Add Body",
-      [path,this](TreeOperationHandler &handler){
-        handler.addItem(path,bodyItem());
-      }
-    );
-  }
-  else {
-    cerr << "Tree::visitOperations: unknown item type\n";
-  }
+  getItem(path).visitOperations(path,visitor);
 }
 
 
@@ -277,53 +395,12 @@ void
 
 void Tree::visitItem(const Item &item,const ItemVisitor &visitor)
 {
-  switch (item.type) {
-    case TreeItem::Type::x:
-      visitor.numericItem("X");
-      break;
-    case TreeItem::Type::y:
-      visitor.numericItem("Y");
-      break;
-    case TreeItem::Type::z:
-      visitor.numericItem("Z");
-      break;
-    case TreeItem::Type::global_position:
-      {
-        vector<string> enumeration_names = {"Components","From Body"};
-        visitor.enumeratedItem("Global Position",enumeration_names);
-      }
-      break;
-    case TreeItem::Type::local_position:
-      visitor.voidItem("Local Position");
-      break;
-    case TreeItem::Type::target_body:
-      {
-        vector<string> enumeration_names = {"Body1","Body2","Body3"};
-        visitor.enumeratedItem("Target Body",enumeration_names);
-      }
-      break;
-    case TreeItem::Type::source_body:
-      {
-        vector<string> enumeration_names = {"Body1","Body2","Body3"};
-        visitor.enumeratedItem("Source Body",enumeration_names);
-      }
-      break;
-    case TreeItem::Type::pos_expr:
-      visitor.voidItem("Pos Expr");
-      break;
-    case TreeItem::Type::motion_pass:
-      visitor.voidItem("Motion Pass");
-      break;
-    case TreeItem::Type::scene:
-      visitor.voidItem("Scene");
-      break;
-    case TreeItem::Type::charmapper:
-      visitor.voidItem("Charmapper");
-      break;
-    case TreeItem::Type::body:
-      visitor.voidItem("Body");
-      break;
-    default:
-      assert(false);
-  }
+  item.visit(visitor);
+}
+
+
+WorldInterface &Tree::world()
+{
+  assert(_world_ptr);
+  return *_world_ptr;
 }

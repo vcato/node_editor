@@ -216,7 +216,7 @@ void
   )
 {
   Tree &tree = this->tree();
-  TreePath new_item_path = tree.createItem(parent_path,item.type);
+  TreePath new_item_path = tree.createItem(parent_path,item);
 
   CreateItemVisitor create_item_visitor(*this,parent_path);
   tree.visitItem(item,create_item_visitor);
