@@ -332,3 +332,9 @@ We should probably have derived classes for differnet kinds of items.
 Tree::createItem() should take an Item instead of an ItemType.
 That will allow the users to avoid having to assume that there is an
 enumeration for the type.
+
+There's only a few places left that depend on TreeItem::type.  A Policy
+will need to have a default diagram, so that the TreeItem constructor
+can get the diagram from the policy instead of having a conditional.
+
+Tree::comboBoxItemIndexChanged() will need to defer to the policy.

@@ -65,6 +65,7 @@ struct TreeItem {
       virtual ~PolicyInterface() {}
       virtual PolicyInterface *clone() = 0;
       virtual void visitOperations(const Path &,const OperationVisitor &) = 0;
+      virtual void visitType(const Visitor &) = 0;
     };
 
     template <typename T>
@@ -76,6 +77,11 @@ struct TreeItem {
       void visitOperations(const Path &path,const OperationVisitor &visitor)
       {
         object.visitOperations(path,visitor);
+      }
+
+      virtual void visitType(const Visitor &visitor)
+      {
+        object.visitType(visitor);
       }
 
       virtual PolicyInterface *clone()
@@ -100,6 +106,7 @@ struct TreeItem {
     void operator=(const Policy &) = delete;
 
     void visitOperations(const Path &path,const OperationVisitor &visitor);
+    void visitType(const Visitor &) const;
 
     ~Policy()
     {
@@ -118,7 +125,8 @@ struct TreeItem {
   const TreeItem &getItem(const Path &,int depth) const;
 
   Index createItem(const TreeItem &item);
-  TreeItem& createItem2(Type type);
+  TreeItem& createItem2(const TreeItem &);
+  TreeItem& createItem2(Type,Policy);
   void visit(const Visitor &) const;
   void
     visitOperations(const Path &path,const OperationVisitor &visitor)

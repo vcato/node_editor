@@ -16,27 +16,144 @@ using Path = Tree::Path;
 using OperationVisitor = Tree::OperationVisitor;
 
 
+namespace {
+struct XPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.numericItem("X");
+  }
+};
+}
+
+
+namespace {
+struct YPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.numericItem("Y");
+  }
+};
+}
+
+
+namespace {
+struct ZPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.numericItem("Z");
+  }
+};
+}
+
+
 static void createXYZChildren(TreeItem &parent_item)
 {
-  parent_item.createItem2(ItemType::x);
-  parent_item.createItem2(ItemType::y);
-  parent_item.createItem2(ItemType::z);
+  parent_item.createItem2(ItemType::x,XPolicy());
+  parent_item.createItem2(ItemType::y,YPolicy());
+  parent_item.createItem2(ItemType::z,ZPolicy());
+}
+
+
+namespace {
+struct GlobalPositionPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    vector<string> enumeration_names = {"Components","From Body"};
+    visitor.enumeratedItem("Global Position",enumeration_names);
+  }
+};
+}
+
+
+namespace {
+struct LocalPositionPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.voidItem("Local Position");
+  }
+};
+}
+
+
+namespace {
+struct SourceBodyPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    vector<string> enumeration_names = {"Body1","Body2","Body3"};
+    visitor.enumeratedItem("Source Body",enumeration_names);
+  }
+};
+}
+
+
+namespace {
+struct TargetBodyPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    vector<string> enumeration_names = {"Body1","Body2","Body3"};
+    visitor.enumeratedItem("Target Body",enumeration_names);
+  }
+};
+}
+
+
+namespace {
+struct PosExprPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.voidItem("Pos Expr");
+  }
+};
 }
 
 
 static TreeItem posExprItem()
 {
-  TreeItem pos_expr_item(ItemType::pos_expr);
-  pos_expr_item.createItem2(ItemType::target_body);
+  TreeItem pos_expr_item(ItemType::pos_expr,PosExprPolicy());
+  pos_expr_item.createItem2(ItemType::target_body,TargetBodyPolicy());
   pos_expr_item.diagram = posExprDiagram();
   {
     TreeItem &local_position_item =
-      pos_expr_item.createItem2(ItemType::local_position);
+      pos_expr_item.createItem2(ItemType::local_position,LocalPositionPolicy());
     createXYZChildren(local_position_item);
   }
   {
     TreeItem &global_position_item =
-      pos_expr_item.createItem2(ItemType::global_position);
+      pos_expr_item.createItem2(
+        ItemType::global_position,GlobalPositionPolicy()
+      );
     createXYZChildren(global_position_item);
     global_position_item.diagram = fromComponentsDiagram();
   }
@@ -55,6 +172,11 @@ struct MotionPassPolicy {
         handler.addItem(path,posExprItem());
       }
     );
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.voidItem("Motion Pass");
   }
 };
 }
@@ -78,6 +200,11 @@ struct CharmapperPolicy {
       }
     );
   }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.voidItem("Charmapper");
+  }
 };
 }
 
@@ -88,9 +215,23 @@ static TreeItem charmapperItem()
 }
 
 
+namespace {
+struct BodyPolicy {
+  void visitOperations(const Path &,const OperationVisitor &)
+  {
+  }
+
+  void visitType(const TreeItem::Visitor &visitor)
+  {
+    visitor.voidItem("Body");
+  }
+};
+}
+
+
 static TreeItem bodyItem()
 {
-  return TreeItem(ItemType::body);
+  return TreeItem(ItemType::body,BodyPolicy());
 }
 
 
@@ -104,6 +245,11 @@ struct ScenePolicy {
         handler.addItem(path,bodyItem());
       }
     );
+  }
+
+  void visitType(const TreeItem::Visitor &visitor) const
+  {
+    visitor.voidItem("Scene");
   }
 };
 }
@@ -124,6 +270,16 @@ void
 {
   assert(ptr);
   ptr->visitOperations(path,visitor);
+}
+
+
+void
+  TreeItem::Policy::visitType(
+    const Visitor &visitor
+  ) const
+{
+  assert(ptr);
+  ptr->visitType(visitor);
 }
 
 
@@ -156,6 +312,11 @@ struct RootPolicy {
       }
     );
   }
+
+  void visitType(const TreeItem::Visitor &)
+  {
+    assert(false);
+  }
 };
 }
 
@@ -165,6 +326,11 @@ struct EmptyPolicy {
   void visitOperations(const Path &,const Tree::OperationVisitor &)
   {
     cerr << "EmptyPolicy::visitOperations()\n";
+  }
+
+  void visitType(const TreeItem::Visitor &)
+  {
+    assert(false);
   }
 };
 }
@@ -223,55 +389,7 @@ TreeItem::TreeItem(Type type_arg)
 
 void TreeItem::visit(const Visitor &visitor) const
 {
-  switch (type) {
-    case ItemType::x:
-      visitor.numericItem("X");
-      break;
-    case ItemType::y:
-      visitor.numericItem("Y");
-      break;
-    case ItemType::z:
-      visitor.numericItem("Z");
-      break;
-    case ItemType::global_position:
-      {
-        vector<string> enumeration_names = {"Components","From Body"};
-        visitor.enumeratedItem("Global Position",enumeration_names);
-      }
-      break;
-    case ItemType::local_position:
-      visitor.voidItem("Local Position");
-      break;
-    case ItemType::target_body:
-      {
-        vector<string> enumeration_names = {"Body1","Body2","Body3"};
-        visitor.enumeratedItem("Target Body",enumeration_names);
-      }
-      break;
-    case ItemType::source_body:
-      {
-        vector<string> enumeration_names = {"Body1","Body2","Body3"};
-        visitor.enumeratedItem("Source Body",enumeration_names);
-      }
-      break;
-    case ItemType::pos_expr:
-      visitor.voidItem("Pos Expr");
-      break;
-    case ItemType::motion_pass:
-      visitor.voidItem("Motion Pass");
-      break;
-    case ItemType::scene:
-      visitor.voidItem("Scene");
-      break;
-    case ItemType::charmapper:
-      visitor.voidItem("Charmapper");
-      break;
-    case ItemType::body:
-      visitor.voidItem("Body");
-      break;
-    default:
-      assert(false);
-  }
+  policy.visitType(visitor);
 }
 
 
@@ -283,9 +401,20 @@ auto TreeItem::createItem(const TreeItem &item) -> Index
 }
 
 
-auto TreeItem::createItem2(Type type) -> TreeItem&
+auto
+  TreeItem::createItem2(
+    ItemType type,
+    TreeItem::Policy policy
+  ) -> TreeItem&
 {
-  child_items.push_back(TreeItem(type));
+  child_items.push_back(TreeItem(type,policy));
+  return child_items.back();
+}
+
+
+auto TreeItem::createItem2(const TreeItem &item) -> TreeItem&
+{
+  child_items.push_back(TreeItem(item.type,item.policy));
   return child_items.back();
 }
 
@@ -354,9 +483,9 @@ static TreeItem globalPositionComponentsItems()
 static TreeItem globalPositionFromBodyItems()
 {
   TreeItem items(TreeItem::Type::root);
-  items.createItem(TreeItem::Type::source_body);
+  items.createItem2(TreeItem::Type::source_body,SourceBodyPolicy());
   TreeItem &local_position_item =
-    items.createItem2(TreeItem::Type::local_position);
+    items.createItem2(TreeItem::Type::local_position,LocalPositionPolicy());
   items.diagram = fromBodyDiagram();
   createXYZChildren(local_position_item);
   return items;
