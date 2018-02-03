@@ -257,7 +257,6 @@ namespace {
 struct CharmapperPolicy : SimplePolicy {
   void visitOperations(const Path &path,const OperationVisitor &visitor)
   {
-    cerr << "CharmapperPolicy::visitOperations()\n";
     visitor(
       "Add Motion Pass",
       [path,this](TreeOperationHandler &handler){
@@ -345,6 +344,7 @@ struct RootPolicy : SimplePolicy {
     visitor(
       "Add Charmapper",
       [path,this](TreeOperationHandler &handler){
+        tree.world().addCharmapper();
         handler.addItem(path,charmapperItem());
       }
     );
@@ -453,9 +453,15 @@ auto Tree::getItem(const Path &path) const -> const Item &
 }
 
 
-Diagram& Tree::itemDiagram(const Path &path)
+Diagram *Tree::itemDiagramPtr(const Path &path)
 {
-  return getItem(path).diagram;
+  return &getItem(path).diagram;
+}
+
+
+void Tree::setItemDiagram(const Path &path,const Diagram &new_diagram)
+{
+  getItem(path).diagram = new_diagram;
 }
 
 

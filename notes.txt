@@ -348,3 +348,12 @@ class Wrapper {
   void acceptOperationVisitor(OperationVisitor &);
   void acceptChildVisitor(ChildVisitor &);
 };
+
+In the case of adding a Charmapper, we want to add a new charmapper object
+to the root, and then add the corresponding items to the tree.
+The Policy classes are a lot like Wrappers.  I want the wrappers to be
+temporary though.
+
+If we have the diagrams stored in the Charmapper object, then we won't
+need to store them in the Tree.  I think that is the only reason we
+have TreeItems now.

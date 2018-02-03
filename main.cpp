@@ -3,6 +3,11 @@
 #include "qtmainwindow.hpp"
 
 
+using std::vector;
+using std::unique_ptr;
+using std::make_unique;
+
+
 struct QtSceneViewer : QGLWidget {
   QSize sizeHint() const override { return QSize(640,480); }
 };
@@ -10,6 +15,14 @@ struct QtSceneViewer : QGLWidget {
 
 struct QtWorld : WorldInterface {
   QtMainWindow &main_window;
+
+  struct WorldObject {
+  };
+
+  struct CharmapperObject : WorldObject {
+  };
+
+  vector<unique_ptr<WorldObject>> world_objects;
 
   QtWorld(QtMainWindow &main_window_arg)
   : main_window(main_window_arg)
@@ -22,6 +35,11 @@ struct QtWorld : WorldInterface {
     QBoxLayout &layout = createLayout<QVBoxLayout>(dialog);
     createWidget<QtSceneViewer>(layout);
     dialog.show();
+  }
+
+  virtual void addCharmapper()
+  {
+    world_objects.push_back(make_unique<CharmapperObject>());
   }
 };
 

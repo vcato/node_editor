@@ -12,8 +12,6 @@ struct TreeItem {
   using Path = std::vector<int>;
   using Index = int;
 
-  struct OperationHandler;
-
   struct OperationHandler {
     virtual void addItem(const Path &,const TreeItem &) = 0;
     virtual void
@@ -162,6 +160,7 @@ struct TreeItem {
   TreeItem(Policy);
 
   const TreeItem &getItem(const Path &,int depth) const;
+  Diagram *diagramPtr() { return &diagram; }
 
   Index createItem(const TreeItem &item);
   TreeItem& createItem2(const TreeItem &);
@@ -187,6 +186,7 @@ struct TreeItem {
 
 struct WorldInterface {
   virtual void addScene() = 0;
+  virtual void addCharmapper() = 0;
 };
 
 
@@ -207,7 +207,8 @@ class Tree {
     void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
-    Diagram &itemDiagram(const Path &);
+    Diagram *itemDiagramPtr(const Path &);
+    void setItemDiagram(const Path &,const Diagram &);
     void visitOperations(const Path &,OperationVisitor visitor);
     void visitItem(const Item &,const ItemVisitor &visitor);
     WorldInterface &world();

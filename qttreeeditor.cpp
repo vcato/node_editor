@@ -221,7 +221,7 @@ void
   CreateItemVisitor create_item_visitor(*this,parent_path);
   tree.visitItem(item,create_item_visitor);
 
-  tree.itemDiagram(new_item_path) = item.diagram;
+  tree.setItemDiagram(new_item_path,item.diagram);
   addTreeItems(new_item_path,item);
 }
 
@@ -312,7 +312,7 @@ void
 {
   removeChildItems(parent_path);
   addTreeItems(parent_path,tree_items);
-  tree().itemDiagram(parent_path) = tree_items.diagram;
+  tree().setItemDiagram(parent_path,tree_items.diagram);
   diagramEditor().redraw();
 }
 
@@ -359,7 +359,7 @@ Diagram *QtTreeEditor::maybeSelectedDiagram()
   Diagram *diagram_ptr = 0;
 
   if (selected_item_ptr) {
-    diagram_ptr = &tree().itemDiagram(itemPath(*selected_item_ptr));
+    diagram_ptr = tree().itemDiagramPtr(itemPath(*selected_item_ptr));
   }
 
   return diagram_ptr;
