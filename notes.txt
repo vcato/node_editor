@@ -338,3 +338,13 @@ will need to have a default diagram, so that the TreeItem constructor
 can get the diagram from the policy instead of having a conditional.
 
 Tree::comboBoxItemIndexChanged() will need to defer to the policy.
+---
+The whole concept of a path may be another layer.  I think the most
+basic layer is just an object that knows that knows how to visit its type,
+visit its operation, and visit its children.
+
+class Wrapper {
+  void acceptTypeVisitor(TypeVisitor &);
+  void acceptOperationVisitor(OperationVisitor &);
+  void acceptChildVisitor(ChildVisitor &);
+};

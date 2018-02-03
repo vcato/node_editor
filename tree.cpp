@@ -17,7 +17,21 @@ using OperationVisitor = Tree::OperationVisitor;
 
 
 namespace {
-struct XPolicy {
+struct SimplePolicy {
+  void comboBoxItemIndexChanged(
+    const Path &/*path*/,
+    int /*index*/,
+    TreeItem::OperationHandler &/*operation_handler*/
+  )
+  {
+    assert(false);
+  }
+};
+}
+
+
+namespace {
+struct XPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -31,7 +45,7 @@ struct XPolicy {
 
 
 namespace {
-struct YPolicy {
+struct YPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -45,7 +59,7 @@ struct YPolicy {
 
 
 namespace {
-struct ZPolicy {
+struct ZPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -77,12 +91,19 @@ struct GlobalPositionPolicy {
     vector<string> enumeration_names = {"Components","From Body"};
     visitor.enumeratedItem("Global Position",enumeration_names);
   }
+
+  void
+    comboBoxItemIndexChanged(
+      const Path &path,
+      int index,
+      TreeItem::OperationHandler &operation_handler
+    );
 };
 }
 
 
 namespace {
-struct LocalPositionPolicy {
+struct LocalPositionPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -96,7 +117,7 @@ struct LocalPositionPolicy {
 
 
 namespace {
-struct SourceBodyPolicy {
+struct SourceBodyPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -111,7 +132,7 @@ struct SourceBodyPolicy {
 
 
 namespace {
-struct TargetBodyPolicy {
+struct TargetBodyPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -126,7 +147,7 @@ struct TargetBodyPolicy {
 
 
 namespace {
-struct PosExprPolicy {
+struct PosExprPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -163,7 +184,7 @@ static TreeItem posExprItem()
 
 
 namespace {
-struct MotionPassPolicy {
+struct MotionPassPolicy : SimplePolicy {
   void visitOperations(const Path &path,const OperationVisitor &visitor)
   {
     visitor(
@@ -189,7 +210,7 @@ static TreeItem motionPassItem()
 
 
 namespace {
-struct CharmapperPolicy {
+struct CharmapperPolicy : SimplePolicy {
   void visitOperations(const Path &path,const OperationVisitor &visitor)
   {
     cerr << "CharmapperPolicy::visitOperations()\n";
@@ -216,7 +237,7 @@ static TreeItem charmapperItem()
 
 
 namespace {
-struct BodyPolicy {
+struct BodyPolicy : SimplePolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
@@ -236,7 +257,7 @@ static TreeItem bodyItem()
 
 
 namespace {
-struct ScenePolicy {
+struct ScenePolicy : SimplePolicy {
   void visitOperations(const Path &path,const OperationVisitor &visitor)
   {
     visitor(
@@ -283,8 +304,20 @@ void
 }
 
 
+void
+  TreeItem::Policy::comboBoxItemIndexChanged(
+    const Path &path,
+    int index,
+    OperationHandler &operation_handler
+  )
+{
+  assert(ptr);
+  ptr->comboBoxItemIndexChanged(path,index,operation_handler);
+}
+
+
 namespace {
-struct RootPolicy {
+struct RootPolicy : SimplePolicy {
   Tree &tree;
 
   RootPolicy(Tree &tree_arg)
@@ -322,7 +355,7 @@ struct RootPolicy {
 
 
 namespace {
-struct EmptyPolicy {
+struct EmptyPolicy : SimplePolicy {
   void visitOperations(const Path &,const Tree::OperationVisitor &)
   {
     cerr << "EmptyPolicy::visitOperations()\n";
@@ -354,6 +387,7 @@ auto Tree::itemType(const Path &path) const -> ItemType
 }
 
 
+
 TreeItem::TreeItem(Type type_arg,Policy policy_arg)
   : type(type_arg), policy(policy_arg)
 {
@@ -378,12 +412,6 @@ TreeItem::TreeItem(Type type_arg,Policy policy_arg)
 
     diagram.connectNodes(vector_index,0,local_postion_index,0);
   }
-}
-
-
-TreeItem::TreeItem(Type type_arg)
-: TreeItem(type_arg,EmptyPolicy())
-{
 }
 
 
@@ -473,7 +501,7 @@ void Tree::visitOperations(const Path &path,OperationVisitor visitor)
 
 static TreeItem globalPositionComponentsItems()
 {
-  TreeItem items(TreeItem::Type::root);
+  TreeItem items(TreeItem::Type::root,EmptyPolicy());
   createXYZChildren(items);
   items.diagram = fromComponentsDiagram();
   return items;
@@ -482,7 +510,7 @@ static TreeItem globalPositionComponentsItems()
 
 static TreeItem globalPositionFromBodyItems()
 {
-  TreeItem items(TreeItem::Type::root);
+  TreeItem items(TreeItem::Type::root,EmptyPolicy());
   items.createItem2(TreeItem::Type::source_body,SourceBodyPolicy());
   TreeItem &local_position_item =
     items.createItem2(TreeItem::Type::local_position,LocalPositionPolicy());
@@ -493,32 +521,41 @@ static TreeItem globalPositionFromBodyItems()
 
 
 void
+  GlobalPositionPolicy::comboBoxItemIndexChanged(
+    const Path &path,
+    int index,
+    TreeItem::OperationHandler &operation_handler
+  )
+{
+  switch (index) {
+    case 0:
+      // Components
+      {
+        TreeItem items = globalPositionComponentsItems();
+        operation_handler.replaceTreeItems(path,items);
+      }
+      break;
+    case 1:
+      // From Body
+      {
+        TreeItem items = globalPositionFromBodyItems();
+        operation_handler.replaceTreeItems(path,items);
+      }
+      break;
+    default:
+      assert(false);
+  }
+}
+
+
+void
   Tree::comboBoxItemIndexChanged(
     const Path &path,
     int index,
     OperationHandler &operation_handler
   )
 {
-  if (itemType(path)==TreeItem::Type::global_position) {
-    switch (index) {
-      case 0:
-        // Components
-        {
-          TreeItem items = globalPositionComponentsItems();
-          operation_handler.replaceTreeItems(path,items);
-        }
-        break;
-      case 1:
-        // From Body
-        {
-          TreeItem items = globalPositionFromBodyItems();
-          operation_handler.replaceTreeItems(path,items);
-        }
-        break;
-      default:
-        assert(false);
-    }
-  }
+  getItem(path).comboBoxItemIndexChanged(path,index,operation_handler);
 }
 
 

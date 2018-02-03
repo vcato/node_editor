@@ -6,7 +6,6 @@
 #include <vector>
 #include "diagram.hpp"
 
-
 struct TreeItem {
   using Path = std::vector<int>;
   using Index = int;
@@ -66,6 +65,12 @@ struct TreeItem {
       virtual PolicyInterface *clone() = 0;
       virtual void visitOperations(const Path &,const OperationVisitor &) = 0;
       virtual void visitType(const Visitor &) = 0;
+      virtual void
+        comboBoxItemIndexChanged(
+          const Path &path,
+          int index,
+          OperationHandler &operation_handler
+        ) = 0;
     };
 
     template <typename T>
@@ -88,6 +93,16 @@ struct TreeItem {
       {
         return new BasicPolicy<T>(*this);
       }
+
+      virtual void
+        comboBoxItemIndexChanged(
+          const Path &path,
+          int index,
+          OperationHandler &operation_handler
+        )
+      {
+        object.comboBoxItemIndexChanged(path,index,operation_handler);
+      }
     };
 
     PolicyInterface *ptr = 0;
@@ -106,7 +121,15 @@ struct TreeItem {
     void operator=(const Policy &) = delete;
 
     void visitOperations(const Path &path,const OperationVisitor &visitor);
+
     void visitType(const Visitor &) const;
+
+    void
+      comboBoxItemIndexChanged(
+        const Path &path,
+        int index,
+        OperationHandler &operation_handler
+      );
 
     ~Policy()
     {
@@ -119,7 +142,6 @@ struct TreeItem {
   std::vector<TreeItem> child_items;
   Policy policy;
 
-  TreeItem(Type);
   TreeItem(Type,Policy);
 
   const TreeItem &getItem(const Path &,int depth) const;
@@ -128,11 +150,21 @@ struct TreeItem {
   TreeItem& createItem2(const TreeItem &);
   TreeItem& createItem2(Type,Policy);
   void visit(const Visitor &) const;
+
+  void visitOperations(const Path &path,const OperationVisitor &visitor)
+  {
+    policy.visitOperations(path,visitor);
+  }
+
   void
-    visitOperations(const Path &path,const OperationVisitor &visitor)
-    {
-      policy.visitOperations(path,visitor);
-    }
+    comboBoxItemIndexChanged(
+      const Path &path,
+      int index,
+      OperationHandler &operation_handler
+    )
+  {
+    policy.comboBoxItemIndexChanged(path,index,operation_handler);
+  }
 };
 
 
