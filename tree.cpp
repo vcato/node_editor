@@ -11,7 +11,6 @@ using std::cerr;
 using std::function;
 using std::vector;
 
-using ItemType = TreeItem::Type;
 using Path = Tree::Path;
 using OperationVisitor = Tree::OperationVisitor;
 
@@ -26,6 +25,11 @@ struct SimplePolicy {
   {
     assert(false);
   }
+
+  Diagram defaultDiagram()
+  {
+    return Diagram();
+  }
 };
 }
 
@@ -36,7 +40,7 @@ struct XPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.numericItem("X");
   }
@@ -50,7 +54,7 @@ struct YPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.numericItem("Y");
   }
@@ -64,7 +68,7 @@ struct ZPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.numericItem("Z");
   }
@@ -74,9 +78,9 @@ struct ZPolicy : SimplePolicy {
 
 static void createXYZChildren(TreeItem &parent_item)
 {
-  parent_item.createItem2(ItemType::x,XPolicy());
-  parent_item.createItem2(ItemType::y,YPolicy());
-  parent_item.createItem2(ItemType::z,ZPolicy());
+  parent_item.createItem2(XPolicy{});
+  parent_item.createItem2(YPolicy{});
+  parent_item.createItem2(ZPolicy{});
 }
 
 
@@ -86,7 +90,7 @@ struct GlobalPositionPolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     vector<string> enumeration_names = {"Components","From Body"};
     visitor.enumeratedItem("Global Position",enumeration_names);
@@ -98,19 +102,61 @@ struct GlobalPositionPolicy {
       int index,
       TreeItem::OperationHandler &operation_handler
     );
+
+  Diagram defaultDiagram() { return Diagram(); }
 };
 }
 
 
+static Diagram localPositionDiagram()
+{
+  Diagram diagram;
+  NodeIndex vector_index = diagram.addNode("[$,$,$]");
+  diagram.node(vector_index).setPosition({100,180});
+
+  NodeIndex x_index = diagram.addNode("x");
+  diagram.connectNodes(x_index,0,vector_index,0);
+  diagram.node(x_index).setPosition({20,200});
+
+  NodeIndex y_index = diagram.addNode("y");
+  diagram.node(y_index).setPosition({20,150});
+  diagram.connectNodes(y_index,0,vector_index,1);
+
+  NodeIndex z_index = diagram.addNode("z");
+  diagram.node(z_index).setPosition({20,100});
+  diagram.connectNodes(z_index,0,vector_index,2);
+
+  NodeIndex local_postion_index = diagram.addNode("local_position=$");
+  diagram.node(local_postion_index).setPosition({230,150});
+
+  diagram.connectNodes(vector_index,0,local_postion_index,0);
+  return diagram;
+}
+
+
 namespace {
-struct LocalPositionPolicy : SimplePolicy {
+struct LocalPositionPolicy {
   void visitOperations(const Path &,const OperationVisitor &)
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Local Position");
+  }
+
+  Diagram defaultDiagram()
+  {
+    return localPositionDiagram();
+  }
+
+  void comboBoxItemIndexChanged(
+    const Path &/*path*/,
+    int /*index*/,
+    TreeItem::OperationHandler &/*operation_handler*/
+  )
+  {
+    assert(false);
   }
 };
 }
@@ -122,7 +168,7 @@ struct SourceBodyPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
     visitor.enumeratedItem("Source Body",enumeration_names);
@@ -137,7 +183,7 @@ struct TargetBodyPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
     visitor.enumeratedItem("Target Body",enumeration_names);
@@ -152,7 +198,7 @@ struct PosExprPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Pos Expr");
   }
@@ -162,19 +208,17 @@ struct PosExprPolicy : SimplePolicy {
 
 static TreeItem posExprItem()
 {
-  TreeItem pos_expr_item(ItemType::pos_expr,PosExprPolicy());
-  pos_expr_item.createItem2(ItemType::target_body,TargetBodyPolicy());
+  TreeItem pos_expr_item(PosExprPolicy{});
+  pos_expr_item.createItem2(TargetBodyPolicy{});
   pos_expr_item.diagram = posExprDiagram();
   {
     TreeItem &local_position_item =
-      pos_expr_item.createItem2(ItemType::local_position,LocalPositionPolicy());
+      pos_expr_item.createItem2(LocalPositionPolicy{});
     createXYZChildren(local_position_item);
   }
   {
     TreeItem &global_position_item =
-      pos_expr_item.createItem2(
-        ItemType::global_position,GlobalPositionPolicy()
-      );
+      pos_expr_item.createItem2(GlobalPositionPolicy{});
     createXYZChildren(global_position_item);
     global_position_item.diagram = fromComponentsDiagram();
   }
@@ -195,7 +239,7 @@ struct MotionPassPolicy : SimplePolicy {
     );
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Motion Pass");
   }
@@ -205,7 +249,7 @@ struct MotionPassPolicy : SimplePolicy {
 
 static TreeItem motionPassItem()
 {
-  return TreeItem(ItemType::motion_pass,MotionPassPolicy());
+  return TreeItem(MotionPassPolicy{});
 }
 
 
@@ -222,7 +266,7 @@ struct CharmapperPolicy : SimplePolicy {
     );
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Charmapper");
   }
@@ -232,7 +276,7 @@ struct CharmapperPolicy : SimplePolicy {
 
 static TreeItem charmapperItem()
 {
-  return TreeItem(ItemType::charmapper,CharmapperPolicy());
+  return TreeItem(CharmapperPolicy{});
 }
 
 
@@ -242,7 +286,7 @@ struct BodyPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &visitor)
+  void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Body");
   }
@@ -252,7 +296,7 @@ struct BodyPolicy : SimplePolicy {
 
 static TreeItem bodyItem()
 {
-  return TreeItem(ItemType::body,BodyPolicy());
+  return TreeItem(BodyPolicy{});
 }
 
 
@@ -279,40 +323,7 @@ struct ScenePolicy : SimplePolicy {
 
 static TreeItem sceneItem()
 {
-  return TreeItem(ItemType::scene,ScenePolicy());
-}
-
-
-void
-  TreeItem::Policy::visitOperations(
-    const Path &path,
-    const OperationVisitor &visitor
-  )
-{
-  assert(ptr);
-  ptr->visitOperations(path,visitor);
-}
-
-
-void
-  TreeItem::Policy::visitType(
-    const Visitor &visitor
-  ) const
-{
-  assert(ptr);
-  ptr->visitType(visitor);
-}
-
-
-void
-  TreeItem::Policy::comboBoxItemIndexChanged(
-    const Path &path,
-    int index,
-    OperationHandler &operation_handler
-  )
-{
-  assert(ptr);
-  ptr->comboBoxItemIndexChanged(path,index,operation_handler);
+  return TreeItem(ScenePolicy{});
 }
 
 
@@ -346,7 +357,7 @@ struct RootPolicy : SimplePolicy {
     );
   }
 
-  void visitType(const TreeItem::Visitor &)
+  void visitType(const TreeItem::Visitor &) const
   {
     assert(false);
   }
@@ -361,7 +372,7 @@ struct EmptyPolicy : SimplePolicy {
     cerr << "EmptyPolicy::visitOperations()\n";
   }
 
-  void visitType(const TreeItem::Visitor &)
+  void visitType(const TreeItem::Visitor &) const
   {
     assert(false);
   }
@@ -370,7 +381,7 @@ struct EmptyPolicy : SimplePolicy {
 
 
 Tree::Tree()
-: _root_item(ItemType::root,RootPolicy(*this))
+: _root_item(RootPolicy(*this))
 {
 }
 
@@ -381,37 +392,10 @@ Path Tree::createItem(const Path &parent_path,const Item &item)
 }
 
 
-auto Tree::itemType(const Path &path) const -> ItemType
+TreeItem::TreeItem(Policy policy_arg)
+  : diagram(policy_arg.defaultDiagram()),
+    policy(policy_arg)
 {
-  return getItem(path).type;
-}
-
-
-
-TreeItem::TreeItem(Type type_arg,Policy policy_arg)
-  : type(type_arg), policy(policy_arg)
-{
-  if (type==Type::local_position) {
-    NodeIndex vector_index = diagram.addNode("[$,$,$]");
-    diagram.node(vector_index).setPosition({100,180});
-
-    NodeIndex x_index = diagram.addNode("x");
-    diagram.connectNodes(x_index,0,vector_index,0);
-    diagram.node(x_index).setPosition({20,200});
-
-    NodeIndex y_index = diagram.addNode("y");
-    diagram.node(y_index).setPosition({20,150});
-    diagram.connectNodes(y_index,0,vector_index,1);
-
-    NodeIndex z_index = diagram.addNode("z");
-    diagram.node(z_index).setPosition({20,100});
-    diagram.connectNodes(z_index,0,vector_index,2);
-
-    NodeIndex local_postion_index = diagram.addNode("local_position=$");
-    diagram.node(local_postion_index).setPosition({230,150});
-
-    diagram.connectNodes(vector_index,0,local_postion_index,0);
-  }
 }
 
 
@@ -424,25 +408,21 @@ void TreeItem::visit(const Visitor &visitor) const
 auto TreeItem::createItem(const TreeItem &item) -> Index
 {
   Index result = child_items.size();
-  child_items.push_back(TreeItem(item.type,item.policy));
+  child_items.push_back(TreeItem(item.policy));
   return result;
 }
 
 
-auto
-  TreeItem::createItem2(
-    ItemType type,
-    TreeItem::Policy policy
-  ) -> TreeItem&
+auto TreeItem::createItem2(TreeItem::Policy policy) -> TreeItem&
 {
-  child_items.push_back(TreeItem(type,policy));
+  child_items.push_back(TreeItem(policy));
   return child_items.back();
 }
 
 
 auto TreeItem::createItem2(const TreeItem &item) -> TreeItem&
 {
-  child_items.push_back(TreeItem(item.type,item.policy));
+  child_items.push_back(TreeItem(item.policy));
   return child_items.back();
 }
 
@@ -501,7 +481,7 @@ void Tree::visitOperations(const Path &path,OperationVisitor visitor)
 
 static TreeItem globalPositionComponentsItems()
 {
-  TreeItem items(TreeItem::Type::root,EmptyPolicy());
+  TreeItem items(EmptyPolicy{});
   createXYZChildren(items);
   items.diagram = fromComponentsDiagram();
   return items;
@@ -510,10 +490,9 @@ static TreeItem globalPositionComponentsItems()
 
 static TreeItem globalPositionFromBodyItems()
 {
-  TreeItem items(TreeItem::Type::root,EmptyPolicy());
-  items.createItem2(TreeItem::Type::source_body,SourceBodyPolicy());
-  TreeItem &local_position_item =
-    items.createItem2(TreeItem::Type::local_position,LocalPositionPolicy());
+  TreeItem items(EmptyPolicy{});
+  items.createItem2(SourceBodyPolicy{});
+  TreeItem &local_position_item = items.createItem2(LocalPositionPolicy{});
   items.diagram = fromBodyDiagram();
   createXYZChildren(local_position_item);
   return items;

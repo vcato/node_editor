@@ -4,28 +4,13 @@
 #include <string>
 
 #include <vector>
+#include <cassert>
 #include "diagram.hpp"
+
 
 struct TreeItem {
   using Path = std::vector<int>;
   using Index = int;
-
-  enum class Type {
-    root,
-    charmapper,
-    scene,
-    body,
-    motion_pass,
-    pos_expr,
-    target_body,
-    source_body,
-    local_position,
-    global_position,
-    weight,
-    x,
-    y,
-    z
-  };
 
   struct OperationHandler;
 
@@ -62,15 +47,16 @@ struct TreeItem {
   struct Policy {
     struct PolicyInterface {
       virtual ~PolicyInterface() {}
-      virtual PolicyInterface *clone() = 0;
+      virtual PolicyInterface *clone() const = 0;
       virtual void visitOperations(const Path &,const OperationVisitor &) = 0;
-      virtual void visitType(const Visitor &) = 0;
+      virtual void visitType(const Visitor &) const = 0;
       virtual void
         comboBoxItemIndexChanged(
           const Path &path,
           int index,
           OperationHandler &operation_handler
         ) = 0;
+      virtual Diagram defaultDiagram() = 0;
     };
 
     template <typename T>
@@ -84,12 +70,12 @@ struct TreeItem {
         object.visitOperations(path,visitor);
       }
 
-      virtual void visitType(const Visitor &visitor)
+      virtual void visitType(const Visitor &visitor) const
       {
         object.visitType(visitor);
       }
 
-      virtual PolicyInterface *clone()
+      virtual PolicyInterface *clone() const
       {
         return new BasicPolicy<T>(*this);
       }
@@ -103,9 +89,26 @@ struct TreeItem {
       {
         object.comboBoxItemIndexChanged(path,index,operation_handler);
       }
+
+      virtual Diagram defaultDiagram()
+      {
+        return object.defaultDiagram();
+      }
     };
 
     PolicyInterface *ptr = 0;
+
+    const PolicyInterface &interface() const
+    {
+      assert(ptr);
+      return *ptr;
+    }
+
+    PolicyInterface &interface()
+    {
+      assert(ptr);
+      return *ptr;
+    }
 
     template <typename T>
     Policy(const T &arg)
@@ -114,41 +117,55 @@ struct TreeItem {
     }
 
     Policy(const Policy &arg)
-    : ptr(arg.ptr->clone())
+    : ptr(arg.interface().clone())
     {
     }
 
     void operator=(const Policy &) = delete;
 
-    void visitOperations(const Path &path,const OperationVisitor &visitor);
+    void
+      visitOperations(
+        const Path &path,
+        const OperationVisitor &visitor
+      )
+    {
+      interface().visitOperations(path,visitor);
+    }
 
-    void visitType(const Visitor &) const;
+    void
+      visitType(
+        const Visitor &visitor
+      ) const
+    {
+      interface().visitType(visitor);
+    }
+
+    Diagram defaultDiagram() { return interface().defaultDiagram(); }
 
     void
       comboBoxItemIndexChanged(
         const Path &path,
         int index,
         OperationHandler &operation_handler
-      );
-
-    ~Policy()
+      )
     {
-      delete ptr;
+      interface().comboBoxItemIndexChanged(path,index,operation_handler);
     }
+
+    ~Policy() { delete ptr; }
   };
 
-  Type type;
   Diagram diagram;
   std::vector<TreeItem> child_items;
   Policy policy;
 
-  TreeItem(Type,Policy);
+  TreeItem(Policy);
 
   const TreeItem &getItem(const Path &,int depth) const;
 
   Index createItem(const TreeItem &item);
   TreeItem& createItem2(const TreeItem &);
-  TreeItem& createItem2(Type,Policy);
+  TreeItem& createItem2(Policy);
   void visit(const Visitor &) const;
 
   void visitOperations(const Path &path,const OperationVisitor &visitor)
@@ -196,11 +213,8 @@ class Tree {
     WorldInterface &world();
 
   private:
-    using ItemType = Item::Type;
-
     Item &getItem(const Path &);
     const Item &getItem(const Path &) const;
-    ItemType itemType(const Path &) const;
 
     WorldInterface *_world_ptr = nullptr;
     Item _root_item;
