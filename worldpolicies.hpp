@@ -223,4 +223,10 @@ struct EmptyPolicy : SimplePolicy {
 };
 
 
+extern void
+  visitRootOperations(
+    const Path &path,
+    const Tree::OperationVisitor &visitor,
+    WorldInterface &world
+  );
 }

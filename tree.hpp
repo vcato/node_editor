@@ -191,10 +191,8 @@ struct WorldInterface {
 
   virtual void addScene() = 0;
   virtual void addCharmapper() = 0;
-#if 1
-  virtual void
+  virtual bool
     visitOperations(const TreePath &,int depth,const OperationVisitor &) = 0;
-#endif
 };
 
 
@@ -218,7 +216,6 @@ class Tree {
     Diagram *itemDiagramPtr(const Path &);
     void setItemDiagram(const Path &,const Diagram &);
     void visitOperations(const Path &,const OperationVisitor &visitor);
-    void visitOperations2(const Path &path,const OperationVisitor &visitor);
     void visitItem(const Item &,const ItemVisitor &visitor);
     WorldInterface &world();
 

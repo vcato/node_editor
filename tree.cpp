@@ -118,13 +118,11 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
 
 void Tree::visitOperations(const Path &path,const OperationVisitor &visitor)
 {
+  if (world().visitOperations(path,/*depth*/0,visitor)) {
+    return;
+  }
+
   getItem(path).visitOperations(path,visitor);
-}
-
-
-void Tree::visitOperations2(const Path &path,const OperationVisitor &visitor)
-{
-  world().visitOperations(path,/*depth*/0,visitor);
 }
 
 

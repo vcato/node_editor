@@ -168,25 +168,38 @@ static TreeItem charmapperItem()
 
 namespace world_policies {
 void
-  RootPolicy::visitOperations(
+  visitRootOperations(
     const Path &path,
-    const Tree::OperationVisitor &visitor
+    const Tree::OperationVisitor &visitor,
+    WorldInterface &world
   )
 {
   visitor(
     "Add Charmapper",
-    [path,this](TreeOperationHandler &handler){
-      tree.world().addCharmapper();
+    [path,&world](TreeOperationHandler &handler){
+      world.addCharmapper();
       handler.addItem(path,charmapperItem());
     }
   );
   visitor(
     "Add Scene",
-    [path,this](TreeOperationHandler &handler){
-      tree.world().addScene();
+    [path,&world](TreeOperationHandler &handler){
+      world.addScene();
       handler.addItem(path,sceneItem());
     }
   );
+}
+}
+
+
+namespace world_policies {
+void
+  RootPolicy::visitOperations(
+    const Path &path,
+    const Tree::OperationVisitor &visitor
+  )
+{
+  visitRootOperations(path,visitor,tree.world());
 }
 }
 
