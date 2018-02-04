@@ -9,11 +9,6 @@ struct WorldWrapper : WorldInterface, Wrapper {
 
   WorldWrapper(World &world_arg) : world(world_arg) { }
 
-  virtual bool
-    visitOperations(
-      const TreePath &path,int depth,const OperationVisitor &visitor
-    );
-
   virtual void
     visitOperations(
       const TreePath &path,

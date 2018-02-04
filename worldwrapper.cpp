@@ -98,22 +98,6 @@ void
 }
 
 
-bool
-  WorldWrapper::visitOperations(
-    const TreePath &path,int depth,const OperationVisitor &/*visitor*/
-  )
-{
-  int path_length = path.size();
-
-  if (depth==path_length) {
-    assert(false);
-    return false;
-  }
-
-  return false;
-}
-
-
 void
   WorldWrapper::visitChildWrapper(
     const TreePath &path,
