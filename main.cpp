@@ -3,6 +3,8 @@
 #include <iostream>
 #include "qtmainwindow.hpp"
 #include "worldpolicies.hpp"
+#include "world.hpp"
+
 
 
 using std::vector;
@@ -18,212 +20,21 @@ struct QtSceneViewer : QGLWidget {
 }
 
 
-static TreeItem motionPassItem()
-{
-  return TreeItem(world_policies::MotionPassPolicy{});
-}
-
-
-static TreeItem posExprItem()
-{
-  TreeItem pos_expr_item(world_policies::PosExprPolicy{});
-  pos_expr_item.createItem2(world_policies::TargetBodyPolicy{});
-  pos_expr_item.diagram = posExprDiagram();
-  {
-    TreeItem &local_position_item =
-      pos_expr_item.createItem2(world_policies::LocalPositionPolicy{});
-    world_policies::createXYZChildren(local_position_item);
-  }
-  {
-    TreeItem &global_position_item =
-      pos_expr_item.createItem2(world_policies::GlobalPositionPolicy{});
-    world_policies::createXYZChildren(global_position_item);
-    global_position_item.diagram = fromComponentsDiagram();
-  }
-
-  return pos_expr_item;
-}
-
-
-static TreeItem bodyItem()
-{
-  return TreeItem(world_policies::BodyPolicy{});
-}
-
-
-static TreeItem sceneItem()
-{
-  return TreeItem(world_policies::ScenePolicy{});
-}
-
-
-static TreeItem charmapperItem()
-{
-  return TreeItem(world_policies::CharmapperPolicy{});
-}
-
-
 namespace {
-struct Charmapper {
-  struct MotionPass {
-  };
-
-  vector<MotionPass> passes;
-
-  void addMotionPass()
-  {
-    passes.push_back(MotionPass());
-  }
-};
-}
-
-
-namespace {
-struct QtWorld : WorldInterface {
+struct QtWorld : World {
   QtMainWindow &main_window;
-
-  struct WorldObject {
-    virtual bool
-      visitOperations(
-        const TreePath &path,int depth,const OperationVisitor &visitor
-      ) = 0;
-  };
-
-  struct CharmapperObject : WorldObject {
-    Charmapper charmapper;
-
-    struct MotionPassWrapper {
-      Charmapper::MotionPass &motion_pass;
-
-      bool
-        visitOperations(
-          const TreePath &path,
-          int depth,
-          const OperationVisitor &visitor
-        )
-      {
-        int path_length = path.size();
-
-        if (depth==path_length) {
-          visitor(
-            "Add Pos Expr",
-            [path](TreeOperationHandler &handler){
-              handler.addItem(path,posExprItem());
-            }
-          );
-
-          return true;
-        }
-
-        return false;
-      }
-    };
-
-    virtual bool
-      visitOperations(
-        const TreePath &path,
-        int depth,
-        const OperationVisitor &visitor
-      )
-    {
-      int path_length = path.size();
-
-      if (depth==path_length) {
-        visitor(
-          "Add Motion Pass",
-          [path,this](TreeOperationHandler &handler){
-            charmapper.addMotionPass();
-            handler.addItem(path,motionPassItem());
-          }
-        );
-
-        return true;
-      }
-
-      int child_index = path[depth];
-
-      MotionPassWrapper child_wrapper{charmapper.passes[child_index]};
-      return child_wrapper.visitOperations(path,depth+1,visitor);
-    }
-  };
-
-  struct SceneObject : WorldObject {
-    virtual bool
-      visitOperations(
-        const TreePath &path,
-        int depth,
-        const OperationVisitor &visitor
-      )
-    {
-      int path_length = path.size();
-
-      if (depth==path_length) {
-        visitor(
-          "Add Body",
-          [path](TreeOperationHandler &handler){
-            handler.addItem(path,bodyItem());
-          }
-        );
-
-        return true;
-      }
-
-      return false;
-    }
-  };
-
-  vector<unique_ptr<WorldObject>> world_objects;
 
   QtWorld(QtMainWindow &main_window_arg)
   : main_window(main_window_arg)
   {
   }
 
-  virtual void addScene()
+  virtual void createSceneWindow()
   {
-    world_objects.push_back(make_unique<SceneObject>());
     QDialog &dialog = createWidget<QDialog>(main_window);
     QBoxLayout &layout = createLayout<QVBoxLayout>(dialog);
     createWidget<QtSceneViewer>(layout);
     dialog.show();
-  }
-
-  virtual void addCharmapper()
-  {
-    world_objects.push_back(make_unique<CharmapperObject>());
-  }
-
-  virtual bool
-    visitOperations(
-      const TreePath &path,int depth,const OperationVisitor &visitor
-    )
-  {
-    int path_length = path.size();
-
-    if (depth==path_length) {
-      visitor(
-        "Add Charmapper",
-        [path,this](TreeOperationHandler &handler){
-          addCharmapper();
-          handler.addItem(path,charmapperItem());
-        }
-      );
-      visitor(
-        "Add Scene",
-        [path,this](TreeOperationHandler &handler){
-          addScene();
-          handler.addItem(path,sceneItem());
-        }
-      );
-
-      return true;
-    }
-
-    int child_index = path[depth];
-
-    assert(world_objects[child_index]);
-    WorldObject &child = *world_objects[child_index];
-    return child.visitOperations(path,depth+1,visitor);
   }
 };
 }

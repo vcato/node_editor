@@ -1,3 +1,6 @@
+#ifndef WORLDPOLICIES_HPP_
+#define WORLDPOLICIES_HPP_
+
 #include "defaultdiagrams.hpp"
 #include "tree.hpp"
 
@@ -177,3 +180,5 @@ struct EmptyPolicy : SimplePolicy {
 extern void createXYZChildren(TreeItem &parent_item);
 
 }
+
+#endif /* WORLDPOLICIES_HPP_ */

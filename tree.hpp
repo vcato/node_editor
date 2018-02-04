@@ -169,8 +169,6 @@ using TreePath = std::vector<int>;
 struct WorldInterface {
   using OperationVisitor = TreeItem::OperationVisitor;
 
-  virtual void addScene() = 0;
-  virtual void addCharmapper() = 0;
   virtual bool
     visitOperations(const TreePath &,int depth,const OperationVisitor &) = 0;
 };
