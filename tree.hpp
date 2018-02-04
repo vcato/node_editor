@@ -184,15 +184,23 @@ struct TreeItem {
 };
 
 
+using TreePath = std::vector<int>;
+
 struct WorldInterface {
+  using OperationVisitor = TreeItem::OperationVisitor;
+
   virtual void addScene() = 0;
   virtual void addCharmapper() = 0;
+#if 1
+  virtual void
+    visitOperations(const TreePath &,int depth,const OperationVisitor &) = 0;
+#endif
 };
 
 
 class Tree {
   public:
-    using Path = std::vector<int>;
+    using Path = TreePath;
     using Index = int;
     using SizeType = int;
     using Item = TreeItem;
@@ -209,7 +217,8 @@ class Tree {
     void removeChildItems(const Path &);
     Diagram *itemDiagramPtr(const Path &);
     void setItemDiagram(const Path &,const Diagram &);
-    void visitOperations(const Path &,OperationVisitor visitor);
+    void visitOperations(const Path &,const OperationVisitor &visitor);
+    void visitOperations2(const Path &path,const OperationVisitor &visitor);
     void visitItem(const Item &,const ItemVisitor &visitor);
     WorldInterface &world();
 

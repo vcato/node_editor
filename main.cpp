@@ -8,11 +8,14 @@ using std::unique_ptr;
 using std::make_unique;
 
 
+namespace {
 struct QtSceneViewer : QGLWidget {
   QSize sizeHint() const override { return QSize(640,480); }
 };
+}
 
 
+namespace {
 struct QtWorld : WorldInterface {
   QtMainWindow &main_window;
 
@@ -41,7 +44,43 @@ struct QtWorld : WorldInterface {
   {
     world_objects.push_back(make_unique<CharmapperObject>());
   }
+
+#if 0
+  virtual void
+    visitOperations(
+      const TreePath &path,int depth,const OperationVisitor &
+    )
+  {
+    int path_length = path.size();
+
+    if (depth==path_length) {
+      visitor(
+        "Add Charmapper",
+        [path,this](TreeOperationHandler &handler){
+          addCharmapper();
+          handler.addItem(path,charmapperItem());
+        }
+      );
+      visitor(
+        "Add Scene",
+        [path,this](TreeOperationHandler &handler){
+          tree.world().addScene();
+          handler.addItem(path,sceneItem());
+        }
+      );
+    }
+  }
+#else
+  virtual void
+    visitOperations(
+      const TreePath &,int,const OperationVisitor &
+    )
+  {
+    assert(false);
+  }
+#endif
 };
+}
 
 
 int main(int argc,char** argv)
