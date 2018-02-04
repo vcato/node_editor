@@ -51,6 +51,18 @@ static TreeItem bodyItem()
 }
 
 
+static TreeItem sceneItem()
+{
+  return TreeItem(world_policies::ScenePolicy{});
+}
+
+
+static TreeItem charmapperItem()
+{
+  return TreeItem(world_policies::CharmapperPolicy{});
+}
+
+
 namespace {
 struct Charmapper {
   struct MotionPass {
@@ -189,7 +201,21 @@ struct QtWorld : WorldInterface {
     int path_length = path.size();
 
     if (depth==path_length) {
-      world_policies::visitRootOperations(path,visitor,*this);
+      visitor(
+        "Add Charmapper",
+        [path,this](TreeOperationHandler &handler){
+          addCharmapper();
+          handler.addItem(path,charmapperItem());
+        }
+      );
+      visitor(
+        "Add Scene",
+        [path,this](TreeOperationHandler &handler){
+          addScene();
+          handler.addItem(path,sceneItem());
+        }
+      );
+
       return true;
     }
 

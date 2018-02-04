@@ -176,23 +176,4 @@ struct EmptyPolicy : SimplePolicy {
 
 extern void createXYZChildren(TreeItem &parent_item);
 
-extern void
-  visitRootOperations(
-    const Path &path,
-    const Tree::OperationVisitor &visitor,
-    WorldInterface &world
-  );
-
-extern void
-  visitSceneOperations(
-    const Path &path,
-    const OperationVisitor &visitor
-  );
-
-extern void
-  visitMotionPassOperations(
-    const Path &path,
-    const OperationVisitor &visitor
-  );
-
 }
