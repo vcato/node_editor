@@ -1,7 +1,9 @@
 #include "charmapperwrapper.hpp"
 
+#include <iostream>
 #include "worldpolicies.hpp"
 
+using std::cerr;
 using OperationVisitor = TreeItem::OperationVisitor;
 
 
@@ -46,9 +48,11 @@ struct MotionPassWrapper {
     int path_length = path.size();
 
     if (depth==path_length) {
+      Charmapper::MotionPass &motion_pass = this->motion_pass;
       visitor(
         "Add Pos Expr",
-        [path](TreeOperationHandler &handler){
+        [path,&motion_pass](TreeOperationHandler &handler){
+          motion_pass.addPosExpr();
           handler.addItem(path,posExprItem());
         }
       );
@@ -82,7 +86,8 @@ bool
   }
 
   int child_index = path[depth];
+  assert(charmapper.passes[child_index]);
 
-  MotionPassWrapper child_wrapper{charmapper.passes[child_index]};
+  MotionPassWrapper child_wrapper{*charmapper.passes[child_index]};
   return child_wrapper.visitOperations(path,depth+1,visitor);
 }
