@@ -2,7 +2,7 @@
 
 
 namespace world_policies {
-static void createXYZChildren(TreeItem &parent_item)
+void createXYZChildren(TreeItem &parent_item)
 {
   parent_item.createItem2(XPolicy{});
   parent_item.createItem2(YPolicy{});
@@ -10,29 +10,6 @@ static void createXYZChildren(TreeItem &parent_item)
 }
 }
 
-
-
-namespace world_policies {
-static TreeItem posExprItem()
-{
-  TreeItem pos_expr_item(PosExprPolicy{});
-  pos_expr_item.createItem2(TargetBodyPolicy{});
-  pos_expr_item.diagram = posExprDiagram();
-  {
-    TreeItem &local_position_item =
-      pos_expr_item.createItem2(LocalPositionPolicy{});
-    createXYZChildren(local_position_item);
-  }
-  {
-    TreeItem &global_position_item =
-      pos_expr_item.createItem2(GlobalPositionPolicy{});
-    createXYZChildren(global_position_item);
-    global_position_item.diagram = fromComponentsDiagram();
-  }
-
-  return pos_expr_item;
-}
-}
 
 
 namespace world_policies {
@@ -126,31 +103,6 @@ Diagram LocalPositionPolicy::defaultDiagram()
 
 
 namespace world_policies {
-static TreeItem motionPassItem()
-{
-  return TreeItem(MotionPassPolicy{});
-}
-}
-
-
-namespace world_policies {
-void
-  CharmapperPolicy::visitOperations(
-    const Path &path,
-    const OperationVisitor &visitor
-  )
-{
-  visitor(
-    "Add Motion Pass",
-    [path,this](TreeOperationHandler &handler){
-      handler.addItem(path,motionPassItem());
-    }
-  );
-}
-}
-
-
-namespace world_policies {
 static TreeItem sceneItem()
 {
   return TreeItem(ScenePolicy{});
@@ -186,60 +138,6 @@ void
     [path,&world](TreeOperationHandler &handler){
       world.addScene();
       handler.addItem(path,sceneItem());
-    }
-  );
-}
-}
-
-
-namespace world_policies {
-void
-  RootPolicy::visitOperations(
-    const Path &path,
-    const Tree::OperationVisitor &visitor
-  )
-{
-  visitRootOperations(path,visitor,tree.world());
-}
-}
-
-
-namespace world_policies {
-static TreeItem bodyItem()
-{
-  return TreeItem(BodyPolicy{});
-}
-}
-
-
-namespace world_policies {
-void
-  ScenePolicy::visitOperations(
-    const Path &path,
-    const OperationVisitor &visitor
-  )
-{
-  visitor(
-    "Add Body",
-    [path,this](TreeOperationHandler &handler){
-      handler.addItem(path,bodyItem());
-    }
-  );
-}
-}
-
-
-namespace world_policies {
-void
-  MotionPassPolicy::visitOperations(
-    const Path &path,
-    const OperationVisitor &visitor
-  )
-{
-  visitor(
-    "Add Pos Expr",
-    [path,this](TreeOperationHandler &handler){
-      handler.addItem(path,posExprItem());
     }
   );
 }

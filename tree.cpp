@@ -121,8 +121,6 @@ void Tree::visitOperations(const Path &path,const OperationVisitor &visitor)
   if (world().visitOperations(path,/*depth*/0,visitor)) {
     return;
   }
-
-  getItem(path).visitOperations(path,visitor);
 }
 
 

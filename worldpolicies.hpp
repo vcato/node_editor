@@ -28,10 +28,6 @@ struct SimplePolicy {
 
 
 struct XPolicy : SimplePolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.numericItem("X");
@@ -40,10 +36,6 @@ struct XPolicy : SimplePolicy {
 
 
 struct YPolicy : SimplePolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.numericItem("Y");
@@ -52,10 +44,6 @@ struct YPolicy : SimplePolicy {
 
 
 struct ZPolicy : SimplePolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.numericItem("Z");
@@ -64,10 +52,6 @@ struct ZPolicy : SimplePolicy {
 
 
 struct GlobalPositionPolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     vector<string> enumeration_names = {"Components","From Body"};
@@ -86,10 +70,6 @@ struct GlobalPositionPolicy {
 
 
 struct LocalPositionPolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Local Position");
@@ -109,10 +89,6 @@ struct LocalPositionPolicy {
 
 
 struct SourceBodyPolicy : SimplePolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
@@ -122,10 +98,6 @@ struct SourceBodyPolicy : SimplePolicy {
 
 
 struct TargetBodyPolicy : SimplePolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
@@ -135,10 +107,6 @@ struct TargetBodyPolicy : SimplePolicy {
 
 
 struct PosExprPolicy : SimplePolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Pos Expr");
@@ -147,8 +115,6 @@ struct PosExprPolicy : SimplePolicy {
 
 
 struct MotionPassPolicy : SimplePolicy {
-  void visitOperations(const Path &path,const OperationVisitor &visitor);
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Motion Pass");
@@ -157,8 +123,6 @@ struct MotionPassPolicy : SimplePolicy {
 
 
 struct CharmapperPolicy : SimplePolicy {
-  void visitOperations(const Path &path,const OperationVisitor &visitor);
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Charmapper");
@@ -167,10 +131,6 @@ struct CharmapperPolicy : SimplePolicy {
 
 
 struct BodyPolicy : SimplePolicy {
-  void visitOperations(const Path &,const OperationVisitor &)
-  {
-  }
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Body");
@@ -179,8 +139,6 @@ struct BodyPolicy : SimplePolicy {
 
 
 struct ScenePolicy : SimplePolicy {
-  void visitOperations(const Path &path,const OperationVisitor &visitor);
-
   void visitType(const TreeItem::Visitor &visitor) const
   {
     visitor.voidItem("Scene");
@@ -201,8 +159,6 @@ struct RootPolicy : SimplePolicy {
   {
   }
 
-  void visitOperations(const Path &path,const Tree::OperationVisitor &visitor);
-
   void visitType(const TreeItem::Visitor &) const
   {
     assert(false);
@@ -211,11 +167,6 @@ struct RootPolicy : SimplePolicy {
 
 
 struct EmptyPolicy : SimplePolicy {
-  void visitOperations(const Path &,const Tree::OperationVisitor &)
-  {
-    cerr << "EmptyPolicy::visitOperations()\n";
-  }
-
   void visitType(const TreeItem::Visitor &) const
   {
     assert(false);
@@ -223,10 +174,25 @@ struct EmptyPolicy : SimplePolicy {
 };
 
 
+extern void createXYZChildren(TreeItem &parent_item);
+
 extern void
   visitRootOperations(
     const Path &path,
     const Tree::OperationVisitor &visitor,
     WorldInterface &world
   );
+
+extern void
+  visitSceneOperations(
+    const Path &path,
+    const OperationVisitor &visitor
+  );
+
+extern void
+  visitMotionPassOperations(
+    const Path &path,
+    const OperationVisitor &visitor
+  );
+
 }

@@ -46,7 +46,6 @@ struct TreeItem {
     struct PolicyInterface {
       virtual ~PolicyInterface() {}
       virtual PolicyInterface *clone() const = 0;
-      virtual void visitOperations(const Path &,const OperationVisitor &) = 0;
       virtual void visitType(const Visitor &) const = 0;
       virtual void
         comboBoxItemIndexChanged(
@@ -62,11 +61,6 @@ struct TreeItem {
       T object;
 
       BasicPolicy(const T& arg) : object(arg) {}
-
-      void visitOperations(const Path &path,const OperationVisitor &visitor)
-      {
-        object.visitOperations(path,visitor);
-      }
 
       virtual void visitType(const Visitor &visitor) const
       {
@@ -122,15 +116,6 @@ struct TreeItem {
     void operator=(const Policy &) = delete;
 
     void
-      visitOperations(
-        const Path &path,
-        const OperationVisitor &visitor
-      )
-    {
-      interface().visitOperations(path,visitor);
-    }
-
-    void
       visitType(
         const Visitor &visitor
       ) const
@@ -166,11 +151,6 @@ struct TreeItem {
   TreeItem& createItem2(const TreeItem &);
   TreeItem& createItem2(Policy);
   void visit(const Visitor &) const;
-
-  void visitOperations(const Path &path,const OperationVisitor &visitor)
-  {
-    policy.visitOperations(path,visitor);
-  }
 
   void
     comboBoxItemIndexChanged(
