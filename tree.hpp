@@ -167,6 +167,11 @@ struct TreeItem {
 };
 
 
+struct Wrapper;
+
+using WrapperVisitor = std::function<void(const Wrapper &)>;
+
+
 struct Wrapper {
   virtual void
     visitOperations(
@@ -174,11 +179,36 @@ struct Wrapper {
       const TreeItem::OperationVisitor &
     ) const = 0;
 
+
+  // virtual void visitChild(int child_index,const WrapperVisitor &) = 0;
+
+  virtual void
+    visitWrapper(
+      const TreePath &path,
+      int depth,
+      const WrapperVisitor &visitor
+    ) const
+  {
+    int path_length = path.size();
+
+    if (depth==path_length) {
+      visitor(*this);
+
+      return;
+    }
+
+    visitChildWrapper(path,depth,visitor);
+  }
+
+  virtual void
+    visitChildWrapper(
+      const TreePath &path,
+      int depth,
+      const WrapperVisitor &visitor
+    ) const = 0;
+
   virtual Diagram *diagramPtr() const = 0;
 };
-
-
-using WrapperVisitor = std::function<void(const Wrapper &)>;
 
 
 struct WorldInterface {
@@ -219,6 +249,7 @@ class Tree {
   private:
     Item &getItem(const Path &);
     const Item &getItem(const Path &) const;
+    void visitWrapper(const Path &,const WrapperVisitor &);
 
     WorldInterface *_world_ptr = nullptr;
     Item _root_item;

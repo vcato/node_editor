@@ -32,19 +32,12 @@ struct BodyWrapper : Wrapper {
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   void
-    visitWrapper(
-      const TreePath &path,
-      int depth,
-      const WrapperVisitor &visitor
-    )
+    visitChildWrapper(
+      const TreePath &/*path*/,
+      int /*depth*/,
+      const WrapperVisitor &/*visitor*/
+    ) const
   {
-    int path_length = path.size();
-
-    if (depth==path_length) {
-      visitor(*this);
-      return;
-    }
-
     assert(false);
   }
 };
@@ -69,19 +62,12 @@ void
 
 
 void
-  SceneWrapper::visitWrapper(
+  SceneWrapper::visitChildWrapper(
     const TreePath &path,
     int depth,
     const WrapperVisitor &visitor
-  )
+  ) const
 {
-  int path_length = path.size();
-
-  if (depth==path_length) {
-    visitor(*this);
-    return;
-  }
-
   BodyWrapper{
     scene.bodies[path[depth]]
   }.visitWrapper(path,depth+1,visitor);

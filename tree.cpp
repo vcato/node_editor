@@ -91,13 +91,38 @@ auto Tree::getItem(const Path &path) const -> const Item &
 }
 
 
+void Tree::visitWrapper(const Path &path,const WrapperVisitor &visitor)
+{
+#if 1
+  world().visitWrapper(path,/*depth*/0,visitor);
+#else
+  int path_length = path.size();
+
+  auto handle_child =
+    [path_length,&depth,&visitor,&path](const Wrapper &child_wrapper){
+      if (depth==path_length) {
+        visitor(child_wrapper);
+        return;
+      }
+
+      int child_index = path[depth];
+
+      ++depth;
+
+      child_wrapper.visitChild(path[child_index],handle_child);
+    };
+
+  handle_child(world());
+#endif
+}
+
+
 Diagram *Tree::itemDiagramPtr(const Path &path)
 {
   Diagram *result_ptr = 0;
 
-  world().visitWrapper(
+  visitWrapper(
     path,
-    /*depth*/0,
     [&result_ptr](const Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
   );
 
@@ -134,9 +159,8 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
 
 void Tree::visitOperations(const Path &path,const OperationVisitor &visitor)
 {
-  world().visitWrapper(
+  visitWrapper(
     path,
-    /*depth*/0,
     [&](const Wrapper &wrapper){
       wrapper.visitOperations(path,visitor);
     }

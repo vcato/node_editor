@@ -100,11 +100,25 @@ struct SourceBodyPolicy : SimplePolicy {
 };
 
 
-struct TargetBodyPolicy : SimplePolicy {
+struct TargetBodyPolicy {
   void visitType(const TreeItem::Visitor &visitor) const
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
     visitor.enumeratedItem("Target Body",enumeration_names);
+  }
+
+  void
+    comboBoxItemIndexChanged(
+      const Path &/*path*/,
+      int /*index*/,
+      TreeItem::OperationHandler &/*operation_handler*/
+    )
+  {
+  }
+
+  Diagram defaultDiagram()
+  {
+    return Diagram();
   }
 };
 

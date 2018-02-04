@@ -17,11 +17,11 @@ struct CharmapperWrapper : Wrapper {
     ) const;
 
   void
-    visitWrapper(
-      const TreePath &,
-      int /*depth*/,
-      const WrapperVisitor &
-    );
+    visitChildWrapper(
+      const TreePath &path,
+      int depth,
+      const WrapperVisitor &visitor
+    ) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 };

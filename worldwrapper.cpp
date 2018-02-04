@@ -51,6 +51,30 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 }
 
 
+namespace {
+struct ChildWrapperVisitor2 : World::MemberVisitor {
+  const std::function<void(const Wrapper&)> &visitor;
+
+  ChildWrapperVisitor2(
+    const std::function<void(const Wrapper&)> &visitor_arg
+  )
+  : visitor(visitor_arg)
+  {
+  }
+
+  virtual void visitCharmapper(Charmapper &charmapper)
+  {
+    visitor(CharmapperWrapper{charmapper});
+  }
+
+  virtual void visitScene(Scene &scene)
+  {
+    visitor(SceneWrapper{scene});
+  }
+};
+}
+
+
 void
   WorldWrapper::visitOperations(
     const TreePath &path,
@@ -91,6 +115,22 @@ bool
 
 
 void
+  WorldWrapper::visitChildWrapper(
+    const TreePath &path,
+    int depth,
+    const std::function<void(const Wrapper &)> &visitor
+  ) const
+{
+  int child_index = path[depth];
+
+  ChildWrapperVisitor wrapper_visitor(path,depth+1,visitor);
+
+  world.visitMember(child_index,wrapper_visitor);
+}
+
+
+#if 1
+void
   WorldWrapper::visitWrapper(
     const TreePath &path,
     int depth,
@@ -104,9 +144,6 @@ void
     return;
   }
 
-  ChildWrapperVisitor wrapper_visitor(path,depth+1,visitor);
-
-  int child_index = path[depth];
-
-  world.visitMember(child_index,wrapper_visitor);
+  visitChildWrapper(path,depth,visitor);
 }
+#endif

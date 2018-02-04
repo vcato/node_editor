@@ -68,19 +68,12 @@ struct MotionPassWrapper : Wrapper {
     }
 
     void
-      visitWrapper(
-        const TreePath &path,
-        int depth,
-        const WrapperVisitor &visitor
-      )
+      visitChildWrapper(
+        const TreePath &/*path*/,
+        int /*depth*/,
+        const WrapperVisitor &/*visitor*/
+      ) const
     {
-      int path_length = path.size();
-
-      if (depth==path_length) {
-        visitor(*this);
-        return;
-      }
-
       assert(false);
     }
   };
@@ -107,19 +100,12 @@ struct MotionPassWrapper : Wrapper {
     }
 
     void
-      visitWrapper(
+      visitChildWrapper(
         const TreePath &path,
         int depth,
         const WrapperVisitor &visitor
-      )
+      ) const
     {
-      int path_length = path.size();
-
-      if (depth==path_length) {
-        visitor(*this);
-        return;
-      }
-
       int child_index = path[depth];
 
       switch (child_index) {
@@ -147,19 +133,12 @@ struct MotionPassWrapper : Wrapper {
     }
 
     void
-      visitWrapper(
-        const TreePath &path,
-        int depth,
-        const WrapperVisitor &visitor
-      )
+      visitChildWrapper(
+        const TreePath &/*path*/,
+        int /*depth*/,
+        const WrapperVisitor &/*visitor*/
+      ) const
     {
-      int path_length = path.size();
-
-      if (depth==path_length) {
-        visitor(*this);
-        return;
-      }
-
       assert(false);
     }
 
@@ -178,8 +157,13 @@ struct MotionPassWrapper : Wrapper {
     }
   };
 
-  struct GlobalPositionWrapper {
+  struct GlobalPositionWrapper : Wrapper {
     GlobalPosition &global_position;
+
+    GlobalPositionWrapper(GlobalPosition &arg)
+    : global_position(arg)
+    {
+    }
 
     struct TypeVisitor : GlobalPosition::Visitor {
       const TreePath &path;
@@ -207,22 +191,32 @@ struct MotionPassWrapper : Wrapper {
       }
     };
 
-    GlobalPositionWrapper(GlobalPosition &global_position_arg)
-    : global_position(global_position_arg)
-    {
-    }
-
     void
-      visitWrapper(
+      visitChildWrapper(
         const TreePath &/*path*/,
         int /*depth*/,
         const WrapperVisitor &/*visitor*/
-      )
+      ) const
     {
       // This isn't working properly yet, since charmapper doesn't
       // actually change the type of the global position between
       // from-component and from-body when it is changed in the tree.
       // global_position.accept(TypeVisitor(path,depth,visitor));
+    }
+
+    virtual void
+      visitOperations(
+        const TreePath &,
+        const TreeItem::OperationVisitor &
+      ) const
+    {
+      assert(false);
+    }
+
+
+    virtual Diagram *diagramPtr() const
+    {
+      return 0;
     }
   };
 
@@ -248,19 +242,12 @@ struct MotionPassWrapper : Wrapper {
     }
 
     void
-      visitWrapper(
+      visitChildWrapper(
         const TreePath &path,
         int depth,
         const WrapperVisitor &visitor
-      )
+      ) const
     {
-      int path_length = path.size();
-
-      if (depth==path_length) {
-        visitor(*this);
-        return;
-      }
-
       int child_index = path[depth];
 
       cerr << "child_index: " << child_index << "\n";
@@ -304,16 +291,12 @@ struct MotionPassWrapper : Wrapper {
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   void
-    visitWrapper(const TreePath &path,int depth,const WrapperVisitor &visitor)
+    visitChildWrapper(
+      const TreePath &path,
+      int depth,
+      const WrapperVisitor &visitor
+    ) const
   {
-    int path_length = path.size();
-
-    if (depth==path_length) {
-      visitor(*this);
-
-      return;
-    }
-
     assert(motion_pass.pos_exprs[path[depth]]);
     PosExpr &pos_expr = *motion_pass.pos_exprs[path[depth]];
     PosExprWrapper(pos_expr).visitWrapper(path,depth+1,visitor);
@@ -340,20 +323,12 @@ void
 
 
 void
-  CharmapperWrapper::visitWrapper(
+  CharmapperWrapper::visitChildWrapper(
     const TreePath &path,
     int depth,
     const WrapperVisitor &visitor
-  )
+  ) const
 {
-  int path_length = path.size();
-
-  if (depth==path_length) {
-    visitor(*this);
-
-    return;
-  }
-
   int child_index = path[depth];
   assert(charmapper.passes[child_index]);
 

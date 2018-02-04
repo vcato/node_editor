@@ -19,9 +19,9 @@ struct SceneWrapper : Wrapper {
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   void
-    visitWrapper(
-      const TreePath &,
+    visitChildWrapper(
+      const TreePath &path,
       int depth,
-      const WrapperVisitor &
-    );
+      const WrapperVisitor &visitor
+    ) const;
 };
