@@ -4,6 +4,7 @@
 #include "qtmainwindow.hpp"
 #include "worldpolicies.hpp"
 #include "world.hpp"
+#include "worldwrapper.hpp"
 
 
 

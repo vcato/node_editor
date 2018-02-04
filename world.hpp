@@ -2,7 +2,7 @@
 #define WORLD_HPP_
 
 #include <vector>
-#include "tree.hpp"
+#include <memory>
 #include "charmapper.hpp"
 #include "scene.hpp"
 
@@ -30,7 +30,5 @@ class World {
     virtual void createSceneWindow() = 0;
 };
 
-
-#include "worldwrapper.hpp"
 
 #endif /* WORLD_HPP_ */
