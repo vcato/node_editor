@@ -36,7 +36,252 @@ static TreeItem posExprItem()
 
 namespace {
 struct MotionPassWrapper : Wrapper {
-  Charmapper::MotionPass &motion_pass;
+  using MotionPass = Charmapper::MotionPass;
+  using Position = Charmapper::Position;
+  MotionPass &motion_pass;
+  using PosExpr = MotionPass::PosExpr;
+  using Channel = Charmapper::Channel;
+  using GlobalPosition = Charmapper::GlobalPosition;
+  using FromBodyGlobalPosition = Charmapper::FromBodyGlobalPosition;
+  using FromComponentsGlobalPosition =
+    Charmapper::FromComponentsGlobalPosition;
+
+  struct ChannelWrapper : Wrapper {
+    Channel &channel;
+
+    ChannelWrapper(Channel &channel_arg)
+    : channel(channel_arg)
+    {
+    }
+
+    virtual void
+      visitOperations(
+        const TreePath &,
+        const TreeItem::OperationVisitor &
+      ) const
+    {
+    }
+
+    virtual Diagram *diagramPtr() const
+    {
+      return &channel.diagram;
+    }
+
+    void
+      visitWrapper(
+        const TreePath &path,
+        int depth,
+        const WrapperVisitor &visitor
+      )
+    {
+      int path_length = path.size();
+
+      if (depth==path_length) {
+        visitor(*this);
+        return;
+      }
+
+      assert(false);
+    }
+  };
+
+  struct PositionWrapper : Wrapper {
+    Position &position;
+
+    virtual void
+      visitOperations(
+        const TreePath &,
+        const TreeItem::OperationVisitor &
+      ) const
+    {
+    }
+
+    virtual Diagram *diagramPtr() const
+    {
+      return &position.diagram;
+    }
+
+    PositionWrapper(Position &position_arg)
+    : position(position_arg)
+    {
+    }
+
+    void
+      visitWrapper(
+        const TreePath &path,
+        int depth,
+        const WrapperVisitor &visitor
+      )
+    {
+      int path_length = path.size();
+
+      if (depth==path_length) {
+        visitor(*this);
+        return;
+      }
+
+      int child_index = path[depth];
+
+      switch (child_index) {
+        case 0:
+          ChannelWrapper(position.x).visitWrapper(path,depth+1,visitor);
+          return;
+        case 1:
+          ChannelWrapper(position.y).visitWrapper(path,depth+1,visitor);
+          return;
+        case 2:
+          ChannelWrapper(position.z).visitWrapper(path,depth+1,visitor);
+          return;
+      }
+
+      // assert(false);
+    }
+  };
+
+  struct FromBodyGlobalPositionWrapper : Wrapper {
+    FromBodyGlobalPosition &from_body_global_position;
+
+    FromBodyGlobalPositionWrapper(FromBodyGlobalPosition &arg)
+    : from_body_global_position(arg)
+    {
+    }
+
+    void
+      visitWrapper(
+        const TreePath &path,
+        int depth,
+        const WrapperVisitor &visitor
+      )
+    {
+      int path_length = path.size();
+
+      if (depth==path_length) {
+        visitor(*this);
+        return;
+      }
+
+      assert(false);
+    }
+
+    virtual void
+      visitOperations(
+        const TreePath &,
+        const TreeItem::OperationVisitor &
+      ) const
+    {
+      assert(false);
+    }
+
+    virtual Diagram *diagramPtr() const
+    {
+      assert(false);
+    }
+  };
+
+  struct GlobalPositionWrapper {
+    GlobalPosition &global_position;
+
+    struct TypeVisitor : GlobalPosition::Visitor {
+      const TreePath &path;
+      const int depth;
+      const WrapperVisitor &visitor;
+
+      TypeVisitor(
+        const TreePath &path_arg,
+        int depth_arg,
+        const WrapperVisitor &visitor_arg
+      )
+      : path(path_arg), depth(depth_arg), visitor(visitor_arg)
+      {
+      }
+
+      virtual void accept(FromBodyGlobalPosition &arg) const
+      {
+        FromBodyGlobalPositionWrapper(arg).visitWrapper(path,depth,visitor);
+      }
+
+      virtual void accept(FromComponentsGlobalPosition &arg) const
+      {
+        PositionWrapper(arg)
+          .visitWrapper(path,depth,visitor);
+      }
+    };
+
+    GlobalPositionWrapper(GlobalPosition &global_position_arg)
+    : global_position(global_position_arg)
+    {
+    }
+
+    void
+      visitWrapper(
+        const TreePath &/*path*/,
+        int /*depth*/,
+        const WrapperVisitor &/*visitor*/
+      )
+    {
+      // This isn't working properly yet, since charmapper doesn't
+      // actually change the type of the global position between
+      // from-component and from-body when it is changed in the tree.
+      // global_position.accept(TypeVisitor(path,depth,visitor));
+    }
+  };
+
+  struct PosExprWrapper : Wrapper {
+    PosExpr &pos_expr;
+
+    PosExprWrapper(PosExpr &pos_expr_arg)
+    : pos_expr(pos_expr_arg)
+    {
+    }
+
+    virtual void
+      visitOperations(
+        const TreePath &,
+        const TreeItem::OperationVisitor &
+      ) const
+    {
+    }
+
+    virtual Diagram *diagramPtr() const
+    {
+      return &pos_expr.diagram;
+    }
+
+    void
+      visitWrapper(
+        const TreePath &path,
+        int depth,
+        const WrapperVisitor &visitor
+      )
+    {
+      int path_length = path.size();
+
+      if (depth==path_length) {
+        visitor(*this);
+        return;
+      }
+
+      int child_index = path[depth];
+
+      cerr << "child_index: " << child_index << "\n";
+      // assert(false);
+
+      if (child_index==0) {
+        // Target body
+      }
+      else if (child_index==1) {
+        PositionWrapper(pos_expr.local_position).visitWrapper(
+          path,depth+1,visitor
+        );
+      }
+      else if (child_index==2) {
+        assert(pos_expr.global_position_ptr);
+        GlobalPositionWrapper(*pos_expr.global_position_ptr).visitWrapper(
+          path,depth+1,visitor
+        );
+      }
+    }
+  };
 
   MotionPassWrapper(Charmapper::MotionPass &motion_pass_arg)
   : motion_pass(motion_pass_arg)
@@ -56,6 +301,8 @@ struct MotionPassWrapper : Wrapper {
     );
   }
 
+  virtual Diagram *diagramPtr() const { return nullptr; }
+
   void
     visitWrapper(const TreePath &path,int depth,const WrapperVisitor &visitor)
   {
@@ -67,9 +314,9 @@ struct MotionPassWrapper : Wrapper {
       return;
     }
 
-    // This isn't implemented yet, but it doesn't hurt anything so far,
-    // since the only the we use the wrapper for is visiting operations.
-    // assert(false);
+    assert(motion_pass.pos_exprs[path[depth]]);
+    PosExpr &pos_expr = *motion_pass.pos_exprs[path[depth]];
+    PosExprWrapper(pos_expr).visitWrapper(path,depth+1,visitor);
   }
 };
 }

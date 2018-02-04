@@ -5,6 +5,7 @@
 #include <limits>
 #include "defaultdiagrams.hpp"
 #include "worldpolicies.hpp"
+#include "streamvector.hpp"
 
 
 using std::string;
@@ -92,24 +93,28 @@ auto Tree::getItem(const Path &path) const -> const Item &
 
 Diagram *Tree::itemDiagramPtr(const Path &path)
 {
-#if 1
-  return &getItem(path).diagram;
-#else
   Diagram *result_ptr = 0;
 
-  visitWrapper(
+  world().visitWrapper(
     path,
-    [&result_ptr](Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
+    /*depth*/0,
+    [&result_ptr](const Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
   );
 
+  if (!result_ptr) {
+    cerr << "No diagram found for " << path << "\n";
+    return &getItem(path).diagram;
+  }
+
   return result_ptr;
-#endif
 }
 
 
 void Tree::setItemDiagram(const Path &path,const Diagram &new_diagram)
 {
-  getItem(path).diagram = new_diagram;
+  Diagram *diagram_ptr = itemDiagramPtr(path);
+  assert(diagram_ptr);
+  *diagram_ptr = new_diagram;
 }
 
 

@@ -22,4 +22,6 @@ struct CharmapperWrapper : Wrapper {
       int /*depth*/,
       const WrapperVisitor &
     );
+
+  virtual Diagram *diagramPtr() const { return nullptr; }
 };

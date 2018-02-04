@@ -1,4 +1,5 @@
-inline ostream& operator<<(ostream &stream,const vector<int> &value)
+inline std::ostream&
+  operator<<(std::ostream &stream,const std::vector<int> &value)
 {
   bool first = true;
 

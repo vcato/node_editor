@@ -95,7 +95,7 @@ void
     const TreePath &path,
     int depth,
     const std::function<void(const Wrapper &)> &visitor
-  )
+  ) const
 {
   int path_length = path.size();
 

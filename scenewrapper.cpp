@@ -29,6 +29,8 @@ struct BodyWrapper : Wrapper {
   {
   }
 
+  virtual Diagram *diagramPtr() const { return nullptr; }
+
   void
     visitWrapper(
       const TreePath &path,

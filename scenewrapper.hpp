@@ -10,11 +10,13 @@ struct SceneWrapper : Wrapper {
   {
   }
 
-  void
+  virtual void
     visitOperations(
       const TreePath &path,
       const TreeItem::OperationVisitor &visitor
     ) const;
+
+  virtual Diagram *diagramPtr() const { return nullptr; }
 
   void
     visitWrapper(

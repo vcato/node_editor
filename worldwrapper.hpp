@@ -25,7 +25,9 @@ struct WorldWrapper : WorldInterface, Wrapper {
       const TreePath &,
       int depth,
       const std::function<void(const Wrapper &)> &
-    );
+    ) const;
+
+  virtual Diagram *diagramPtr() const { return nullptr; }
 };
 
 #endif /* WORLDWRAPPER_HPP_ */

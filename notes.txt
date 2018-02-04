@@ -361,3 +361,10 @@ have TreeItems now.
 PosExpr needs a diagram.
 
 WorldInterface may be replaced by Wrapper.
+
+We should be able to implement visitWrapper by just having a visitChild
+method in the wrapper so we don't have to keep repeating the path_length==depth
+logic.
+
+Need to be able to switch the global position from component to body in
+charmapper.

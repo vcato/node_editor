@@ -173,6 +173,8 @@ struct Wrapper {
       const TreePath &,
       const TreeItem::OperationVisitor &
     ) const = 0;
+
+  virtual Diagram *diagramPtr() const = 0;
 };
 
 
@@ -187,7 +189,7 @@ struct WorldInterface {
       const TreePath &,
       int depth,
       const WrapperVisitor &
-    ) = 0;
+    ) const = 0;
 };
 
 
