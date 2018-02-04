@@ -1,3 +1,9 @@
+#ifndef SCENE_HPP_
+#define SCENE_HPP_
+
+#include <vector>
+
+
 struct Scene {
   struct Body {
   };
@@ -9,3 +15,5 @@ struct Scene {
     bodies.push_back(Body());
   }
 };
+
+#endif /* SCENE_HPP_ */

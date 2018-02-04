@@ -8,6 +8,9 @@
 #include "diagram.hpp"
 
 
+using TreePath = std::vector<int>;
+
+
 struct TreeItem {
   using Path = std::vector<int>;
   using Index = int;
@@ -163,8 +166,6 @@ struct TreeItem {
   }
 };
 
-
-using TreePath = std::vector<int>;
 
 struct WorldInterface {
   using OperationVisitor = TreeItem::OperationVisitor;

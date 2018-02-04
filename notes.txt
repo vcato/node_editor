@@ -358,22 +358,4 @@ If we have the diagrams stored in the Charmapper object, then we won't
 need to store them in the Tree.  I think that is the only reason we
 have TreeItems now.
 
-We may want to have both a Tree and a Wrapper.  The Tree would represent
-the non-widget-specific version of the QtTree, whereas the Wrapper would
-provide access to the underlying data.
-
-It seems like visiting operations is something strictly related to the
-wrapper, but when performing an operation, we'll have to pass the path
-so that the operation will have a way to describe what changes need to
-be made to the tree to have it match the data again.
-
-What is it that we need right now?  We need a way to modify the Charmapper
-object.  We should be able to ask the charmapper object what operations
-it has. One of those operations should be a "Add Motion Pass" operation.
-We should be able to execute that operation and have a motion pass
-added to the charmapper object and a motion pass item added to the tree.
-
-I'm tempted to have a wrapper creation method as part of the Policy,
-but I don't think that is quite right.  One wrapper needs to be built
-from another, so ultimately, we would just be creating a wrapper for
-the world and then digging down from there.
+PosExpr needs a diagram.

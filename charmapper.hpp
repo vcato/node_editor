@@ -1,3 +1,9 @@
+#ifndef CHARMAPPER_HPP_
+#define CHARMAPPER_HPP_
+
+#include <vector>
+
+
 struct Charmapper {
   struct MotionPass {
   };
@@ -9,3 +15,5 @@ struct Charmapper {
     passes.push_back(MotionPass());
   }
 };
+
+#endif /* CHARMAPPER_HPP_ */
