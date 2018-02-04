@@ -3,32 +3,8 @@
 
 #include <vector>
 #include "tree.hpp"
-
-
-struct Charmapper {
-  struct MotionPass {
-  };
-
-  std::vector<MotionPass> passes;
-
-  void addMotionPass()
-  {
-    passes.push_back(MotionPass());
-  }
-};
-
-
-struct Scene {
-  struct Body {
-  };
-
-  std::vector<Body> bodies;
-
-  void addBody()
-  {
-    bodies.push_back(Body());
-  }
-};
+#include "charmapper.hpp"
+#include "scene.hpp"
 
 
 class World {
