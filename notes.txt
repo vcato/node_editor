@@ -359,3 +359,5 @@ need to store them in the Tree.  I think that is the only reason we
 have TreeItems now.
 
 PosExpr needs a diagram.
+
+WorldInterface may be replaced by Wrapper.

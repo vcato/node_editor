@@ -2,13 +2,24 @@
 #include "tree.hpp"
 
 
-struct CharmapperWrapper {
+struct CharmapperWrapper : Wrapper {
   Charmapper &charmapper;
 
-  bool
+  CharmapperWrapper(Charmapper &charmapper_arg)
+  : charmapper(charmapper_arg)
+  {
+  }
+
+  void
     visitOperations(
       const TreePath &path,
-      int depth,
       const TreeItem::OperationVisitor &visitor
+    ) const;
+
+  void
+    visitWrapper(
+      const TreePath &,
+      int /*depth*/,
+      const WrapperVisitor &
     );
 };

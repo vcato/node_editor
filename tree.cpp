@@ -92,7 +92,18 @@ auto Tree::getItem(const Path &path) const -> const Item &
 
 Diagram *Tree::itemDiagramPtr(const Path &path)
 {
+#if 1
   return &getItem(path).diagram;
+#else
+  Diagram *result_ptr = 0;
+
+  visitWrapper(
+    path,
+    [&result_ptr](Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
+  );
+
+  return result_ptr;
+#endif
 }
 
 
@@ -118,9 +129,13 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
 
 void Tree::visitOperations(const Path &path,const OperationVisitor &visitor)
 {
-  if (world().visitOperations(path,/*depth*/0,visitor)) {
-    return;
-  }
+  world().visitWrapper(
+    path,
+    /*depth*/0,
+    [&](const Wrapper &wrapper){
+      wrapper.visitOperations(path,visitor);
+    }
+  );
 }
 
 
@@ -145,4 +160,10 @@ WorldInterface &Tree::world()
 {
   assert(_world_ptr);
   return *_world_ptr;
+}
+
+
+Diagram *TreeItem::diagramPtr()
+{
+  return &diagram;
 }

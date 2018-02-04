@@ -148,7 +148,7 @@ struct TreeItem {
   TreeItem(Policy);
 
   const TreeItem &getItem(const Path &,int depth) const;
-  Diagram *diagramPtr() { return &diagram; }
+  Diagram *diagramPtr();
 
   Index createItem(const TreeItem &item);
   TreeItem& createItem2(const TreeItem &);
@@ -167,11 +167,27 @@ struct TreeItem {
 };
 
 
+struct Wrapper {
+  virtual void
+    visitOperations(
+      const TreePath &,
+      const TreeItem::OperationVisitor &
+    ) const = 0;
+};
+
+
+using WrapperVisitor = std::function<void(const Wrapper &)>;
+
+
 struct WorldInterface {
   using OperationVisitor = TreeItem::OperationVisitor;
 
-  virtual bool
-    visitOperations(const TreePath &,int depth,const OperationVisitor &) = 0;
+  virtual void
+    visitWrapper(
+      const TreePath &,
+      int depth,
+      const WrapperVisitor &
+    ) = 0;
 };
 
 

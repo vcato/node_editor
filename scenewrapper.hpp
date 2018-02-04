@@ -2,13 +2,24 @@
 #include "tree.hpp"
 
 
-struct SceneWrapper {
+struct SceneWrapper : Wrapper {
   Scene &scene;
 
-  bool
+  SceneWrapper(Scene &scene_arg)
+  : scene(scene_arg)
+  {
+  }
+
+  void
     visitOperations(
       const TreePath &path,
-      int depth,
       const TreeItem::OperationVisitor &visitor
+    ) const;
+
+  void
+    visitWrapper(
+      const TreePath &,
+      int depth,
+      const WrapperVisitor &
     );
 };

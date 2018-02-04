@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include "diagram.hpp"
 
 
 struct Charmapper {
@@ -14,6 +15,7 @@ struct Charmapper {
     MotionPass(const MotionPass &) = delete;
 
     struct PosExpr {
+      Diagram diagram;
     };
 
     std::vector<std::unique_ptr<PosExpr>> pos_exprs;

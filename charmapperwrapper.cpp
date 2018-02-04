@@ -35,59 +35,81 @@ static TreeItem posExprItem()
 
 
 namespace {
-struct MotionPassWrapper {
+struct MotionPassWrapper : Wrapper {
   Charmapper::MotionPass &motion_pass;
 
-  bool
-    visitOperations(
-      const TreePath &path,
-      int depth,
-      const OperationVisitor &visitor
-    )
+  MotionPassWrapper(Charmapper::MotionPass &motion_pass_arg)
+  : motion_pass(motion_pass_arg)
+  {
+  }
+
+  virtual void
+    visitOperations(const TreePath &path,const OperationVisitor &visitor) const
+  {
+    Charmapper::MotionPass &motion_pass = this->motion_pass;
+    visitor(
+      "Add Pos Expr",
+      [path,&motion_pass](TreeOperationHandler &handler){
+      motion_pass.addPosExpr();
+      handler.addItem(path,posExprItem());
+      }
+    );
+  }
+
+  void
+    visitWrapper(const TreePath &path,int depth,const WrapperVisitor &visitor)
   {
     int path_length = path.size();
 
     if (depth==path_length) {
-      Charmapper::MotionPass &motion_pass = this->motion_pass;
-      visitor(
-        "Add Pos Expr",
-        [path,&motion_pass](TreeOperationHandler &handler){
-          motion_pass.addPosExpr();
-          handler.addItem(path,posExprItem());
-        }
-      );
+      visitor(*this);
 
-      return true;
+      return;
     }
 
-    return false;
+    // This isn't implemented yet, but it doesn't hurt anything so far,
+    // since the only the we use the wrapper for is visiting operations.
+    // assert(false);
   }
 };
 }
 
-bool
+
+void
   CharmapperWrapper::visitOperations(
-    const TreePath &path,int depth,const OperationVisitor &visitor
+    const TreePath &path,
+    const OperationVisitor &visitor
+  ) const
+{
+  Charmapper &charmapper = this->charmapper;
+  visitor(
+    "Add Motion Pass",
+    [path,&charmapper](TreeOperationHandler &handler){
+      charmapper.addMotionPass();
+      handler.addItem(path,motionPassItem());
+    }
+  );
+}
+
+
+void
+  CharmapperWrapper::visitWrapper(
+    const TreePath &path,
+    int depth,
+    const WrapperVisitor &visitor
   )
 {
   int path_length = path.size();
 
   if (depth==path_length) {
-    Charmapper &charmapper = this->charmapper;
-    visitor(
-      "Add Motion Pass",
-      [path,&charmapper](TreeOperationHandler &handler){
-        charmapper.addMotionPass();
-        handler.addItem(path,motionPassItem());
-      }
-    );
+    visitor(*this);
 
-    return true;
+    return;
   }
 
   int child_index = path[depth];
   assert(charmapper.passes[child_index]);
 
   MotionPassWrapper child_wrapper{*charmapper.passes[child_index]};
-  return child_wrapper.visitOperations(path,depth+1,visitor);
+  return child_wrapper.visitWrapper(path,depth+1,visitor);
 }

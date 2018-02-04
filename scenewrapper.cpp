@@ -13,44 +13,74 @@ static TreeItem bodyItem()
 
 
 namespace {
-struct BodyWrapper {
+struct BodyWrapper : Wrapper {
   Scene::Body &body;
 
-  bool
+  BodyWrapper(Scene::Body &body_arg)
+  : body(body_arg)
+  {
+  }
+
+  virtual void
     visitOperations(
       const TreePath &,
-      int /*depth*/,
-      const OperationVisitor &/*visitor*/
+      const TreeItem::OperationVisitor &
+    ) const
+  {
+  }
+
+  void
+    visitWrapper(
+      const TreePath &path,
+      int depth,
+      const WrapperVisitor &visitor
     )
   {
-    return false;
+    int path_length = path.size();
+
+    if (depth==path_length) {
+      visitor(*this);
+      return;
+    }
+
+    assert(false);
   }
 };
 }
 
 
-bool
+void
   SceneWrapper::visitOperations(
-    const TreePath &path,int depth,const OperationVisitor &visitor
+    const TreePath &path,
+    const OperationVisitor &visitor
+  ) const
+{
+  Scene &scene = this->scene;
+  visitor(
+    "Add Body",
+    [path,&scene](TreeOperationHandler &handler){
+      scene.addBody();
+      handler.addItem(path,bodyItem());
+    }
+  );
+}
+
+
+void
+  SceneWrapper::visitWrapper(
+    const TreePath &path,
+    int depth,
+    const WrapperVisitor &visitor
   )
 {
   int path_length = path.size();
 
   if (depth==path_length) {
-    Scene &scene = this->scene;
-    visitor(
-      "Add Body",
-      [path,&scene](TreeOperationHandler &handler){
-        scene.addBody();
-        handler.addItem(path,bodyItem());
-      }
-    );
-
-    return true;
+    visitor(*this);
+    return;
   }
 
-  return
-    BodyWrapper{
-      scene.bodies[path[depth]]
-    }.visitOperations(path,depth+1,visitor);
+  BodyWrapper{
+    scene.bodies[path[depth]]
+  }.visitWrapper(path,depth+1,visitor);
 }
