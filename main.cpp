@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QDialog>
 #include "qtmainwindow.hpp"
+// #include "worldpolicies.hpp"
 
 
 using std::vector;
@@ -48,9 +49,12 @@ struct QtWorld : WorldInterface {
 #if 0
   virtual void
     visitOperations(
-      const TreePath &path,int depth,const OperationVisitor &
+      const TreePath &path,int depth,const OperationVisitor &visitor
     )
   {
+    using world_policies::charmapperItem;
+    using world_policies::sceneItem;
+
     int path_length = path.size();
 
     if (depth==path_length) {
@@ -64,7 +68,7 @@ struct QtWorld : WorldInterface {
       visitor(
         "Add Scene",
         [path,this](TreeOperationHandler &handler){
-          tree.world().addScene();
+          addScene();
           handler.addItem(path,sceneItem());
         }
       );

@@ -21,7 +21,8 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   tree.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
   qtcomboboxtreewidgetitemsignalmap.o qtmenu.o \
   moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
-  moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o
+  moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
+  worldpolicies.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -60,7 +61,7 @@ diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
 
 tree_test: tree_test.o tree.o diagram.o diagramnode.o linetext.o \
   statementtext.o stringutil.o diagramevaluation.o defaultdiagrams.o \
-  diagramio.o
+  diagramio.o worldpolicies.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
