@@ -1,5 +1,9 @@
+#ifndef WORLD_HPP_
+#define WORLD_HPP_
+
 #include <vector>
 #include "tree.hpp"
+
 
 struct Charmapper {
   struct MotionPass {
@@ -27,23 +31,30 @@ struct Scene {
 };
 
 
-class World : public WorldInterface {
+class World {
   public:
-    struct WorldMember;
-
     World();
     ~World();
 
-    virtual bool
-      visitOperations(
-        const TreePath &path,int depth,const OperationVisitor &visitor
-      );
-
-  private:
-    std::vector<std::unique_ptr<WorldMember>> world_members;
+    struct MemberVisitor {
+      virtual void visitCharmapper(Charmapper &) = 0;
+      virtual void visitScene(Scene &) = 0;
+    };
 
     void addCharmapper();
     void addScene();
+    void visitMember(int child_index,MemberVisitor &);
+
+    struct WorldMember;
+    using WorldMembers = std::vector<std::unique_ptr<WorldMember>>;
+    WorldMembers world_members;
+
+  private:
 
     virtual void createSceneWindow() = 0;
 };
+
+
+#include "worldwrapper.hpp"
+
+#endif /* WORLD_HPP_ */

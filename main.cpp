@@ -45,7 +45,8 @@ int main(int argc,char** argv)
   QApplication app(argc,argv);
   QtMainWindow main_window;
   QtWorld world(main_window);
-  main_window.setWorldPtr(&world);
+  WorldWrapper world_wrapper(world);
+  main_window.setWorldPtr(&world_wrapper);
   main_window.show();
   return app.exec();
 }
