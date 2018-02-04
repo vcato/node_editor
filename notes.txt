@@ -371,5 +371,3 @@ charmapper.
 
 WorldInterface::visitWrapper() needs to be visitSelfWrapper(), and then
 it can call visitWrapper() on the result.
-
-WorldWrapper::visitOperations() seems old.

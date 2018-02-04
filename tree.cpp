@@ -185,7 +185,7 @@ void Tree::visitItem(const Item &item,const ItemVisitor &visitor)
 }
 
 
-WorldInterface &Tree::world()
+Wrapper &Tree::world()
 {
   assert(_world_ptr);
   return *_world_ptr;

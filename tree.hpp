@@ -211,18 +211,6 @@ struct Wrapper {
 };
 
 
-struct WorldInterface {
-  using OperationVisitor = TreeItem::OperationVisitor;
-
-  virtual void
-    visitWrapper(
-      const TreePath &,
-      int depth,
-      const WrapperVisitor &
-    ) const = 0;
-};
-
-
 class Tree {
   public:
     using Path = TreePath;
@@ -235,7 +223,7 @@ class Tree {
 
     Tree();
 
-    void setWorldPtr(WorldInterface *arg) { _world_ptr = arg; }
+    void setWorldPtr(Wrapper *arg) { _world_ptr = arg; }
     Path createItem(const Path &parent_path,const Item &);
     void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
@@ -244,14 +232,14 @@ class Tree {
     void setItemDiagram(const Path &,const Diagram &);
     void visitOperations(const Path &,const OperationVisitor &visitor);
     void visitItem(const Item &,const ItemVisitor &visitor);
-    WorldInterface &world();
+    Wrapper &world();
 
   private:
     Item &getItem(const Path &);
     const Item &getItem(const Path &) const;
     void visitWrapper(const Path &,const WrapperVisitor &);
 
-    WorldInterface *_world_ptr = nullptr;
+    Wrapper *_world_ptr = nullptr;
     Item _root_item;
 };
 

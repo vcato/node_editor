@@ -40,7 +40,7 @@ QtMainWindow::QtMainWindow()
 }
 
 
-void QtMainWindow::setWorldPtr(WorldInterface *world_ptr_arg)
+void QtMainWindow::setWorldPtr(Wrapper *world_ptr_arg)
 {
   tree.setWorldPtr(world_ptr_arg);
 }
