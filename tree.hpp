@@ -16,9 +16,8 @@ struct TreeItem {
   using Index = int;
 
   struct OperationHandler {
-    virtual void addItem(const Path &,const TreeItem &) = 0;
-    virtual void
-      replaceTreeItems(const Path &path,const TreeItem &items) = 0;
+    virtual void addItem(const Path &) = 0;
+    virtual void replaceTreeItems(const Path &path) = 0;
   };
 
   using OperationName = const std::string;
@@ -86,6 +85,8 @@ struct Wrapper {
     visitChildWrapper(path,depth,visitor);
   }
 
+  virtual int nChildren() const = 0;
+
   virtual void
     visitChildWrapper(
       const TreePath &path,
@@ -139,6 +140,7 @@ class Tree {
     Diagram *itemDiagramPtr(const Path &);
     void visitOperations(const Path &,const OperationVisitor &visitor);
     void visitType(const Path &,const Item::TypeVisitor &);
+    int findNChildren(const Path &);
     Wrapper &world();
 
   private:

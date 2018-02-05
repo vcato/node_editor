@@ -9,57 +9,6 @@ using std::string;
 using OperationVisitor = TreeItem::OperationVisitor;
 
 
-static void createXYZChildren(TreeItem &parent_item)
-{
-  parent_item.createItem2();
-  parent_item.createItem2();
-  parent_item.createItem2();
-}
-
-
-static TreeItem motionPassItem()
-{
-  return TreeItem();
-}
-
-
-static TreeItem posExprItem()
-{
-  TreeItem pos_expr_item;
-  pos_expr_item.createItem2();
-  {
-    TreeItem &local_position_item =
-      pos_expr_item.createItem2();
-    createXYZChildren(local_position_item);
-  }
-  {
-    TreeItem &global_position_item =
-      pos_expr_item.createItem2();
-    createXYZChildren(global_position_item);
-  }
-
-  return pos_expr_item;
-}
-
-
-static TreeItem globalPositionComponentsItems()
-{
-  TreeItem items;
-  createXYZChildren(items);
-  return items;
-}
-
-
-static TreeItem globalPositionFromBodyItems()
-{
-  TreeItem items;
-  items.createItem2();
-  TreeItem &local_position_item = items.createItem2();
-  createXYZChildren(local_position_item);
-  return items;
-}
-
-
 namespace {
 struct MotionPassWrapper : SimpleWrapper {
   using MotionPass = Charmapper::MotionPass;
@@ -109,6 +58,11 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void visitType(const TreeItem::TypeVisitor &visitor) const
     {
       visitor.numericItem(label);
+    }
+
+    virtual int nChildren() const
+    {
+      return 0;
     }
   };
 
@@ -165,6 +119,11 @@ struct MotionPassWrapper : SimpleWrapper {
       cerr << "Visiting position type\n";
       visitor.voidItem(label);
     }
+
+    virtual int nChildren() const
+    {
+      return 3;
+    }
   };
 
   struct FromBodyGlobalPositionWrapper : SimpleWrapper {
@@ -217,6 +176,11 @@ struct MotionPassWrapper : SimpleWrapper {
     {
       assert(false);
     }
+
+    virtual int nChildren() const
+    {
+      return 2;
+    }
   };
 
   struct GlobalPositionWrapper : Wrapper {
@@ -249,6 +213,25 @@ struct MotionPassWrapper : SimpleWrapper {
       virtual void accept(ComponentsGlobalPositionData &arg) const
       {
         PositionWrapper(arg,"blah").visitWrapper(path,depth,visitor);
+      }
+    };
+
+    struct NChildrenVisitor : GlobalPositionData::Visitor {
+      int &n_children;
+
+      NChildrenVisitor(int &n_children_arg)
+      : n_children(n_children_arg)
+      {
+      }
+
+      virtual void accept(FromBodyGlobalPositionData &data) const
+      {
+        n_children = FromBodyGlobalPositionWrapper(data).nChildren();
+      }
+
+      virtual void accept(ComponentsGlobalPositionData &data) const
+      {
+        n_children = PositionWrapper(data,"blah").nChildren();
       }
     };
 
@@ -292,16 +275,14 @@ struct MotionPassWrapper : SimpleWrapper {
           // Components
           {
             global_position.switchToComponents();
-            TreeItem items = globalPositionComponentsItems();
-            operation_handler.replaceTreeItems(path,items);
+            operation_handler.replaceTreeItems(path);
           }
           break;
         case 1:
           // From Body
           {
             global_position.switchToFromBody();
-            TreeItem items = globalPositionFromBodyItems();
-            operation_handler.replaceTreeItems(path,items);
+            operation_handler.replaceTreeItems(path);
           }
           break;
         default:
@@ -313,6 +294,14 @@ struct MotionPassWrapper : SimpleWrapper {
     {
       vector<string> enumeration_names = {"Components","From Body"};
       visitor.enumeratedItem("Global Position",enumeration_names);
+    }
+
+    virtual int nChildren() const
+    {
+      assert(global_position.global_position_ptr);
+      int n_children = 0;
+      global_position.global_position_ptr->accept(NChildrenVisitor(n_children));
+      return n_children;
     }
   };
 
@@ -354,6 +343,11 @@ struct MotionPassWrapper : SimpleWrapper {
       ) const
     {
     }
+
+    virtual int nChildren() const
+    {
+      return 0;
+    }
   };
 
   struct SourceBodyWrapper : Wrapper {
@@ -393,6 +387,11 @@ struct MotionPassWrapper : SimpleWrapper {
         TreeItem::OperationHandler &
       ) const
     {
+    }
+
+    virtual int nChildren() const
+    {
+      return 0;
     }
   };
 
@@ -449,6 +448,11 @@ struct MotionPassWrapper : SimpleWrapper {
     {
       visitor.voidItem("Pos Expr");
     }
+
+    virtual int nChildren() const
+    {
+      return 3;
+    }
   };
 
   MotionPassWrapper(Charmapper::MotionPass &motion_pass_arg)
@@ -464,7 +468,7 @@ struct MotionPassWrapper : SimpleWrapper {
       "Add Pos Expr",
       [path,&motion_pass](TreeOperationHandler &handler){
         motion_pass.addPosExpr();
-        handler.addItem(path,posExprItem());
+        handler.addItem(path);
       }
     );
   }
@@ -487,6 +491,11 @@ struct MotionPassWrapper : SimpleWrapper {
   {
     visitor.voidItem("Motion Pass");
   }
+
+  virtual int nChildren() const
+  {
+    return motion_pass.pos_exprs.size();
+  }
 };
 }
 
@@ -502,7 +511,7 @@ void
     "Add Motion Pass",
     [path,&charmapper](TreeOperationHandler &handler){
       charmapper.addMotionPass();
-      handler.addItem(path,motionPassItem());
+      handler.addItem(path);
     }
   );
 }

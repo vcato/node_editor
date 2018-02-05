@@ -37,6 +37,11 @@ struct WorldWrapper : SimpleWrapper
   {
     assert(false);
   }
+
+  virtual int nChildren() const
+  {
+    return world.nMembers();
+  }
 };
 
 #endif /* WORLDWRAPPER_HPP_ */

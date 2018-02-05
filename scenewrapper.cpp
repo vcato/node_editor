@@ -42,6 +42,11 @@ struct BodyWrapper : SimpleWrapper {
   {
     visitor.voidItem("Body");
   }
+
+  virtual int nChildren() const
+  {
+    return 0;
+  }
 };
 }
 
@@ -57,7 +62,7 @@ void
     "Add Body",
     [path,&scene](TreeOperationHandler &handler){
       scene.addBody();
-      handler.addItem(path,bodyItem());
+      handler.addItem(path);
     }
   );
 }

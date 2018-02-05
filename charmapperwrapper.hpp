@@ -30,4 +30,9 @@ struct CharmapperWrapper : SimpleWrapper {
     std::cerr << "CharmapperWrapper::visitType\n";
     visitor.voidItem("Charmapper");
   }
+
+  virtual int nChildren() const
+  {
+    return charmapper.passes.size();
+  }
 };

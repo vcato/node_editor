@@ -134,6 +134,21 @@ void Tree::visitType(const Path &path,const Item::TypeVisitor &visitor)
 }
 
 
+int Tree::findNChildren(const Path &path)
+{
+  int result = 0;
+
+  visitWrapper(
+    path,
+    [&](const Wrapper &wrapper){
+      result = wrapper.nChildren();
+    }
+  );
+
+  return result;
+}
+
+
 void
   Tree::comboBoxItemIndexChanged(
     const Path &path,

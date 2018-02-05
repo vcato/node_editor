@@ -359,3 +359,7 @@ to pass that path to the visitChildWrapper().
 
 It seems like it would make more sense if the tree build the items from
 the wrappers.
+
+We're passing an item to TreeOperationHandler::addItem(), but it looks
+like that isn't necessary anymore.  We should just be able to get the
+wrapper for the new item to get anything we need.

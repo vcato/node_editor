@@ -20,6 +20,7 @@ class World {
     void addCharmapper();
     void addScene();
     void visitMember(int child_index,MemberVisitor &);
+    int nMembers() const { return world_members.size(); }
 
     struct WorldMember;
     using WorldMembers = std::vector<std::unique_ptr<WorldMember>>;

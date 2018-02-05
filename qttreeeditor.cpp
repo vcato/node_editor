@@ -69,14 +69,14 @@ struct QtTreeEditor::OperationHandler : TreeOperationHandler {
   {
   }
 
-  virtual void addItem(const TreePath &path,const TreeItem &item)
+  virtual void addItem(const TreePath &path)
   {
-    tree_editor.addTreeItem(path,item);
+    tree_editor.addTreeItem(path);
   }
 
-  virtual void replaceTreeItems(const TreePath &path,const TreeItem &items)
+  virtual void replaceTreeItems(const TreePath &path)
   {
-    tree_editor.replaceTreeItems(path,items);
+    tree_editor.replaceTreeItems(path);
   }
 };
 
@@ -216,11 +216,7 @@ void
 }
 
 
-void
-  QtTreeEditor::addTreeItem(
-    const TreePath &parent_path,
-    const TreeItem &item
-  )
+void QtTreeEditor::addTreeItem(const TreePath &parent_path)
 {
   Tree &tree = this->tree();
   TreePath new_item_path = tree.createItem(parent_path);
@@ -236,7 +232,7 @@ void
     assert(created);
   }
 
-  addTreeItems(new_item_path,item);
+  addTreeItems(new_item_path);
 }
 
 
@@ -276,14 +272,11 @@ Tree &QtTreeEditor::tree()
 }
 
 
-void
-  QtTreeEditor::addTreeItems(
-    const TreePath &parent_path,
-    const TreeItem &tree_items
-  )
+void QtTreeEditor::addTreeItems(const TreePath &parent_path)
 {
-  for (const TreeItem &item : tree_items.child_items) {
-    addTreeItem(parent_path,item);
+  int n_children = tree().findNChildren(parent_path);
+  for (int i=0; i!=n_children; ++i) {
+    addTreeItem(parent_path);
   }
 }
 
@@ -322,14 +315,10 @@ void QtTreeEditor::removeChildItems(const TreePath &path)
 }
 
 
-void
-  QtTreeEditor::replaceTreeItems(
-    const TreePath &parent_path,
-    const TreeItem &tree_items
-  )
+void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
 {
   removeChildItems(parent_path);
-  addTreeItems(parent_path,tree_items);
+  addTreeItems(parent_path);
   diagramEditor().setDiagramPtr(maybeSelectedDiagram());
   diagramEditor().redraw();
 }

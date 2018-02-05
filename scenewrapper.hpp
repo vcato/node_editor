@@ -29,4 +29,9 @@ struct SceneWrapper : SimpleWrapper {
   {
     visitor.voidItem("Scene");
   }
+
+  virtual int nChildren() const
+  {
+    return scene.bodies.size();
+  }
 };
