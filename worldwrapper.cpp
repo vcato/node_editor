@@ -1,6 +1,5 @@
 #include "worldwrapper.hpp"
 
-#include "worldpolicies.hpp"
 #include "charmapperwrapper.hpp"
 #include "scenewrapper.hpp"
 

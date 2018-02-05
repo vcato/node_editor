@@ -1,10 +1,11 @@
 #include "charmapperwrapper.hpp"
 
 #include <iostream>
-#include "worldpolicies.hpp"
 #include "streamvector.hpp"
 
 using std::cerr;
+using std::vector;
+using std::string;
 using OperationVisitor = TreeItem::OperationVisitor;
 
 
@@ -310,7 +311,8 @@ struct MotionPassWrapper : SimpleWrapper {
 
     virtual void visitType(const TreeItem::TypeVisitor &visitor) const
     {
-      world_policies::GlobalPositionPolicy().visitType(visitor);
+      vector<string> enumeration_names = {"Components","From Body"};
+      visitor.enumeratedItem("Global Position",enumeration_names);
     }
   };
 
@@ -340,7 +342,8 @@ struct MotionPassWrapper : SimpleWrapper {
 
     virtual void visitType(const TreeItem::TypeVisitor &visitor) const
     {
-      world_policies::TargetBodyPolicy().visitType(visitor);
+      vector<string> enumeration_names = {"Body1","Body2","Body3"};
+      visitor.enumeratedItem("Target Body",enumeration_names);
     }
 
     virtual void
@@ -379,7 +382,8 @@ struct MotionPassWrapper : SimpleWrapper {
 
     virtual void visitType(const TreeItem::TypeVisitor &visitor) const
     {
-      world_policies::SourceBodyPolicy().visitType(visitor);
+      vector<string> enumeration_names = {"Body1","Body2","Body3"};
+      visitor.enumeratedItem("Source Body",enumeration_names);
     }
 
     virtual void

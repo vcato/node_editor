@@ -1,6 +1,5 @@
 #include "world.hpp"
 
-#include "worldpolicies.hpp"
 #include "worldwrapper.hpp"
 
 using std::make_unique;

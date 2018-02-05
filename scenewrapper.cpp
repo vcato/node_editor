@@ -1,8 +1,5 @@
 #include "scenewrapper.hpp"
 
-#include "worldpolicies.hpp"
-
-
 using OperationVisitor = TreeItem::OperationVisitor;
 
 

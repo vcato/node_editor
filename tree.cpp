@@ -4,7 +4,6 @@
 #include <iostream>
 #include <limits>
 #include "defaultdiagrams.hpp"
-#include "worldpolicies.hpp"
 #include "streamvector.hpp"
 
 
@@ -12,34 +11,9 @@ using std::string;
 using std::cerr;
 using std::function;
 using std::vector;
-using world_policies::RootPolicy;
 
 using Path = Tree::Path;
 using OperationVisitor = Tree::OperationVisitor;
-
-
-Tree::Tree()
-{
-}
-
-
-Path Tree::createItem(const Path &parent_path)
-{
-#if 1
-  // int index = getItem(parent_path).createItem(policy);
-  int index = getItem(parent_path).createItem();
-#else
-  const Item &parent_item = getItem(parent_path);
-  int index = -1;
-  visitWrapper(
-    parent_path,
-    [&](const Wrapper &wrapper){
-      index = parent_item.createItem(wrapper);
-    }
-  );
-#endif
-  return join(parent_path,index);
-}
 
 
 TreeItem::TreeItem()
@@ -71,6 +45,18 @@ auto TreeItem::getItem(const Path &path,int depth) const -> const TreeItem &
   }
 
   return child_items[path[depth]].getItem(path,depth+1);
+}
+
+
+Tree::Tree()
+{
+}
+
+
+Path Tree::createItem(const Path &parent_path)
+{
+  int index = getItem(parent_path).createItem();
+  return join(parent_path,index);
 }
 
 
