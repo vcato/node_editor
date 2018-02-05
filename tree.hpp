@@ -44,77 +44,14 @@ struct TreeItem {
       ) const = 0;
   };
 
-  struct Policy {
-    struct PolicyInterface {
-      virtual ~PolicyInterface() {}
-      virtual PolicyInterface *clone() const = 0;
-      virtual void visitType(const TypeVisitor &) const = 0;
-    };
-
-    template <typename T>
-    struct BasicPolicy : PolicyInterface {
-      T object;
-
-      BasicPolicy(const T& arg) : object(arg) {}
-
-      virtual void visitType(const TypeVisitor &visitor) const
-      {
-        object.visitType(visitor);
-      }
-
-      virtual PolicyInterface *clone() const
-      {
-        return new BasicPolicy<T>(*this);
-      }
-    };
-
-    PolicyInterface *ptr = 0;
-
-    const PolicyInterface &interface() const
-    {
-      assert(ptr);
-      return *ptr;
-    }
-
-    PolicyInterface &interface()
-    {
-      assert(ptr);
-      return *ptr;
-    }
-
-    template <typename T>
-    Policy(const T &arg)
-    : ptr(new BasicPolicy<T>{arg})
-    {
-    }
-
-    Policy(const Policy &arg)
-    : ptr(arg.interface().clone())
-    {
-    }
-
-    void operator=(const Policy &) = delete;
-
-    void
-      visitType(
-        const TypeVisitor &visitor
-      ) const
-    {
-      interface().visitType(visitor);
-    }
-
-    ~Policy() { delete ptr; }
-  };
-
   std::vector<TreeItem> child_items;
-  Policy policy;
 
-  TreeItem(Policy);
+  TreeItem();
 
   const TreeItem &getItem(const Path &,int depth) const;
 
-  Index createItem(const TreeItem::Policy &);
-  TreeItem& createItem2(Policy);
+  Index createItem();
+  TreeItem& createItem2();
 };
 
 

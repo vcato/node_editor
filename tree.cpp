@@ -19,7 +19,6 @@ using OperationVisitor = Tree::OperationVisitor;
 
 
 Tree::Tree()
-: _root_item(RootPolicy(*this))
 {
 }
 
@@ -28,7 +27,7 @@ Path Tree::createItem(const Path &parent_path)
 {
 #if 1
   // int index = getItem(parent_path).createItem(policy);
-  int index = getItem(parent_path).createItem(world_policies::EmptyPolicy());
+  int index = getItem(parent_path).createItem();
 #else
   const Item &parent_item = getItem(parent_path);
   int index = -1;
@@ -43,23 +42,22 @@ Path Tree::createItem(const Path &parent_path)
 }
 
 
-TreeItem::TreeItem(Policy policy_arg)
-  : policy(policy_arg)
+TreeItem::TreeItem()
 {
 }
 
 
-auto TreeItem::createItem(const TreeItem::Policy &policy) -> Index
+auto TreeItem::createItem() -> Index
 {
   Index result = child_items.size();
-  child_items.push_back(TreeItem(policy));
+  child_items.push_back(TreeItem());
   return result;
 }
 
 
-auto TreeItem::createItem2(TreeItem::Policy policy) -> TreeItem&
+auto TreeItem::createItem2() -> TreeItem&
 {
-  child_items.push_back(TreeItem(policy));
+  child_items.push_back(TreeItem());
   return child_items.back();
 }
 

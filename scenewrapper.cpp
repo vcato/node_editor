@@ -8,7 +8,7 @@ using OperationVisitor = TreeItem::OperationVisitor;
 
 static TreeItem bodyItem()
 {
-  return TreeItem(world_policies::BodyPolicy{});
+  return TreeItem();
 }
 
 

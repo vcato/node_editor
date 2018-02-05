@@ -10,13 +10,13 @@ using OperationVisitor = TreeItem::OperationVisitor;
 
 static TreeItem charmapperItem()
 {
-  return TreeItem(world_policies::CharmapperPolicy{});
+  return TreeItem();
 }
 
 
 static TreeItem sceneItem()
 {
-  return TreeItem(world_policies::ScenePolicy{});
+  return TreeItem();
 }
 
 

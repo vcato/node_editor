@@ -10,30 +10,30 @@ using OperationVisitor = TreeItem::OperationVisitor;
 
 static void createXYZChildren(TreeItem &parent_item)
 {
-  parent_item.createItem2(world_policies::XPolicy{});
-  parent_item.createItem2(world_policies::YPolicy{});
-  parent_item.createItem2(world_policies::ZPolicy{});
+  parent_item.createItem2();
+  parent_item.createItem2();
+  parent_item.createItem2();
 }
 
 
 static TreeItem motionPassItem()
 {
-  return TreeItem(world_policies::MotionPassPolicy{});
+  return TreeItem();
 }
 
 
 static TreeItem posExprItem()
 {
-  TreeItem pos_expr_item(world_policies::PosExprPolicy{});
-  pos_expr_item.createItem2(world_policies::TargetBodyPolicy{});
+  TreeItem pos_expr_item;
+  pos_expr_item.createItem2();
   {
     TreeItem &local_position_item =
-      pos_expr_item.createItem2(world_policies::LocalPositionPolicy{});
+      pos_expr_item.createItem2();
     createXYZChildren(local_position_item);
   }
   {
     TreeItem &global_position_item =
-      pos_expr_item.createItem2(world_policies::GlobalPositionPolicy{});
+      pos_expr_item.createItem2();
     createXYZChildren(global_position_item);
   }
 
@@ -43,7 +43,7 @@ static TreeItem posExprItem()
 
 static TreeItem globalPositionComponentsItems()
 {
-  TreeItem items(world_policies::EmptyPolicy{});
+  TreeItem items;
   createXYZChildren(items);
   return items;
 }
@@ -51,10 +51,9 @@ static TreeItem globalPositionComponentsItems()
 
 static TreeItem globalPositionFromBodyItems()
 {
-  TreeItem items(world_policies::EmptyPolicy{});
-  items.createItem2(world_policies::SourceBodyPolicy{});
-  TreeItem &local_position_item =
-    items.createItem2(world_policies::LocalPositionPolicy{});
+  TreeItem items;
+  items.createItem2();
+  TreeItem &local_position_item = items.createItem2();
   createXYZChildren(local_position_item);
   return items;
 }
