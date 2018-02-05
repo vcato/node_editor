@@ -14,9 +14,10 @@ using std::vector;
 
 using Path = Tree::Path;
 using OperationVisitor = Tree::OperationVisitor;
+using TreeItem = Tree::Item;
 
 
-auto TreeItem::createItem() -> Index
+auto Tree::Item::createItem() -> Index
 {
   Index result = child_items.size();
   child_items.push_back(TreeItem());

@@ -11,15 +11,6 @@
 using TreePath = std::vector<int>;
 
 
-struct TreeItem {
-  using Index = int;
-
-  std::vector<TreeItem> child_items;
-
-  Index createItem();
-};
-
-
 struct Wrapper;
 
 using WrapperVisitor = std::function<void(const Wrapper &)>;
@@ -123,8 +114,15 @@ struct SimpleWrapper : Wrapper {
 
 class Tree {
   public:
+    struct Item {
+      using Index = int;
+
+      std::vector<Item> child_items;
+
+      Index createItem();
+    };
+
     using Path = TreePath;
-    using Item = TreeItem;
     using Index = Item::Index;
     using SizeType = int;
     using ItemVisitor = Wrapper::TypeVisitor;
