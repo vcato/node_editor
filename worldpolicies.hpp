@@ -14,15 +14,6 @@ using std::string;
 using std::cerr;
 
 struct SimplePolicy {
-  void comboBoxItemIndexChanged(
-    const Path &/*path*/,
-    int /*index*/,
-    TreeItem::OperationHandler &/*operation_handler*/
-  )
-  {
-    assert(false);
-  }
-
   Diagram defaultDiagram()
   {
     return Diagram();
@@ -61,13 +52,6 @@ struct GlobalPositionPolicy {
     visitor.enumeratedItem("Global Position",enumeration_names);
   }
 
-  void
-    comboBoxItemIndexChanged(
-      const Path &path,
-      int index,
-      TreeItem::OperationHandler &operation_handler
-    );
-
   Diagram defaultDiagram() { return Diagram(); }
 };
 
@@ -79,15 +63,6 @@ struct LocalPositionPolicy {
   }
 
   Diagram defaultDiagram();
-
-  void comboBoxItemIndexChanged(
-    const Path &/*path*/,
-    int /*index*/,
-    TreeItem::OperationHandler &/*operation_handler*/
-  )
-  {
-    assert(false);
-  }
 };
 
 
@@ -105,15 +80,6 @@ struct TargetBodyPolicy {
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
     visitor.enumeratedItem("Target Body",enumeration_names);
-  }
-
-  void
-    comboBoxItemIndexChanged(
-      const Path &/*path*/,
-      int /*index*/,
-      TreeItem::OperationHandler &/*operation_handler*/
-    )
-  {
   }
 
   Diagram defaultDiagram()

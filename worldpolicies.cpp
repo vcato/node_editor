@@ -11,61 +11,6 @@ void createXYZChildren(TreeItem &parent_item)
 }
 
 
-
-namespace world_policies {
-static TreeItem globalPositionComponentsItems()
-{
-  TreeItem items(EmptyPolicy{});
-  createXYZChildren(items);
-  items.diagram = fromComponentsDiagram();
-  return items;
-}
-}
-
-
-namespace world_policies {
-static TreeItem globalPositionFromBodyItems()
-{
-  TreeItem items(EmptyPolicy{});
-  items.createItem2(SourceBodyPolicy{});
-  TreeItem &local_position_item = items.createItem2(LocalPositionPolicy{});
-  items.diagram = fromBodyDiagram();
-  createXYZChildren(local_position_item);
-  return items;
-}
-}
-
-
-namespace world_policies {
-void
-  GlobalPositionPolicy::comboBoxItemIndexChanged(
-    const Path &path,
-    int index,
-    TreeItem::OperationHandler &operation_handler
-  )
-{
-  switch (index) {
-    case 0:
-      // Components
-      {
-        TreeItem items = globalPositionComponentsItems();
-        operation_handler.replaceTreeItems(path,items);
-      }
-      break;
-    case 1:
-      // From Body
-      {
-        TreeItem items = globalPositionFromBodyItems();
-        operation_handler.replaceTreeItems(path,items);
-      }
-      break;
-    default:
-      assert(false);
-  }
-}
-}
-
-
 namespace world_policies {
 static Diagram localPositionDiagram()
 {

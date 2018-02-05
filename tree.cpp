@@ -175,7 +175,12 @@ void
     OperationHandler &operation_handler
   )
 {
-  getItem(path).comboBoxItemIndexChanged(path,index,operation_handler);
+  visitWrapper(
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.comboBoxItemIndexChanged(path,index,operation_handler);
+    }
+  );
 }
 
 

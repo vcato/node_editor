@@ -50,12 +50,6 @@ struct TreeItem {
       virtual ~PolicyInterface() {}
       virtual PolicyInterface *clone() const = 0;
       virtual void visitType(const Visitor &) const = 0;
-      virtual void
-        comboBoxItemIndexChanged(
-          const Path &path,
-          int index,
-          OperationHandler &operation_handler
-        ) = 0;
       virtual Diagram defaultDiagram() = 0;
     };
 
@@ -73,16 +67,6 @@ struct TreeItem {
       virtual PolicyInterface *clone() const
       {
         return new BasicPolicy<T>(*this);
-      }
-
-      virtual void
-        comboBoxItemIndexChanged(
-          const Path &path,
-          int index,
-          OperationHandler &operation_handler
-        )
-      {
-        object.comboBoxItemIndexChanged(path,index,operation_handler);
       }
 
       virtual Diagram defaultDiagram()
@@ -128,16 +112,6 @@ struct TreeItem {
 
     Diagram defaultDiagram() { return interface().defaultDiagram(); }
 
-    void
-      comboBoxItemIndexChanged(
-        const Path &path,
-        int index,
-        OperationHandler &operation_handler
-      )
-    {
-      interface().comboBoxItemIndexChanged(path,index,operation_handler);
-    }
-
     ~Policy() { delete ptr; }
   };
 
@@ -154,16 +128,6 @@ struct TreeItem {
   TreeItem& createItem2(const TreeItem &);
   TreeItem& createItem2(Policy);
   void visit(const Visitor &) const;
-
-  void
-    comboBoxItemIndexChanged(
-      const Path &path,
-      int index,
-      OperationHandler &operation_handler
-    )
-  {
-    policy.comboBoxItemIndexChanged(path,index,operation_handler);
-  }
 };
 
 
@@ -208,6 +172,26 @@ struct Wrapper {
     ) const = 0;
 
   virtual Diagram *diagramPtr() const = 0;
+
+  virtual void
+    comboBoxItemIndexChanged(
+      const TreePath &path,
+      int index,
+      TreeItem::OperationHandler &operation_handler
+    ) const = 0;
+};
+
+
+struct SimpleWrapper : Wrapper {
+  virtual void
+    comboBoxItemIndexChanged(
+      const TreePath &/*path*/,
+      int /*index*/,
+      TreeItem::OperationHandler &/*operation_handler*/
+    ) const
+  {
+    assert(false);
+  }
 };
 
 

@@ -368,6 +368,3 @@ logic.
 
 Need to be able to switch the global position from component to body in
 charmapper.
-
-WorldInterface::visitWrapper() needs to be visitSelfWrapper(), and then
-it can call visitWrapper() on the result.

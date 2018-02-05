@@ -2,7 +2,7 @@
 #include "tree.hpp"
 
 
-struct SceneWrapper : Wrapper {
+struct SceneWrapper : SimpleWrapper {
   Scene &scene;
 
   SceneWrapper(Scene &scene_arg)

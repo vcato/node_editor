@@ -2,7 +2,7 @@
 #include "tree.hpp"
 
 
-struct CharmapperWrapper : Wrapper {
+struct CharmapperWrapper : SimpleWrapper {
   Charmapper &charmapper;
 
   CharmapperWrapper(Charmapper &charmapper_arg)

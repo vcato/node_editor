@@ -34,8 +34,29 @@ static TreeItem posExprItem()
 }
 
 
+static TreeItem globalPositionComponentsItems()
+{
+  TreeItem items(world_policies::EmptyPolicy{});
+  world_policies::createXYZChildren(items);
+  items.diagram = fromComponentsDiagram();
+  return items;
+}
+
+
+static TreeItem globalPositionFromBodyItems()
+{
+  TreeItem items(world_policies::EmptyPolicy{});
+  items.createItem2(world_policies::SourceBodyPolicy{});
+  TreeItem &local_position_item =
+    items.createItem2(world_policies::LocalPositionPolicy{});
+  items.diagram = fromBodyDiagram();
+  world_policies::createXYZChildren(local_position_item);
+  return items;
+}
+
+
 namespace {
-struct MotionPassWrapper : Wrapper {
+struct MotionPassWrapper : SimpleWrapper {
   using MotionPass = Charmapper::MotionPass;
   using Position = Charmapper::Position;
   MotionPass &motion_pass;
@@ -46,7 +67,7 @@ struct MotionPassWrapper : Wrapper {
   using FromComponentsGlobalPosition =
     Charmapper::FromComponentsGlobalPosition;
 
-  struct ChannelWrapper : Wrapper {
+  struct ChannelWrapper : SimpleWrapper {
     Channel &channel;
 
     ChannelWrapper(Channel &channel_arg)
@@ -78,7 +99,7 @@ struct MotionPassWrapper : Wrapper {
     }
   };
 
-  struct PositionWrapper : Wrapper {
+  struct PositionWrapper : SimpleWrapper {
     Position &position;
 
     virtual void
@@ -124,7 +145,7 @@ struct MotionPassWrapper : Wrapper {
     }
   };
 
-  struct FromBodyGlobalPositionWrapper : Wrapper {
+  struct FromBodyGlobalPositionWrapper : SimpleWrapper {
     FromBodyGlobalPosition &from_body_global_position;
 
     FromBodyGlobalPositionWrapper(FromBodyGlobalPosition &arg)
@@ -186,8 +207,7 @@ struct MotionPassWrapper : Wrapper {
 
       virtual void accept(FromComponentsGlobalPosition &arg) const
       {
-        PositionWrapper(arg)
-          .visitWrapper(path,depth,visitor);
+        PositionWrapper(arg).visitWrapper(path,depth,visitor);
       }
     };
 
@@ -218,9 +238,36 @@ struct MotionPassWrapper : Wrapper {
     {
       return 0;
     }
+
+    virtual void
+      comboBoxItemIndexChanged(
+        const TreePath &path,
+        int index,
+        TreeItem::OperationHandler &operation_handler
+      ) const
+    {
+      switch (index) {
+        case 0:
+          // Components
+          {
+            TreeItem items = globalPositionComponentsItems();
+            operation_handler.replaceTreeItems(path,items);
+          }
+          break;
+        case 1:
+          // From Body
+          {
+            TreeItem items = globalPositionFromBodyItems();
+            operation_handler.replaceTreeItems(path,items);
+          }
+          break;
+        default:
+          assert(false);
+      }
+    }
   };
 
-  struct PosExprWrapper : Wrapper {
+  struct PosExprWrapper : SimpleWrapper {
     PosExpr &pos_expr;
 
     PosExprWrapper(PosExpr &pos_expr_arg)

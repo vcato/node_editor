@@ -13,7 +13,7 @@ static TreeItem bodyItem()
 
 
 namespace {
-struct BodyWrapper : Wrapper {
+struct BodyWrapper : SimpleWrapper {
   Scene::Body &body;
 
   BodyWrapper(Scene::Body &body_arg)

@@ -4,7 +4,7 @@
 #include "tree.hpp"
 #include "world.hpp"
 
-struct WorldWrapper : Wrapper
+struct WorldWrapper : SimpleWrapper
 {
   using OperationVisitor = TreeItem::OperationVisitor;
   World &world;
