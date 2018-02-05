@@ -22,13 +22,13 @@ struct Charmapper {
 
   struct GlobalPosition {
     struct FromBodyData;
-    struct FromComponentsData;
+    struct ComponentsData;
     Diagram diagram;
 
     struct Data {
       struct Visitor {
         virtual void accept(FromBodyData &) const = 0;
-        virtual void accept(FromComponentsData &) const = 0;
+        virtual void accept(ComponentsData &) const = 0;
       };
 
       virtual void accept(const Visitor &) = 0;
@@ -43,7 +43,7 @@ struct Charmapper {
       }
     };
 
-    struct FromComponentsData : Data, Position {
+    struct ComponentsData : Data, Position {
       virtual void accept(const Visitor &visitor)
       {
         visitor.accept(*this);
@@ -52,9 +52,9 @@ struct Charmapper {
 
     std::unique_ptr<Data> global_position_ptr;
 
-    void switchToFromComponents()
+    void switchToComponents()
     {
-      global_position_ptr = std::make_unique<FromComponentsData>();
+      global_position_ptr = std::make_unique<ComponentsData>();
     }
 
     void switchToFromBody()
@@ -63,9 +63,7 @@ struct Charmapper {
     }
 
     GlobalPosition()
-      : global_position_ptr(
-          std::make_unique<FromComponentsData>()
-        )
+      : global_position_ptr(std::make_unique<ComponentsData>())
     {
     }
   };

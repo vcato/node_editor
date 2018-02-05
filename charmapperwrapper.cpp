@@ -65,8 +65,8 @@ struct MotionPassWrapper : SimpleWrapper {
   using GlobalPositionData = Charmapper::GlobalPosition::Data;
   using GlobalPosition = Charmapper::GlobalPosition;
   using FromBodyGlobalPositionData = Charmapper::GlobalPosition::FromBodyData;
-  using FromComponentsGlobalPositionData =
-    Charmapper::GlobalPosition::FromComponentsData;
+  using ComponentsGlobalPositionData =
+    Charmapper::GlobalPosition::ComponentsData;
 
   struct ChannelWrapper : SimpleWrapper {
     Channel &channel;
@@ -220,7 +220,7 @@ struct MotionPassWrapper : SimpleWrapper {
         FromBodyGlobalPositionWrapper(arg).visitWrapper(path,depth,visitor);
       }
 
-      virtual void accept(FromComponentsGlobalPositionData &arg) const
+      virtual void accept(ComponentsGlobalPositionData &arg) const
       {
         PositionWrapper(arg).visitWrapper(path,depth,visitor);
       }
@@ -266,7 +266,7 @@ struct MotionPassWrapper : SimpleWrapper {
         case 0:
           // Components
           {
-            global_position.switchToFromComponents();
+            global_position.switchToComponents();
             TreeItem items = globalPositionComponentsItems();
             operation_handler.replaceTreeItems(path,items);
           }
