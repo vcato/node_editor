@@ -356,9 +356,3 @@ temporary though.
 
 May be able to simplify the Wrapper visitor more so that it isn't necessary
 to pass that path to the visitChildWrapper().
-
-Try to get rid of diagrams in the TreeItems.
-
-The TreeItems have diagrams, and part of the reason is because there is
-a default diagram.  If charmapper set the default diagram itself, then
-we wouldn't need this.

@@ -14,10 +14,6 @@ using std::string;
 using std::cerr;
 
 struct SimplePolicy {
-  Diagram defaultDiagram()
-  {
-    return Diagram();
-  }
 };
 
 
@@ -51,8 +47,6 @@ struct GlobalPositionPolicy {
     vector<string> enumeration_names = {"Components","From Body"};
     visitor.enumeratedItem("Global Position",enumeration_names);
   }
-
-  Diagram defaultDiagram() { return Diagram(); }
 };
 
 
@@ -61,8 +55,6 @@ struct LocalPositionPolicy {
   {
     visitor.voidItem("Local Position");
   }
-
-  Diagram defaultDiagram();
 };
 
 
@@ -80,11 +72,6 @@ struct TargetBodyPolicy {
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
     visitor.enumeratedItem("Target Body",enumeration_names);
-  }
-
-  Diagram defaultDiagram()
-  {
-    return Diagram();
   }
 };
 
@@ -155,9 +142,6 @@ struct EmptyPolicy : SimplePolicy {
     assert(false);
   }
 };
-
-
-extern void createXYZChildren(TreeItem &parent_item);
 
 }
 

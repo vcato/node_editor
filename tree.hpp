@@ -50,7 +50,6 @@ struct TreeItem {
       virtual ~PolicyInterface() {}
       virtual PolicyInterface *clone() const = 0;
       virtual void visitType(const Visitor &) const = 0;
-      virtual Diagram defaultDiagram() = 0;
     };
 
     template <typename T>
@@ -67,11 +66,6 @@ struct TreeItem {
       virtual PolicyInterface *clone() const
       {
         return new BasicPolicy<T>(*this);
-      }
-
-      virtual Diagram defaultDiagram()
-      {
-        return object.defaultDiagram();
       }
     };
 
@@ -109,8 +103,6 @@ struct TreeItem {
     {
       interface().visitType(visitor);
     }
-
-    Diagram defaultDiagram() { return interface().defaultDiagram(); }
 
     ~Policy() { delete ptr; }
   };
