@@ -62,10 +62,11 @@ struct MotionPassWrapper : SimpleWrapper {
   MotionPass &motion_pass;
   using PosExpr = MotionPass::PosExpr;
   using Channel = Charmapper::Channel;
+  using GlobalPositionData = Charmapper::GlobalPosition::Data;
   using GlobalPosition = Charmapper::GlobalPosition;
-  using FromBodyGlobalPosition = Charmapper::FromBodyGlobalPosition;
-  using FromComponentsGlobalPosition =
-    Charmapper::FromComponentsGlobalPosition;
+  using FromBodyGlobalPositionData = Charmapper::GlobalPosition::FromBodyData;
+  using FromComponentsGlobalPositionData =
+    Charmapper::GlobalPosition::FromComponentsData;
 
   struct ChannelWrapper : SimpleWrapper {
     Channel &channel;
@@ -146,21 +147,35 @@ struct MotionPassWrapper : SimpleWrapper {
   };
 
   struct FromBodyGlobalPositionWrapper : SimpleWrapper {
-    FromBodyGlobalPosition &from_body_global_position;
+    FromBodyGlobalPositionData &from_body_global_position;
 
-    FromBodyGlobalPositionWrapper(FromBodyGlobalPosition &arg)
+    FromBodyGlobalPositionWrapper(FromBodyGlobalPositionData &arg)
     : from_body_global_position(arg)
     {
     }
 
     void
       visitChildWrapper(
-        const TreePath &/*path*/,
-        int /*depth*/,
-        const WrapperVisitor &/*visitor*/
+        const TreePath &path,
+        int depth,
+        const WrapperVisitor &visitor
       ) const
     {
-      assert(false);
+      int child_index = path[depth];
+
+      if (child_index==0) {
+        // Source body
+      }
+      else if (child_index==1) {
+        PositionWrapper(
+          from_body_global_position.local_position
+        ).visitWrapper(path,depth+1,visitor);
+      }
+      else {
+        cerr << "child_index=" << child_index << '\n';
+        assert(false);
+      }
+      // assert(false);
     }
 
     virtual void
@@ -186,7 +201,7 @@ struct MotionPassWrapper : SimpleWrapper {
     {
     }
 
-    struct TypeVisitor : GlobalPosition::Visitor {
+    struct TypeVisitor : GlobalPositionData::Visitor {
       const TreePath &path;
       const int depth;
       const WrapperVisitor &visitor;
@@ -200,12 +215,12 @@ struct MotionPassWrapper : SimpleWrapper {
       {
       }
 
-      virtual void accept(FromBodyGlobalPosition &arg) const
+      virtual void accept(FromBodyGlobalPositionData &arg) const
       {
         FromBodyGlobalPositionWrapper(arg).visitWrapper(path,depth,visitor);
       }
 
-      virtual void accept(FromComponentsGlobalPosition &arg) const
+      virtual void accept(FromComponentsGlobalPositionData &arg) const
       {
         PositionWrapper(arg).visitWrapper(path,depth,visitor);
       }
@@ -213,15 +228,16 @@ struct MotionPassWrapper : SimpleWrapper {
 
     void
       visitChildWrapper(
-        const TreePath &/*path*/,
-        int /*depth*/,
-        const WrapperVisitor &/*visitor*/
+        const TreePath &path,
+        int depth,
+        const WrapperVisitor &visitor
       ) const
     {
       // This isn't working properly yet, since charmapper doesn't
       // actually change the type of the global position between
       // from-component and from-body when it is changed in the tree.
-      // global_position.accept(TypeVisitor(path,depth,visitor));
+      assert(global_position.global_position_ptr);
+      global_position.global_position_ptr->accept(TypeVisitor(path,depth,visitor));
     }
 
     virtual void
@@ -236,7 +252,7 @@ struct MotionPassWrapper : SimpleWrapper {
 
     virtual Diagram *diagramPtr() const
     {
-      return 0;
+      return &global_position.diagram;
     }
 
     virtual void
@@ -250,6 +266,7 @@ struct MotionPassWrapper : SimpleWrapper {
         case 0:
           // Components
           {
+            global_position.switchToFromComponents();
             TreeItem items = globalPositionComponentsItems();
             operation_handler.replaceTreeItems(path,items);
           }
@@ -257,6 +274,7 @@ struct MotionPassWrapper : SimpleWrapper {
         case 1:
           // From Body
           {
+            global_position.switchToFromBody();
             TreeItem items = globalPositionFromBodyItems();
             operation_handler.replaceTreeItems(path,items);
           }
@@ -309,8 +327,7 @@ struct MotionPassWrapper : SimpleWrapper {
         );
       }
       else if (child_index==2) {
-        assert(pos_expr.global_position_ptr);
-        GlobalPositionWrapper(*pos_expr.global_position_ptr).visitWrapper(
+        GlobalPositionWrapper(pos_expr.global_position).visitWrapper(
           path,depth+1,visitor
         );
       }

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <cassert>
 #include "diagram.hpp"
 
 
@@ -19,25 +20,53 @@ struct Charmapper {
     Channel x,y,z;
   };
 
-  struct FromBodyGlobalPosition;
-  struct FromComponentsGlobalPosition;
-
   struct GlobalPosition {
-    struct Visitor {
-      virtual void accept(FromBodyGlobalPosition &) const = 0;
-      virtual void accept(FromComponentsGlobalPosition &) const = 0;
+    struct FromBodyData;
+    struct FromComponentsData;
+    Diagram diagram;
+
+    struct Data {
+      struct Visitor {
+        virtual void accept(FromBodyData &) const = 0;
+        virtual void accept(FromComponentsData &) const = 0;
+      };
+
+      virtual void accept(const Visitor &) = 0;
     };
 
-    virtual void accept(const Visitor &) = 0;
-  };
+    struct FromBodyData : Data {
+      Position local_position;
 
-  struct FromBodyGlobalPosition : GlobalPosition {
-  };
+      virtual void accept(const Visitor &visitor)
+      {
+        visitor.accept(*this);
+      }
+    };
 
-  struct FromComponentsGlobalPosition : GlobalPosition, Position {
-    virtual void accept(const Visitor &visitor)
+    struct FromComponentsData : Data, Position {
+      virtual void accept(const Visitor &visitor)
+      {
+        visitor.accept(*this);
+      }
+    };
+
+    std::unique_ptr<Data> global_position_ptr;
+
+    void switchToFromComponents()
     {
-      visitor.accept(*this);
+      global_position_ptr = std::make_unique<FromComponentsData>();
+    }
+
+    void switchToFromBody()
+    {
+      global_position_ptr = std::make_unique<FromBodyData>();
+    }
+
+    GlobalPosition()
+      : global_position_ptr(
+          std::make_unique<FromComponentsData>()
+        )
+    {
     }
   };
 
@@ -48,10 +77,9 @@ struct Charmapper {
     struct PosExpr {
       Diagram diagram;
       Position local_position;
-      std::unique_ptr<GlobalPosition> global_position_ptr;
+      GlobalPosition global_position;
 
       PosExpr()
-      : global_position_ptr(std::make_unique<FromComponentsGlobalPosition>())
       {
       }
     };
