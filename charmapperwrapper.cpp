@@ -463,8 +463,8 @@ struct MotionPassWrapper : SimpleWrapper {
     visitor(
       "Add Pos Expr",
       [path,&motion_pass](TreeOperationHandler &handler){
-      motion_pass.addPosExpr();
-      handler.addItem(path,posExprItem());
+        motion_pass.addPosExpr();
+        handler.addItem(path,posExprItem());
       }
     );
   }
