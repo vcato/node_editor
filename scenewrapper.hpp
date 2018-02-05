@@ -18,12 +18,7 @@ struct SceneWrapper : SimpleWrapper {
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
-  void
-    visitChildWrapper(
-      const TreePath &path,
-      int depth,
-      const WrapperVisitor &visitor
-    ) const;
+  void withChildWrapper(int child_index,const WrapperVisitor &) const;
 
   virtual void visitType(const TreeItem::TypeVisitor &visitor) const
   {

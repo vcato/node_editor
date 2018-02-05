@@ -3,12 +3,6 @@
 using OperationVisitor = TreeItem::OperationVisitor;
 
 
-static TreeItem bodyItem()
-{
-  return TreeItem();
-}
-
-
 namespace {
 struct BodyWrapper : SimpleWrapper {
   Scene::Body &body;
@@ -28,12 +22,7 @@ struct BodyWrapper : SimpleWrapper {
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
-  void
-    visitChildWrapper(
-      const TreePath &/*path*/,
-      int /*depth*/,
-      const WrapperVisitor &/*visitor*/
-    ) const
+  void withChildWrapper(int /*child_index*/,const WrapperVisitor &) const
   {
     assert(false);
   }
@@ -69,13 +58,10 @@ void
 
 
 void
-  SceneWrapper::visitChildWrapper(
-    const TreePath &path,
-    int depth,
+  SceneWrapper::withChildWrapper(
+    int child_index,
     const WrapperVisitor &visitor
   ) const
 {
-  BodyWrapper{
-    scene.bodies[path[depth]]
-  }.visitWrapper(path,depth+1,visitor);
+  visitor(BodyWrapper{scene.bodies[child_index]});
 }

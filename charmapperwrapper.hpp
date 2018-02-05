@@ -16,18 +16,12 @@ struct CharmapperWrapper : SimpleWrapper {
       const TreeItem::OperationVisitor &visitor
     ) const;
 
-  void
-    visitChildWrapper(
-      const TreePath &path,
-      int depth,
-      const WrapperVisitor &visitor
-    ) const;
+  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   virtual void visitType(const TreeItem::TypeVisitor &visitor) const
   {
-    std::cerr << "CharmapperWrapper::visitType\n";
     visitor.voidItem("Charmapper");
   }
 

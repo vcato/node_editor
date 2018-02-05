@@ -68,6 +68,12 @@ struct Wrapper {
 
 
   virtual void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const = 0;
+
+  void
     visitWrapper(
       const TreePath &path,
       int depth,
@@ -82,17 +88,17 @@ struct Wrapper {
       return;
     }
 
-    visitChildWrapper(path,depth,visitor);
+    int child_index = path[depth];
+
+    withChildWrapper(
+      child_index,
+      [&](const Wrapper &wrapper){
+        wrapper.visitWrapper(path,depth+1,visitor);
+      }
+    );
   }
 
   virtual int nChildren() const = 0;
-
-  virtual void
-    visitChildWrapper(
-      const TreePath &path,
-      int depth,
-      const WrapperVisitor &visitor
-    ) const = 0;
 
   virtual Diagram *diagramPtr() const = 0;
 
