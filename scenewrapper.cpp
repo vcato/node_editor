@@ -40,6 +40,11 @@ struct BodyWrapper : SimpleWrapper {
   {
     assert(false);
   }
+
+  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  {
+    visitor.voidItem("Body");
+  }
 };
 }
 

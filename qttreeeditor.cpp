@@ -8,6 +8,7 @@
 #include "qtmenu.hpp"
 #include "qtslot.hpp"
 #include "defaultdiagrams.hpp"
+#include "streamvector.hpp"
 
 
 using std::cerr;
@@ -23,24 +24,29 @@ using std::list;
 struct QtTreeEditor::CreateItemVisitor : Tree::ItemVisitor {
   QtTreeEditor &tree_editor;
   const TreePath &parent_path;
+  bool &created;
 
   CreateItemVisitor(
     QtTreeEditor &tree_editor_arg,
-    const TreePath &parent_path_arg
+    const TreePath &parent_path_arg,
+    bool &created_arg
   )
   : tree_editor(tree_editor_arg),
-    parent_path(parent_path_arg)
+    parent_path(parent_path_arg),
+    created(created_arg)
   {
   }
 
   void voidItem(const std::string &label) const override
   {
     tree_editor.createVoidItem(parent_path,label);
+    created = true;
   }
 
   void numericItem(const std::string &label) const override
   {
     tree_editor.createNumericItem(parent_path,label);
+    created = true;
   }
 
   void
@@ -50,6 +56,7 @@ struct QtTreeEditor::CreateItemVisitor : Tree::ItemVisitor {
     ) const override
   {
     tree_editor.createEnumeratedItem(parent_path,label,enumeration_names);
+    created = true;
   }
 };
 
@@ -216,10 +223,18 @@ void
   )
 {
   Tree &tree = this->tree();
-  TreePath new_item_path = tree.createItem(parent_path,item.policy);
+  TreePath new_item_path = tree.createItem(parent_path);
 
-  CreateItemVisitor create_item_visitor(*this,parent_path);
-  item.policy.visitType(create_item_visitor);
+  cerr << "QtTreeEditor::addTreeITem: new_item_path=" <<
+    new_item_path << "\n";
+
+  bool created = false;
+  CreateItemVisitor create_item_visitor(*this,parent_path,created);
+  tree.visitType(new_item_path,create_item_visitor);
+  if (!created) {
+    cerr << "No item created for parent " << parent_path << "\n";
+    assert(created);
+  }
 
   addTreeItems(new_item_path,item);
 }
@@ -242,6 +257,10 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
   while (i!=path_length) {
     item_ptr = item_ptr->child(path[i]);
     ++i;
+  }
+
+  if (!item_ptr) {
+    cerr << "No item for path " << path << "\n";
   }
 
   assert(item_ptr);

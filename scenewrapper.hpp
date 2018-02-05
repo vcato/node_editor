@@ -24,4 +24,9 @@ struct SceneWrapper : SimpleWrapper {
       int depth,
       const WrapperVisitor &visitor
     ) const;
+
+  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  {
+    visitor.voidItem("Scene");
+  }
 };

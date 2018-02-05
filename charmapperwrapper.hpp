@@ -24,4 +24,10 @@ struct CharmapperWrapper : SimpleWrapper {
     ) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
+
+  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  {
+    std::cerr << "CharmapperWrapper::visitType\n";
+    visitor.voidItem("Charmapper");
+  }
 };

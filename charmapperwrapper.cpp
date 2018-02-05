@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "worldpolicies.hpp"
+#include "streamvector.hpp"
 
 using std::cerr;
 using OperationVisitor = TreeItem::OperationVisitor;
@@ -74,9 +75,11 @@ struct MotionPassWrapper : SimpleWrapper {
 
   struct ChannelWrapper : SimpleWrapper {
     Channel &channel;
+    const char *label;
 
-    ChannelWrapper(Channel &channel_arg)
-    : channel(channel_arg)
+    ChannelWrapper(Channel &channel_arg,const char *label_arg)
+    : channel(channel_arg),
+      label(label_arg)
     {
     }
 
@@ -102,17 +105,24 @@ struct MotionPassWrapper : SimpleWrapper {
     {
       assert(false);
     }
+
+    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    {
+      visitor.numericItem(label);
+    }
   };
 
   struct PositionWrapper : SimpleWrapper {
     Position &position;
+    const char *label;
 
     virtual void
       visitOperations(
-        const TreePath &,
+        const TreePath &path,
         const TreeItem::OperationVisitor &
       ) const
     {
+      cerr << "PositionWrapper::visitOperations: path=" << path << "\n";
     }
 
     virtual Diagram *diagramPtr() const
@@ -120,8 +130,9 @@ struct MotionPassWrapper : SimpleWrapper {
       return &position.diagram;
     }
 
-    PositionWrapper(Position &position_arg)
-    : position(position_arg)
+    PositionWrapper(Position &position_arg,const char *label_arg)
+    : position(position_arg),
+      label(label_arg)
     {
     }
 
@@ -136,17 +147,23 @@ struct MotionPassWrapper : SimpleWrapper {
 
       switch (child_index) {
         case 0:
-          ChannelWrapper(position.x).visitWrapper(path,depth+1,visitor);
+          ChannelWrapper(position.x,"X").visitWrapper(path,depth+1,visitor);
           return;
         case 1:
-          ChannelWrapper(position.y).visitWrapper(path,depth+1,visitor);
+          ChannelWrapper(position.y,"Y").visitWrapper(path,depth+1,visitor);
           return;
         case 2:
-          ChannelWrapper(position.z).visitWrapper(path,depth+1,visitor);
+          ChannelWrapper(position.z,"Z").visitWrapper(path,depth+1,visitor);
           return;
       }
 
-      // assert(false);
+      assert(false);
+    }
+
+    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    {
+      cerr << "Visiting position type\n";
+      visitor.voidItem(label);
     }
   };
 
@@ -168,11 +185,11 @@ struct MotionPassWrapper : SimpleWrapper {
       int child_index = path[depth];
 
       if (child_index==0) {
-        // Source body
+        SourceBodyWrapper().visitWrapper(path,depth+1,visitor);
       }
       else if (child_index==1) {
         PositionWrapper(
-          from_body_global_position.local_position
+          from_body_global_position.local_position,"Local Position"
         ).visitWrapper(path,depth+1,visitor);
       }
       else {
@@ -192,6 +209,11 @@ struct MotionPassWrapper : SimpleWrapper {
     }
 
     virtual Diagram *diagramPtr() const
+    {
+      assert(false);
+    }
+
+    virtual void visitType(const TreeItem::TypeVisitor &) const
     {
       assert(false);
     }
@@ -226,7 +248,7 @@ struct MotionPassWrapper : SimpleWrapper {
 
       virtual void accept(ComponentsGlobalPositionData &arg) const
       {
-        PositionWrapper(arg).visitWrapper(path,depth,visitor);
+        PositionWrapper(arg,"blah").visitWrapper(path,depth,visitor);
       }
     };
 
@@ -250,7 +272,6 @@ struct MotionPassWrapper : SimpleWrapper {
         const TreeItem::OperationVisitor &
       ) const
     {
-      assert(false);
     }
 
 
@@ -287,7 +308,91 @@ struct MotionPassWrapper : SimpleWrapper {
           assert(false);
       }
     }
+
+    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    {
+      world_policies::GlobalPositionPolicy().visitType(visitor);
+    }
   };
+
+  struct TargetBodyWrapper : Wrapper {
+    virtual void
+      visitOperations(
+        const TreePath &,
+        const TreeItem::OperationVisitor &
+      ) const
+    {
+    }
+
+    virtual void
+      visitChildWrapper(
+        const TreePath &,
+        int /*depth*/,
+        const WrapperVisitor &
+      ) const
+    {
+      assert(false);
+    }
+
+    virtual Diagram *diagramPtr() const
+    {
+      return nullptr;
+    }
+
+    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    {
+      world_policies::TargetBodyPolicy().visitType(visitor);
+    }
+
+    virtual void
+      comboBoxItemIndexChanged(
+        const TreePath &,
+        int /*index*/,
+        TreeItem::OperationHandler &
+      ) const
+    {
+    }
+  };
+
+  struct SourceBodyWrapper : Wrapper {
+    virtual void
+      visitOperations(
+        const TreePath &,
+        const TreeItem::OperationVisitor &
+      ) const
+    {
+    }
+
+    virtual void
+      visitChildWrapper(
+        const TreePath &,
+        int /*depth*/,
+        const WrapperVisitor &
+      ) const
+    {
+      assert(false);
+    }
+
+    virtual Diagram *diagramPtr() const
+    {
+      return nullptr;
+    }
+
+    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    {
+      world_policies::SourceBodyPolicy().visitType(visitor);
+    }
+
+    virtual void
+      comboBoxItemIndexChanged(
+        const TreePath &,
+        int /*index*/,
+        TreeItem::OperationHandler &
+      ) const
+    {
+    }
+  };
+
 
   struct PosExprWrapper : SimpleWrapper {
     PosExpr &pos_expr;
@@ -324,17 +429,22 @@ struct MotionPassWrapper : SimpleWrapper {
 
       if (child_index==0) {
         // Target body
+        TargetBodyWrapper().visitWrapper(path,depth+1,visitor);
       }
       else if (child_index==1) {
-        PositionWrapper(pos_expr.local_position).visitWrapper(
-          path,depth+1,visitor
-        );
+        PositionWrapper(pos_expr.local_position,"Local Position")
+          .visitWrapper(path,depth+1,visitor);
       }
       else if (child_index==2) {
         GlobalPositionWrapper(pos_expr.global_position).visitWrapper(
           path,depth+1,visitor
         );
       }
+    }
+
+    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    {
+      visitor.voidItem("Pos Expr");
     }
   };
 
@@ -368,6 +478,11 @@ struct MotionPassWrapper : SimpleWrapper {
     assert(motion_pass.pos_exprs[path[depth]]);
     PosExpr &pos_expr = *motion_pass.pos_exprs[path[depth]];
     PosExprWrapper(pos_expr).visitWrapper(path,depth+1,visitor);
+  }
+
+  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  {
+    visitor.voidItem("Motion Pass");
   }
 };
 }

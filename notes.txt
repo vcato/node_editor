@@ -368,3 +368,6 @@ Where we were passing an item before, we can pass a wrapper.
 
 I think we need to get rid of using Policies in the Tree items.
 The only thing the policies are used for is to visit the type.
+
+So it looks like the policy isn't used for anything after the initial
+creation.

@@ -24,10 +24,11 @@ Tree::Tree()
 }
 
 
-Path Tree::createItem(const Path &parent_path,const Item::Policy &policy)
+Path Tree::createItem(const Path &parent_path)
 {
 #if 1
-  int index = getItem(parent_path).createItem(policy);
+  // int index = getItem(parent_path).createItem(policy);
+  int index = getItem(parent_path).createItem(world_policies::EmptyPolicy());
 #else
   const Item &parent_item = getItem(parent_path);
   int index = -1;
@@ -133,6 +134,17 @@ void Tree::visitOperations(const Path &path,const OperationVisitor &visitor)
     path,
     [&](const Wrapper &wrapper){
       wrapper.visitOperations(path,visitor);
+    }
+  );
+}
+
+
+void Tree::visitType(const Path &path,const Item::TypeVisitor &visitor)
+{
+  visitWrapper(
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.visitType(visitor);
     }
   );
 }

@@ -17,14 +17,12 @@ struct WorldWrapper : SimpleWrapper
       const OperationVisitor &visitor
     ) const;
 
-#if 1
   virtual void
     visitWrapper(
       const TreePath &,
       int depth,
       const WrapperVisitor &
     ) const;
-#endif
 
   void
     visitChildWrapper(
@@ -33,9 +31,12 @@ struct WorldWrapper : SimpleWrapper
       const std::function<void(const Wrapper &)> &visitor
     ) const;
 
-  // virtual void visitChild(int child_index,const WrapperVisitor &);
-
   virtual Diagram *diagramPtr() const { return nullptr; }
+
+  virtual void visitType(const TreeItem::TypeVisitor &) const
+  {
+    assert(false);
+  }
 };
 
 #endif /* WORLDWRAPPER_HPP_ */
