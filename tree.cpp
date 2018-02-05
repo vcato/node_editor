@@ -24,9 +24,21 @@ Tree::Tree()
 }
 
 
-Path Tree::createItem(const Path &parent_path,const Item &item)
+Path Tree::createItem(const Path &parent_path,const Item::Policy &policy)
 {
-  return join(parent_path,getItem(parent_path).createItem(item));
+#if 1
+  int index = getItem(parent_path).createItem(policy);
+#else
+  const Item &parent_item = getItem(parent_path);
+  int index = -1;
+  visitWrapper(
+    parent_path,
+    [&](const Wrapper &wrapper){
+      index = parent_item.createItem(wrapper);
+    }
+  );
+#endif
+  return join(parent_path,index);
 }
 
 
@@ -36,16 +48,10 @@ TreeItem::TreeItem(Policy policy_arg)
 }
 
 
-void TreeItem::visit(const TypeVisitor &visitor) const
-{
-  policy.visitType(visitor);
-}
-
-
-auto TreeItem::createItem(const TreeItem &item) -> Index
+auto TreeItem::createItem(const TreeItem::Policy &policy) -> Index
 {
   Index result = child_items.size();
-  child_items.push_back(TreeItem(item.policy));
+  child_items.push_back(TreeItem(policy));
   return result;
 }
 
@@ -53,13 +59,6 @@ auto TreeItem::createItem(const TreeItem &item) -> Index
 auto TreeItem::createItem2(TreeItem::Policy policy) -> TreeItem&
 {
   child_items.push_back(TreeItem(policy));
-  return child_items.back();
-}
-
-
-auto TreeItem::createItem2(const TreeItem &item) -> TreeItem&
-{
-  child_items.push_back(TreeItem(item.policy));
   return child_items.back();
 }
 
@@ -92,27 +91,7 @@ auto Tree::getItem(const Path &path) const -> const Item &
 
 void Tree::visitWrapper(const Path &path,const WrapperVisitor &visitor)
 {
-#if 1
   world().visitWrapper(path,/*depth*/0,visitor);
-#else
-  int path_length = path.size();
-
-  auto handle_child =
-    [path_length,&depth,&visitor,&path](const Wrapper &child_wrapper){
-      if (depth==path_length) {
-        visitor(child_wrapper);
-        return;
-      }
-
-      int child_index = path[depth];
-
-      ++depth;
-
-      child_wrapper.visitChild(path[child_index],handle_child);
-    };
-
-  handle_child(world());
-#endif
 }
 
 
@@ -172,12 +151,6 @@ void
       wrapper.comboBoxItemIndexChanged(path,index,operation_handler);
     }
   );
-}
-
-
-void Tree::visitItem(const Item &item,const ItemVisitor &visitor)
-{
-  item.visit(visitor);
 }
 
 

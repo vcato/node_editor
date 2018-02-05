@@ -216,10 +216,10 @@ void
   )
 {
   Tree &tree = this->tree();
-  TreePath new_item_path = tree.createItem(parent_path,item);
+  TreePath new_item_path = tree.createItem(parent_path,item.policy);
 
   CreateItemVisitor create_item_visitor(*this,parent_path);
-  tree.visitItem(item,create_item_visitor);
+  item.policy.visitType(create_item_visitor);
 
   addTreeItems(new_item_path,item);
 }

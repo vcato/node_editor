@@ -113,10 +113,8 @@ struct TreeItem {
 
   const TreeItem &getItem(const Path &,int depth) const;
 
-  Index createItem(const TreeItem &item);
-  TreeItem& createItem2(const TreeItem &);
+  Index createItem(const TreeItem::Policy &);
   TreeItem& createItem2(Policy);
-  void visit(const TypeVisitor &) const;
 };
 
 
@@ -132,8 +130,6 @@ struct Wrapper {
       const TreeItem::OperationVisitor &
     ) const = 0;
 
-
-  // virtual void visitChild(int child_index,const WrapperVisitor &) = 0;
 
   virtual void
     visitWrapper(
@@ -197,13 +193,12 @@ class Tree {
     Tree();
 
     void setWorldPtr(Wrapper *arg) { _world_ptr = arg; }
-    Path createItem(const Path &parent_path,const Item &);
+    Path createItem(const Path &parent_path,const Item::Policy &);
     void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
     Diagram *itemDiagramPtr(const Path &);
     void visitOperations(const Path &,const OperationVisitor &visitor);
-    void visitItem(const Item &,const ItemVisitor &visitor);
     Wrapper &world();
 
   private:

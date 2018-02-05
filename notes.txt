@@ -356,3 +356,15 @@ temporary though.
 
 May be able to simplify the Wrapper visitor more so that it isn't necessary
 to pass that path to the visitChildWrapper().
+
+Items get added to the tree by visiting the item 
+QtTreeEditor::addTreeItem calls tree.visitItem()
+The visitor creates the item of the appropriate type.
+
+It seems like it would make more sense if the tree build the items from
+the wrappers.
+
+Where we were passing an item before, we can pass a wrapper.
+
+I think we need to get rid of using Policies in the Tree items.
+The only thing the policies are used for is to visit the type.
