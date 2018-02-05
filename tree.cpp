@@ -36,7 +36,7 @@ TreeItem::TreeItem(Policy policy_arg)
 }
 
 
-void TreeItem::visit(const Visitor &visitor) const
+void TreeItem::visit(const TypeVisitor &visitor) const
 {
   policy.visitType(visitor);
 }

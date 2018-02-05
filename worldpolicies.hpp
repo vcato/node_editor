@@ -18,7 +18,7 @@ struct SimplePolicy {
 
 
 struct XPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.numericItem("X");
   }
@@ -26,7 +26,7 @@ struct XPolicy : SimplePolicy {
 
 
 struct YPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.numericItem("Y");
   }
@@ -34,7 +34,7 @@ struct YPolicy : SimplePolicy {
 
 
 struct ZPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.numericItem("Z");
   }
@@ -42,7 +42,7 @@ struct ZPolicy : SimplePolicy {
 
 
 struct GlobalPositionPolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     vector<string> enumeration_names = {"Components","From Body"};
     visitor.enumeratedItem("Global Position",enumeration_names);
@@ -51,7 +51,7 @@ struct GlobalPositionPolicy {
 
 
 struct LocalPositionPolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.voidItem("Local Position");
   }
@@ -59,7 +59,7 @@ struct LocalPositionPolicy {
 
 
 struct SourceBodyPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
     visitor.enumeratedItem("Source Body",enumeration_names);
@@ -68,7 +68,7 @@ struct SourceBodyPolicy : SimplePolicy {
 
 
 struct TargetBodyPolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     vector<string> enumeration_names = {"Body1","Body2","Body3"};
     visitor.enumeratedItem("Target Body",enumeration_names);
@@ -77,7 +77,7 @@ struct TargetBodyPolicy {
 
 
 struct PosExprPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.voidItem("Pos Expr");
   }
@@ -85,7 +85,7 @@ struct PosExprPolicy : SimplePolicy {
 
 
 struct MotionPassPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.voidItem("Motion Pass");
   }
@@ -93,7 +93,7 @@ struct MotionPassPolicy : SimplePolicy {
 
 
 struct CharmapperPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.voidItem("Charmapper");
   }
@@ -101,7 +101,7 @@ struct CharmapperPolicy : SimplePolicy {
 
 
 struct BodyPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.voidItem("Body");
   }
@@ -109,7 +109,7 @@ struct BodyPolicy : SimplePolicy {
 
 
 struct ScenePolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &visitor) const
+  void visitType(const TreeItem::TypeVisitor &visitor) const
   {
     visitor.voidItem("Scene");
   }
@@ -129,7 +129,7 @@ struct RootPolicy : SimplePolicy {
   {
   }
 
-  void visitType(const TreeItem::Visitor &) const
+  void visitType(const TreeItem::TypeVisitor &) const
   {
     assert(false);
   }
@@ -137,7 +137,7 @@ struct RootPolicy : SimplePolicy {
 
 
 struct EmptyPolicy : SimplePolicy {
-  void visitType(const TreeItem::Visitor &) const
+  void visitType(const TreeItem::TypeVisitor &) const
   {
     assert(false);
   }

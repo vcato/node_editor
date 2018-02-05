@@ -29,9 +29,8 @@ struct TreeItem {
   using OperationVisitor =
     std::function<void(const OperationName &,PerformOperationFunction)>;
 
-  struct Visitor {
-    virtual void
-      voidItem(const std::string &label) const = 0;
+  struct TypeVisitor {
+    virtual void voidItem(const std::string &label) const = 0;
 
     virtual void
       numericItem(
@@ -49,7 +48,7 @@ struct TreeItem {
     struct PolicyInterface {
       virtual ~PolicyInterface() {}
       virtual PolicyInterface *clone() const = 0;
-      virtual void visitType(const Visitor &) const = 0;
+      virtual void visitType(const TypeVisitor &) const = 0;
     };
 
     template <typename T>
@@ -58,7 +57,7 @@ struct TreeItem {
 
       BasicPolicy(const T& arg) : object(arg) {}
 
-      virtual void visitType(const Visitor &visitor) const
+      virtual void visitType(const TypeVisitor &visitor) const
       {
         object.visitType(visitor);
       }
@@ -98,7 +97,7 @@ struct TreeItem {
 
     void
       visitType(
-        const Visitor &visitor
+        const TypeVisitor &visitor
       ) const
     {
       interface().visitType(visitor);
@@ -117,7 +116,7 @@ struct TreeItem {
   Index createItem(const TreeItem &item);
   TreeItem& createItem2(const TreeItem &);
   TreeItem& createItem2(Policy);
-  void visit(const Visitor &) const;
+  void visit(const TypeVisitor &) const;
 };
 
 
@@ -191,7 +190,7 @@ class Tree {
     using Index = int;
     using SizeType = int;
     using Item = TreeItem;
-    using ItemVisitor = Item::Visitor;
+    using ItemVisitor = Item::TypeVisitor;
     using OperationHandler = Item::OperationHandler;
     using OperationVisitor = Item::OperationVisitor;
 
