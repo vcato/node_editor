@@ -12,15 +12,27 @@ using TreePath = std::vector<int>;
 
 
 struct TreeItem {
-  using Path = std::vector<int>;
   using Index = int;
+
+  std::vector<TreeItem> child_items;
+
+  Index createItem();
+};
+
+
+struct Wrapper;
+
+using WrapperVisitor = std::function<void(const Wrapper &)>;
+
+
+struct Wrapper {
+  using OperationName = const std::string;
+  using Path = TreePath;
 
   struct OperationHandler {
     virtual void addItem(const Path &) = 0;
     virtual void replaceTreeItems(const Path &path) = 0;
   };
-
-  using OperationName = const std::string;
 
   using PerformOperationFunction =
     std::function<void (OperationHandler &)>;
@@ -43,27 +55,10 @@ struct TreeItem {
       ) const = 0;
   };
 
-  std::vector<TreeItem> child_items;
-
-  TreeItem();
-
-  const TreeItem &getItem(const Path &,int depth) const;
-
-  Index createItem();
-  TreeItem& createItem2();
-};
-
-
-struct Wrapper;
-
-using WrapperVisitor = std::function<void(const Wrapper &)>;
-
-
-struct Wrapper {
   virtual void
     visitOperations(
       const TreePath &,
-      const TreeItem::OperationVisitor &
+      const OperationVisitor &
     ) const = 0;
 
 
@@ -106,10 +101,10 @@ struct Wrapper {
     comboBoxItemIndexChanged(
       const TreePath &path,
       int index,
-      TreeItem::OperationHandler &operation_handler
+      OperationHandler &operation_handler
     ) const = 0;
 
-  virtual void visitType(const TreeItem::TypeVisitor &) const = 0;
+  virtual void visitType(const TypeVisitor &) const = 0;
 };
 
 
@@ -118,7 +113,7 @@ struct SimpleWrapper : Wrapper {
     comboBoxItemIndexChanged(
       const TreePath &/*path*/,
       int /*index*/,
-      TreeItem::OperationHandler &/*operation_handler*/
+      OperationHandler &/*operation_handler*/
     ) const
   {
     assert(false);
@@ -129,12 +124,12 @@ struct SimpleWrapper : Wrapper {
 class Tree {
   public:
     using Path = TreePath;
-    using Index = int;
-    using SizeType = int;
     using Item = TreeItem;
-    using ItemVisitor = Item::TypeVisitor;
-    using OperationHandler = Item::OperationHandler;
-    using OperationVisitor = Item::OperationVisitor;
+    using Index = Item::Index;
+    using SizeType = int;
+    using ItemVisitor = Wrapper::TypeVisitor;
+    using OperationHandler = Wrapper::OperationHandler;
+    using OperationVisitor = Wrapper::OperationVisitor;
 
     Tree();
 
@@ -145,7 +140,7 @@ class Tree {
     void removeChildItems(const Path &);
     Diagram *itemDiagramPtr(const Path &);
     void visitOperations(const Path &,const OperationVisitor &visitor);
-    void visitType(const Path &,const Item::TypeVisitor &);
+    void visitType(const Path &,const ItemVisitor &);
     int findNChildren(const Path &);
     Wrapper &world();
 

@@ -4,9 +4,6 @@
 #include "scenewrapper.hpp"
 
 
-using OperationVisitor = TreeItem::OperationVisitor;
-
-
 namespace {
 struct ChildWrapperVisitor2 : World::MemberVisitor {
   const WrapperVisitor &visitor;

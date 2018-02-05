@@ -1,8 +1,5 @@
 #include "scenewrapper.hpp"
 
-using OperationVisitor = TreeItem::OperationVisitor;
-
-
 namespace {
 struct BodyWrapper : SimpleWrapper {
   Scene::Body &body;
@@ -15,7 +12,7 @@ struct BodyWrapper : SimpleWrapper {
   virtual void
     visitOperations(
       const TreePath &,
-      const TreeItem::OperationVisitor &
+      const OperationVisitor &
     ) const
   {
   }
@@ -27,7 +24,7 @@ struct BodyWrapper : SimpleWrapper {
     assert(false);
   }
 
-  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  virtual void visitType(const TypeVisitor &visitor) const
   {
     visitor.voidItem("Body");
   }

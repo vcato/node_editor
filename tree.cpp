@@ -16,35 +16,11 @@ using Path = Tree::Path;
 using OperationVisitor = Tree::OperationVisitor;
 
 
-TreeItem::TreeItem()
-{
-}
-
-
 auto TreeItem::createItem() -> Index
 {
   Index result = child_items.size();
   child_items.push_back(TreeItem());
   return result;
-}
-
-
-auto TreeItem::createItem2() -> TreeItem&
-{
-  child_items.push_back(TreeItem());
-  return child_items.back();
-}
-
-
-auto TreeItem::getItem(const Path &path,int depth) const -> const TreeItem &
-{
-  int path_length = path.size();
-
-  if (depth==path_length) {
-    return *this;
-  }
-
-  return child_items[path[depth]].getItem(path,depth+1);
 }
 
 
@@ -70,7 +46,17 @@ auto Tree::getItem(const Path &path) -> Item&
 
 auto Tree::getItem(const Path &path) const -> const Item &
 {
-  return _root_item.getItem(path,0);
+  const TreeItem *item_ptr = &_root_item;
+  int path_length = path.size();
+
+  int depth = 0;
+
+  while (depth<path_length) {
+    item_ptr = &item_ptr->child_items[path[depth]];
+    ++depth;
+  }
+
+  return *item_ptr;
 }
 
 
@@ -123,7 +109,7 @@ void Tree::visitOperations(const Path &path,const OperationVisitor &visitor)
 }
 
 
-void Tree::visitType(const Path &path,const Item::TypeVisitor &visitor)
+void Tree::visitType(const Path &path,const ItemVisitor &visitor)
 {
   visitWrapper(
     path,

@@ -6,7 +6,6 @@
 
 struct WorldWrapper : SimpleWrapper
 {
-  using OperationVisitor = TreeItem::OperationVisitor;
   World &world;
 
   WorldWrapper(World &world_arg) : world(world_arg) { }
@@ -24,7 +23,7 @@ struct WorldWrapper : SimpleWrapper
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
-  virtual void visitType(const TreeItem::TypeVisitor &) const
+  virtual void visitType(const TypeVisitor &) const
   {
     assert(false);
   }

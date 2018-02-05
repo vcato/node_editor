@@ -13,14 +13,14 @@ struct SceneWrapper : SimpleWrapper {
   virtual void
     visitOperations(
       const TreePath &path,
-      const TreeItem::OperationVisitor &visitor
+      const OperationVisitor &visitor
     ) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
 
-  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  virtual void visitType(const TypeVisitor &visitor) const
   {
     visitor.voidItem("Scene");
   }

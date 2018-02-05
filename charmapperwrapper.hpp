@@ -13,14 +13,14 @@ struct CharmapperWrapper : SimpleWrapper {
   void
     visitOperations(
       const TreePath &path,
-      const TreeItem::OperationVisitor &visitor
+      const OperationVisitor &visitor
     ) const;
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
-  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  virtual void visitType(const TypeVisitor &visitor) const
   {
     visitor.voidItem("Charmapper");
   }

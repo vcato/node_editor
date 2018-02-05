@@ -6,7 +6,6 @@
 using std::cerr;
 using std::vector;
 using std::string;
-using OperationVisitor = TreeItem::OperationVisitor;
 
 
 namespace {
@@ -35,7 +34,7 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void
       visitOperations(
         const TreePath &,
-        const TreeItem::OperationVisitor &
+        const OperationVisitor &
       ) const
     {
     }
@@ -50,7 +49,7 @@ struct MotionPassWrapper : SimpleWrapper {
       assert(false);
     }
 
-    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    virtual void visitType(const TypeVisitor &visitor) const
     {
       visitor.numericItem(label);
     }
@@ -68,7 +67,7 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void
       visitOperations(
         const TreePath &path,
-        const TreeItem::OperationVisitor &
+        const OperationVisitor &
       ) const
     {
       cerr << "PositionWrapper::visitOperations: path=" << path << "\n";
@@ -100,9 +99,8 @@ struct MotionPassWrapper : SimpleWrapper {
       }
     }
 
-    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    virtual void visitType(const TypeVisitor &visitor) const
     {
-      cerr << "Visiting position type\n";
       visitor.voidItem(label);
     }
 
@@ -139,7 +137,7 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void
       visitOperations(
         const TreePath &,
-        const TreeItem::OperationVisitor &
+        const OperationVisitor &
       ) const
     {
       assert(false);
@@ -150,7 +148,7 @@ struct MotionPassWrapper : SimpleWrapper {
       assert(false);
     }
 
-    virtual void visitType(const TreeItem::TypeVisitor &) const
+    virtual void visitType(const TypeVisitor &) const
     {
       assert(false);
     }
@@ -217,7 +215,7 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void
       visitOperations(
         const TreePath &,
-        const TreeItem::OperationVisitor &
+        const OperationVisitor &
       ) const
     {
     }
@@ -232,7 +230,7 @@ struct MotionPassWrapper : SimpleWrapper {
       comboBoxItemIndexChanged(
         const TreePath &path,
         int index,
-        TreeItem::OperationHandler &operation_handler
+        OperationHandler &operation_handler
       ) const
     {
       switch (index) {
@@ -255,7 +253,7 @@ struct MotionPassWrapper : SimpleWrapper {
       }
     }
 
-    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    virtual void visitType(const TypeVisitor &visitor) const
     {
       vector<string> enumeration_names = {"Components","From Body"};
       visitor.enumeratedItem("Global Position",enumeration_names);
@@ -266,7 +264,7 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void
       visitOperations(
         const TreePath &,
-        const TreeItem::OperationVisitor &
+        const OperationVisitor &
       ) const
     {
     }
@@ -281,7 +279,7 @@ struct MotionPassWrapper : SimpleWrapper {
       return nullptr;
     }
 
-    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    virtual void visitType(const TypeVisitor &visitor) const
     {
       vector<string> enumeration_names = {"Body1","Body2","Body3"};
       visitor.enumeratedItem("Target Body",enumeration_names);
@@ -291,7 +289,7 @@ struct MotionPassWrapper : SimpleWrapper {
       comboBoxItemIndexChanged(
         const TreePath &,
         int /*index*/,
-        TreeItem::OperationHandler &
+        OperationHandler &
       ) const
     {
     }
@@ -306,7 +304,7 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void
       visitOperations(
         const TreePath &,
-        const TreeItem::OperationVisitor &
+        const OperationVisitor &
       ) const
     {
     }
@@ -321,7 +319,7 @@ struct MotionPassWrapper : SimpleWrapper {
       return nullptr;
     }
 
-    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    virtual void visitType(const TypeVisitor &visitor) const
     {
       vector<string> enumeration_names = {"Body1","Body2","Body3"};
       visitor.enumeratedItem("Source Body",enumeration_names);
@@ -331,7 +329,7 @@ struct MotionPassWrapper : SimpleWrapper {
       comboBoxItemIndexChanged(
         const TreePath &,
         int /*index*/,
-        TreeItem::OperationHandler &
+        OperationHandler &
       ) const
     {
     }
@@ -354,7 +352,7 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void
       visitOperations(
         const TreePath &,
-        const TreeItem::OperationVisitor &
+        const OperationVisitor &
       ) const
     {
     }
@@ -381,7 +379,7 @@ struct MotionPassWrapper : SimpleWrapper {
       }
     }
 
-    virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+    virtual void visitType(const TypeVisitor &visitor) const
     {
       visitor.voidItem("Pos Expr");
     }
@@ -418,7 +416,7 @@ struct MotionPassWrapper : SimpleWrapper {
     visitor(PosExprWrapper(pos_expr));
   }
 
-  virtual void visitType(const TreeItem::TypeVisitor &visitor) const
+  virtual void visitType(const TypeVisitor &visitor) const
   {
     visitor.voidItem("Motion Pass");
   }
