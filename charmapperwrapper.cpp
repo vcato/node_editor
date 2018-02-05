@@ -169,59 +169,49 @@ struct MotionPassWrapper : SimpleWrapper {
     {
     }
 
-    struct NChildrenVisitor : GlobalPositionData::Visitor {
-      int &n_children;
-
-      NChildrenVisitor(int &n_children_arg)
-      : n_children(n_children_arg)
-      {
-      }
-
-      virtual void accept(FromBodyGlobalPositionData &data) const
-      {
-        n_children = FromBodyGlobalPositionWrapper(data).nChildren();
-      }
-
-      virtual void accept(ComponentsGlobalPositionData &data) const
-      {
-        n_children = PositionWrapper(data,"blah").nChildren();
-      }
-    };
-
-    struct ChildWrapperVisitor : GlobalPositionData::Visitor {
-      const int child_index;
+    struct ValueVisitor : GlobalPositionData::Visitor {
       const WrapperVisitor &visitor;
 
-      ChildWrapperVisitor(
-        int child_index_arg,
-        const WrapperVisitor &visitor_arg
-      )
-      : child_index(child_index_arg),
-        visitor(visitor_arg)
+      ValueVisitor(const WrapperVisitor &visitor_arg)
+      : visitor(visitor_arg)
       {
       }
 
-      virtual void accept(FromBodyGlobalPositionData &data) const
+      virtual void visit(FromBodyGlobalPositionData &data) const
       {
-        FromBodyGlobalPositionWrapper(data).withChildWrapper(
-          child_index,visitor
-        );
+        visitor(FromBodyGlobalPositionWrapper(data));
       }
 
-      virtual void accept(ComponentsGlobalPositionData &data) const
+      virtual void visit(ComponentsGlobalPositionData &data) const
       {
-        PositionWrapper(data,"blah").withChildWrapper(
-          child_index,visitor
-        );
+        visitor(PositionWrapper(data,"blah"));
       }
     };
+
+    void withValueWrapper(const WrapperVisitor &visitor) const
+    {
+      assert(global_position.global_position_ptr);
+      global_position.global_position_ptr->accept(ValueVisitor(visitor));
+    }
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
     {
-      assert(global_position.global_position_ptr);
-      global_position.global_position_ptr->accept(
-        ChildWrapperVisitor(child_index,visitor)
+      withValueWrapper(
+        [&](const Wrapper &wrapper){
+          wrapper.withChildWrapper(child_index,visitor);
+        }
       );
+    }
+
+    virtual int nChildren() const
+    {
+      int n_children = 0;
+      withValueWrapper(
+        [&](const Wrapper &wrapper){
+          n_children = wrapper.nChildren();
+        }
+      );
+      return n_children;
     }
 
     virtual void
@@ -269,14 +259,6 @@ struct MotionPassWrapper : SimpleWrapper {
     {
       vector<string> enumeration_names = {"Components","From Body"};
       visitor.enumeratedItem("Global Position",enumeration_names);
-    }
-
-    virtual int nChildren() const
-    {
-      assert(global_position.global_position_ptr);
-      int n_children = 0;
-      global_position.global_position_ptr->accept(NChildrenVisitor(n_children));
-      return n_children;
     }
   };
 

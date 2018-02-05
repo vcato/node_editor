@@ -41,8 +41,8 @@ struct Charmapper {
 
     struct Data {
       struct Visitor {
-        virtual void accept(FromBodyData &) const = 0;
-        virtual void accept(ComponentsData &) const = 0;
+        virtual void visit(FromBodyData &) const = 0;
+        virtual void visit(ComponentsData &) const = 0;
       };
 
       virtual void accept(const Visitor &) = 0;
@@ -58,7 +58,7 @@ struct Charmapper {
 
       virtual void accept(const Visitor &visitor)
       {
-        visitor.accept(*this);
+        visitor.visit(*this);
       }
     };
 
@@ -70,7 +70,7 @@ struct Charmapper {
 
       virtual void accept(const Visitor &visitor)
       {
-        visitor.accept(*this);
+        visitor.visit(*this);
       }
     };
 
