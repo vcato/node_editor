@@ -221,7 +221,6 @@ void
   CreateItemVisitor create_item_visitor(*this,parent_path);
   tree.visitItem(item,create_item_visitor);
 
-  tree.setItemDiagram(new_item_path,item.diagram);
   addTreeItems(new_item_path,item);
 }
 
@@ -312,7 +311,7 @@ void
 {
   removeChildItems(parent_path);
   addTreeItems(parent_path,tree_items);
-  tree().setItemDiagram(parent_path,tree_items.diagram);
+  diagramEditor().setDiagramPtr(maybeSelectedDiagram());
   diagramEditor().redraw();
 }
 

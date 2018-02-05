@@ -115,14 +115,12 @@ struct TreeItem {
     ~Policy() { delete ptr; }
   };
 
-  Diagram diagram;
   std::vector<TreeItem> child_items;
   Policy policy;
 
   TreeItem(Policy);
 
   const TreeItem &getItem(const Path &,int depth) const;
-  Diagram *diagramPtr();
 
   Index createItem(const TreeItem &item);
   TreeItem& createItem2(const TreeItem &);
@@ -213,7 +211,6 @@ class Tree {
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
     Diagram *itemDiagramPtr(const Path &);
-    void setItemDiagram(const Path &,const Diagram &);
     void visitOperations(const Path &,const OperationVisitor &visitor);
     void visitItem(const Item &,const ItemVisitor &visitor);
     Wrapper &world();

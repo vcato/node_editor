@@ -5,6 +5,7 @@
 #include <memory>
 #include <cassert>
 #include "diagram.hpp"
+#include "defaultdiagrams.hpp"
 
 
 struct Charmapper {
@@ -18,12 +19,25 @@ struct Charmapper {
   struct Position {
     Diagram diagram;
     Channel x,y,z;
+
+    Position(const Diagram &diagram_arg)
+    : diagram(diagram_arg)
+    {
+    }
   };
 
   struct GlobalPosition {
     struct FromBodyData;
     struct ComponentsData;
+    struct Data;
     Diagram diagram;
+    std::unique_ptr<Data> global_position_ptr;
+
+    GlobalPosition()
+    : diagram(fromComponentsDiagram()),
+      global_position_ptr(std::make_unique<ComponentsData>())
+    {
+    }
 
     struct Data {
       struct Visitor {
@@ -37,6 +51,11 @@ struct Charmapper {
     struct FromBodyData : Data {
       Position local_position;
 
+      FromBodyData()
+      : local_position(localPositionDiagram())
+      {
+      }
+
       virtual void accept(const Visitor &visitor)
       {
         visitor.accept(*this);
@@ -44,27 +63,27 @@ struct Charmapper {
     };
 
     struct ComponentsData : Data, Position {
+      ComponentsData()
+      : Position(Diagram())
+      {
+      }
+
       virtual void accept(const Visitor &visitor)
       {
         visitor.accept(*this);
       }
     };
 
-    std::unique_ptr<Data> global_position_ptr;
-
     void switchToComponents()
     {
+      diagram = fromComponentsDiagram();
       global_position_ptr = std::make_unique<ComponentsData>();
     }
 
     void switchToFromBody()
     {
+      diagram = fromBodyDiagram();
       global_position_ptr = std::make_unique<FromBodyData>();
-    }
-
-    GlobalPosition()
-      : global_position_ptr(std::make_unique<ComponentsData>())
-    {
     }
   };
 
@@ -78,6 +97,8 @@ struct Charmapper {
       GlobalPosition global_position;
 
       PosExpr()
+      : diagram(posExprDiagram()),
+        local_position(localPositionDiagram())
       {
       }
     };

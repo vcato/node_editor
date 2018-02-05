@@ -354,17 +354,11 @@ to the root, and then add the corresponding items to the tree.
 The Policy classes are a lot like Wrappers.  I want the wrappers to be
 temporary though.
 
-If we have the diagrams stored in the Charmapper object, then we won't
-need to store them in the Tree.  I think that is the only reason we
-have TreeItems now.
+May be able to simplify the Wrapper visitor more so that it isn't necessary
+to pass that path to the visitChildWrapper().
 
-PosExpr needs a diagram.
+Try to get rid of diagrams in the TreeItems.
 
-WorldInterface may be replaced by Wrapper.
-
-We should be able to implement visitWrapper by just having a visitChild
-method in the wrapper so we don't have to keep repeating the path_length==depth
-logic.
-
-Need to be able to switch the global position from component to body in
-charmapper.
+The TreeItems have diagrams, and part of the reason is because there is
+a default diagram.  If charmapper set the default diagram itself, then
+we wouldn't need this.

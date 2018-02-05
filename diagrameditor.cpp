@@ -543,6 +543,10 @@ void DiagramEditor::clearSelection()
 
 void DiagramEditor::mousePressedAt(Point2D p,bool shift_is_pressed)
 {
+  if (!diagram_ptr) {
+    return;
+  }
+
   mouse_press_position = p;
   node_was_selected = false;
 

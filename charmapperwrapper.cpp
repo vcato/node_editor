@@ -17,7 +17,6 @@ static TreeItem posExprItem()
 {
   TreeItem pos_expr_item(world_policies::PosExprPolicy{});
   pos_expr_item.createItem2(world_policies::TargetBodyPolicy{});
-  pos_expr_item.diagram = posExprDiagram();
   {
     TreeItem &local_position_item =
       pos_expr_item.createItem2(world_policies::LocalPositionPolicy{});
@@ -27,7 +26,6 @@ static TreeItem posExprItem()
     TreeItem &global_position_item =
       pos_expr_item.createItem2(world_policies::GlobalPositionPolicy{});
     world_policies::createXYZChildren(global_position_item);
-    global_position_item.diagram = fromComponentsDiagram();
   }
 
   return pos_expr_item;
@@ -38,7 +36,6 @@ static TreeItem globalPositionComponentsItems()
 {
   TreeItem items(world_policies::EmptyPolicy{});
   world_policies::createXYZChildren(items);
-  items.diagram = fromComponentsDiagram();
   return items;
 }
 
@@ -49,7 +46,6 @@ static TreeItem globalPositionFromBodyItems()
   items.createItem2(world_policies::SourceBodyPolicy{});
   TreeItem &local_position_item =
     items.createItem2(world_policies::LocalPositionPolicy{});
-  items.diagram = fromBodyDiagram();
   world_policies::createXYZChildren(local_position_item);
   return items;
 }

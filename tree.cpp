@@ -31,8 +31,7 @@ Path Tree::createItem(const Path &parent_path,const Item &item)
 
 
 TreeItem::TreeItem(Policy policy_arg)
-  : diagram(policy_arg.defaultDiagram()),
-    policy(policy_arg)
+  : policy(policy_arg)
 {
 }
 
@@ -128,18 +127,10 @@ Diagram *Tree::itemDiagramPtr(const Path &path)
 
   if (!result_ptr) {
     cerr << "No diagram found for " << path << "\n";
-    return &getItem(path).diagram;
+    return nullptr;
   }
 
   return result_ptr;
-}
-
-
-void Tree::setItemDiagram(const Path &path,const Diagram &new_diagram)
-{
-  Diagram *diagram_ptr = itemDiagramPtr(path);
-  assert(diagram_ptr);
-  *diagram_ptr = new_diagram;
 }
 
 
@@ -194,10 +185,4 @@ Wrapper &Tree::world()
 {
   assert(_world_ptr);
   return *_world_ptr;
-}
-
-
-Diagram *TreeItem::diagramPtr()
-{
-  return &diagram;
 }

@@ -3,3 +3,4 @@
 extern Diagram posExprDiagram();
 extern Diagram fromComponentsDiagram();
 extern Diagram fromBodyDiagram();
+extern Diagram localPositionDiagram();
