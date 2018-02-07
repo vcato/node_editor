@@ -70,7 +70,6 @@ struct Wrapper {
 
     if (depth==path_length) {
       visitor(*this);
-
       return;
     }
 
