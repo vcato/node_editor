@@ -38,14 +38,14 @@ void
     "Add Charmapper",
     [path,this](TreeOperationHandler &handler){
       world.addCharmapper();
-      handler.addItem(path);
+      handler.addChildItem(path);
     }
   );
   visitor(
     "Add Scene",
     [path,this](TreeOperationHandler &handler){
       world.addScene();
-      handler.addItem(path);
+      handler.addChildItem(path);
     }
   );
 }

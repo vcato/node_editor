@@ -49,7 +49,21 @@ class QtTreeEditor : public QTreeWidget {
     void prepareMenuSlot(const QPoint &pos);
 
   private:
+    struct ItemSpec {
+      virtual void
+        createChildItem(
+          QtTreeEditor &,
+          const TreePath &parent_path
+	) const = 0;
+    };
+
+    struct VoidItemSpec;
+
+#if 1
+    struct CreateChildItemVisitor;
+#else
     struct CreateItemVisitor;
+#endif
     struct OperationHandler;
 
     bool ignore_combo_box_signals = false;
@@ -78,9 +92,9 @@ class QtTreeEditor : public QTreeWidget {
     }
 
     static QTreeWidgetItem&
-      createItem(QTreeWidgetItem &parent_item,const std::string &label);
+      createChildItem(QTreeWidgetItem &parent_item,const std::string &label);
 
-    static QTreeWidgetItem& createItem(QTreeWidgetItem &parent_item);
+    static QTreeWidgetItem& createChildItem(QTreeWidgetItem &parent_item);
 
     static void setItemText(QTreeWidgetItem &item,const std::string &label);
 
@@ -92,7 +106,7 @@ class QtTreeEditor : public QTreeWidget {
 
     QTreeWidgetItem* findSelectedItem();
 
-    void addTreeItem(const TreePath &parent_path);
+    void addTreeChildItem(const TreePath &parent_path);
     void addTreeItems(const TreePath &parent_path);
 
     void
@@ -105,12 +119,28 @@ class QtTreeEditor : public QTreeWidget {
 
     void replaceTreeItems(const TreePath &parent_path);
 
-    void createVoidItem(const TreePath &parent_path,const std::string &label);
     void
-      createNumericItem(const TreePath &parent_path,const std::string &label);
+      createVoidChildItem(
+        const TreePath &parent_path,
+        const std::string &label
+      );
+
+    void createItem(const TreePath &path,const ItemSpec &spec);
 
     void
-      createEnumeratedItem(
+      createVoidItem(
+	const TreePath &path,
+	const std::string &label
+      );
+
+    void
+      createNumericChildItem(
+        const TreePath &parent_path,
+        const std::string &label
+      );
+
+    void
+      createEnumeratedChildItem(
         const TreePath &parent_path,
         const std::string &label,
         const std::vector<std::string> &enumeration_names

@@ -254,3 +254,26 @@ It's probably best to separate the Tree from the Wrapper.
 We can just use the world wrapper to do things like getting the number
 of children instead of going through the Tree.  The tree has almost
 no functionality at this point.
+---
+The tree is still used to determine paths.  When you create an item in the tree, it returns
+the path for it.  The items already exist as far as the wrappers are concerned, so we can't use
+the wrappers to find the indices of the new children.
+
+When we execute an operation, the operation indicates that items are added.  Currently it specifies
+the path of the parent that the items are added to.  Instead, it could specify the path of the
+new item.  This would eliminate some of the need to have the tree.  It's still the case that
+the new object can have children, and we need to fully expand it.  The operation only tells
+us the path to the top object that was created.
+
+I've renamed TreeOperationHandler::addItem() to addChildItem.  This should make it where I can have
+addItem take the path to the new item.
+
+I started down this path of trying to create ItemSpecs that indicate how
+the item is to be created in order to factor out some of the common logic
+for creating items, but that is actually redundant.  The spec is basically
+the same thing as a Tree::ItemVisitor, so what I should be able to do is move
+the common logic up to QtTreeEditor::addTreeChildItem instead.
+
+createVoidChildItem, createNumericChildItem, and createEnumeratedChildItem
+should be taken a parent item instead of a parent path so that creating
+the item from the path can be factored out.

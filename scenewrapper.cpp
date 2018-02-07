@@ -48,7 +48,7 @@ void
     "Add Body",
     [path,&scene](TreeOperationHandler &handler){
       scene.addBody();
-      handler.addItem(path);
+      handler.addChildItem(path);
     }
   );
 }

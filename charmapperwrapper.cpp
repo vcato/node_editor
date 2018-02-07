@@ -403,7 +403,7 @@ struct MotionPassWrapper : SimpleWrapper {
       "Add Pos Expr",
       [path,&motion_pass](TreeOperationHandler &handler){
         motion_pass.addPosExpr();
-        handler.addItem(path);
+        handler.addChildItem(path);
       }
     );
   }
@@ -440,7 +440,7 @@ void
     "Add Motion Pass",
     [path,&charmapper](TreeOperationHandler &handler){
       charmapper.addMotionPass();
-      handler.addItem(path);
+      handler.addChildItem(path);
     }
   );
 }

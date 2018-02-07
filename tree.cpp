@@ -17,11 +17,17 @@ using OperationVisitor = Tree::OperationVisitor;
 using TreeItem = Tree::Item;
 
 
-auto Tree::Item::createItem() -> Index
+void Tree::Item::createItem(Index index)
 {
-  Index result = child_items.size();
+  Index n_children = child_items.size();
+
+  if (index!=n_children) {
+    // Haven't implemented the case where we are inserting an item at
+    // some location other than the end.
+    assert(false);
+  }
+
   child_items.push_back(TreeItem());
-  return result;
 }
 
 
@@ -30,10 +36,12 @@ Tree::Tree()
 }
 
 
-Path Tree::createItem(const Path &parent_path)
+void Tree::createItem(const Path &path)
 {
-  int index = getItem(parent_path).createItem();
-  return join(parent_path,index);
+  Path parent_path = parentPath(path);
+  Index child_index = path.back();
+  Item &parent_item = getItem(parent_path);
+  parent_item.createItem(child_index);
 }
 
 

@@ -11,6 +11,14 @@
 using TreePath = std::vector<int>;
 
 
+inline TreePath parentPath(const TreePath &path)
+{
+  TreePath result = path;
+  result.pop_back();
+  return result;
+}
+
+
 struct Wrapper;
 
 using WrapperVisitor = std::function<void(const Wrapper &)>;
@@ -21,7 +29,7 @@ struct Wrapper {
   using Path = TreePath;
 
   struct OperationHandler {
-    virtual void addItem(const Path &) = 0;
+    virtual void addChildItem(const Path &) = 0;
     virtual void replaceTreeItems(const Path &path) = 0;
   };
 
@@ -118,7 +126,7 @@ class Tree {
 
       std::vector<Item> child_items;
 
-      Index createItem();
+      void createItem(Index);
     };
 
     using Path = TreePath;
@@ -131,7 +139,7 @@ class Tree {
     Tree();
 
     void setWorldPtr(Wrapper *arg) { _world_ptr = arg; }
-    Path createItem(const Path &parent_path);
+    void createItem(const Path &);
     void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
