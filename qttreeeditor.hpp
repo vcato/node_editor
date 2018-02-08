@@ -40,6 +40,7 @@ class QtTreeEditor : public QTreeWidget {
     QtTreeEditor();
 
     void setTreePtr(Tree *arg) { tree_ptr = arg; }
+    void setWorldPtr(Wrapper *arg) { world_ptr = arg; }
     void setDiagramEditorPtr(QtDiagramEditor *arg) { diagram_editor_ptr = arg; }
     void selectItem(const TreePath &path);
 
@@ -54,9 +55,11 @@ class QtTreeEditor : public QTreeWidget {
 
     bool ignore_combo_box_signals = false;
     Tree *tree_ptr = 0;
+    Wrapper *world_ptr = 0;
     QtDiagramEditor *diagram_editor_ptr = 0;
 
     Tree &tree();
+    Wrapper &world();
     QtDiagramEditor &diagramEditor();
     QtTreeEditor &treeEditor() { return *this; }
     Diagram *maybeSelectedDiagram();
@@ -93,7 +96,6 @@ class QtTreeEditor : public QTreeWidget {
     QTreeWidgetItem* findSelectedItem();
 
     void addTreeItem(const TreePath &new_item_path);
-    void addTreeChildItem(const TreePath &parent_path);
     void addTreeItems(const TreePath &parent_path);
 
     void

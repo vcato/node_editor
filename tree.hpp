@@ -60,12 +60,30 @@ struct Wrapper {
       const OperationVisitor &
     ) const = 0;
 
+  void visitOperations(const Path &path,const OperationVisitor &visitor)
+  {
+    visitWrapper(
+      path,
+      [&](const Wrapper &wrapper){
+	wrapper.visitOperations(path,visitor);
+      }
+    );
+  }
 
   virtual void
     withChildWrapper(
       int child_index,
       const WrapperVisitor &visitor
     ) const = 0;
+
+  void
+    visitWrapper(
+      const TreePath &path,
+      const WrapperVisitor &visitor
+    ) const
+  {
+    visitWrapper(path,0,visitor);
+  }
 
   void
     visitWrapper(
@@ -91,9 +109,25 @@ struct Wrapper {
     );
   }
 
+  int nChildren(const Path &path) const
+  {
+    int result = 0;
+
+    visitWrapper(
+      path,
+      [&](const Wrapper &wrapper){
+	result = wrapper.nChildren();
+      }
+    );
+
+    return result;
+  }
+
   virtual int nChildren() const = 0;
 
   virtual Diagram *diagramPtr() const = 0;
+
+  Diagram *diagramPtr(const Path &path);
 
   virtual void
     comboBoxItemIndexChanged(
@@ -102,7 +136,33 @@ struct Wrapper {
       OperationHandler &operation_handler
     ) const = 0;
 
+  void
+    comboBoxItemIndexChanged(
+      const Path &path,
+      int index,
+      OperationHandler &operation_handler
+    )
+  {
+    visitWrapper(
+      path,
+      [&](const Wrapper &wrapper){
+	wrapper.comboBoxItemIndexChanged(path,index,operation_handler);
+      }
+    );
+  }
+
+
   virtual void visitType(const TypeVisitor &) const = 0;
+
+  void visitType(const Path &path,const TypeVisitor &visitor)
+  {
+    visitWrapper(
+      path,
+      [&](const Wrapper &wrapper){
+	wrapper.visitType(visitor);
+      }
+    );
+  }
 };
 
 
@@ -138,23 +198,14 @@ class Tree {
 
     Tree();
 
-    void setWorldPtr(Wrapper *arg) { _world_ptr = arg; }
     void createItem(const Path &);
-    void comboBoxItemIndexChanged(const Path &,int index,OperationHandler &);
     SizeType nChildItems(const Path &) const;
     void removeChildItems(const Path &);
-    Diagram *itemDiagramPtr(const Path &);
-    void visitOperations(const Path &,const OperationVisitor &visitor);
-    void visitType(const Path &,const ItemVisitor &);
-    int findNChildren(const Path &);
-    Wrapper &world();
 
   private:
     Item &getItem(const Path &);
     const Item &getItem(const Path &) const;
-    void visitWrapper(const Path &,const WrapperVisitor &);
 
-    Wrapper *_world_ptr = nullptr;
     Item _root_item;
 };
 

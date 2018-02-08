@@ -220,6 +220,13 @@ Tree &QtTreeEditor::tree()
 }
 
 
+Wrapper &QtTreeEditor::world()
+{
+  assert(world_ptr);
+  return *world_ptr;
+}
+
+
 void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 {
   Tree &tree = this->tree();
@@ -235,7 +242,7 @@ void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 
   bool created = false;
   CreateChildItemVisitor create_child_item_visitor(*this,parent_item,created);
-  tree.visitType(new_item_path,create_child_item_visitor);
+  world().visitType(new_item_path,create_child_item_visitor);
 
   if (!created) {
     cerr << "No item created for parent " << parent_path << "\n";
@@ -246,19 +253,9 @@ void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 }
 
 
-void QtTreeEditor::addTreeChildItem(const TreePath &parent_path)
-{
-  Tree &tree = this->tree();
-  Tree::Index child_index = tree.nChildItems(parent_path);
-  TreePath new_item_path = join(parent_path,child_index);
-
-  addTreeItem(new_item_path);
-}
-
-
 void QtTreeEditor::addTreeItems(const TreePath &parent_path)
 {
-  int n_children = tree().findNChildren(parent_path);
+  int n_children = world().nChildren(parent_path);
   for (int i=0; i!=n_children; ++i) {
     addTreeItem(join(parent_path,i));
   }
@@ -333,7 +330,7 @@ void
   Tree::Path path = itemPath(*item_ptr);
   OperationHandler operation_handler(*this);
 
-  tree().comboBoxItemIndexChanged(path,index,operation_handler);
+  world().comboBoxItemIndexChanged(path,index,operation_handler);
 }
 
 
@@ -350,7 +347,7 @@ Diagram *QtTreeEditor::maybeSelectedDiagram()
   Diagram *diagram_ptr = 0;
 
   if (selected_item_ptr) {
-    diagram_ptr = tree().itemDiagramPtr(itemPath(*selected_item_ptr));
+    diagram_ptr = world().diagramPtr(itemPath(*selected_item_ptr));
   }
 
   return diagram_ptr;
@@ -400,7 +397,7 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   QMenu menu;
   list<QtSlot> item_slots;
   OperationHandler operation_handler(*this);
-  tree().visitOperations(
+  world().visitOperations(
     path,
     addMenuItemForOperationFunction(menu,item_slots,operation_handler)
   );

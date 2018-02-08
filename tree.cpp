@@ -69,13 +69,7 @@ auto Tree::getItem(const Path &path) const -> const Item &
 }
 
 
-void Tree::visitWrapper(const Path &path,const WrapperVisitor &visitor)
-{
-  world().visitWrapper(path,/*depth*/0,visitor);
-}
-
-
-Diagram *Tree::itemDiagramPtr(const Path &path)
+Diagram *Wrapper::diagramPtr(const Path &path)
 {
   Diagram *result_ptr = 0;
 
@@ -104,64 +98,4 @@ auto Tree::nChildItems(const Path &path) const -> SizeType
   const TreeItem &item = getItem(path);
   assert(item.child_items.size()<=std::numeric_limits<SizeType>::max());
   return item.child_items.size();
-}
-
-
-void Tree::visitOperations(const Path &path,const OperationVisitor &visitor)
-{
-  visitWrapper(
-    path,
-    [&](const Wrapper &wrapper){
-      wrapper.visitOperations(path,visitor);
-    }
-  );
-}
-
-
-void Tree::visitType(const Path &path,const ItemVisitor &visitor)
-{
-  visitWrapper(
-    path,
-    [&](const Wrapper &wrapper){
-      wrapper.visitType(visitor);
-    }
-  );
-}
-
-
-int Tree::findNChildren(const Path &path)
-{
-  int result = 0;
-
-  visitWrapper(
-    path,
-    [&](const Wrapper &wrapper){
-      result = wrapper.nChildren();
-    }
-  );
-
-  return result;
-}
-
-
-void
-  Tree::comboBoxItemIndexChanged(
-    const Path &path,
-    int index,
-    OperationHandler &operation_handler
-  )
-{
-  visitWrapper(
-    path,
-    [&](const Wrapper &wrapper){
-      wrapper.comboBoxItemIndexChanged(path,index,operation_handler);
-    }
-  );
-}
-
-
-Wrapper &Tree::world()
-{
-  assert(_world_ptr);
-  return *_world_ptr;
 }
