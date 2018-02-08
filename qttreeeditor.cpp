@@ -21,32 +21,31 @@ using std::function;
 using std::list;
 
 
-#if 1
 struct QtTreeEditor::CreateChildItemVisitor : Tree::ItemVisitor {
   QtTreeEditor &tree_editor;
-  const TreePath &parent_path;
+  QTreeWidgetItem &parent_item;
   bool &created;
 
   CreateChildItemVisitor(
     QtTreeEditor &tree_editor_arg,
-    const TreePath &parent_path_arg,
+    QTreeWidgetItem &parent_item_arg,
     bool &created_arg
   )
   : tree_editor(tree_editor_arg),
-    parent_path(parent_path_arg),
+    parent_item(parent_item_arg),
     created(created_arg)
   {
   }
 
   void voidItem(const std::string &label) const override
   {
-    tree_editor.createVoidChildItem(parent_path,label);
+    tree_editor.createChildItem(parent_item,label);
     created = true;
   }
 
   void numericItem(const std::string &label) const override
   {
-    tree_editor.createNumericChildItem(parent_path,label);
+    tree_editor.createSpinBoxItem(parent_item,label);
     created = true;
   }
 
@@ -56,50 +55,19 @@ struct QtTreeEditor::CreateChildItemVisitor : Tree::ItemVisitor {
       const std::vector<std::string> &enumeration_names
     ) const override
   {
-    tree_editor.createEnumeratedChildItem(parent_path,label,enumeration_names);
+    QtComboBoxTreeWidgetItem &global_position_item =
+      tree_editor.createComboBoxItem(parent_item,label);
+    {
+      QComboBox &combo_box = global_position_item.comboBox();
+      tree_editor.ignore_combo_box_signals = true;
+      for (auto &name : enumeration_names) {
+	combo_box.addItem(QString::fromStdString(name));
+      }
+      tree_editor.ignore_combo_box_signals = false;
+    }
     created = true;
   }
 };
-#else
-struct QtTreeEditor::CreateItemVisitor : Tree::ItemVisitor {
-  QtTreeEditor &tree_editor;
-  const TreePath &path;
-  bool &created;
-
-  CreateItemVisitor(
-    QtTreeEditor &tree_editor_arg,
-    const TreePath &path_arg,
-    bool &created_arg
-  )
-  : tree_editor(tree_editor_arg),
-    path(path_arg),
-    created(created_arg)
-  {
-  }
-
-  void voidItem(const std::string &label) const override
-  {
-    tree_editor.createVoidItem(path,label);
-    created = true;
-  }
-
-  void numericItem(const std::string &label) const override
-  {
-    tree_editor.createNumericItem(path,label);
-    created = true;
-  }
-
-  void
-    enumeratedItem(
-      const std::string &label,
-      const std::vector<std::string> &enumeration_names
-    ) const override
-  {
-    tree_editor.createEnumeratedItem(path,label,enumeration_names);
-    created = true;
-  }
-};
-#endif
 
 
 struct QtTreeEditor::OperationHandler : TreeOperationHandler {
@@ -110,9 +78,9 @@ struct QtTreeEditor::OperationHandler : TreeOperationHandler {
   {
   }
 
-  virtual void addChildItem(const TreePath &path)
+  virtual void addItem(const TreePath &path)
   {
-    tree_editor.addTreeChildItem(path);
+    tree_editor.addTreeItem(path);
   }
 
   virtual void replaceTreeItems(const TreePath &path)
@@ -216,90 +184,6 @@ void
 }
 
 
-void
-  QtTreeEditor::createVoidChildItem(
-    const TreePath &parent_path,
-    const string &label
-  )
-{
-  createChildItem(itemFromPath(parent_path),label);
-}
-
-
-struct QtTreeEditor::VoidItemSpec : QtTreeEditor::ItemSpec {
-  const std::string &label;
-
-  VoidItemSpec(const std::string &label_arg)
-  : label(label_arg)
-  {
-  }
-
-  void
-    createChildItem(
-      QtTreeEditor &editor,
-      const TreePath &parent_path
-    ) const override
-  {
-    editor.createVoidChildItem(parent_path,label);
-  }
-};
-
-
-void QtTreeEditor::createItem(const TreePath &path,const ItemSpec &spec)
-{
-  TreePath parent_path = parentPath(path);
-  int child_index = path.back();
-
-  if (child_index!=itemFromPath(parent_path).childCount()) {
-    assert(false); // not implemented
-  }
-
-  spec.createChildItem(*this,parent_path);
-}
-
-void
-  QtTreeEditor::createVoidItem(
-    const TreePath &path,
-    const string &label
-  )
-{
-  createItem(path,VoidItemSpec{label});
-}
-
-
-void
-  QtTreeEditor::createNumericChildItem(
-    const TreePath &parent_path,
-    const string &label
-  )
-{
-  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  createSpinBoxItem(parent_item,label);
-}
-
-
-void
-  QtTreeEditor::createEnumeratedChildItem(
-    const TreePath &parent_path,
-    const string &label,
-    const vector<string> &enumeration_names
-  )
-{
-  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-
-  QtComboBoxTreeWidgetItem &global_position_item =
-    createComboBoxItem(parent_item,label);
-  {
-    QComboBox &combo_box = global_position_item.comboBox();
-    ignore_combo_box_signals = true;
-    for (auto &name : enumeration_names) {
-      combo_box.addItem(QString::fromStdString(name));
-    }
-    ignore_combo_box_signals = false;
-  }
-}
-
-
 QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 {
   const QtTreeEditor &tree_widget = *this;
@@ -336,24 +220,23 @@ Tree &QtTreeEditor::tree()
 }
 
 
-void QtTreeEditor::addTreeChildItem(const TreePath &parent_path)
+void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 {
   Tree &tree = this->tree();
-  Tree::Index child_index = tree.nChildItems(parent_path);
-  TreePath new_item_path = join(parent_path,child_index);
-  tree.createItem(new_item_path);
+  TreePath parent_path = parentPath(new_item_path);
+  Tree::Index child_index = new_item_path.back();
 
-  cerr << "QtTreeEditor::addTreeITem: new_item_path=" <<
-    new_item_path << "\n";
+  if (child_index!=tree.nChildItems(parent_path)) {
+    assert(false); // not implemented
+  }
+
+  tree.createItem(new_item_path);
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
 
   bool created = false;
-#if 1
-  CreateChildItemVisitor create_child_item_visitor(*this,parent_path,created);
+  CreateChildItemVisitor create_child_item_visitor(*this,parent_item,created);
   tree.visitType(new_item_path,create_child_item_visitor);
-#else
-  CreateItemVisitor create_item_visitor(*this,new_item_path,created);
-  tree.visitType(new_item_path,create_item_visitor);
-#endif
+
   if (!created) {
     cerr << "No item created for parent " << parent_path << "\n";
     assert(created);
@@ -363,11 +246,21 @@ void QtTreeEditor::addTreeChildItem(const TreePath &parent_path)
 }
 
 
+void QtTreeEditor::addTreeChildItem(const TreePath &parent_path)
+{
+  Tree &tree = this->tree();
+  Tree::Index child_index = tree.nChildItems(parent_path);
+  TreePath new_item_path = join(parent_path,child_index);
+
+  addTreeItem(new_item_path);
+}
+
+
 void QtTreeEditor::addTreeItems(const TreePath &parent_path)
 {
   int n_children = tree().findNChildren(parent_path);
   for (int i=0; i!=n_children; ++i) {
-    addTreeChildItem(parent_path);
+    addTreeItem(join(parent_path,i));
   }
 }
 

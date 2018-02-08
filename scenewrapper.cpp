@@ -47,8 +47,9 @@ void
   visitor(
     "Add Body",
     [path,&scene](TreeOperationHandler &handler){
+      int index = scene.nBodies();
       scene.addBody();
-      handler.addChildItem(path);
+      handler.addItem(join(path,index));
     }
   );
 }

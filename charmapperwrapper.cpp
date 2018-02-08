@@ -402,8 +402,9 @@ struct MotionPassWrapper : SimpleWrapper {
     visitor(
       "Add Pos Expr",
       [path,&motion_pass](TreeOperationHandler &handler){
+	int index = motion_pass.nExprs();
         motion_pass.addPosExpr();
-        handler.addChildItem(path);
+        handler.addItem(join(path,index));
       }
     );
   }
@@ -439,8 +440,9 @@ void
   visitor(
     "Add Motion Pass",
     [path,&charmapper](TreeOperationHandler &handler){
+      int index = charmapper.nPasses();
       charmapper.addMotionPass();
-      handler.addChildItem(path);
+      handler.addItem(join(path,index));
     }
   );
 }

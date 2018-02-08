@@ -105,11 +105,13 @@ struct Charmapper {
 
     std::vector<std::unique_ptr<PosExpr>> pos_exprs;
 
+    int nExprs() const { return pos_exprs.size(); }
     void addPosExpr();
   };
 
   std::vector<std::unique_ptr<MotionPass>> passes;
 
+  int nPasses() const { return passes.size(); }
   void addMotionPass();
 };
 

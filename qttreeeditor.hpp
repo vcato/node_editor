@@ -49,21 +49,7 @@ class QtTreeEditor : public QTreeWidget {
     void prepareMenuSlot(const QPoint &pos);
 
   private:
-    struct ItemSpec {
-      virtual void
-        createChildItem(
-          QtTreeEditor &,
-          const TreePath &parent_path
-	) const = 0;
-    };
-
-    struct VoidItemSpec;
-
-#if 1
     struct CreateChildItemVisitor;
-#else
-    struct CreateItemVisitor;
-#endif
     struct OperationHandler;
 
     bool ignore_combo_box_signals = false;
@@ -106,6 +92,7 @@ class QtTreeEditor : public QTreeWidget {
 
     QTreeWidgetItem* findSelectedItem();
 
+    void addTreeItem(const TreePath &new_item_path);
     void addTreeChildItem(const TreePath &parent_path);
     void addTreeItems(const TreePath &parent_path);
 
@@ -118,33 +105,6 @@ class QtTreeEditor : public QTreeWidget {
     void removeChildItems(const TreePath &path);
 
     void replaceTreeItems(const TreePath &parent_path);
-
-    void
-      createVoidChildItem(
-        const TreePath &parent_path,
-        const std::string &label
-      );
-
-    void createItem(const TreePath &path,const ItemSpec &spec);
-
-    void
-      createVoidItem(
-	const TreePath &path,
-	const std::string &label
-      );
-
-    void
-      createNumericChildItem(
-        const TreePath &parent_path,
-        const std::string &label
-      );
-
-    void
-      createEnumeratedChildItem(
-        const TreePath &parent_path,
-        const std::string &label,
-        const std::vector<std::string> &enumeration_names
-      );
 };
 
 #endif /* QTTREEEDITOR_HPP_ */

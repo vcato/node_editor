@@ -10,6 +10,8 @@ struct Scene {
 
   std::vector<Body> bodies;
 
+  int nBodies() const { return bodies.size(); }
+
   void addBody()
   {
     bodies.push_back(Body());

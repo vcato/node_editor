@@ -29,7 +29,7 @@ struct Wrapper {
   using Path = TreePath;
 
   struct OperationHandler {
-    virtual void addChildItem(const Path &) = 0;
+    virtual void addItem(const Path &) = 0;
     virtual void replaceTreeItems(const Path &path) = 0;
   };
 

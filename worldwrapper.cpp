@@ -37,15 +37,17 @@ void
   visitor(
     "Add Charmapper",
     [path,this](TreeOperationHandler &handler){
+      int index = world.nMembers();
       world.addCharmapper();
-      handler.addChildItem(path);
+      handler.addItem(join(path,index));
     }
   );
   visitor(
     "Add Scene",
     [path,this](TreeOperationHandler &handler){
+      int index = world.nMembers();
       world.addScene();
-      handler.addChildItem(path);
+      handler.addItem(join(path,index));
     }
   );
 }
