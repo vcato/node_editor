@@ -21,7 +21,7 @@ using std::function;
 using std::list;
 
 
-struct QtTreeEditor::CreateChildItemVisitor : Tree::ItemVisitor {
+struct QtTreeEditor::CreateChildItemVisitor : Wrapper::TypeVisitor {
   QtTreeEditor &tree_editor;
   QTreeWidgetItem &parent_item;
   bool &created;
@@ -213,13 +213,6 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 }
 
 
-Tree &QtTreeEditor::tree()
-{
-  assert(tree_ptr);
-  return *tree_ptr;
-}
-
-
 Wrapper &QtTreeEditor::world()
 {
   assert(world_ptr);
@@ -229,16 +222,14 @@ Wrapper &QtTreeEditor::world()
 
 void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 {
-  Tree &tree = this->tree();
   TreePath parent_path = parentPath(new_item_path);
-  Tree::Index child_index = new_item_path.back();
+  TreeItemIndex child_index = new_item_path.back();
 
-  if (child_index!=tree.nChildItems(parent_path)) {
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+
+  if (child_index!=parent_item.childCount()) {
     assert(false); // not implemented
   }
-
-  tree.createItem(new_item_path);
-  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
 
   bool created = false;
   CreateChildItemVisitor create_child_item_visitor(*this,parent_item,created);
@@ -286,8 +277,6 @@ std::vector<int> QtTreeEditor::itemPath(QTreeWidgetItem &item)
 
 void QtTreeEditor::removeChildItems(const TreePath &path)
 {
-  tree().removeChildItems(path);
-
   QTreeWidgetItem &item = treeEditor().itemFromPath(path);
 
   while (item.childCount()>0) {
@@ -327,7 +316,7 @@ void
 
   assert(item_ptr);
 
-  Tree::Path path = itemPath(*item_ptr);
+  TreePath path = itemPath(*item_ptr);
   OperationHandler operation_handler(*this);
 
   world().comboBoxItemIndexChanged(path,index,operation_handler);
@@ -360,7 +349,7 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
-static Tree::OperationVisitor
+static Wrapper::OperationVisitor
   addMenuItemForOperationFunction(
     QMenu &menu,
     list<QtSlot> &item_slots,

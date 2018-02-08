@@ -35,11 +35,8 @@ class QtTreeEditor : public QTreeWidget {
   Q_OBJECT
 
   public:
-    using TreePath = Tree::Path;
-
     QtTreeEditor();
 
-    void setTreePtr(Tree *arg) { tree_ptr = arg; }
     void setWorldPtr(Wrapper *arg) { world_ptr = arg; }
     void setDiagramEditorPtr(QtDiagramEditor *arg) { diagram_editor_ptr = arg; }
     void selectItem(const TreePath &path);
@@ -54,11 +51,9 @@ class QtTreeEditor : public QTreeWidget {
     struct OperationHandler;
 
     bool ignore_combo_box_signals = false;
-    Tree *tree_ptr = 0;
     Wrapper *world_ptr = 0;
     QtDiagramEditor *diagram_editor_ptr = 0;
 
-    Tree &tree();
     Wrapper &world();
     QtDiagramEditor &diagramEditor();
     QtTreeEditor &treeEditor() { return *this; }

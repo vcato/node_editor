@@ -7,69 +7,9 @@
 #include "streamvector.hpp"
 
 
-using std::string;
 using std::cerr;
-using std::function;
-using std::vector;
 
-using Path = Tree::Path;
-using OperationVisitor = Tree::OperationVisitor;
-using TreeItem = Tree::Item;
-
-
-void Tree::Item::createItem(Index index)
-{
-  Index n_children = child_items.size();
-
-  if (index!=n_children) {
-    // Haven't implemented the case where we are inserting an item at
-    // some location other than the end.
-    assert(false);
-  }
-
-  child_items.push_back(TreeItem());
-}
-
-
-Tree::Tree()
-{
-}
-
-
-void Tree::createItem(const Path &path)
-{
-  Path parent_path = parentPath(path);
-  Index child_index = path.back();
-  Item &parent_item = getItem(parent_path);
-  parent_item.createItem(child_index);
-}
-
-
-auto Tree::getItem(const Path &path) -> Item&
-{
-  const Tree &const_self = *this;
-  const Item &const_node = const_self.getItem(path);
-  return const_cast<Item&>(const_node);
-}
-
-
-auto Tree::getItem(const Path &path) const -> const Item &
-{
-  const TreeItem *item_ptr = &_root_item;
-  int path_length = path.size();
-
-  int depth = 0;
-
-  while (depth<path_length) {
-    item_ptr = &item_ptr->child_items[path[depth]];
-    ++depth;
-  }
-
-  return *item_ptr;
-}
-
-
-Diagram *Wrapper::diagramPtr(const Path &path)
+Diagram *Wrapper::diagramPtr(const TreePath &path)
 {
   Diagram *result_ptr = 0;
 
@@ -84,18 +24,4 @@ Diagram *Wrapper::diagramPtr(const Path &path)
   }
 
   return result_ptr;
-}
-
-
-void Tree::removeChildItems(const Path &path)
-{
-  getItem(path).child_items.clear();
-}
-
-
-auto Tree::nChildItems(const Path &path) const -> SizeType
-{
-  const TreeItem &item = getItem(path);
-  assert(item.child_items.size()<=std::numeric_limits<SizeType>::max());
-  return item.child_items.size();
 }

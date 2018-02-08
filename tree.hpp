@@ -8,7 +8,8 @@
 #include "diagram.hpp"
 
 
-using TreePath = std::vector<int>;
+using TreeItemIndex = int;
+using TreePath = std::vector<TreeItemIndex>;
 
 
 inline TreePath parentPath(const TreePath &path)
@@ -179,40 +180,10 @@ struct SimpleWrapper : Wrapper {
 };
 
 
-class Tree {
-  public:
-    struct Item {
-      using Index = int;
-
-      std::vector<Item> child_items;
-
-      void createItem(Index);
-    };
-
-    using Path = TreePath;
-    using Index = Item::Index;
-    using SizeType = int;
-    using ItemVisitor = Wrapper::TypeVisitor;
-    using OperationHandler = Wrapper::OperationHandler;
-    using OperationVisitor = Wrapper::OperationVisitor;
-
-    Tree();
-
-    void createItem(const Path &);
-    SizeType nChildItems(const Path &) const;
-    void removeChildItems(const Path &);
-
-  private:
-    Item &getItem(const Path &);
-    const Item &getItem(const Path &) const;
-
-    Item _root_item;
-};
-
-using TreeOperationHandler = Tree::OperationHandler;
+using TreeOperationHandler = Wrapper::OperationHandler;
 
 
-inline Tree::Path join(Tree::Path path,Tree::Index child_index)
+inline TreePath join(TreePath path,TreeItemIndex child_index)
 {
   path.push_back(child_index);
   return path;

@@ -13,7 +13,6 @@ class QtMainWindow : public QMainWindow {
 
   private:
     QMenu menu{"Tools"};
-    Tree tree;
     QtTreeEditor *tree_editor_ptr;
     QtDiagramEditor *diagram_editor_ptr;
 };
