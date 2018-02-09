@@ -2,22 +2,10 @@
 #include <QDialog>
 #include <iostream>
 #include "qtmainwindow.hpp"
+#include "qtsceneviewer.hpp"
 #include "world.hpp"
 #include "worldwrapper.hpp"
 
-
-
-using std::vector;
-using std::unique_ptr;
-using std::make_unique;
-using std::cerr;
-
-
-namespace {
-struct QtSceneViewer : QGLWidget {
-  QSize sizeHint() const override { return QSize(640,480); }
-};
-}
 
 
 namespace {
@@ -29,11 +17,12 @@ struct QtWorld : World {
   {
   }
 
-  virtual void createSceneWindow()
+  virtual void createSceneWindow(Scene &scene)
   {
     QDialog &dialog = createWidget<QDialog>(main_window);
     QBoxLayout &layout = createLayout<QVBoxLayout>(dialog);
-    createWidget<QtSceneViewer>(layout);
+    QtSceneViewer &viewer = createWidget<QtSceneViewer>(layout);
+    viewer.setScenePtr(&scene);
     dialog.show();
   }
 };

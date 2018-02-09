@@ -28,7 +28,7 @@ class World {
 
   private:
 
-    virtual void createSceneWindow() = 0;
+    virtual void createSceneWindow(Scene &) = 0;
 };
 
 

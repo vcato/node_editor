@@ -2,20 +2,47 @@
 #define SCENE_HPP_
 
 #include <vector>
+#include <set>
 
 
-struct Scene {
-  struct Body {
-  };
+class Scene {
+  public:
+    struct Body {
+    };
 
-  std::vector<Body> bodies;
+    using Bodies = std::vector<Body>;
 
-  int nBodies() const { return bodies.size(); }
+    struct Observer {
+      Observer() : scene_ptr(nullptr) { }
+      ~Observer();
 
-  void addBody()
-  {
-    bodies.push_back(Body());
-  }
+      void setScenePtr(Scene *arg);
+
+      virtual void sceneChanged() = 0;
+
+      private:
+	Scene *scene_ptr;
+    };
+
+    ~Scene();
+
+    int nBodies() const { return bodies_member.size(); }
+    int nObservers() const { return observers.size(); }
+
+    void addBody();
+    const Bodies &bodies() const { return bodies_member; }
+    Bodies &bodies() { return bodies_member; }
+
+  private:
+    std::set<Observer *> observers;
+    Bodies bodies_member;
+
+    void addObserver(Observer &observer)
+    {
+      observers.insert(&observer);
+    }
+
+    void removeObserver(Observer &observer);
 };
 
 #endif /* SCENE_HPP_ */

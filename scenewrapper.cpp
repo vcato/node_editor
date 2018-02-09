@@ -61,5 +61,5 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  visitor(BodyWrapper{scene.bodies[child_index]});
+  visitor(BodyWrapper{scene.bodies()[child_index]});
 }

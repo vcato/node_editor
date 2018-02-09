@@ -14,7 +14,9 @@ run_unit_tests: \
   diagramnode_test.pass \
   diagram_test.pass \
   diagramio_test.pass \
-  wrapper_test.pass
+  wrapper_test.pass \
+  scene_test.pass \
+  world_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
@@ -23,7 +25,7 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
   world.o worldwrapper.o charmapperwrapper.o \
-  scenewrapper.o charmapper.o
+  scenewrapper.o charmapper.o qtsceneviewer.o scene.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -63,6 +65,12 @@ diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
 wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
   statementtext.o stringutil.o diagramevaluation.o defaultdiagrams.o \
   diagramio.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+scene_test: scene_test.o scene.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+world_test: world_test.o world.o scene.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

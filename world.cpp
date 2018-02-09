@@ -1,14 +1,18 @@
 #include "world.hpp"
 
+#include <iostream>
 #include "worldwrapper.hpp"
 
 using std::make_unique;
+using std::unique_ptr;
+using std::cerr;
 
 
 struct World::WorldMember {
   using MemberVisitor = World::MemberVisitor;
 
   virtual void accept(MemberVisitor &) = 0;
+  virtual ~WorldMember() {}
 };
 
 
@@ -37,7 +41,10 @@ struct SceneObject : World::WorldMember {
 
 
 World::World() = default;
-World::~World() = default;
+
+World::~World()
+{
+}
 
 
 void World::addCharmapper()
@@ -48,8 +55,10 @@ void World::addCharmapper()
 
 void World::addScene()
 {
-  world_members.push_back(make_unique<SceneObject>());
-  createSceneWindow();
+  unique_ptr<SceneObject> scene_object_ptr = make_unique<SceneObject>();
+  Scene &scene = scene_object_ptr->scene;
+  world_members.push_back(std::move(scene_object_ptr));
+  createSceneWindow(scene);
 }
 
 

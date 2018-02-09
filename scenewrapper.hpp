@@ -27,6 +27,6 @@ struct SceneWrapper : SimpleWrapper {
 
   virtual int nChildren() const
   {
-    return scene.bodies.size();
+    return scene.nBodies();
   }
 };
