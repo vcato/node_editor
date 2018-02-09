@@ -3,17 +3,18 @@
 
 #include <vector>
 #include <set>
+#include "point2d.hpp"
 
 
 class Scene {
   public:
     struct Body {
+      Point2D position;
     };
 
     using Bodies = std::vector<Body>;
 
     struct Observer {
-      Observer() : scene_ptr(nullptr) { }
       ~Observer();
 
       void setScenePtr(Scene *arg);
@@ -22,7 +23,7 @@ class Scene {
       virtual void sceneChanged() = 0;
 
       private:
-	Scene *scene_ptr;
+	Scene *scene_ptr = 0;
     };
 
     ~Scene();

@@ -15,3 +15,4 @@ wrapper_test
 diagramio_test
 scene_test
 world_test
+scenewrapper_test

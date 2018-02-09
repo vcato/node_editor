@@ -1,5 +1,57 @@
 #include "scenewrapper.hpp"
 
+
+namespace {
+struct Point2DWrapper : Wrapper {
+  const char *label;
+
+  Point2DWrapper(const char *label_arg)
+  : label(label_arg)
+  {
+  }
+
+  virtual void
+    visitOperations(
+      const TreePath &,
+      const OperationVisitor &
+    ) const
+  {
+  }
+
+  virtual void
+    withChildWrapper(
+      int /*child_index*/,
+      const WrapperVisitor &/*visitor*/
+    ) const
+  {
+    assert(false);
+  }
+
+  virtual int nChildren() const
+  {
+    return 0; // this is wrong
+  }
+
+  virtual Diagram *diagramPtr() const { return nullptr; }
+
+  virtual void
+    comboBoxItemIndexChanged(
+      const TreePath &/*path*/,
+      int /*index*/,
+      OperationHandler &/*operation_handler*/
+    ) const
+  {
+    assert(false);
+  }
+
+  virtual void visitType(const TypeVisitor &visitor) const
+  {
+    visitor.voidItem(label);
+  }
+};
+}
+
+
 namespace {
 struct BodyWrapper : SimpleWrapper {
   Scene::Body &body;
@@ -19,8 +71,13 @@ struct BodyWrapper : SimpleWrapper {
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
-  void withChildWrapper(int /*child_index*/,const WrapperVisitor &) const
+  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
+    if (child_index==0) {
+      visitor(Point2DWrapper("position"));
+      return;
+    }
+
     assert(false);
   }
 
@@ -31,7 +88,7 @@ struct BodyWrapper : SimpleWrapper {
 
   virtual int nChildren() const
   {
-    return 0;
+    return 1;
   }
 };
 }

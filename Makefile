@@ -16,7 +16,8 @@ run_unit_tests: \
   diagramio_test.pass \
   wrapper_test.pass \
   scene_test.pass \
-  world_test.pass
+  world_test.pass \
+  scenewrapper_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
@@ -71,6 +72,9 @@ scene_test: scene_test.o scene.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 world_test: world_test.o world.o scene.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
