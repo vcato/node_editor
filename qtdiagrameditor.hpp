@@ -35,8 +35,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
-    void drawLine(Point2D line_start,Point2D line_end);
-    void setupProjection(float viewport_width,float viewport_height);
     void drawClosedLine(const std::vector<Point2D> &vertices);
     void drawPolygon(const std::vector<Point2D> &vertices);
     void drawPolygon(const std::vector<Point2D> &vertices,const Color &);

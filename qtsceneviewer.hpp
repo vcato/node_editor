@@ -26,6 +26,7 @@ class QtSceneViewer : public QGLWidget {
 
   private:
     SceneObserver scene_observer;
+    const Scene *scenePtr();
 
     void sceneChanged();
     QSize sizeHint() const override { return QSize(640,480); }

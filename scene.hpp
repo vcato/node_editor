@@ -17,6 +17,7 @@ class Scene {
       ~Observer();
 
       void setScenePtr(Scene *arg);
+      Scene *scenePtr() const { return scene_ptr; }
 
       virtual void sceneChanged() = 0;
 
