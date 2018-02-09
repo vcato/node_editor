@@ -2,7 +2,7 @@
 #include "scene.hpp"
 
 
-class QtSceneViewer : QGLWidget {
+class QtSceneViewer : public QGLWidget {
   public:
     QtSceneViewer();
     ~QtSceneViewer();
