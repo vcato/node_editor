@@ -30,5 +30,5 @@ void QtSceneViewer::setScenePtr(Scene *arg)
 
 void QtSceneViewer::sceneChanged()
 {
-  cerr << "QtSceneViewer::sceneChanged()\n";
+  update();
 }
