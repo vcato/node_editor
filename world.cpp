@@ -13,11 +13,13 @@ struct World::WorldMember {
 
   virtual void accept(MemberVisitor &) = 0;
   virtual ~WorldMember() {}
+
+  struct CharmapperObject;
+  struct SceneObject;
 };
 
 
-namespace {
-struct CharmapperObject : World::WorldMember {
+struct World::WorldMember::CharmapperObject : World::WorldMember {
   Charmapper charmapper;
 
   virtual void accept(MemberVisitor &visitor)
@@ -25,11 +27,9 @@ struct CharmapperObject : World::WorldMember {
     visitor.visitCharmapper(charmapper);
   }
 };
-}
 
 
-namespace {
-struct SceneObject : World::WorldMember {
+struct World::WorldMember::SceneObject : World::WorldMember {
   Scene scene;
 
   virtual void accept(MemberVisitor &visitor)
@@ -37,7 +37,6 @@ struct SceneObject : World::WorldMember {
     visitor.visitScene(scene);
   }
 };
-}
 
 
 World::World() = default;
@@ -49,12 +48,14 @@ World::~World()
 
 void World::addCharmapper()
 {
+  using CharmapperObject = WorldMember::CharmapperObject;
   world_members.push_back(make_unique<CharmapperObject>());
 }
 
 
 void World::addScene()
 {
+  using SceneObject = WorldMember::SceneObject;
   unique_ptr<SceneObject> scene_object_ptr = make_unique<SceneObject>();
   Scene &scene = scene_object_ptr->scene;
   world_members.push_back(std::move(scene_object_ptr));

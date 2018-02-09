@@ -9,22 +9,21 @@ using std::cerr;
 void Scene::Observer::setScenePtr(Scene *arg)
 {
   if (scene_ptr) {
-    scene_ptr->removeObserver(*this);
+    assert(scene_ptr->observers.count(this));
+    scene_ptr->observers.erase(this);
   }
 
   scene_ptr = arg;
 
   if (scene_ptr) {
-    scene_ptr->addObserver(*this);
+    scene_ptr->observers.insert(this);
   }
 }
 
 
 Scene::Observer::~Observer()
 {
-  if (scene_ptr) {
-    scene_ptr->removeObserver(*this);
-  }
+  setScenePtr(nullptr);
 }
 
 
@@ -46,11 +45,4 @@ void Scene::addBody()
     assert(observer_ptr);
     observer_ptr->sceneChanged();
   }
-}
-
-
-void Scene::removeObserver(Observer &observer)
-{
-  assert(observers.count(&observer));
-  observers.erase(&observer);
 }

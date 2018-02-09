@@ -22,11 +22,10 @@ class World {
     void visitMember(int child_index,MemberVisitor &);
     int nMembers() const { return world_members.size(); }
 
+  private:
     struct WorldMember;
     using WorldMembers = std::vector<std::unique_ptr<WorldMember>>;
     WorldMembers world_members;
-
-  private:
 
     virtual void createSceneWindow(Scene &) = 0;
 };

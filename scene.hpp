@@ -36,13 +36,6 @@ class Scene {
   private:
     std::set<Observer *> observers;
     Bodies bodies_member;
-
-    void addObserver(Observer &observer)
-    {
-      observers.insert(&observer);
-    }
-
-    void removeObserver(Observer &observer);
 };
 
 #endif /* SCENE_HPP_ */

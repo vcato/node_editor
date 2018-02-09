@@ -2,29 +2,32 @@
 #include "scene.hpp"
 
 
-struct QtSceneViewer : QGLWidget {
-  QtSceneViewer();
-  ~QtSceneViewer();
+class QtSceneViewer : QGLWidget {
+  public:
+    QtSceneViewer();
+    ~QtSceneViewer();
 
-  struct SceneObserver : Scene::Observer {
-    QtSceneViewer &viewer;
+    struct SceneObserver : Scene::Observer {
+      QtSceneViewer &viewer;
 
-    SceneObserver(QtSceneViewer &viewer_arg)
-    : viewer(viewer_arg)
-    {
-    }
+      SceneObserver(QtSceneViewer &viewer_arg)
+      : viewer(viewer_arg)
+      {
+      }
 
-    virtual void sceneChanged()
-    {
-      viewer.sceneChanged();
-    }
-  };
+      virtual void sceneChanged()
+      {
+	viewer.sceneChanged();
+      }
+    };
 
-  QSize sizeHint() const override { return QSize(640,480); }
+    void paintGL();
+    void setScenePtr(Scene *);
 
-  void paintGL();
-  void setScenePtr(Scene *);
-  void sceneChanged();
+  private:
+    SceneObserver scene_observer;
 
-  SceneObserver scene_observer;
+    void sceneChanged();
+    QSize sizeHint() const override { return QSize(640,480); }
+
 };
