@@ -1,6 +1,6 @@
 #include <QMainWindow>
 #include <QMenu>
-#include "tree.hpp"
+#include "wrapper.hpp"
 #include "qttreeeditor.hpp"
 
 

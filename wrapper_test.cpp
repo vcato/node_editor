@@ -1,4 +1,4 @@
-#include "tree.hpp"
+#include "wrapper.hpp"
 
 #include <cassert>
 

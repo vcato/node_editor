@@ -1,5 +1,5 @@
 #include "charmapper.hpp"
-#include "tree.hpp"
+#include "wrapper.hpp"
 
 
 struct CharmapperWrapper : SimpleWrapper {

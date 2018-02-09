@@ -1,7 +1,7 @@
 #ifndef WORLDWRAPPER_HPP_
 #define WORLDWRAPPER_HPP_
 
-#include "tree.hpp"
+#include "wrapper.hpp"
 #include "world.hpp"
 
 struct WorldWrapper : SimpleWrapper

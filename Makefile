@@ -14,11 +14,11 @@ run_unit_tests: \
   diagramnode_test.pass \
   diagram_test.pass \
   diagramio_test.pass \
-  tree_test.pass
+  wrapper_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
-  tree.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
+  wrapper.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
   qtcomboboxtreewidgetitemsignalmap.o qtmenu.o \
   moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
@@ -60,7 +60,7 @@ diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
   linetext.o statementtext.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-tree_test: tree_test.o tree.o diagram.o diagramnode.o linetext.o \
+wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
   statementtext.o stringutil.o diagramevaluation.o defaultdiagrams.o \
   diagramio.o
 	$(CXX) -o $@ $^ $(LDFLAGS)

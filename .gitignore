@@ -11,5 +11,5 @@ nodetexteditor_test
 diagramnode_test
 diagram_test
 statementtext_test
-tree_test
+wrapper_test
 diagramio_test

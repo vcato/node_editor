@@ -10,7 +10,7 @@
 #include "qtdiagrameditor.hpp"
 #include "qtcomboboxtreewidgetitemsignalmap.hpp"
 #include "qtslot.hpp"
-#include "tree.hpp"
+#include "wrapper.hpp"
 
 
 struct QtComboBoxTreeWidgetItem : QTreeWidgetItem {

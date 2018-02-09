@@ -1,5 +1,5 @@
 #include "scene.hpp"
-#include "tree.hpp"
+#include "wrapper.hpp"
 
 
 struct SceneWrapper : SimpleWrapper {
