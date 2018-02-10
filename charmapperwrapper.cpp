@@ -23,11 +23,11 @@ struct MotionPassWrapper : SimpleWrapper {
 
   struct ChannelWrapper : SimpleWrapper {
     Channel &channel;
-    const char *label;
+    const char *label_member;
 
     ChannelWrapper(Channel &channel_arg,const char *label_arg)
     : channel(channel_arg),
-      label(label_arg)
+      label_member(label_arg)
     {
     }
 
@@ -51,7 +51,12 @@ struct MotionPassWrapper : SimpleWrapper {
 
     virtual void visitType(const TypeVisitor &visitor) const
     {
-      visitor.numericItem(label);
+      visitor.numericItem();
+    }
+
+    virtual std::string label() const
+    {
+      return label_member;
     }
 
     virtual int nChildren() const
@@ -62,7 +67,13 @@ struct MotionPassWrapper : SimpleWrapper {
 
   struct PositionWrapper : SimpleWrapper {
     Position &position;
-    const char *label;
+    const char *label_member;
+
+    PositionWrapper(Position &position_arg,const char *label_arg)
+    : position(position_arg),
+      label_member(label_arg)
+    {
+    }
 
     virtual void
       visitOperations(
@@ -76,12 +87,6 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual Diagram *diagramPtr() const
     {
       return &position.diagram;
-    }
-
-    PositionWrapper(Position &position_arg,const char *label_arg)
-    : position(position_arg),
-      label(label_arg)
-    {
     }
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
@@ -101,7 +106,12 @@ struct MotionPassWrapper : SimpleWrapper {
 
     virtual void visitType(const TypeVisitor &visitor) const
     {
-      visitor.voidItem(label);
+      visitor.voidItem();
+    }
+
+    virtual std::string label() const
+    {
+      return label_member;
     }
 
     virtual int nChildren() const
@@ -149,6 +159,11 @@ struct MotionPassWrapper : SimpleWrapper {
     }
 
     virtual void visitType(const TypeVisitor &) const
+    {
+      assert(false);
+    }
+
+    virtual std::string label() const
     {
       assert(false);
     }
@@ -256,7 +271,12 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void visitType(const TypeVisitor &visitor) const
     {
       vector<string> enumeration_names = {"Components","From Body"};
-      visitor.enumeratedItem("Global Position",enumeration_names);
+      visitor.enumeratedItem(enumeration_names);
+    }
+
+    virtual std::string label() const
+    {
+      return "Global Position";
     }
   };
 
@@ -282,7 +302,12 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void visitType(const TypeVisitor &visitor) const
     {
       vector<string> enumeration_names = {"Body1","Body2","Body3"};
-      visitor.enumeratedItem("Target Body",enumeration_names);
+      visitor.enumeratedItem(enumeration_names);
+    }
+
+    virtual std::string label() const
+    {
+      return "Target Body";
     }
 
     virtual void
@@ -322,7 +347,12 @@ struct MotionPassWrapper : SimpleWrapper {
     virtual void visitType(const TypeVisitor &visitor) const
     {
       vector<string> enumeration_names = {"Body1","Body2","Body3"};
-      visitor.enumeratedItem("Source Body",enumeration_names);
+      visitor.enumeratedItem(enumeration_names);
+    }
+
+    virtual std::string label() const
+    {
+      return "Source Body";
     }
 
     virtual void
@@ -381,7 +411,12 @@ struct MotionPassWrapper : SimpleWrapper {
 
     virtual void visitType(const TypeVisitor &visitor) const
     {
-      visitor.voidItem("Pos Expr");
+      visitor.voidItem();
+    }
+
+    virtual std::string label() const
+    {
+      return "Pos Expr";
     }
 
     virtual int nChildren() const
@@ -419,7 +454,12 @@ struct MotionPassWrapper : SimpleWrapper {
 
   virtual void visitType(const TypeVisitor &visitor) const
   {
-    visitor.voidItem("Motion Pass");
+    visitor.voidItem();
+  }
+
+  virtual std::string label() const
+  {
+    return "Motion Pass";
   }
 
   virtual int nChildren() const

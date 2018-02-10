@@ -3,10 +3,10 @@
 
 namespace {
 struct Point2DWrapper : Wrapper {
-  const char *label;
+  const char *label_member;
 
   Point2DWrapper(const char *label_arg)
-  : label(label_arg)
+  : label_member(label_arg)
   {
   }
 
@@ -46,7 +46,12 @@ struct Point2DWrapper : Wrapper {
 
   virtual void visitType(const TypeVisitor &visitor) const
   {
-    visitor.voidItem(label);
+    visitor.voidItem();
+  }
+
+  std::string label() const override
+  {
+    return label_member;
   }
 };
 }
@@ -83,7 +88,12 @@ struct BodyWrapper : SimpleWrapper {
 
   virtual void visitType(const TypeVisitor &visitor) const
   {
-    visitor.voidItem("Body");
+    visitor.voidItem();
+  }
+
+  virtual std::string label() const
+  {
+    return "Body";
   }
 
   virtual int nChildren() const

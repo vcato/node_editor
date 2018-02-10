@@ -15,37 +15,7 @@ static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
     stream << "  ";
   }
 
-  struct Visitor : Wrapper::TypeVisitor {
-    string &label_ref;
-
-    Visitor(string &label_arg)
-    : label_ref(label_arg)
-    {
-    }
-
-    virtual void voidItem(const std::string &label) const
-    {
-      label_ref = label;
-    }
-
-    virtual void numericItem(const std::string &label) const
-    {
-      label_ref = label;
-    }
-
-    virtual void
-      enumeratedItem(
-        const std::string &label,
-        const std::vector<std::string> &/*enumeration_names*/
-      ) const
-    {
-      label_ref = label;
-    }
-  };
-
-  string label;
-  Visitor visitor(label);
-  wrapper.visitType(visitor);
+  string label = wrapper.label();
   stream << label << "\n";
   int n_children = wrapper.nChildren();
 

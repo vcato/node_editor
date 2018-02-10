@@ -24,26 +24,29 @@ using std::list;
 struct QtTreeEditor::CreateChildItemVisitor : Wrapper::TypeVisitor {
   QtTreeEditor &tree_editor;
   QTreeWidgetItem &parent_item;
+  const std::string &label;
   bool &created;
 
   CreateChildItemVisitor(
     QtTreeEditor &tree_editor_arg,
     QTreeWidgetItem &parent_item_arg,
+    const std::string &label_arg,
     bool &created_arg
   )
   : tree_editor(tree_editor_arg),
     parent_item(parent_item_arg),
+    label(label_arg),
     created(created_arg)
   {
   }
 
-  void voidItem(const std::string &label) const override
+  void voidItem() const override
   {
     tree_editor.createChildItem(parent_item,label);
     created = true;
   }
 
-  void numericItem(const std::string &label) const override
+  void numericItem() const override
   {
     tree_editor.createSpinBoxItem(parent_item,label);
     created = true;
@@ -51,7 +54,6 @@ struct QtTreeEditor::CreateChildItemVisitor : Wrapper::TypeVisitor {
 
   void
     enumeratedItem(
-      const std::string &label,
       const std::vector<std::string> &enumeration_names
     ) const override
   {
@@ -232,8 +234,17 @@ void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
   }
 
   bool created = false;
-  CreateChildItemVisitor create_child_item_visitor(*this,parent_item,created);
-  world().visitType(new_item_path,create_child_item_visitor);
+
+  world().visitWrapper(
+    new_item_path,
+    [&](const Wrapper &w){
+      const std::string &label = w.label();
+      CreateChildItemVisitor
+	create_child_item_visitor(*this,parent_item,label,created);
+
+      w.visitType(create_child_item_visitor);
+    }
+  );
 
   if (!created) {
     cerr << "No item created for parent " << parent_path << "\n";

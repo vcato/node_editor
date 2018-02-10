@@ -22,7 +22,12 @@ struct CharmapperWrapper : SimpleWrapper {
 
   virtual void visitType(const TypeVisitor &visitor) const
   {
-    visitor.voidItem("Charmapper");
+    visitor.voidItem();
+  }
+
+  virtual std::string label() const
+  {
+    return "Charmapper";
   }
 
   virtual int nChildren() const

@@ -28,6 +28,11 @@ struct WorldWrapper : SimpleWrapper
     assert(false);
   }
 
+  virtual std::string label() const
+  {
+    assert(false);
+  }
+
   virtual int nChildren() const
   {
     return world.nMembers();

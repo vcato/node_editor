@@ -22,7 +22,12 @@ struct SceneWrapper : SimpleWrapper {
 
   virtual void visitType(const TypeVisitor &visitor) const
   {
-    visitor.voidItem("Scene");
+    visitor.voidItem();
+  }
+
+  virtual std::string label() const
+  {
+    return "Scene";
   }
 
   virtual int nChildren() const

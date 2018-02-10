@@ -41,16 +41,12 @@ struct Wrapper {
     std::function<void(const OperationName &,PerformOperationFunction)>;
 
   struct TypeVisitor {
-    virtual void voidItem(const std::string &label) const = 0;
+    virtual void voidItem() const = 0;
 
-    virtual void
-      numericItem(
-        const std::string &label
-      ) const = 0;
+    virtual void numericItem() const = 0;
 
     virtual void
       enumeratedItem(
-        const std::string &label,
         const std::vector<std::string> &enumeration_names
       ) const = 0;
   };
@@ -155,15 +151,7 @@ struct Wrapper {
 
   virtual void visitType(const TypeVisitor &) const = 0;
 
-  void visitType(const Path &path,const TypeVisitor &visitor)
-  {
-    visitWrapper(
-      path,
-      [&](const Wrapper &wrapper){
-	wrapper.visitType(visitor);
-      }
-    );
-  }
+  virtual std::string label() const = 0;
 };
 
 
