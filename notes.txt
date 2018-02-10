@@ -252,3 +252,11 @@ window, and then provide a diagram that generates what we will draw.
 ---
 Wrapper needs to handle modifying a numeric item.
 i.e.  Change body.position.x
+
+Instead of having the Scene have an observer, we could have a separate
+ChangedNotifier that can be observed.  We could have the
+SceneWrapper take the ChangedNotifier as a parameter.
+The World::SceneObject can contain the ChangedNotifier.
+The World::MemberVisitor can be passed the SceneObject instead of the 
+Scene.  This will give the ChildWrapperVisitor of the WorldWrapper a
+chance to create a SceneWrapper that is passed the ChangedNotifier.

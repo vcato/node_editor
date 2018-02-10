@@ -5,10 +5,10 @@
 
 
 namespace {
-struct ChildWrapperVisitor2 : World::MemberVisitor {
+struct ChildWrapperVisitor : World::MemberVisitor {
   const WrapperVisitor &visitor;
 
-  ChildWrapperVisitor2(
+  ChildWrapperVisitor(
     const std::function<void(const Wrapper&)> &visitor_arg
   )
   : visitor(visitor_arg)
@@ -58,7 +58,7 @@ void
     int child_index,const WrapperVisitor &visitor
   ) const
 {
-  ChildWrapperVisitor2 wrapper_visitor(visitor);
+  ChildWrapperVisitor wrapper_visitor(visitor);
 
   world.visitMember(child_index,wrapper_visitor);
 }
