@@ -2,7 +2,7 @@
 #include "wrapper.hpp"
 
 
-struct SceneWrapper : SimpleWrapper {
+struct SceneWrapper : VoidWrapper {
   Scene &scene;
 
   SceneWrapper(Scene &scene_arg)
@@ -19,11 +19,6 @@ struct SceneWrapper : SimpleWrapper {
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
-
-  virtual void visitType(const TypeVisitor &visitor) const
-  {
-    visitor.voidItem();
-  }
 
   virtual std::string label() const
   {

@@ -2,7 +2,7 @@
 #include "wrapper.hpp"
 
 
-struct CharmapperWrapper : SimpleWrapper {
+struct CharmapperWrapper : VoidWrapper {
   Charmapper &charmapper;
 
   CharmapperWrapper(Charmapper &charmapper_arg)
@@ -19,11 +19,6 @@ struct CharmapperWrapper : SimpleWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
-
-  virtual void visitType(const TypeVisitor &visitor) const
-  {
-    visitor.voidItem();
-  }
 
   virtual std::string label() const
   {

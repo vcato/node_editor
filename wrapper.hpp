@@ -155,6 +155,47 @@ struct Wrapper {
 };
 
 
+struct VoidWrapper : Wrapper {
+  virtual void
+    comboBoxItemIndexChanged(
+      const TreePath &,
+      int /*index*/,
+      OperationHandler &
+    ) const
+  {
+    assert(false);
+  }
+
+  virtual void visitType(const TypeVisitor &visitor) const
+  {
+    visitor.voidItem();
+  }
+};
+
+
+struct NumericWrapper : Wrapper {
+  void
+    comboBoxItemIndexChanged(
+      const TreePath &,
+      int /*index*/,
+      OperationHandler &
+    ) const override
+  {
+    assert(false);
+  }
+
+  virtual void visitType(const TypeVisitor &visitor) const
+  {
+    visitor.numericItem();
+  }
+};
+
+
+struct EnumerationWrapper : Wrapper {
+};
+
+
+
 struct SimpleWrapper : Wrapper {
   virtual void
     comboBoxItemIndexChanged(

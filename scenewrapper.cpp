@@ -2,7 +2,7 @@
 
 
 namespace {
-struct Point2DWrapper : Wrapper {
+struct Point2DWrapper : VoidWrapper {
   const char *label_member;
 
   Point2DWrapper(const char *label_arg)
@@ -34,21 +34,6 @@ struct Point2DWrapper : Wrapper {
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
-  virtual void
-    comboBoxItemIndexChanged(
-      const TreePath &/*path*/,
-      int /*index*/,
-      OperationHandler &/*operation_handler*/
-    ) const
-  {
-    assert(false);
-  }
-
-  virtual void visitType(const TypeVisitor &visitor) const
-  {
-    visitor.voidItem();
-  }
-
   std::string label() const override
   {
     return label_member;
@@ -58,7 +43,7 @@ struct Point2DWrapper : Wrapper {
 
 
 namespace {
-struct BodyWrapper : SimpleWrapper {
+struct BodyWrapper : VoidWrapper {
   Scene::Body &body;
 
   BodyWrapper(Scene::Body &body_arg)
@@ -84,11 +69,6 @@ struct BodyWrapper : SimpleWrapper {
     }
 
     assert(false);
-  }
-
-  virtual void visitType(const TypeVisitor &visitor) const
-  {
-    visitor.voidItem();
   }
 
   virtual std::string label() const

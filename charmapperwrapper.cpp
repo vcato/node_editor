@@ -9,7 +9,7 @@ using std::string;
 
 
 namespace {
-struct MotionPassWrapper : SimpleWrapper {
+struct MotionPassWrapper : VoidWrapper {
   using MotionPass = Charmapper::MotionPass;
   using Position = Charmapper::Position;
   MotionPass &motion_pass;
@@ -21,7 +21,7 @@ struct MotionPassWrapper : SimpleWrapper {
   using ComponentsGlobalPositionData =
     Charmapper::GlobalPosition::ComponentsData;
 
-  struct ChannelWrapper : SimpleWrapper {
+  struct ChannelWrapper : NumericWrapper {
     Channel &channel;
     const char *label_member;
 
@@ -49,11 +49,6 @@ struct MotionPassWrapper : SimpleWrapper {
       assert(false);
     }
 
-    virtual void visitType(const TypeVisitor &visitor) const
-    {
-      visitor.numericItem();
-    }
-
     virtual std::string label() const
     {
       return label_member;
@@ -65,7 +60,7 @@ struct MotionPassWrapper : SimpleWrapper {
     }
   };
 
-  struct PositionWrapper : SimpleWrapper {
+  struct PositionWrapper : VoidWrapper {
     Position &position;
     const char *label_member;
 
@@ -102,11 +97,6 @@ struct MotionPassWrapper : SimpleWrapper {
           visitor(ChannelWrapper(position.z,"Z"));
           return;
       }
-    }
-
-    virtual void visitType(const TypeVisitor &visitor) const
-    {
-      visitor.voidItem();
     }
 
     virtual std::string label() const
@@ -174,7 +164,7 @@ struct MotionPassWrapper : SimpleWrapper {
     }
   };
 
-  struct GlobalPositionWrapper : Wrapper {
+  struct GlobalPositionWrapper : EnumerationWrapper {
     GlobalPosition &global_position;
 
     GlobalPositionWrapper(GlobalPosition &arg)
@@ -280,7 +270,7 @@ struct MotionPassWrapper : SimpleWrapper {
     }
   };
 
-  struct TargetBodyWrapper : Wrapper {
+  struct TargetBodyWrapper : EnumerationWrapper {
     virtual void
       visitOperations(
         const TreePath &,
@@ -325,7 +315,7 @@ struct MotionPassWrapper : SimpleWrapper {
     }
   };
 
-  struct SourceBodyWrapper : Wrapper {
+  struct SourceBodyWrapper : EnumerationWrapper {
     virtual void
       visitOperations(
         const TreePath &,
@@ -371,7 +361,7 @@ struct MotionPassWrapper : SimpleWrapper {
   };
 
 
-  struct PosExprWrapper : SimpleWrapper {
+  struct PosExprWrapper : VoidWrapper {
     PosExpr &pos_expr;
 
     PosExprWrapper(PosExpr &pos_expr_arg)
@@ -407,11 +397,6 @@ struct MotionPassWrapper : SimpleWrapper {
       else {
         assert(false);
       }
-    }
-
-    virtual void visitType(const TypeVisitor &visitor) const
-    {
-      visitor.voidItem();
     }
 
     virtual std::string label() const
@@ -450,11 +435,6 @@ struct MotionPassWrapper : SimpleWrapper {
   {
     PosExpr &pos_expr = *motion_pass.pos_exprs[child_index];
     visitor(PosExprWrapper(pos_expr));
-  }
-
-  virtual void visitType(const TypeVisitor &visitor) const
-  {
-    visitor.voidItem();
   }
 
   virtual std::string label() const
