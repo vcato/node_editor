@@ -2,11 +2,50 @@
 
 
 namespace {
-struct Point2DWrapper : VoidWrapper {
+struct FloatWrapper : NumericWrapper {
   const char *label_member;
 
-  Point2DWrapper(const char *label_arg)
-  : label_member(label_arg)
+  FloatWrapper(const char *label,float &)
+  : label_member(label)
+  {
+  }
+
+  void
+    visitOperations(
+      const TreePath &,
+      const OperationVisitor &
+    ) const override
+  {
+  }
+
+  void
+    withChildWrapper(
+      int /*child_index*/,
+      const WrapperVisitor &
+    ) const override
+  {
+  }
+
+  int nChildren() const override { return 0; }
+
+  Diagram *diagramPtr() const override { return nullptr; }
+
+  std::string label() const override
+  {
+    return label_member;
+  }
+};
+}
+
+
+namespace {
+struct Point2DWrapper : VoidWrapper {
+  const char *label_member;
+  Point2D &point;
+
+  Point2DWrapper(const char *label_arg,Point2D &point_arg)
+  : label_member(label_arg),
+    point(point_arg)
   {
   }
 
@@ -20,17 +59,23 @@ struct Point2DWrapper : VoidWrapper {
 
   virtual void
     withChildWrapper(
-      int /*child_index*/,
-      const WrapperVisitor &/*visitor*/
+      int child_index,
+      const WrapperVisitor &visitor
     ) const
   {
+    switch (child_index) {
+      case 0:
+        visitor(FloatWrapper("x",point.x));
+        return;
+      case 1:
+        visitor(FloatWrapper("y",point.y));
+        return;
+    }
+
     assert(false);
   }
 
-  virtual int nChildren() const
-  {
-    return 0; // this is wrong
-  }
+  int nChildren() const override { return 2; }
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
@@ -64,7 +109,7 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
-      visitor(Point2DWrapper("position"));
+      visitor(Point2DWrapper("position",body.position));
       return;
     }
 

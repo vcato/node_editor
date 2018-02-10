@@ -41,7 +41,9 @@ int main()
   auto expected_output =
     "Scene\n"
     "  Body\n"
-    "    position\n";
+    "    position\n"
+    "      x\n"
+    "      y\n";
 
   if (output!=expected_output) {
     cerr << "output:\n";

@@ -250,9 +250,5 @@ Maybe a good thing to work on is being able to draw a spline.
 We'll need a way to create a window, create a drawing area within the
 window, and then provide a diagram that generates what we will draw.
 ---
-Need to separate the Wrapper type visitor from a label visitor.
-
-Finish implementing Point2DWrapper.
-
-Need to have Point2DWrapper derive from a new VoidWrapper to avoid having
-to override a lot of pure virtual functions.
+Need to be able to be notified when the x/y coordinates of a Point2D
+change so the scene can be redrawn.
