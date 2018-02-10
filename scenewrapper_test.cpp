@@ -31,9 +31,10 @@ static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
 int main()
 {
   Scene scene;
+  auto notify = [](){ assert(false); };
   scene.addBody();
   scene.bodies()[0].position.x = 1;
-  SceneWrapper wrapper(scene);
+  SceneWrapper wrapper(scene,notify);
   ostringstream stream;
   printTree(stream,wrapper);
   string output = stream.str();

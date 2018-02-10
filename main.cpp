@@ -5,28 +5,7 @@
 #include "qtsceneviewer.hpp"
 #include "world.hpp"
 #include "worldwrapper.hpp"
-
-
-
-namespace {
-struct QtWorld : World {
-  QtMainWindow &main_window;
-
-  QtWorld(QtMainWindow &main_window_arg)
-  : main_window(main_window_arg)
-  {
-  }
-
-  virtual void createSceneWindow(Scene &scene)
-  {
-    QDialog &dialog = createWidget<QDialog>(main_window);
-    QBoxLayout &layout = createLayout<QVBoxLayout>(dialog);
-    QtSceneViewer &viewer = createWidget<QtSceneViewer>(layout);
-    viewer.setScenePtr(&scene);
-    dialog.show();
-  }
-};
-}
+#include "qtworld.hpp"
 
 
 int main(int argc,char** argv)

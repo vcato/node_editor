@@ -7,7 +7,6 @@ using std::cerr;
 
 
 QtSceneViewer::QtSceneViewer()
-: scene_observer(*this)
 {
 }
 
@@ -19,7 +18,7 @@ QtSceneViewer::~QtSceneViewer()
 
 const Scene *QtSceneViewer::scenePtr()
 {
-  return scene_observer.scenePtr();
+  return scene_ptr;
 }
 
 
@@ -42,9 +41,9 @@ void QtSceneViewer::paintGL()
 }
 
 
-void QtSceneViewer::setScenePtr(Scene *arg)
+void QtSceneViewer::setScenePtr(Scene *scene_ptr_arg)
 {
-  scene_observer.setScenePtr(arg);
+  scene_ptr = scene_ptr_arg;
 }
 
 

@@ -169,17 +169,9 @@ static bool isNumber(const std::string &text)
 
   parser.skipWhitespace();
 
-#if 0
-  if (!isDigit(parser.peek())) return false;
-
-  while (isDigit(parser.peek())) {
-    ++index;
-  }
-#else
   if (!parser.skipNumber()) {
     return false;
   }
-#endif
 
   parser.skipWhitespace();
 

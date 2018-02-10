@@ -1,6 +1,9 @@
 #include "scenewrapper.hpp"
 
 
+using std::cerr;
+
+
 namespace {
 struct FloatWrapper : NumericWrapper {
   const char *label_member;
@@ -135,6 +138,16 @@ struct BodyWrapper : VoidWrapper {
 }
 
 
+SceneWrapper::SceneWrapper(
+  Scene &scene_arg,
+  std::function<void()> notify_arg
+)
+: scene(scene_arg),
+  notify(notify_arg)
+{
+}
+
+
 void
   SceneWrapper::visitOperations(
     const TreePath &path,
@@ -142,11 +155,13 @@ void
   ) const
 {
   Scene &scene = this->scene;
+  const std::function<void()> &notify = this->notify;
   visitor(
     "Add Body",
-    [path,&scene](TreeOperationHandler &handler){
+    [path,&scene,notify](TreeOperationHandler &handler){
       int index = scene.nBodies();
       scene.addBody();
+      notify();
       handler.addItem(join(path,index));
     }
   );

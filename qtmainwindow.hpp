@@ -1,3 +1,6 @@
+#ifndef QTMAINWINDOW_HPP_
+#define QTMAINWINDOW_HPP_
+
 #include <QMainWindow>
 #include <QMenu>
 #include "wrapper.hpp"
@@ -16,3 +19,5 @@ class QtMainWindow : public QMainWindow {
     QtTreeEditor *tree_editor_ptr;
     QtDiagramEditor *diagram_editor_ptr;
 };
+
+#endif /* QTMAINWINDOW_HPP_ */

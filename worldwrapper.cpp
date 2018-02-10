@@ -15,14 +15,20 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   {
   }
 
-  virtual void visitCharmapper(Charmapper &charmapper)
+  virtual void visitCharmapper(World::CharmapperMember &member)
   {
-    visitor(CharmapperWrapper{charmapper});
+    visitor(CharmapperWrapper{member.charmapper});
   }
 
-  virtual void visitScene(Scene &scene)
+  virtual void visitScene(World::SceneMember &member)
   {
-    visitor(SceneWrapper{scene});
+    auto notify = [&](){
+      if (member.scene_viewer_ptr) {
+        member.scene_viewer_ptr->notifySceneChanged();
+      }
+    };
+
+    visitor(SceneWrapper{member.scene,notify});
   }
 };
 }

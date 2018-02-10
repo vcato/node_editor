@@ -4,11 +4,12 @@
 
 struct SceneWrapper : VoidWrapper {
   Scene &scene;
+  const std::function<void()> notify;
 
-  SceneWrapper(Scene &scene_arg)
-  : scene(scene_arg)
-  {
-  }
+  SceneWrapper(
+    Scene &scene_arg,
+    std::function<void()> notify
+  );
 
   virtual void
     visitOperations(
@@ -17,16 +18,7 @@ struct SceneWrapper : VoidWrapper {
     ) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
-
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
-
-  virtual std::string label() const
-  {
-    return "Scene";
-  }
-
-  virtual int nChildren() const
-  {
-    return scene.nBodies();
-  }
+  std::string label() const override { return "Scene"; }
+  int nChildren() const override { return scene.nBodies(); }
 };

@@ -26,7 +26,7 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
   world.o worldwrapper.o charmapperwrapper.o \
-  scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o
+  scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp

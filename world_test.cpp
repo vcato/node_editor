@@ -4,7 +4,7 @@
 
 
 namespace {
-struct Window : Scene::Observer {
+struct Window : SceneViewer {
   virtual void sceneChanged()
   {
   }
@@ -21,9 +21,9 @@ struct FakeWorld : World {
 
   Window &window;
 
-  virtual void createSceneWindow(Scene &scene)
+  virtual SceneViewer& createSceneViewerWindow(SceneMember &)
   {
-    window.setScenePtr(&scene);
+    return window;
   }
 };
 }
