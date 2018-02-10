@@ -4,9 +4,11 @@
 namespace {
 struct FloatWrapper : NumericWrapper {
   const char *label_member;
+  Scene &scene;
 
-  FloatWrapper(const char *label,float &)
-  : label_member(label)
+  FloatWrapper(const char *label,float &,Scene &scene_arg)
+  : label_member(label),
+    scene(scene_arg)
   {
   }
 
@@ -42,10 +44,12 @@ namespace {
 struct Point2DWrapper : VoidWrapper {
   const char *label_member;
   Point2D &point;
+  Scene &scene;
 
-  Point2DWrapper(const char *label_arg,Point2D &point_arg)
+  Point2DWrapper(const char *label_arg,Point2D &point_arg,Scene &scene_arg)
   : label_member(label_arg),
-    point(point_arg)
+    point(point_arg),
+    scene(scene_arg)
   {
   }
 
@@ -65,10 +69,10 @@ struct Point2DWrapper : VoidWrapper {
   {
     switch (child_index) {
       case 0:
-        visitor(FloatWrapper("x",point.x));
+        visitor(FloatWrapper("x",point.x,scene));
         return;
       case 1:
-        visitor(FloatWrapper("y",point.y));
+        visitor(FloatWrapper("y",point.y,scene));
         return;
     }
 
@@ -90,9 +94,11 @@ struct Point2DWrapper : VoidWrapper {
 namespace {
 struct BodyWrapper : VoidWrapper {
   Scene::Body &body;
+  Scene &scene;
 
-  BodyWrapper(Scene::Body &body_arg)
-  : body(body_arg)
+  BodyWrapper(Scene::Body &body_arg,Scene &scene_arg)
+  : body(body_arg),
+    scene(scene_arg)
   {
   }
 
@@ -109,7 +115,7 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
-      visitor(Point2DWrapper("position",body.position));
+      visitor(Point2DWrapper("position",body.position,scene));
       return;
     }
 
@@ -153,5 +159,5 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  visitor(BodyWrapper{scene.bodies()[child_index]});
+  visitor(BodyWrapper{scene.bodies()[child_index],scene});
 }

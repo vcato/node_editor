@@ -30,6 +30,7 @@ class Scene {
 
     int nBodies() const { return bodies_member.size(); }
     int nObservers() const { return observers.size(); }
+    void notifyChanged();
 
     void addBody();
     const Bodies &bodies() const { return bodies_member; }

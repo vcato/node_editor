@@ -40,7 +40,12 @@ Scene::~Scene()
 void Scene::addBody()
 {
   bodies_member.push_back(Body());
+  notifyChanged();
+}
 
+
+void Scene::notifyChanged()
+{
   for (Observer *observer_ptr : observers) {
     assert(observer_ptr);
     observer_ptr->sceneChanged();
