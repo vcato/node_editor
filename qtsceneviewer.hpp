@@ -8,14 +8,8 @@ class QtSceneViewer : public QGLWidget, public SceneViewer {
     QtSceneViewer();
     ~QtSceneViewer();
 
-    void paintGL();
-    void setScenePtr(Scene *);
-
   private:
-    Scene *scene_ptr = nullptr;
-    const Scene *scenePtr();
-
-    virtual void sceneChanged();
+    void paintGL() override;
+    void redrawScene() override;
     QSize sizeHint() const override { return QSize(640,480); }
-
 };

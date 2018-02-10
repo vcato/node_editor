@@ -3,10 +3,15 @@
 
 class SceneViewer {
   public:
-    void notifySceneChanged() { sceneChanged(); }
+    void notifySceneChanged() { redrawScene(); }
+    void setScenePtr(Scene *arg) { scene_ptr = arg; }
+
+  protected:
+    Scene *scene_ptr = nullptr;
+    const Scene *scenePtr() { return scene_ptr; }
 
   private:
-    virtual void sceneChanged() = 0;
+    virtual void redrawScene() = 0;
 };
 
 #endif /* SCENEVIEWER_HPP_ */

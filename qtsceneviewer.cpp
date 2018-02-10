@@ -16,12 +16,6 @@ QtSceneViewer::~QtSceneViewer()
 }
 
 
-const Scene *QtSceneViewer::scenePtr()
-{
-  return scene_ptr;
-}
-
-
 template <typename T>
 static inline void ignore(const T&) { }
 
@@ -41,13 +35,7 @@ void QtSceneViewer::paintGL()
 }
 
 
-void QtSceneViewer::setScenePtr(Scene *scene_ptr_arg)
-{
-  scene_ptr = scene_ptr_arg;
-}
-
-
-void QtSceneViewer::sceneChanged()
+void QtSceneViewer::redrawScene()
 {
   update();
 }

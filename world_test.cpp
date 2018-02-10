@@ -5,9 +5,7 @@
 
 namespace {
 struct Window : SceneViewer {
-  virtual void sceneChanged()
-  {
-  }
+  void redrawScene() override { }
 };
 }
 
