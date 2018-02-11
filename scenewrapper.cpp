@@ -136,10 +136,21 @@ struct BodyWrapper : VoidWrapper {
 
   virtual void
     visitOperations(
-      const TreePath &,
-      const OperationVisitor &
+      const TreePath &path,
+      const OperationVisitor &visitor
     ) const
   {
+    const NotifyFunction &notify = this->notify;
+    Scene::Body &body = this->body;
+    visitor(
+      "Add Body",
+      [notify,&body,path](TreeOperationHandler &handler){
+	int index = body.nChildren();
+	body.addChild();
+	notify();
+	handler.addItem(join(path,index+1));
+      }
+    );
   }
 
   virtual Diagram *diagramPtr() const { return nullptr; }
@@ -151,7 +162,7 @@ struct BodyWrapper : VoidWrapper {
       return;
     }
 
-    assert(false);
+    visitor(BodyWrapper(body.children[child_index-1],scene,notify));
   }
 
   virtual std::string label() const
@@ -161,7 +172,7 @@ struct BodyWrapper : VoidWrapper {
 
   virtual int nChildren() const
   {
-    return 1;
+    return 1 + body.nChildren();
   }
 };
 }

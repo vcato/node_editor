@@ -2,17 +2,22 @@
 #define SCENE_HPP_
 
 #include <vector>
-#include <set>
 #include "point2d.hpp"
 
 
 class Scene {
   public:
-    struct Body {
-      Point2D position;
-    };
+    struct Body;
 
     using Bodies = std::vector<Body>;
+
+    struct Body {
+      Point2D position;
+      Bodies children;
+
+      void addChild() { children.emplace_back(); }
+      int nChildren() const { return children.size(); }
+    };
 
     Scene() { }
     ~Scene();

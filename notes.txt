@@ -250,19 +250,8 @@ Maybe a good thing to work on is being able to draw a spline.
 We'll need a way to create a window, create a drawing area within the
 window, and then provide a diagram that generates what we will draw.
 ---
-Wrapper needs to handle modifying a numeric item.
-i.e.  Change body.position.x
-
-Instead of having the Scene have an observer, we could have a separate
-ChangedNotifier that can be observed.  We could have the
-SceneWrapper take the ChangedNotifier as a parameter.
-The World::SceneObject can contain the ChangedNotifier.
-The World::MemberVisitor can be passed the SceneObject instead of the 
-Scene.  This will give the ChildWrapperVisitor of the WorldWrapper a
-chance to create a SceneWrapper that is passed the ChangedNotifier.
-
-Need to make QtComboBoxTreeWidgetItem have a std::function that it uses
-for the callback instead of having the signal mapper.
-
-We'll have a QtSpinBoxTreeWidgetItem that works similarly.
-This should make it easier to pass the path.
+Maybe have separate OperationHandler and OperationWithPathHandler.
+The visitOperations() which take an OperationHandler is implemented
+by the derived wrappers, which only has relative operations like
+addChild().  The OperationWithPathVisitor can then turn this into
+a full path.
