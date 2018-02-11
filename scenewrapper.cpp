@@ -8,18 +8,15 @@ using NotifyFunction = std::function<void()>;
 namespace {
 struct FloatWrapper : NumericWrapper {
   const char *label_member;
-  Scene &scene;
   float &value;
   const NotifyFunction &notify;
 
   FloatWrapper(
     const char *label,
     float &value_arg,
-    Scene &scene_arg,
     const NotifyFunction &notify_arg
   )
   : label_member(label),
-    scene(scene_arg),
     value(value_arg),
     notify(notify_arg)
   {
@@ -63,18 +60,15 @@ namespace {
 struct Point2DWrapper : VoidWrapper {
   const char *label_member;
   Point2D &point;
-  Scene &scene;
   const NotifyFunction &notify;
 
   Point2DWrapper(
     const char *label_arg,
     Point2D &point_arg,
-    Scene &scene_arg,
     const NotifyFunction &notify_arg
   )
   : label_member(label_arg),
     point(point_arg),
-    scene(scene_arg),
     notify(notify_arg)
   {
   }
@@ -95,10 +89,10 @@ struct Point2DWrapper : VoidWrapper {
   {
     switch (child_index) {
       case 0:
-        visitor(FloatWrapper("x",point.x,scene,notify));
+        visitor(FloatWrapper("x",point.x,notify));
         return;
       case 1:
-        visitor(FloatWrapper("y",point.y,scene,notify));
+        visitor(FloatWrapper("y",point.y,notify));
         return;
     }
 
@@ -120,16 +114,14 @@ struct Point2DWrapper : VoidWrapper {
 namespace {
 struct BodyWrapper : VoidWrapper {
   Scene::Body &body;
-  Scene &scene;
   const NotifyFunction &notify;
+  static int nBodyAttributes() { return 1; }
 
   BodyWrapper(
     Scene::Body &body_arg,
-    Scene &scene_arg,
     const NotifyFunction &notify_arg
   )
   : body(body_arg),
-    scene(scene_arg),
     notify(notify_arg)
   {
   }
@@ -148,7 +140,7 @@ struct BodyWrapper : VoidWrapper {
 	int index = body.nChildren();
 	body.addChild();
 	notify();
-	handler.addItem(join(path,index+1));
+	handler.addItem(join(path,index+nBodyAttributes()));
       }
     );
   }
@@ -158,11 +150,13 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
-      visitor(Point2DWrapper("position",body.position,scene,notify));
+      visitor(Point2DWrapper("position",body.position,notify));
       return;
     }
 
-    visitor(BodyWrapper(body.children[child_index-1],scene,notify));
+    Scene::Body &child = body.children[child_index-nBodyAttributes()];
+
+    visitor(BodyWrapper(child,notify));
   }
 
   virtual std::string label() const
@@ -172,7 +166,7 @@ struct BodyWrapper : VoidWrapper {
 
   virtual int nChildren() const
   {
-    return 1 + body.nChildren();
+    return nBodyAttributes() + body.nChildren();
   }
 };
 }
@@ -214,5 +208,5 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  visitor(BodyWrapper{scene.bodies()[child_index],scene,notify});
+  visitor(BodyWrapper{scene.bodies()[child_index],notify});
 }
