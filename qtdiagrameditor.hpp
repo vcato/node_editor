@@ -2,7 +2,6 @@
 #define QTDIAGRAMEDITOR_HPP_
 
 #include <cassert>
-#include <GL/glu.h>
 #include <QGLWidget>
 #include <QKeyEvent>
 #include "diagrameditor.hpp"

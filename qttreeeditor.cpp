@@ -1,14 +1,12 @@
 #include "qttreeeditor.hpp"
 
 #include <iostream>
-#include <sstream>
 #include <QMenu>
 #include <QHeaderView>
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
 #include "qtslot.hpp"
 #include "qtspinbox.hpp"
-#include "defaultdiagrams.hpp"
 #include "streamvector.hpp"
 #include "qtcombobox.hpp"
 
@@ -16,8 +14,6 @@
 using std::cerr;
 using std::vector;
 using std::ostream;
-using std::unique_ptr;
-using std::make_unique;
 using std::string;
 using std::function;
 using std::list;

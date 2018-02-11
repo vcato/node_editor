@@ -3,13 +3,9 @@
 
 #include <QLabel>
 #include <QString>
-#include <QSpinBox>
 #include <QTreeWidgetItem>
-#include <QComboBox>
 #include "qtwidget.hpp"
 #include "qtdiagrameditor.hpp"
-#include "qtslot.hpp"
-#include "qtcombobox.hpp"
 #include "wrapper.hpp"
 
 
