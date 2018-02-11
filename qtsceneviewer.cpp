@@ -20,19 +20,17 @@ template <typename T>
 static inline void ignore(const T&) { }
 
 
-void QtSceneViewer::paintGL()
+static void
+  drawBodies(const Scene::Bodies &bodies,const Point2D &parent_global_position)
 {
-  begin2DDrawing(width(),height());
-
-  const Scene *scene_ptr = scenePtr();
-
-  if (!scene_ptr) return;
-
-  for (const Scene::Body &body : scene_ptr->bodies()) {
-    float x1 = body.position.x;
-    float y1 = body.position.y;
-    float x2 = body.position.x + 10;
-    float y2 = body.position.y + 10;
+  for (const Scene::Body &body : bodies) {
+    float gx = parent_global_position.x;
+    float gy = parent_global_position.y;
+    float x1 = gx + body.position.x;
+    float y1 = gy + body.position.y;
+    Point2D global_position(x1,y1);
+    float x2 = x1 + 10;
+    float y2 = y1 + 10;
     Point2D p1(x1,y1);
     Point2D p2(x2,y1);
     Point2D p3(x2,y2);
@@ -42,7 +40,23 @@ void QtSceneViewer::paintGL()
     drawLine(p3,p4);
     drawLine(p4,p1);
     ignore(body);
+    drawBodies(body.children,global_position);
   }
+}
+
+
+void QtSceneViewer::paintGL()
+{
+  begin2DDrawing(width(),height());
+
+  const Scene *scene_ptr = scenePtr();
+
+  if (!scene_ptr) return;
+
+  Point2D parent_global_position(0,0);
+
+  drawBodies(scene_ptr->bodies(),parent_global_position);
+
 }
 
 
