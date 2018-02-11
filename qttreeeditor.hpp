@@ -8,10 +8,9 @@
 #include <QComboBox>
 #include "qtwidget.hpp"
 #include "qtdiagrameditor.hpp"
-#include "qtcomboboxtreewidgetitemsignalmap.hpp"
 #include "qtslot.hpp"
+#include "qtcombobox.hpp"
 #include "wrapper.hpp"
-#include "qtcomboboxtreewidgetitem.hpp"
 
 
 
@@ -26,7 +25,6 @@ class QtTreeEditor : public QTreeWidget {
     void selectItem(const TreePath &path);
 
   private slots:
-    void comboBoxItemCurrentIndexChangedSlot(QtComboBoxTreeWidgetItem *,int);
     void spinBoxValueChangedSlot(int);
     void itemSelectionChangedSlot();
     void prepareMenuSlot(const QPoint &pos);
@@ -35,7 +33,6 @@ class QtTreeEditor : public QTreeWidget {
     struct CreateChildItemVisitor;
     struct OperationHandler;
 
-    bool ignore_combo_box_signals = false;
     Wrapper *world_ptr = 0;
     QtDiagramEditor *diagram_editor_ptr = 0;
 
@@ -67,8 +64,12 @@ class QtTreeEditor : public QTreeWidget {
 
     static void setItemText(QTreeWidgetItem &item,const std::string &label);
 
-    QtComboBoxTreeWidgetItem&
-      createComboBoxItem(QTreeWidgetItem &parent_item,const std::string &label);
+    QTreeWidgetItem&
+      createComboBoxItem(
+        QTreeWidgetItem &parent_item,
+        const std::string &label,
+        const std::vector<std::string> &enumeration_names
+      );
 
     void
       createSpinBoxItem(QTreeWidgetItem &parent_item,const std::string &label);
@@ -80,7 +81,7 @@ class QtTreeEditor : public QTreeWidget {
 
     void
       handleComboBoxItemIndexChanged(
-        QtComboBoxTreeWidgetItem *item_ptr,
+        QTreeWidgetItem *item_ptr,
         int index
       );
 

@@ -21,12 +21,13 @@ run_unit_tests: \
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
-  wrapper.o statementtext.o moc_qtcomboboxtreewidgetitemsignalmap.o \
-  qtcomboboxtreewidgetitemsignalmap.o qtmenu.o \
+  wrapper.o statementtext.o \
+  qtmenu.o \
   moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
-  world.o worldwrapper.o charmapperwrapper.o \
-  scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o
+  world.o worldwrapper.o charmapperwrapper.o qtcombobox.o \
+  scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
+  moc_qtcombobox.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp

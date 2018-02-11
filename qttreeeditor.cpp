@@ -9,6 +9,7 @@
 #include "qtslot.hpp"
 #include "defaultdiagrams.hpp"
 #include "streamvector.hpp"
+#include "qtcombobox.hpp"
 
 
 using std::cerr;
@@ -57,16 +58,7 @@ struct QtTreeEditor::CreateChildItemVisitor : Wrapper::TypeVisitor {
       const std::vector<std::string> &enumeration_names
     ) const override
   {
-    QtComboBoxTreeWidgetItem &global_position_item =
-      tree_editor.createComboBoxItem(parent_item,label);
-    {
-      QComboBox &combo_box = global_position_item.comboBox();
-      tree_editor.ignore_combo_box_signals = true;
-      for (auto &name : enumeration_names) {
-	combo_box.addItem(QString::fromStdString(name));
-      }
-      tree_editor.ignore_combo_box_signals = false;
-    }
+    tree_editor.createComboBoxItem(parent_item,label,enumeration_names);
     created = true;
   }
 };
@@ -110,16 +102,6 @@ QtTreeEditor::QtTreeEditor()
 }
 
 
-void
-  QtTreeEditor::comboBoxItemCurrentIndexChangedSlot(
-    QtComboBoxTreeWidgetItem *item_ptr,
-    int index
-  )
-{
-  handleComboBoxItemIndexChanged(item_ptr,index);
-}
-
-
 void QtTreeEditor::spinBoxValueChangedSlot(int)
 {
   cerr << "spinBoxValueChangedSlot()\n";
@@ -154,28 +136,31 @@ void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
 }
 
 
-QtComboBoxTreeWidgetItem&
+QTreeWidgetItem&
   QtTreeEditor::createComboBoxItem(
     QTreeWidgetItem &parent_item,
-    const std::string &label
+    const std::string &label,
+    const std::vector<std::string> &enumeration_names
   )
 {
-  QtComboBoxTreeWidgetItem *item_ptr = new QtComboBoxTreeWidgetItem;
+  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
   parent_item.addChild(item_ptr);
-  QtComboBoxTreeWidgetItem &item = *item_ptr;
+  QTreeWidgetItem &item = *item_ptr;
   item.setExpanded(true);
-  QComboBox &combo_box = createItemWidget<QComboBox>(item,label);
-  item.combo_box_ptr = &combo_box;
-  item.signal_map.connect(
-    &combo_box,
-    SIGNAL(currentIndexChanged(int)),
-    SLOT(currentIndexChangedSlot(int))
-  );
-  connect(
-    &item.signal_map,
-    SIGNAL(currentIndexChanged(QtComboBoxTreeWidgetItem*,int)),
-    SLOT(comboBoxItemCurrentIndexChangedSlot(QtComboBoxTreeWidgetItem*,int))
-  );
+  QtComboBox &combo_box = createItemWidget<QtComboBox>(item,label);
+  combo_box.current_index_changed_function =
+    [this,&item](int index){
+      handleComboBoxItemIndexChanged(&item,index);
+    };
+  {
+    combo_box.ignore_signals = true;
+
+    for (auto &name : enumeration_names) {
+      combo_box.addItem(QString::fromStdString(name));
+    }
+
+    combo_box.ignore_signals = false;
+  }
   return item;
 }
 
@@ -330,12 +315,10 @@ QTreeWidgetItem* QtTreeEditor::findSelectedItem()
 
 void
   QtTreeEditor::handleComboBoxItemIndexChanged(
-    QtComboBoxTreeWidgetItem *item_ptr,
+    QTreeWidgetItem *item_ptr,
     int index
   )
 {
-  if (ignore_combo_box_signals) return;
-
   assert(item_ptr);
 
   TreePath path = itemPath(*item_ptr);
