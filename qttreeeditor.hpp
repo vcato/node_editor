@@ -25,7 +25,6 @@ class QtTreeEditor : public QTreeWidget {
     void selectItem(const TreePath &path);
 
   private slots:
-    void spinBoxValueChangedSlot(int);
     void itemSelectionChangedSlot();
     void prepareMenuSlot(const QPoint &pos);
 

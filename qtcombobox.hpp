@@ -10,11 +10,16 @@ class QtComboBox : public QComboBox {
 
   public:
     QtComboBox();
-    std::function<void(int)> current_index_changed_function;
-    bool ignore_signals;
 
-  public slots:
+    void addItems(const std::vector<std::string> &enumeration_names);
+
+    std::function<void(int)> current_index_changed_function;
+
+  private slots:
     void currentIndexChangedSlot(int);
+
+  private:
+    bool ignore_signals;
 };
 
 #endif /* QTCOMBOBOX_HPP_ */

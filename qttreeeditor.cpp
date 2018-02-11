@@ -7,6 +7,7 @@
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
 #include "qtslot.hpp"
+#include "qtspinbox.hpp"
 #include "defaultdiagrams.hpp"
 #include "streamvector.hpp"
 #include "qtcombobox.hpp"
@@ -102,12 +103,6 @@ QtTreeEditor::QtTreeEditor()
 }
 
 
-void QtTreeEditor::spinBoxValueChangedSlot(int)
-{
-  cerr << "spinBoxValueChangedSlot()\n";
-}
-
-
 QTreeWidgetItem&
   QtTreeEditor::createChildItem(
     QTreeWidgetItem &parent_item,
@@ -143,24 +138,13 @@ QTreeWidgetItem&
     const std::vector<std::string> &enumeration_names
   )
 {
-  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
-  parent_item.addChild(item_ptr);
-  QTreeWidgetItem &item = *item_ptr;
-  item.setExpanded(true);
+  QTreeWidgetItem &item = createChildItem(parent_item);
   QtComboBox &combo_box = createItemWidget<QtComboBox>(item,label);
   combo_box.current_index_changed_function =
     [this,&item](int index){
       handleComboBoxItemIndexChanged(&item,index);
     };
-  {
-    combo_box.ignore_signals = true;
-
-    for (auto &name : enumeration_names) {
-      combo_box.addItem(QString::fromStdString(name));
-    }
-
-    combo_box.ignore_signals = false;
-  }
+  combo_box.addItems(enumeration_names);
   return item;
 }
 
@@ -173,12 +157,11 @@ void
 {
   QtTreeEditor &tree_widget = *this;
   QTreeWidgetItem &item = createChildItem(parent_item);
-  QSpinBox &spin_box = tree_widget.createItemWidget<QSpinBox>(item,label);
-  connect(
-    &spin_box,
-    SIGNAL(valueChanged(int)),
-    SLOT(spinBoxValueChangedSlot(int))
-  );
+  QtSpinBox &spin_box = tree_widget.createItemWidget<QtSpinBox>(item,label);
+  spin_box.value_changed_function =
+    [this,&item](int value){
+      cerr << "spin box value changed: value=" << value << "\n";
+    };
 }
 
 
