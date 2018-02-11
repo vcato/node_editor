@@ -112,10 +112,45 @@ struct Point2DWrapper : VoidWrapper {
 
 
 namespace {
+struct StringWrapper : VoidWrapper {
+  const char *label_member;
+
+  StringWrapper(const char *label)
+  : label_member(label)
+  {
+  }
+
+  void
+    visitOperations(
+      const TreePath &,
+      const OperationVisitor &
+    ) const override
+  {
+  }
+
+  int nChildren() const override { return 0; }
+
+  void
+    withChildWrapper(
+      int /*child_index*/,
+      const WrapperVisitor &
+    ) const override
+  {
+    assert(false);
+  }
+
+  Diagram *diagramPtr() const override { return nullptr; }
+
+  std::string label() const override { return label_member; }
+};
+}
+
+
+namespace {
 struct BodyWrapper : VoidWrapper {
   Scene::Body &body;
   const NotifyFunction &notify;
-  static int nBodyAttributes() { return 1; }
+  static int nBodyAttributes() { return 2; }
 
   BodyWrapper(
     Scene::Body &body_arg,
@@ -148,6 +183,11 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
+      visitor(StringWrapper{"name"});
+      return;
+    }
+
+    if (child_index==1) {
       visitor(Point2DWrapper("position",body.position,notify));
       return;
     }

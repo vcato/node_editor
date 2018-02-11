@@ -281,3 +281,6 @@ captured.
 
 Need to let bodies and scenes have names, so the body names can be displayed
 in the combo boxes.
+
+Need a way to make paths based on labels instead of indices.
+This will make it easier to have tests like testAddingBodies() be stable.

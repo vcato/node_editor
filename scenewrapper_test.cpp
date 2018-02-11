@@ -44,10 +44,12 @@ static void testHierarchy()
   auto expected_output =
     "Scene\n"
     "  Body\n"
+    "    name\n"
     "    position\n"
     "      x\n"
     "      y\n"
     "    Body\n"
+    "      name\n"
     "      position\n"
     "        x\n"
     "        y\n";
@@ -77,7 +79,9 @@ static Wrapper::PerformOperationFunction
     };
 
   wrapper.visitOperations(path,visitor);
+  assert(add_body_function);
   return add_body_function;
+
 }
 
 
@@ -130,19 +134,21 @@ static void testAddingBodies()
   SceneWrapper wrapper(scene,[](){});
   ostringstream stream;
 
+  int body_index = 2;
   addBodyTo(wrapper,{},stream);
   addBodyTo(wrapper,{0},stream);
-  addBodyTo(wrapper,{0,1},stream);
+  addBodyTo(wrapper,{0,body_index},stream);
 
   assert(scene.nBodies()==1);
   assert(scene.bodies()[0].nChildren()==1);
   assert(scene.bodies()[0].children[0].nChildren()==1);
 
+  string body_index_str = std::to_string(body_index);
   string commands = stream.str();
   string expected_commands =
     "addItem: path=0\n"
-    "addItem: path=0,1\n"
-    "addItem: path=0,1,1\n";
+    "addItem: path=0," + body_index_str + "\n"
+    "addItem: path=0," + body_index_str + "," + body_index_str + "\n";
 
 
   if (commands!=expected_commands) {
