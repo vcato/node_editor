@@ -2,16 +2,26 @@
 
 
 using std::cerr;
+using NotifyFunction = std::function<void()>;
 
 
 namespace {
 struct FloatWrapper : NumericWrapper {
   const char *label_member;
   Scene &scene;
+  float &value;
+  const NotifyFunction &notify;
 
-  FloatWrapper(const char *label,float &,Scene &scene_arg)
+  FloatWrapper(
+    const char *label,
+    float &value_arg,
+    Scene &scene_arg,
+    const NotifyFunction &notify_arg
+  )
   : label_member(label),
-    scene(scene_arg)
+    scene(scene_arg),
+    value(value_arg),
+    notify(notify_arg)
   {
   }
 
@@ -39,6 +49,12 @@ struct FloatWrapper : NumericWrapper {
   {
     return label_member;
   }
+
+  void setValue(int arg) const override
+  {
+    value = arg;
+    notify();
+  }
 };
 }
 
@@ -48,11 +64,18 @@ struct Point2DWrapper : VoidWrapper {
   const char *label_member;
   Point2D &point;
   Scene &scene;
+  const NotifyFunction &notify;
 
-  Point2DWrapper(const char *label_arg,Point2D &point_arg,Scene &scene_arg)
+  Point2DWrapper(
+    const char *label_arg,
+    Point2D &point_arg,
+    Scene &scene_arg,
+    const NotifyFunction &notify_arg
+  )
   : label_member(label_arg),
     point(point_arg),
-    scene(scene_arg)
+    scene(scene_arg),
+    notify(notify_arg)
   {
   }
 
@@ -72,10 +95,10 @@ struct Point2DWrapper : VoidWrapper {
   {
     switch (child_index) {
       case 0:
-        visitor(FloatWrapper("x",point.x,scene));
+        visitor(FloatWrapper("x",point.x,scene,notify));
         return;
       case 1:
-        visitor(FloatWrapper("y",point.y,scene));
+        visitor(FloatWrapper("y",point.y,scene,notify));
         return;
     }
 
@@ -98,10 +121,16 @@ namespace {
 struct BodyWrapper : VoidWrapper {
   Scene::Body &body;
   Scene &scene;
+  const NotifyFunction &notify;
 
-  BodyWrapper(Scene::Body &body_arg,Scene &scene_arg)
+  BodyWrapper(
+    Scene::Body &body_arg,
+    Scene &scene_arg,
+    const NotifyFunction &notify_arg
+  )
   : body(body_arg),
-    scene(scene_arg)
+    scene(scene_arg),
+    notify(notify_arg)
   {
   }
 
@@ -118,7 +147,7 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
-      visitor(Point2DWrapper("position",body.position,scene));
+      visitor(Point2DWrapper("position",body.position,scene,notify));
       return;
     }
 
@@ -140,7 +169,7 @@ struct BodyWrapper : VoidWrapper {
 
 SceneWrapper::SceneWrapper(
   Scene &scene_arg,
-  std::function<void()> notify_arg
+  NotifyFunction notify_arg
 )
 : scene(scene_arg),
   notify(notify_arg)
@@ -155,7 +184,7 @@ void
   ) const
 {
   Scene &scene = this->scene;
-  const std::function<void()> &notify = this->notify;
+  const NotifyFunction &notify = this->notify;
   visitor(
     "Add Body",
     [path,&scene,notify](TreeOperationHandler &handler){
@@ -174,5 +203,5 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  visitor(BodyWrapper{scene.bodies()[child_index],scene});
+  visitor(BodyWrapper{scene.bodies()[child_index],scene,notify});
 }

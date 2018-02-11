@@ -4,7 +4,7 @@
 #include "wrapper.hpp"
 #include "world.hpp"
 
-struct WorldWrapper : SimpleWrapper
+struct WorldWrapper : VoidWrapper
 {
   World &world;
 

@@ -160,7 +160,7 @@ void
   QtSpinBox &spin_box = tree_widget.createItemWidget<QtSpinBox>(item,label);
   spin_box.value_changed_function =
     [this,&item](int value){
-      cerr << "spin box value changed: value=" << value << "\n";
+      handleSpinBoxItemValueChanged(&item,value);
     };
 }
 
@@ -308,6 +308,22 @@ void
   OperationHandler operation_handler(*this);
 
   world().comboBoxItemIndexChanged(path,index,operation_handler);
+}
+
+
+void
+  QtTreeEditor::handleSpinBoxItemValueChanged(
+    QTreeWidgetItem *item_ptr,
+    int value
+  )
+{
+  assert(item_ptr);
+
+  TreePath path = itemPath(*item_ptr);
+
+  world().visitWrapper(path,[&](const Wrapper &wrapper){
+    wrapper.setValue(value);
+  });
 }
 
 

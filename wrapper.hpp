@@ -133,6 +133,8 @@ struct Wrapper {
       OperationHandler &operation_handler
     ) const = 0;
 
+  virtual void setValue(int) const = 0;
+
   void
     comboBoxItemIndexChanged(
       const Path &path,
@@ -170,6 +172,11 @@ struct VoidWrapper : Wrapper {
   {
     visitor.voidItem();
   }
+
+  void setValue(int) const override
+  {
+    assert(false);
+  }
 };
 
 
@@ -192,6 +199,10 @@ struct NumericWrapper : Wrapper {
 
 
 struct EnumerationWrapper : Wrapper {
+  void setValue(int) const override
+  {
+    assert(false);
+  }
 };
 
 

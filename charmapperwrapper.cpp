@@ -58,6 +58,10 @@ struct MotionPassWrapper : VoidWrapper {
     {
       return 0;
     }
+
+    virtual void setValue(int) const
+    {
+    }
   };
 
   struct PositionWrapper : VoidWrapper {
@@ -110,7 +114,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct FromBodyGlobalPositionWrapper : SimpleWrapper {
+  struct FromBodyGlobalPositionWrapper : VoidWrapper {
     FromBodyGlobalPositionData &from_body_global_position;
 
     FromBodyGlobalPositionWrapper(FromBodyGlobalPositionData &arg)
@@ -357,6 +361,11 @@ struct MotionPassWrapper : VoidWrapper {
     virtual int nChildren() const
     {
       return 0;
+    }
+
+    virtual void setValue(int) const
+    {
+      assert(false);
     }
   };
 

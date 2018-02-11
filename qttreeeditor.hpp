@@ -84,6 +84,12 @@ class QtTreeEditor : public QTreeWidget {
         int index
       );
 
+    void
+      handleSpinBoxItemValueChanged(
+        QTreeWidgetItem *item_ptr,
+        int value
+      );
+
     void removeChildItems(const TreePath &path);
 
     void replaceTreeItems(const TreePath &parent_path);
