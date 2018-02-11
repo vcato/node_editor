@@ -120,6 +120,12 @@ void
 }
 
 
+void QtTreeEditor::spinBoxValueChangedSlot(int)
+{
+  cerr << "spinBoxValueChangedSlot()\n";
+}
+
+
 QTreeWidgetItem&
   QtTreeEditor::createChildItem(
     QTreeWidgetItem &parent_item,
@@ -182,7 +188,12 @@ void
 {
   QtTreeEditor &tree_widget = *this;
   QTreeWidgetItem &item = createChildItem(parent_item);
-  tree_widget.createItemWidget<QSpinBox>(item,label);
+  QSpinBox &spin_box = tree_widget.createItemWidget<QSpinBox>(item,label);
+  connect(
+    &spin_box,
+    SIGNAL(valueChanged(int)),
+    SLOT(spinBoxValueChangedSlot(int))
+  );
 }
 
 

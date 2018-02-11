@@ -9,7 +9,10 @@ class QtSlot : public QObject {
   Q_OBJECT
 
   public:
-    QtSlot(std::function<void()> function_arg);
+    QtSlot(std::function<void()> function_arg)
+    : slot_function(function_arg)
+    {
+    }
 
     void connectSignal(QObject &object,const char *signal)
     {
@@ -22,5 +25,6 @@ class QtSlot : public QObject {
   private:
     std::function<void()> slot_function;
 };
+
 
 #endif /* QTSLOT_HPP_ */

@@ -11,24 +11,8 @@
 #include "qtcomboboxtreewidgetitemsignalmap.hpp"
 #include "qtslot.hpp"
 #include "wrapper.hpp"
+#include "qtcomboboxtreewidgetitem.hpp"
 
-
-struct QtComboBoxTreeWidgetItem : QTreeWidgetItem {
-  QtComboBoxTreeWidgetItem()
-  : combo_box_ptr(0),
-    signal_map(*this)
-  {
-  }
-
-  QComboBox &comboBox()
-  {
-    assert(combo_box_ptr);
-    return *combo_box_ptr;
-  }
-
-  QComboBox *combo_box_ptr;
-  QtComboBoxTreeWidgetItemSignalMap signal_map;
-};
 
 
 class QtTreeEditor : public QTreeWidget {
@@ -43,6 +27,7 @@ class QtTreeEditor : public QTreeWidget {
 
   private slots:
     void comboBoxItemCurrentIndexChangedSlot(QtComboBoxTreeWidgetItem *,int);
+    void spinBoxValueChangedSlot(int);
     void itemSelectionChangedSlot();
     void prepareMenuSlot(const QPoint &pos);
 

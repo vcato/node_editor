@@ -260,3 +260,9 @@ The World::SceneObject can contain the ChangedNotifier.
 The World::MemberVisitor can be passed the SceneObject instead of the 
 Scene.  This will give the ChildWrapperVisitor of the WorldWrapper a
 chance to create a SceneWrapper that is passed the ChangedNotifier.
+
+Need to make QtComboBoxTreeWidgetItem have a std::function that it uses
+for the callback instead of having the signal mapper.
+
+We'll have a QtSpinBoxTreeWidgetItem that works similarly.
+This should make it easier to pass the path.
