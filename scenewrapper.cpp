@@ -112,10 +112,10 @@ struct Point2DWrapper : VoidWrapper {
 
 
 namespace {
-struct StringWrapper : VoidWrapper {
+struct NameWrapper : StringWrapper {
   const char *label_member;
 
-  StringWrapper(const char *label)
+  NameWrapper(const char *label)
   : label_member(label)
   {
   }
@@ -148,15 +148,18 @@ struct StringWrapper : VoidWrapper {
 
 namespace {
 struct BodyWrapper : VoidWrapper {
+  Scene &scene;
   Scene::Body &body;
   const NotifyFunction &notify;
   static int nBodyAttributes() { return 2; }
 
   BodyWrapper(
+    Scene &scene_arg,
     Scene::Body &body_arg,
     const NotifyFunction &notify_arg
   )
-  : body(body_arg),
+  : scene(scene_arg),
+    body(body_arg),
     notify(notify_arg)
   {
   }
@@ -169,9 +172,11 @@ struct BodyWrapper : VoidWrapper {
   {
     visitor(
       "Add Body",
-      [notify=notify,&body=body,path](TreeOperationHandler &handler){
+      [notify=notify,&body=body,&scene=scene,path](
+        TreeOperationHandler &handler
+      ){
 	int index = body.nChildren();
-	body.addChild();
+	scene.addChildBodyTo(body);
 	notify();
 	handler.addItem(join(path,index+nBodyAttributes()));
       }
@@ -183,7 +188,7 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
-      visitor(StringWrapper{"name"});
+      visitor(NameWrapper{"name"});
       return;
     }
 
@@ -194,7 +199,7 @@ struct BodyWrapper : VoidWrapper {
 
     Scene::Body &child = body.children[child_index-nBodyAttributes()];
 
-    visitor(BodyWrapper(child,notify));
+    visitor(BodyWrapper(scene,child,notify));
   }
 
   virtual std::string label() const
@@ -244,5 +249,5 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  visitor(BodyWrapper{scene.bodies()[child_index],notify});
+  visitor(BodyWrapper{scene,scene.bodies()[child_index],notify});
 }

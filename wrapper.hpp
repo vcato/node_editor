@@ -49,6 +49,8 @@ struct Wrapper {
       enumeratedItem(
         const std::vector<std::string> &enumeration_names
       ) const = 0;
+
+    virtual void stringItem() const = 0;
   };
 
   virtual void
@@ -194,6 +196,29 @@ struct NumericWrapper : Wrapper {
   virtual void visitType(const TypeVisitor &visitor) const
   {
     visitor.numericItem();
+  }
+};
+
+
+struct StringWrapper : Wrapper {
+  void
+    comboBoxItemIndexChanged(
+      const TreePath &,
+      int /*index*/,
+      OperationHandler &
+    ) const override
+  {
+    assert(false);
+  }
+
+  void setValue(int) const override
+  {
+    assert(false);
+  }
+
+  virtual void visitType(const TypeVisitor &visitor) const
+  {
+    visitor.stringItem();
   }
 };
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QMenu>
 #include <QHeaderView>
+#include <QLineEdit>
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
 #include "qtslot.hpp"
@@ -56,6 +57,12 @@ struct QtTreeEditor::CreateChildItemVisitor : Wrapper::TypeVisitor {
     ) const override
   {
     tree_editor.createComboBoxItem(parent_item,label,enumeration_names);
+    created = true;
+  }
+
+  void stringItem() const override
+  {
+    tree_editor.createLineEditItem(parent_item,label);
     created = true;
   }
 };
@@ -142,6 +149,17 @@ QTreeWidgetItem&
     };
   combo_box.addItems(enumeration_names);
   return item;
+}
+
+
+void
+  QtTreeEditor::createLineEditItem(
+    QTreeWidgetItem &parent_item,
+    const std::string &label
+  )
+{
+  QTreeWidgetItem &item = createChildItem(parent_item);
+  createItemWidget<QLineEdit>(item,label);
 }
 
 

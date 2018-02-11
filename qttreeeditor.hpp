@@ -66,6 +66,8 @@ class QtTreeEditor : public QTreeWidget {
         const std::vector<std::string> &enumeration_names
       );
 
+    void createLineEditItem(QTreeWidgetItem &,const std::string &/*label*/);
+
     void
       createSpinBoxItem(QTreeWidgetItem &parent_item,const std::string &label);
 
