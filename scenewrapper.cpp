@@ -132,11 +132,9 @@ struct BodyWrapper : VoidWrapper {
       const OperationVisitor &visitor
     ) const
   {
-    const NotifyFunction &notify = this->notify;
-    Scene::Body &body = this->body;
     visitor(
       "Add Body",
-      [notify,&body,path](TreeOperationHandler &handler){
+      [notify=notify,&body=body,path](TreeOperationHandler &handler){
 	int index = body.nChildren();
 	body.addChild();
 	notify();
@@ -188,11 +186,9 @@ void
     const OperationVisitor &visitor
   ) const
 {
-  Scene &scene = this->scene;
-  const NotifyFunction &notify = this->notify;
   visitor(
     "Add Body",
-    [path,&scene,notify](TreeOperationHandler &handler){
+    [path,&scene=scene,notify=notify](TreeOperationHandler &handler){
       int index = scene.nBodies();
       scene.addBody();
       notify();

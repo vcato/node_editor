@@ -269,5 +269,15 @@ charmapper_wrapper.notifySceneChanged(charmapper_path,operation_handler);
 The charmapper_path is passed so that it send the proper paths to
 operation_handler.
 
+It might make more sense for a wrapper operation to be passed the wrapper.
+You visit the operations on a wrapper which produces functions.  Each
+of the function require a wrapper to operate on.  This may make the usage
+less error prone.  Right now, you have to be careful to capture what
+you need from the wrapper by value, since the wrapper itself won't be
+the same when the function is executed.  By passing the wrapper as
+a parameter explicitly, that makes it more obvious.  Likewise, the path
+could be passed to the operation function, so it doesn't need to be
+captured.
+
 Need to let bodies and scenes have names, so the body names can be displayed
 in the combo boxes.
