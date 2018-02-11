@@ -255,3 +255,19 @@ The visitOperations() which take an OperationHandler is implemented
 by the derived wrappers, which only has relative operations like
 addChild().  The OperationWithPathVisitor can then turn this into
 a full path.
+
+Work towards being able to have the list of target bodies in charmapper
+automatically updated as bodies are added to the scene.
+
+If the notify function is called while visiting a SceneWrapper, then
+the WorldWrapper can tell the charmappers to update their target
+bodies.  An operation handler would be involved so that the tree
+editor could be updated.
+
+charmapper_wrapper.notifySceneChanged(charmapper_path,operation_handler);
+
+The charmapper_path is passed so that it send the proper paths to
+operation_handler.
+
+Need to let bodies and scenes have names, so the body names can be displayed
+in the combo boxes.
