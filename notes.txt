@@ -289,3 +289,9 @@ Bodies now have name attributes, but they don't do anything.
 When adding a body to a scene (or another body), the body should automatically
 get a name.  It could be the responsibility of the Scene or the responsibilty
 of the SceneWrapper to determine this default name.
+
+The typeVisitor() doesn't currently get the value, but maybe it should.
+Or we can have a separate value visitor.
+
+It might be good to have a visitor that gives us the derived wrapper of
+the appropriate type.  We can then ask it for information more easily.

@@ -232,19 +232,6 @@ struct EnumerationWrapper : Wrapper {
 
 
 
-struct SimpleWrapper : Wrapper {
-  virtual void
-    comboBoxItemIndexChanged(
-      const TreePath &/*path*/,
-      int /*index*/,
-      OperationHandler &/*operation_handler*/
-    ) const
-  {
-    assert(false);
-  }
-};
-
-
 using TreeOperationHandler = Wrapper::OperationHandler;
 
 
