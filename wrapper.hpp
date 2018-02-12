@@ -1,5 +1,5 @@
-#ifndef TREE_HPP_
-#define TREE_HPP_
+#ifndef WRAPPER_HPP_
+#define WRAPPER_HPP_
 
 #include <string>
 
@@ -49,19 +49,6 @@ struct Wrapper {
     virtual void operator()(const NumericWrapper &) const = 0;
     virtual void operator()(const EnumerationWrapper &) const = 0;
     virtual void operator()(const StringWrapper &) const = 0;
-  };
-
-  struct TypeVisitor {
-    virtual void voidItem() const = 0;
-
-    virtual void numericItem() const = 0;
-
-    virtual void
-      enumeratedItem(
-        const std::vector<std::string> &enumeration_names
-      ) const = 0;
-
-    virtual void stringItem() const = 0;
   };
 
   virtual void
@@ -165,7 +152,6 @@ struct Wrapper {
 
 
   virtual void accept(const Visitor &) const = 0;
-  virtual void visitType(const TypeVisitor &) const = 0;
 
   virtual std::string label() const = 0;
 };
@@ -180,11 +166,6 @@ struct VoidWrapper : Wrapper {
     ) const override
   {
     assert(false);
-  }
-
-  void visitType(const TypeVisitor &visitor) const override
-  {
-    visitor.voidItem();
   }
 
   void setValue(int) const override
@@ -210,11 +191,6 @@ struct NumericWrapper : Wrapper {
     assert(false);
   }
 
-  virtual void visitType(const TypeVisitor &visitor) const
-  {
-    visitor.numericItem();
-  }
-
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
@@ -238,11 +214,6 @@ struct StringWrapper : Wrapper {
     assert(false);
   }
 
-  virtual void visitType(const TypeVisitor &visitor) const
-  {
-    visitor.stringItem();
-  }
-
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
@@ -262,13 +233,7 @@ struct EnumerationWrapper : Wrapper {
   }
 
   virtual std::vector<std::string> enumerationNames() const = 0;
-
-  void visitType(const TypeVisitor &visitor) const override
-  {
-    visitor.enumeratedItem(enumerationNames());
-  }
 };
-
 
 
 using TreeOperationHandler = Wrapper::OperationHandler;
@@ -280,4 +245,4 @@ inline TreePath join(TreePath path,TreeItemIndex child_index)
   return path;
 }
 
-#endif /* TREE_HPP_ */
+#endif /* WRAPPER_HPP_ */

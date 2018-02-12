@@ -152,11 +152,6 @@ struct MotionPassWrapper : VoidWrapper {
       assert(false);
     }
 
-    virtual void visitType(const TypeVisitor &) const
-    {
-      assert(false);
-    }
-
     virtual std::string label() const
     {
       assert(false);

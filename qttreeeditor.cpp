@@ -20,49 +20,45 @@ using std::function;
 using std::list;
 
 
-struct QtTreeEditor::CreateChildItemVisitor : Wrapper::TypeVisitor {
+struct QtTreeEditor::CreateChildItemVisitor : Wrapper::Visitor {
   QtTreeEditor &tree_editor;
   QTreeWidgetItem &parent_item;
-  const std::string &label;
   bool &created;
 
   CreateChildItemVisitor(
     QtTreeEditor &tree_editor_arg,
     QTreeWidgetItem &parent_item_arg,
-    const std::string &label_arg,
     bool &created_arg
   )
   : tree_editor(tree_editor_arg),
     parent_item(parent_item_arg),
-    label(label_arg),
     created(created_arg)
   {
   }
 
-  void voidItem() const override
+  void operator()(const VoidWrapper &wrapper) const override
   {
-    tree_editor.createChildItem(parent_item,label);
+    tree_editor.createChildItem(parent_item,wrapper.label());
     created = true;
   }
 
-  void numericItem() const override
+  void operator()(const NumericWrapper &wrapper) const override
   {
-    tree_editor.createSpinBoxItem(parent_item,label);
+    tree_editor.createSpinBoxItem(parent_item,wrapper.label());
     created = true;
   }
 
-  void
-    enumeratedItem(
-      const std::vector<std::string> &enumeration_names
-    ) const override
+  void operator()(const EnumerationWrapper &wrapper) const override
   {
-    tree_editor.createComboBoxItem(parent_item,label,enumeration_names);
+    tree_editor.createComboBoxItem(
+      parent_item,wrapper.label(),wrapper.enumerationNames()
+    );
     created = true;
   }
 
-  void stringItem() const override
+  void operator()(const StringWrapper &wrapper) const override
   {
-    tree_editor.createLineEditItem(parent_item,label);
+    tree_editor.createLineEditItem(parent_item,wrapper.label());
     created = true;
   }
 };
@@ -231,11 +227,10 @@ void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
   world().visitWrapper(
     new_item_path,
     [&](const Wrapper &w){
-      const std::string &label = w.label();
       CreateChildItemVisitor
-	create_child_item_visitor(*this,parent_item,label,created);
+	create_child_item_visitor(*this,parent_item,created);
 
-      w.visitType(create_child_item_visitor);
+      w.accept(create_child_item_visitor);
     }
   );
 

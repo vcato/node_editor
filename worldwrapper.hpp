@@ -23,11 +23,6 @@ struct WorldWrapper : VoidWrapper
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
-  virtual void visitType(const TypeVisitor &) const
-  {
-    assert(false);
-  }
-
   virtual std::string label() const
   {
     assert(false);
