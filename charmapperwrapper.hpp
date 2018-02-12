@@ -3,10 +3,16 @@
 
 
 struct CharmapperWrapper : VoidWrapper {
-  Charmapper &charmapper;
+  struct SceneList {
+    virtual std::vector<std::string> allBodyNames() const = 0;
+  };
 
-  CharmapperWrapper(Charmapper &charmapper_arg)
-  : charmapper(charmapper_arg)
+  Charmapper &charmapper;
+  const SceneList &scene_list;
+
+  CharmapperWrapper(Charmapper &charmapper_arg,const SceneList &scene_list_arg)
+  : charmapper(charmapper_arg),
+    scene_list(scene_list_arg)
   {
   }
 

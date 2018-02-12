@@ -14,9 +14,11 @@ class World {
     ~World();
 
     struct MemberVisitor;
+    struct ConstMemberVisitor;
 
     struct Member {
       virtual void accept(MemberVisitor &) = 0;
+      virtual void acceptConst(ConstMemberVisitor &) const = 0;
       virtual ~Member() {}
     };
 
@@ -24,6 +26,11 @@ class World {
       Charmapper charmapper;
 
       virtual void accept(MemberVisitor &visitor)
+      {
+        visitor.visitCharmapper(*this);
+      }
+
+      virtual void acceptConst(ConstMemberVisitor &visitor) const
       {
         visitor.visitCharmapper(*this);
       }
@@ -37,6 +44,11 @@ class World {
       {
         visitor.visitScene(*this);
       }
+
+      virtual void acceptConst(ConstMemberVisitor &visitor) const
+      {
+        visitor.visitScene(*this);
+      }
     };
 
     struct MemberVisitor {
@@ -44,9 +56,15 @@ class World {
       virtual void visitScene(SceneMember &) = 0;
     };
 
+    struct ConstMemberVisitor {
+      virtual void visitCharmapper(const CharmapperMember &) = 0;
+      virtual void visitScene(const SceneMember &) = 0;
+    };
+
     Charmapper& addCharmapper();
     void addScene();
     void visitMember(int child_index,MemberVisitor &);
+    void visitMember(int child_index,ConstMemberVisitor &) const;
     int nMembers() const { return world_members.size(); }
 
   private:
