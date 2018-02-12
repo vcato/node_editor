@@ -11,10 +11,10 @@ struct CharmapperWrapper : VoidWrapper {
   }
 
   void
-    visitOperations(
+    withOperations(
       const TreePath &path,
       const OperationVisitor &visitor
-    ) const;
+    ) const override;
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 
@@ -29,4 +29,10 @@ struct CharmapperWrapper : VoidWrapper {
   {
     return charmapper.passes.size();
   }
+
+  void
+    handleSceneChange(
+      const OperationHandler &,
+      const TreePath &charmapper_path
+    );
 };

@@ -16,9 +16,12 @@ World::~World()
 }
 
 
-void World::addCharmapper()
+Charmapper &World::addCharmapper()
 {
-  world_members.push_back(make_unique<CharmapperMember>());
+  auto charmapper_member_ptr = make_unique<CharmapperMember>();
+  Charmapper &charmapper = charmapper_member_ptr->charmapper;
+  world_members.push_back(std::move(charmapper_member_ptr));
+  return charmapper;
 }
 
 

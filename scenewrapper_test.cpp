@@ -2,7 +2,7 @@
 
 #include <sstream>
 #include "streamvector.hpp"
-
+#include "wrapperutil.hpp"
 
 using std::ostringstream;
 using std::ostream;
@@ -32,7 +32,7 @@ static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
 static void testHierarchy()
 {
   Scene scene;
-  auto notify = [](){ assert(false); };
+  auto notify = [](const Wrapper::OperationHandler &){ assert(false); };
   scene.addBody();
   scene.bodies()[0].position.x = 1;
   scene.bodies()[0].addChild();
@@ -63,30 +63,8 @@ static void testHierarchy()
 }
 
 
-static Wrapper::PerformOperationFunction
-  findAddBodyFunction(const Wrapper &wrapper,const TreePath &path)
-{
-  Wrapper::PerformOperationFunction add_body_function;
-
-  Wrapper::OperationVisitor visitor =
-    [&](
-      const Wrapper::OperationName &operation_name,
-      Wrapper::PerformOperationFunction perform_operation_function
-    ) {
-      if (operation_name=="Add Body") {
-      	add_body_function = perform_operation_function;
-      }
-    };
-
-  wrapper.visitOperations(path,visitor);
-  assert(add_body_function);
-  return add_body_function;
-
-}
-
-
 static void
-  addBody(const Wrapper &wrapper,const TreePath &path,ostream &stream)
+  addBody2(const Wrapper &wrapper,const TreePath &path,ostream &stream)
 {
   struct OperationHandler : Wrapper::OperationHandler {
     ostream &stream;
@@ -102,6 +80,11 @@ static void
     }
 
     virtual void replaceTreeItems(const TreePath &)
+    {
+      assert(false);
+    }
+
+    virtual void changeEnumerationValues(const TreePath &) const
     {
       assert(false);
     }
@@ -122,7 +105,7 @@ static void
   wrapper.visitWrapper(
     path,
     [&](const Wrapper &body_wrapper){
-      addBody(body_wrapper,path,stream);
+      addBody2(body_wrapper,path,stream);
     }
   );
 }
@@ -131,7 +114,7 @@ static void
 static void testAddingBodies()
 {
   Scene scene;
-  SceneWrapper wrapper(scene,[](){});
+  SceneWrapper wrapper(scene,[](const Wrapper::OperationHandler &){});
   ostringstream stream;
 
   int body_index = 2;

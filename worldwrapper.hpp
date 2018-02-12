@@ -10,11 +10,11 @@ struct WorldWrapper : VoidWrapper
 
   WorldWrapper(World &world_arg) : world(world_arg) { }
 
-  virtual void
-    visitOperations(
+  void
+    withOperations(
       const TreePath &path,
       const OperationVisitor &visitor
-    ) const;
+    ) const override;
 
   void
     withChildWrapper(

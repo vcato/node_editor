@@ -44,7 +44,7 @@ class World {
       virtual void visitScene(SceneMember &) = 0;
     };
 
-    void addCharmapper();
+    Charmapper& addCharmapper();
     void addScene();
     void visitMember(int child_index,MemberVisitor &);
     int nMembers() const { return world_members.size(); }

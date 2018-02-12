@@ -31,11 +31,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    virtual void
-      visitOperations(
+    void
+      withOperations(
         const TreePath &,
         const OperationVisitor &
-      ) const
+      ) const override
     {
     }
 
@@ -74,11 +74,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    virtual void
-      visitOperations(
+    void
+      withOperations(
         const TreePath &path,
         const OperationVisitor &
-      ) const
+      ) const override
     {
       cerr << "PositionWrapper::visitOperations: path=" << path << "\n";
     }
@@ -138,11 +138,11 @@ struct MotionPassWrapper : VoidWrapper {
       }
     }
 
-    virtual void
-      visitOperations(
+    void
+      withOperations(
         const TreePath &,
         const OperationVisitor &
-      ) const
+      ) const override
     {
       assert(false);
     }
@@ -216,11 +216,11 @@ struct MotionPassWrapper : VoidWrapper {
       return n_children;
     }
 
-    virtual void
-      visitOperations(
+    void
+      withOperations(
         const TreePath &,
         const OperationVisitor &
-      ) const
+      ) const override
     {
     }
 
@@ -269,11 +269,11 @@ struct MotionPassWrapper : VoidWrapper {
   };
 
   struct TargetBodyWrapper : EnumerationWrapper {
-    virtual void
-      visitOperations(
+    void
+      withOperations(
         const TreePath &,
         const OperationVisitor &
-      ) const
+      ) const override
     {
     }
 
@@ -310,14 +310,23 @@ struct MotionPassWrapper : VoidWrapper {
     {
       return 0;
     }
+
+    void
+      handleSceneChange(
+        const Wrapper::OperationHandler &operation_handler,
+        const TreePath &path_of_this
+      ) const
+    {
+      operation_handler.changeEnumerationValues(path_of_this);
+    }
   };
 
   struct SourceBodyWrapper : EnumerationWrapper {
-    virtual void
-      visitOperations(
+    void
+      withOperations(
         const TreePath &,
         const OperationVisitor &
-      ) const
+      ) const override
     {
     }
 
@@ -370,11 +379,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    virtual void
-      visitOperations(
+    void
+      withOperations(
         const TreePath &,
         const OperationVisitor &
-      ) const
+      ) const override
     {
     }
 
@@ -416,14 +425,17 @@ struct MotionPassWrapper : VoidWrapper {
   {
   }
 
-  virtual void
-    visitOperations(const TreePath &path,const OperationVisitor &visitor) const
+  void
+    withOperations(
+      const TreePath &path,
+      const OperationVisitor &visitor
+    ) const override
   {
     Charmapper::MotionPass &motion_pass = this->motion_pass;
     visitor(
       "Add Pos Expr",
       [path,&motion_pass](TreeOperationHandler &handler){
-	int index = motion_pass.nExprs();
+        int index = motion_pass.nExprs();
         motion_pass.addPosExpr();
         handler.addItem(join(path,index));
       }
@@ -452,7 +464,7 @@ struct MotionPassWrapper : VoidWrapper {
 
 
 void
-  CharmapperWrapper::visitOperations(
+  CharmapperWrapper::withOperations(
     const TreePath &path,
     const OperationVisitor &visitor
   ) const
@@ -478,4 +490,50 @@ void
 
   MotionPassWrapper child_wrapper{*charmapper.passes[child_index]};
   visitor(child_wrapper);
+}
+
+
+static void
+  forEachSubWrapper(
+    const Wrapper &wrapper,
+    const TreePath &path_of_wrapper,
+    const std::function<void(const Wrapper &,const TreePath &)> &f
+  )
+{
+  f(wrapper,path_of_wrapper);
+  int n_children = wrapper.nChildren();
+
+  for (int i=0; i!=n_children; ++i) {
+    wrapper.withChildWrapper(
+      i,[&](const Wrapper &child_wrapper){
+        forEachSubWrapper(child_wrapper,join(path_of_wrapper,i),f);
+      }
+    );
+  }
+}
+
+
+void
+  CharmapperWrapper::handleSceneChange(
+    const OperationHandler &operation_handler,
+    const TreePath &path_of_this
+  )
+{
+  forEachSubWrapper(
+    *this,
+    path_of_this,
+    [&](const Wrapper &sub_wrapper,const TreePath &path_of_sub_wrapper)
+    {
+      typedef MotionPassWrapper::TargetBodyWrapper BodyWrapper;
+
+      const BodyWrapper *body_wrapper_ptr =
+        dynamic_cast<const BodyWrapper*>(&sub_wrapper);
+
+      if (body_wrapper_ptr) {
+        body_wrapper_ptr->handleSceneChange(
+          operation_handler,path_of_sub_wrapper
+        );
+      }
+    }
+  );
 }

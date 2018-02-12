@@ -96,6 +96,7 @@ class QtTreeEditor : public QTreeWidget {
     void removeChildItems(const TreePath &path);
 
     void replaceTreeItems(const TreePath &parent_path);
+    void changeEnumerationValues(const TreePath &);
 };
 
 #endif /* QTTREEEDITOR_HPP_ */

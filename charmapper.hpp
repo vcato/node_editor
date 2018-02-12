@@ -112,7 +112,7 @@ struct Charmapper {
   std::vector<std::unique_ptr<MotionPass>> passes;
 
   int nPasses() const { return passes.size(); }
-  void addMotionPass();
+  MotionPass& addMotionPass();
 };
 
 #endif /* CHARMAPPER_HPP_ */

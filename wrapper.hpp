@@ -36,6 +36,7 @@ struct Wrapper {
   struct OperationHandler {
     virtual void addItem(const Path &) = 0;
     virtual void replaceTreeItems(const Path &path) = 0;
+    virtual void changeEnumerationValues(const Path &path) const = 0;
   };
 
   using PerformOperationFunction =
@@ -52,17 +53,17 @@ struct Wrapper {
   };
 
   virtual void
-    visitOperations(
+    withOperations(
       const TreePath &,
       const OperationVisitor &
     ) const = 0;
 
-  void visitOperations(const Path &path,const OperationVisitor &visitor)
+  void visitOperations(const Path &path,const OperationVisitor &visitor) const
   {
     visitWrapper(
       path,
       [&](const Wrapper &wrapper){
-	wrapper.visitOperations(path,visitor);
+	wrapper.withOperations(path,visitor);
       }
     );
   }

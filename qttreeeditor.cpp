@@ -83,6 +83,11 @@ struct QtTreeEditor::OperationHandler : TreeOperationHandler {
   {
     tree_editor.replaceTreeItems(path);
   }
+
+  virtual void changeEnumerationValues(const TreePath &path) const
+  {
+    tree_editor.changeEnumerationValues(path);
+  }
 };
 
 
@@ -294,6 +299,12 @@ void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
   addTreeItems(parent_path);
   diagramEditor().setDiagramPtr(maybeSelectedDiagram());
   diagramEditor().redraw();
+}
+
+
+void QtTreeEditor::changeEnumerationValues(const TreePath &path)
+{
+  cerr << "QtTreeEditor::changeEnumerationValues: path=" << path << "\n";
 }
 
 

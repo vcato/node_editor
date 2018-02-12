@@ -285,12 +285,28 @@ in the combo boxes.
 Need a way to make paths based on labels instead of indices.
 This will make it easier to have tests like testAddingBodies() be stable.
 
-Bodies now have name attributes, but they don't do anything.
-When adding a body to a scene (or another body), the body should automatically
-get a name.  It could be the responsibility of the Scene or the responsibilty
-of the SceneWrapper to determine this default name.
+We may end up wanting to create handles for items in the tree of a specific
+type, so that when we visit the wrapper, we automatically get the wrapper
+of the appropriate type.  Not clear if it is worth it yet.
 
 It would be convenient if we had Wrapper::accept methods which took
 functions for specific types of wrappers.  It would call the function
 if the wrapper had the appropriate type, and assert otherwise.
 
+Bodies now have name attributes, but they don't do anything.
+When adding a body to a scene (or another body), the body should automatically
+get a name.  It could be the responsibility of the Scene or the responsibilty
+of the SceneWrapper to determine this default name.
+
+Need to make a better distintion between Wrapper::visitOperations which
+finds the sub-wrapper and the one that doesn't.
+
+I think we need to separate visiting operations from executing operations.
+We should have a way to visit operations which tells us the operation name
+and gives us a handle for the operation, then we have a separate
+execute operation method where we give it the handle.  This helps prevent
+mistakes where the functions aren't capturing enough information and
+it also lets us get a list of operations for a wrapper without having
+to pass it a path.
+
+Need to allow the World::MemberVisitor be const when passed to visitMember().

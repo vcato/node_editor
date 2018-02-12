@@ -3,19 +3,19 @@
 
 
 struct SceneWrapper : VoidWrapper {
+  using NotifyFunction =
+    std::function<void(const Wrapper::OperationHandler &)>;
+
   Scene &scene;
-  const std::function<void()> notify;
+  const NotifyFunction notify;
 
-  SceneWrapper(
-    Scene &scene_arg,
-    std::function<void()> notify
-  );
+  SceneWrapper(Scene &scene_arg,NotifyFunction notify);
 
-  virtual void
-    visitOperations(
+  void
+    withOperations(
       const TreePath &path,
       const OperationVisitor &visitor
-    ) const;
+    ) const override;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
