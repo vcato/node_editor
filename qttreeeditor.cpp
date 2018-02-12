@@ -58,7 +58,9 @@ struct QtTreeEditor::CreateChildItemVisitor : Wrapper::Visitor {
 
   void operator()(const StringWrapper &wrapper) const override
   {
-    tree_editor.createLineEditItem(parent_item,wrapper.label());
+    tree_editor.createLineEditItem(
+      parent_item,wrapper.label(),wrapper.value()
+    );
     created = true;
   }
 };
@@ -151,11 +153,13 @@ QTreeWidgetItem&
 void
   QtTreeEditor::createLineEditItem(
     QTreeWidgetItem &parent_item,
-    const std::string &label
+    const std::string &label,
+    const std::string &value
   )
 {
   QTreeWidgetItem &item = createChildItem(parent_item);
-  createItemWidget<QLineEdit>(item,label);
+  QLineEdit &line_edit = createItemWidget<QLineEdit>(item,label);
+  line_edit.setText(QString::fromStdString(value));
 }
 
 

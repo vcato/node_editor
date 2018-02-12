@@ -155,6 +155,8 @@ struct StringWrapper : Wrapper {
   {
     visitor(*this);
   }
+
+  virtual std::string value() const = 0;
 };
 
 

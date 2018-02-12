@@ -114,9 +114,11 @@ struct Point2DWrapper : VoidWrapper {
 namespace {
 struct NameWrapper : StringWrapper {
   const char *label_member;
+  const std::string &name;
 
-  NameWrapper(const char *label)
-  : label_member(label)
+  NameWrapper(const char *label,const std::string &name_arg)
+  : label_member(label),
+    name(name_arg)
   {
   }
 
@@ -142,6 +144,11 @@ struct NameWrapper : StringWrapper {
   Diagram *diagramPtr() const override { return nullptr; }
 
   std::string label() const override { return label_member; }
+
+  virtual std::string value() const
+  {
+    return name;
+  }
 };
 }
 
@@ -188,7 +195,7 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
-      visitor(NameWrapper{"name"});
+      visitor(NameWrapper{"name",body.name});
       return;
     }
 
