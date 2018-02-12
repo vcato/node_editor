@@ -126,8 +126,6 @@ struct Wrapper {
 
   Diagram *diagramPtr(const Path &path);
 
-  virtual void setValue(int) const = 0;
-
   virtual void accept(const Visitor &) const = 0;
 
   virtual std::string label() const = 0;
@@ -135,11 +133,6 @@ struct Wrapper {
 
 
 struct VoidWrapper : Wrapper {
-  void setValue(int) const override
-  {
-    assert(false);
-  }
-
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
@@ -152,15 +145,12 @@ struct NumericWrapper : Wrapper {
   {
     visitor(*this);
   }
+
+  virtual void setValue(int) const = 0;
 };
 
 
 struct StringWrapper : Wrapper {
-  void setValue(int) const override
-  {
-    assert(false);
-  }
-
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
@@ -169,11 +159,6 @@ struct StringWrapper : Wrapper {
 
 
 struct EnumerationWrapper : Wrapper {
-  void setValue(int) const override
-  {
-    assert(false);
-  }
-
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);

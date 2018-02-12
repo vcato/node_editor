@@ -373,9 +373,48 @@ void
 
   TreePath path = itemPath(*item_ptr);
 
-  world().visitWrapper(path,[&](const Wrapper &wrapper){
-    wrapper.setValue(value);
-  });
+  struct NumericVisitor : Wrapper::Visitor {
+    using Function = std::function<void(const NumericWrapper &)>;
+    Function function;
+
+    NumericVisitor(const Function &function_arg)
+    : function(function_arg)
+    {
+    }
+
+    virtual void operator()(const VoidWrapper &) const
+    {
+      assert(false);
+    }
+
+    virtual void operator()(const NumericWrapper &wrapper) const
+    {
+      function(wrapper);
+    }
+
+    virtual void operator()(const EnumerationWrapper &) const
+    {
+      assert(false);
+    }
+
+    virtual void operator()(const StringWrapper &) const
+    {
+      assert(false);
+    }
+  };
+
+  world().visitWrapper(
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.accept(
+	NumericVisitor(
+	  [&](const NumericWrapper &numeric_wrapper){
+	    numeric_wrapper.setValue(value);
+	  }
+	)
+      );
+    }
+  );
 }
 
 
