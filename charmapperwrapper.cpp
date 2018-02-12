@@ -262,10 +262,9 @@ struct MotionPassWrapper : VoidWrapper {
       }
     }
 
-    virtual void visitType(const TypeVisitor &visitor) const
+    vector<string> enumerationNames() const override
     {
-      vector<string> enumeration_names = {"Components","From Body"};
-      visitor.enumeratedItem(enumeration_names);
+      return {"Components","From Body"};
     }
 
     virtual std::string label() const
@@ -293,10 +292,9 @@ struct MotionPassWrapper : VoidWrapper {
       return nullptr;
     }
 
-    virtual void visitType(const TypeVisitor &visitor) const
+    vector<string> enumerationNames() const override
     {
-      vector<string> enumeration_names = {"Body1","Body2","Body3"};
-      visitor.enumeratedItem(enumeration_names);
+      return {"Body1","Body2","Body3"};
     }
 
     virtual std::string label() const
@@ -338,10 +336,9 @@ struct MotionPassWrapper : VoidWrapper {
       return nullptr;
     }
 
-    virtual void visitType(const TypeVisitor &visitor) const
+    vector<string> enumerationNames() const override
     {
-      vector<string> enumeration_names = {"Body1","Body2","Body3"};
-      visitor.enumeratedItem(enumeration_names);
+      return {"Body1","Body2","Body3"};
     }
 
     virtual std::string label() const

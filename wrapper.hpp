@@ -21,6 +21,10 @@ inline TreePath parentPath(const TreePath &path)
 
 
 struct Wrapper;
+struct VoidWrapper;
+struct NumericWrapper;
+struct StringWrapper;
+struct EnumerationWrapper;
 
 using WrapperVisitor = std::function<void(const Wrapper &)>;
 
@@ -39,6 +43,13 @@ struct Wrapper {
 
   using OperationVisitor =
     std::function<void(const OperationName &,PerformOperationFunction)>;
+
+  struct Visitor {
+    virtual void operator()(const VoidWrapper &) const = 0;
+    virtual void operator()(const NumericWrapper &) const = 0;
+    virtual void operator()(const EnumerationWrapper &) const = 0;
+    virtual void operator()(const StringWrapper &) const = 0;
+  };
 
   struct TypeVisitor {
     virtual void voidItem() const = 0;
@@ -153,6 +164,7 @@ struct Wrapper {
   }
 
 
+  virtual void accept(const Visitor &) const = 0;
   virtual void visitType(const TypeVisitor &) const = 0;
 
   virtual std::string label() const = 0;
@@ -160,17 +172,17 @@ struct Wrapper {
 
 
 struct VoidWrapper : Wrapper {
-  virtual void
+  void
     comboBoxItemIndexChanged(
       const TreePath &,
       int /*index*/,
       OperationHandler &
-    ) const
+    ) const override
   {
     assert(false);
   }
 
-  virtual void visitType(const TypeVisitor &visitor) const
+  void visitType(const TypeVisitor &visitor) const override
   {
     visitor.voidItem();
   }
@@ -178,6 +190,11 @@ struct VoidWrapper : Wrapper {
   void setValue(int) const override
   {
     assert(false);
+  }
+
+  void accept(const Visitor &visitor) const override
+  {
+    visitor(*this);
   }
 };
 
@@ -196,6 +213,11 @@ struct NumericWrapper : Wrapper {
   virtual void visitType(const TypeVisitor &visitor) const
   {
     visitor.numericItem();
+  }
+
+  void accept(const Visitor &visitor) const override
+  {
+    visitor(*this);
   }
 };
 
@@ -220,6 +242,11 @@ struct StringWrapper : Wrapper {
   {
     visitor.stringItem();
   }
+
+  void accept(const Visitor &visitor) const override
+  {
+    visitor(*this);
+  }
 };
 
 
@@ -227,6 +254,18 @@ struct EnumerationWrapper : Wrapper {
   void setValue(int) const override
   {
     assert(false);
+  }
+
+  void accept(const Visitor &visitor) const override
+  {
+    visitor(*this);
+  }
+
+  virtual std::vector<std::string> enumerationNames() const = 0;
+
+  void visitType(const TypeVisitor &visitor) const override
+  {
+    visitor.enumeratedItem(enumerationNames());
   }
 };
 
