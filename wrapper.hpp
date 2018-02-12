@@ -126,30 +126,7 @@ struct Wrapper {
 
   Diagram *diagramPtr(const Path &path);
 
-  virtual void
-    comboBoxItemIndexChanged(
-      const TreePath &path,
-      int index,
-      OperationHandler &operation_handler
-    ) const = 0;
-
   virtual void setValue(int) const = 0;
-
-  void
-    comboBoxItemIndexChanged(
-      const Path &path,
-      int index,
-      OperationHandler &operation_handler
-    )
-  {
-    visitWrapper(
-      path,
-      [&](const Wrapper &wrapper){
-	wrapper.comboBoxItemIndexChanged(path,index,operation_handler);
-      }
-    );
-  }
-
 
   virtual void accept(const Visitor &) const = 0;
 
@@ -158,16 +135,6 @@ struct Wrapper {
 
 
 struct VoidWrapper : Wrapper {
-  void
-    comboBoxItemIndexChanged(
-      const TreePath &,
-      int /*index*/,
-      OperationHandler &
-    ) const override
-  {
-    assert(false);
-  }
-
   void setValue(int) const override
   {
     assert(false);
@@ -181,16 +148,6 @@ struct VoidWrapper : Wrapper {
 
 
 struct NumericWrapper : Wrapper {
-  void
-    comboBoxItemIndexChanged(
-      const TreePath &,
-      int /*index*/,
-      OperationHandler &
-    ) const override
-  {
-    assert(false);
-  }
-
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
@@ -199,16 +156,6 @@ struct NumericWrapper : Wrapper {
 
 
 struct StringWrapper : Wrapper {
-  void
-    comboBoxItemIndexChanged(
-      const TreePath &,
-      int /*index*/,
-      OperationHandler &
-    ) const override
-  {
-    assert(false);
-  }
-
   void setValue(int) const override
   {
     assert(false);
@@ -233,6 +180,13 @@ struct EnumerationWrapper : Wrapper {
   }
 
   virtual std::vector<std::string> enumerationNames() const = 0;
+
+  virtual void
+    comboBoxItemIndexChanged(
+      const TreePath &path,
+      int index,
+      OperationHandler &operation_handler
+    ) const = 0;
 };
 
 

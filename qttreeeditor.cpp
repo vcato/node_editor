@@ -316,7 +316,50 @@ void
   TreePath path = itemPath(*item_ptr);
   OperationHandler operation_handler(*this);
 
-  world().comboBoxItemIndexChanged(path,index,operation_handler);
+  struct EnumerationVisitor : Wrapper::Visitor {
+    using Function = std::function<void(const EnumerationWrapper &)>;
+    Function function;
+
+    EnumerationVisitor(const Function &function_arg)
+    : function(function_arg)
+    {
+    }
+
+    virtual void operator()(const VoidWrapper &) const
+    {
+      assert(false);
+    }
+
+    virtual void operator()(const NumericWrapper &) const
+    {
+      assert(false);
+    }
+
+    virtual void operator()(const EnumerationWrapper &wrapper) const
+    {
+      function(wrapper);
+    }
+
+    virtual void operator()(const StringWrapper &) const
+    {
+      assert(false);
+    }
+  };
+
+  world().visitWrapper(
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.accept(
+	EnumerationVisitor(
+	  [&](const EnumerationWrapper &enumeration_wrapper){
+	    enumeration_wrapper.comboBoxItemIndexChanged(
+	      path,index,operation_handler
+	    );
+	  }
+	)
+      );
+    }
+  );
 }
 
 
