@@ -104,6 +104,11 @@ struct MotionPassWrapper : VoidWrapper {
       return &position.diagram;
     }
 
+    virtual int nChildren() const
+    {
+      return 2;
+    }
+
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
     {
       switch (child_index) {
@@ -113,20 +118,12 @@ struct MotionPassWrapper : VoidWrapper {
         case 1:
           visitor(ChannelWrapper(position.y,"Y"));
           return;
-        case 2:
-          visitor(ChannelWrapper(position.z,"Z"));
-          return;
       }
     }
 
     virtual std::string label() const
     {
       return label_member;
-    }
-
-    virtual int nChildren() const
-    {
-      return 3;
     }
   };
 

@@ -18,7 +18,7 @@ struct Charmapper {
 
   struct Position {
     Diagram diagram;
-    Channel x,y,z;
+    Channel x,y;
 
     Position(const Diagram &diagram_arg)
     : diagram(diagram_arg)

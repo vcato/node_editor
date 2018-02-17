@@ -260,3 +260,5 @@ of the appropriate type.  Not clear if it is worth it yet.
 It would be convenient if we had Wrapper::accept methods which took
 functions for specific types of wrappers.  It would call the function
 if the wrapper had the appropriate type, and assert otherwise.
+
+Change the Local and Global positions in charmapper to just be 2D.
