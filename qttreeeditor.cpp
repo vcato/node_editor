@@ -564,9 +564,14 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   QMenu menu;
   list<QtSlot> item_slots;
   OperationHandler operation_handler(*this);
-  world().visitOperations(
+  world().visitWrapper(
     path,
-    addMenuItemForOperationFunction(menu,item_slots,operation_handler)
+    [&](const Wrapper &wrapper){
+      wrapper.withOperations(
+        path,
+        addMenuItemForOperationFunction(menu,item_slots,operation_handler)
+      );
+    }
   );
   menu.exec(tree_editor.mapToGlobal(pos));
 }

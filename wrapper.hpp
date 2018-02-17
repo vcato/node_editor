@@ -58,16 +58,6 @@ struct Wrapper {
       const OperationVisitor &
     ) const = 0;
 
-  void visitOperations(const Path &path,const OperationVisitor &visitor) const
-  {
-    visitWrapper(
-      path,
-      [&](const Wrapper &wrapper){
-	wrapper.withOperations(path,visitor);
-      }
-    );
-  }
-
   virtual void
     withChildWrapper(
       int child_index,
