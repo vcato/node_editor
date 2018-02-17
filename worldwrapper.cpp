@@ -176,6 +176,12 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 }
 
 
+std::vector<std::string> WorldWrapper::operationNames() const
+{
+  return {"Add Charmapper","Add Scene"};
+}
+
+
 void
   WorldWrapper::withOperations(
     const TreePath &path,
@@ -183,7 +189,7 @@ void
   ) const
 {
   visitor(
-    "Add Charmapper",
+    operationNames()[0],
     [path,this](TreeOperationHandler &handler){
       int index = world.nMembers();
       world.addCharmapper();
@@ -191,7 +197,7 @@ void
     }
   );
   visitor(
-    "Add Scene",
+    operationNames()[1],
     [path,this](TreeOperationHandler &handler){
       int index = world.nMembers();
       world.addScene();

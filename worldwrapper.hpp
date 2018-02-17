@@ -16,6 +16,8 @@ struct WorldWrapper : VoidWrapper
       const OperationVisitor &visitor
     ) const override;
 
+  std::vector<std::string> operationNames() const;
+
   void
     withChildWrapper(
       int child_index,const WrapperVisitor &visitor

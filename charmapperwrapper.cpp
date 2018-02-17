@@ -34,6 +34,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
+    virtual std::vector<std::string> operationNames() const
+    {
+      return {};
+    }
+
     void
       withOperations(
         const TreePath &,
@@ -79,11 +84,15 @@ struct MotionPassWrapper : VoidWrapper {
 
     void
       withOperations(
-        const TreePath &path,
+        const TreePath &,
         const OperationVisitor &
       ) const override
     {
-      cerr << "PositionWrapper::visitOperations: path=" << path << "\n";
+    }
+
+    virtual std::vector<std::string> operationNames() const
+    {
+      return {};
     }
 
     virtual Diagram *diagramPtr() const
@@ -144,6 +153,11 @@ struct MotionPassWrapper : VoidWrapper {
         cerr << "child_index=" << child_index << '\n';
         assert(false);
       }
+    }
+
+    virtual std::vector<std::string> operationNames() const
+    {
+      assert(false);
     }
 
     void
@@ -244,6 +258,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
+    virtual std::vector<std::string> operationNames() const
+    {
+      return {};
+    }
+
 
     virtual Diagram *diagramPtr() const
     {
@@ -302,6 +321,11 @@ struct MotionPassWrapper : VoidWrapper {
         const OperationVisitor &
       ) const override
     {
+    }
+
+    virtual std::vector<std::string> operationNames() const
+    {
+      return {};
     }
 
     void withChildWrapper(int /*child_index*/,const WrapperVisitor &) const
@@ -374,6 +398,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
+    virtual std::vector<std::string> operationNames() const
+    {
+      return {};
+    }
+
     virtual Diagram *diagramPtr() const
     {
       return &pos_expr.diagram;
@@ -415,6 +444,11 @@ struct MotionPassWrapper : VoidWrapper {
   {
   }
 
+  virtual std::vector<std::string> operationNames() const
+  {
+    return { "Add Pos Expr" };
+  }
+
   void
     withOperations(
       const TreePath &path,
@@ -423,7 +457,7 @@ struct MotionPassWrapper : VoidWrapper {
   {
     Charmapper::MotionPass &motion_pass = this->motion_pass;
     visitor(
-      "Add Pos Expr",
+      operationNames()[0],
       [path,&motion_pass](TreeOperationHandler &handler){
         int index = motion_pass.nExprs();
         motion_pass.addPosExpr();
@@ -453,6 +487,12 @@ struct MotionPassWrapper : VoidWrapper {
 }
 
 
+std::vector<std::string> CharmapperWrapper::operationNames() const
+{
+  return { "Add Motion Pass" };
+}
+
+
 void
   CharmapperWrapper::withOperations(
     const TreePath &path,
@@ -461,7 +501,7 @@ void
 {
   Charmapper &charmapper = this->charmapper;
   visitor(
-    "Add Motion Pass",
+    operationNames()[0],
     [path,&charmapper](TreeOperationHandler &handler){
       int index = charmapper.nPasses();
       charmapper.addMotionPass();

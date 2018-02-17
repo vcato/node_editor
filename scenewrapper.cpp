@@ -46,6 +46,8 @@ struct FloatWrapper : NumericWrapper {
   {
   }
 
+  vector<string> operationNames() const { return {}; }
+
   void
     withOperations(
       const TreePath &,
@@ -98,6 +100,8 @@ struct Point2DWrapper : VoidWrapper {
   {
   }
 
+  vector<string> operationNames() const { return {}; }
+
   void
     withOperations(
       const TreePath &,
@@ -146,6 +150,8 @@ struct NameWrapper : StringWrapper {
     name(name_arg)
   {
   }
+
+  vector<string> operationNames() const { return {}; }
 
   void
     withOperations(
@@ -216,7 +222,7 @@ struct BodyWrapper : VoidWrapper {
     assert(false);
   }
 
-  vector<string> operations() const
+  vector<string> operationNames() const
   {
     return {"Add Body"};
   }

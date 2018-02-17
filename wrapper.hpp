@@ -52,9 +52,7 @@ struct Wrapper {
     virtual void operator()(const StringWrapper &) const = 0;
   };
 
-#if 0
   virtual std::vector<std::string> operationNames() const = 0;
-#endif
 
 #if 1
   virtual void

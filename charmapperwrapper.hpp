@@ -22,6 +22,8 @@ struct CharmapperWrapper : VoidWrapper {
       const OperationVisitor &visitor
     ) const override;
 
+  std::vector<std::string> operationNames() const;
+
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
