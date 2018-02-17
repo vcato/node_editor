@@ -308,3 +308,10 @@ execute operation method where we give it the handle.  This helps prevent
 mistakes where the functions aren't capturing enough information and
 it also lets us get a list of operations for a wrapper without having
 to pass it a path.
+A step toward this is having an operationFunction() method of the wrapper
+which will return the function to execute for an operation.  withOperations()
+can be changed to a non-virtual function.
+After that is done, we can refactor code to not use withOperations() and
+use operationNames() and operationFunction() separately.  Once that is done,
+all calls to operationFunction() should be immediately executing the result,
+so we can change this to executeOperation().

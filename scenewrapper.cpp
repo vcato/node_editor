@@ -1,7 +1,11 @@
 #include "scenewrapper.hpp"
 
+#include <functional>
+
 
 using std::cerr;
+using std::vector;
+using std::string;
 using NotifyFunction = SceneWrapper::NotifyFunction;
 
 
@@ -192,21 +196,50 @@ struct BodyWrapper : VoidWrapper {
   {
   }
 
-  virtual void
+  void
+    executeOperation(
+      int operation_index,
+      const TreePath &path,
+      TreeOperationHandler &handler
+    )
+  {
+    switch (operation_index) {
+      case 0:
+        {
+          int index = body.nChildren();
+          scene.addChildBodyTo(body);
+          notify(handler);
+          handler.addItem(join(path,index+nBodyAttributes()));
+        }
+        return;
+    }
+    assert(false);
+  }
+
+  vector<string> operations() const
+  {
+    return {"Add Body"};
+  }
+
+  void
     withOperations(
       const TreePath &path,
       const OperationVisitor &visitor
-    ) const
+    ) const override
   {
     visitor(
       "Add Body",
       [notify=notify,&body=body,&scene=scene,path](
         TreeOperationHandler &handler
       ){
+#if 1
 	int index = body.nChildren();
 	scene.addChildBodyTo(body);
 	notify(handler);
 	handler.addItem(join(path,index+nBodyAttributes()));
+#else
+        executeOperation(0,path,handler):
+#endif
       }
     );
   }
@@ -253,21 +286,44 @@ SceneWrapper::SceneWrapper(
 }
 
 
+std::vector<std::string> SceneWrapper::operationNames() const
+{
+  return {"Add Body"};
+}
+
+
+std::function<void (TreeOperationHandler &)>
+  SceneWrapper::operationFunction(
+    int operation_index,
+    const TreePath &path
+  ) const
+{
+  switch (operation_index) {
+    case 0:
+      return
+        [path,&scene=scene,notify=notify](TreeOperationHandler &handler){
+          int index = scene.nBodies();
+          scene.addBody();
+          handler.addItem(join(path,index));
+          notify(handler);
+        };
+  }
+
+  assert(false);
+}
+
 void
   SceneWrapper::withOperations(
     const TreePath &path,
     const OperationVisitor &visitor
   ) const
 {
-  visitor(
-    "Add Body",
-    [path,&scene=scene,notify=notify](TreeOperationHandler &handler){
-      int index = scene.nBodies();
-      scene.addBody();
-      handler.addItem(join(path,index));
-      notify(handler);
-    }
-  );
+  vector<string> operation_names = operationNames();
+  int n_operations = operation_names.size();
+
+  for (int i=0; i!=n_operations; ++i) {
+    visitor(operation_names[i],operationFunction(i,path));
+  }
 }
 
 

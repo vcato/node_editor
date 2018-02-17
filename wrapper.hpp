@@ -52,11 +52,31 @@ struct Wrapper {
     virtual void operator()(const StringWrapper &) const = 0;
   };
 
+#if 0
+  virtual std::vector<std::string> operationNames() const = 0;
+#endif
+
+#if 1
   virtual void
     withOperations(
       const TreePath &,
       const OperationVisitor &
     ) const = 0;
+#else
+  void
+    withOperations(
+      const TreePath &,
+      const OperationVisitor &
+    ) const
+  {
+    vector<string> operation_names = operationNames();
+    int n_operations = operation_names.size();
+
+    for (int i=0; i!=n_operations; ++i) {
+      visitor(operation_names[i],operationFunction(i,path));
+    }
+  }
+#endif
 
   virtual void
     withChildWrapper(
