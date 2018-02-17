@@ -2,24 +2,23 @@
 
 
 using std::cerr;
+using std::vector;
+using std::string;
 using std::ostream;
 
 
 static void
   printOperations(ostream &stream,const Wrapper &wrapper,const TreePath &path)
 {
-  wrapper.visitWrapper(path,[&](const Wrapper &sub_wrapper){
-    stream << sub_wrapper.label() << " operations:\n";
-    sub_wrapper.withOperations(
-      path,
-      [&](
-        const Wrapper::OperationName &operation_name,
-        Wrapper::PerformOperationFunction
-      ){
-      	stream << operation_name << "\n";
+  wrapper.visitWrapper(
+    path,
+    [&](const Wrapper &sub_wrapper){
+      stream << sub_wrapper.label() << " operations:\n";
+      for (auto &operation_name : sub_wrapper.operationNames()) {
+        stream << operation_name << "\n";
       }
-    );
-  });
+    }
+  );
 }
 
 
@@ -28,17 +27,19 @@ Wrapper::PerformOperationFunction
 {
   Wrapper::PerformOperationFunction add_body_function;
 
-  Wrapper::OperationVisitor visitor =
-    [&](
-      const Wrapper::OperationName &operation_name,
-      Wrapper::PerformOperationFunction perform_operation_function
-    ) {
-      if (operation_name=="Add Body") {
-      	add_body_function = perform_operation_function;
-      }
-    };
+  vector<string> operation_names = wrapper.operationNames();
+  int n_operations = operation_names.size();
 
-  wrapper.withOperations(path,visitor);
+  for (
+    int operation_index = 0;
+    operation_index!=n_operations;
+    ++operation_index
+  ) {
+    if (operation_names[operation_index]=="Add Body") {
+      add_body_function = wrapper.operationFunction(operation_index,path);
+      break;
+    }
+  }
 
   if (!add_body_function) {
     cerr << "Could not find Add Body operation\n";

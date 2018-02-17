@@ -527,30 +527,6 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
-static Wrapper::OperationVisitor
-  addMenuItemForOperationFunction(
-    QMenu &menu,
-    list<QtSlot> &item_slots,
-    TreeOperationHandler &operation_handler
-  )
-{
-  return
-    [&](
-      const string &operation_name,
-      function<void(TreeOperationHandler &)> perform_function
-    )
-    {
-      QAction &action = createAction(menu,operation_name);
-      auto perform_operation_function =
-        [&operation_handler,perform_function](){
-          perform_function(operation_handler);
-        };
-      item_slots.emplace_back(perform_operation_function);
-      item_slots.back().connectSignal(action,SIGNAL(triggered()));
-    };
-}
-
-
 void QtTreeEditor::prepareMenu(const QPoint &pos)
 {
   QtTreeEditor &tree_editor = treeEditor();
@@ -567,12 +543,23 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   world().visitWrapper(
     path,
     [&](const Wrapper &wrapper){
-      wrapper.withOperations(
-        path,
-        addMenuItemForOperationFunction(menu,item_slots,operation_handler)
-      );
+      std::vector<std::string> operation_names = wrapper.operationNames();
+      int n_operations = operation_names.size();
+
+      for (int i=0; i!=n_operations; ++i) {
+        const auto &operation_name = operation_names[i];
+        auto perform_function = wrapper.operationFunction(i,path);
+        QAction &action = createAction(menu,operation_name);
+        auto perform_operation_function =
+          [&operation_handler,perform_function](){
+            perform_function(operation_handler);
+          };
+        item_slots.emplace_back(perform_operation_function);
+        item_slots.back().connectSignal(action,SIGNAL(triggered()));
+      }
     }
   );
+
   menu.exec(tree_editor.mapToGlobal(pos));
 }
 
