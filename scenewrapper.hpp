@@ -12,8 +12,13 @@ struct SceneWrapper : VoidWrapper {
   SceneWrapper(Scene &scene_arg,NotifyFunction notify);
 
   std::vector<std::string> operationNames() const;
-  std::function<void (TreeOperationHandler &)>
-    operationFunction(int operation_index,const TreePath &path) const;
+
+  void
+    executeOperation(
+      int operation_index,
+      const TreePath &path,
+      OperationHandler &handler
+    ) const override;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
   void withChildWrapper(int child_index,const WrapperVisitor &) const;

@@ -12,11 +12,12 @@ struct WorldWrapper : VoidWrapper
 
   std::vector<std::string> operationNames() const;
 
-  virtual PerformOperationFunction
-    operationFunction(
+  void
+    executeOperation(
       int operation_index,
-      const TreePath &path
-    ) const;
+      const TreePath &path,
+      OperationHandler &handler
+    ) const override;
 
   void
     withChildWrapper(

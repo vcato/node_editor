@@ -48,11 +48,12 @@ struct FloatWrapper : NumericWrapper {
 
   vector<string> operationNames() const { return {}; }
 
-  virtual PerformOperationFunction
-    operationFunction(
+  void
+    executeOperation(
       int /*operation_index*/,
-      const TreePath &
-    ) const
+      const TreePath &,
+      OperationHandler &
+    ) const override
   {
     assert(false);
   }
@@ -103,11 +104,12 @@ struct Point2DWrapper : VoidWrapper {
 
   vector<string> operationNames() const { return {}; }
 
-  virtual PerformOperationFunction
-    operationFunction(
+  void
+    executeOperation(
       int /*operation_index*/,
-      const TreePath &
-    ) const
+      const TreePath &,
+      OperationHandler &
+    ) const override
   {
     assert(false);
   }
@@ -155,11 +157,12 @@ struct NameWrapper : StringWrapper {
 
   vector<string> operationNames() const { return {}; }
 
-  virtual PerformOperationFunction
-    operationFunction(
+  void
+    executeOperation(
       int /*operation_index*/,
-      const TreePath &
-    ) const
+      const TreePath &,
+      OperationHandler &
+    ) const override
   {
     assert(false);
   }
@@ -230,22 +233,22 @@ struct BodyWrapper : VoidWrapper {
     return {"Add Body"};
   }
 
-  virtual PerformOperationFunction
-    operationFunction(
+  virtual void
+    executeOperation(
       int operation_index,
-      const TreePath &path
+      const TreePath &path,
+      OperationHandler &handler
     ) const
   {
     switch (operation_index) {
       case 0:
-        return [notify=notify,&body=body,&scene=scene,path](
-          TreeOperationHandler &handler
-        ){
+        {
           int index = body.nChildren();
           scene.addChildBodyTo(body);
           notify(handler);
           handler.addItem(join(path,index+nBodyAttributes()));
-        };
+        }
+        return;
     }
 
     assert(false);
@@ -299,25 +302,27 @@ std::vector<std::string> SceneWrapper::operationNames() const
 }
 
 
-std::function<void (TreeOperationHandler &)>
-  SceneWrapper::operationFunction(
+void
+  SceneWrapper::executeOperation(
     int operation_index,
-    const TreePath &path
+    const TreePath &path,
+    OperationHandler &handler
   ) const
 {
   switch (operation_index) {
     case 0:
-      return
-        [path,&scene=scene,notify=notify](TreeOperationHandler &handler){
-          int index = scene.nBodies();
-          scene.addBody();
-          handler.addItem(join(path,index));
-          notify(handler);
-        };
+      {
+        int index = scene.nBodies();
+        scene.addBody();
+        handler.addItem(join(path,index));
+        notify(handler);
+      }
+      return;
   }
 
   assert(false);
 }
+
 
 void
   SceneWrapper::withChildWrapper(

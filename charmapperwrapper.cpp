@@ -39,11 +39,12 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
-    virtual PerformOperationFunction
-      operationFunction(
+    void
+      executeOperation(
         int /*operation_index*/,
-        const TreePath &
-      ) const
+        const TreePath &,
+        OperationHandler &
+      ) const override
     {
       assert(false);
     }
@@ -88,11 +89,12 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
-    virtual PerformOperationFunction
-      operationFunction(
-          int /*operation_index*/,
-          const TreePath &
-          ) const
+    void
+      executeOperation(
+        int /*operation_index*/,
+        const TreePath &,
+        OperationHandler &
+      ) const override
     {
       assert(false);
     }
@@ -162,11 +164,12 @@ struct MotionPassWrapper : VoidWrapper {
       assert(false);
     }
 
-    virtual PerformOperationFunction
-      operationFunction(
+    void
+      executeOperation(
         int /*operation_index*/,
-        const TreePath &
-      ) const
+        const TreePath &,
+        OperationHandler &
+      ) const override
     {
       assert(false);
     }
@@ -257,11 +260,12 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
-    virtual PerformOperationFunction
-      operationFunction(
+    void
+      executeOperation(
         int /*operation_index*/,
-        const TreePath &
-      ) const
+        const TreePath &,
+        OperationHandler &
+      ) const override
     {
       assert(false);
     }
@@ -322,11 +326,12 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
-    virtual PerformOperationFunction
-      operationFunction(
+    void
+      executeOperation(
         int /*operation_index*/,
-        const TreePath &
-      ) const
+        const TreePath &,
+        OperationHandler &
+      ) const override
     {
       assert(false);
     }
@@ -398,11 +403,12 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
-    virtual PerformOperationFunction
-      operationFunction(
+    void
+      executeOperation(
         int /*operation_index*/,
-        const TreePath &
-      ) const
+        const TreePath &,
+        OperationHandler &
+      ) const override
     {
       assert(false);
     }
@@ -453,20 +459,21 @@ struct MotionPassWrapper : VoidWrapper {
     return { "Add Pos Expr" };
   }
 
-  virtual PerformOperationFunction
-    operationFunction(
+  void
+    executeOperation(
       int operation_index,
-      const TreePath &path
-    ) const
+      const TreePath &path,
+      OperationHandler &handler
+    ) const override
   {
     switch (operation_index) {
       case 0:
-        return
-          [path,&motion_pass=motion_pass](TreeOperationHandler &handler){
-            int index = motion_pass.nExprs();
-            motion_pass.addPosExpr();
-            handler.addItem(join(path,index));
-          };
+        {
+          int index = motion_pass.nExprs();
+          motion_pass.addPosExpr();
+          handler.addItem(join(path,index));
+        }
+        return;
     }
 
     assert(false);
@@ -499,19 +506,21 @@ std::vector<std::string> CharmapperWrapper::operationNames() const
 }
 
 
-Wrapper::PerformOperationFunction
-  CharmapperWrapper::operationFunction(
+void
+  CharmapperWrapper::executeOperation(
     int operation_index,
-    const TreePath &path
+    const TreePath &path,
+    OperationHandler &handler
   ) const
 {
   switch (operation_index) {
     case 0:
-      return [path,&charmapper=charmapper](TreeOperationHandler &handler){
+      {
         int index = charmapper.nPasses();
         charmapper.addMotionPass();
         handler.addItem(join(path,index));
-      };
+      }
+      return;
   }
 
   assert(false);

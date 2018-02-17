@@ -54,21 +54,12 @@ struct Wrapper {
 
   virtual std::vector<std::string> operationNames() const = 0;
 
-  virtual PerformOperationFunction
-    operationFunction(
-      int operation_index,
-      const TreePath &path
-    ) const = 0;
-
   virtual void
     executeOperation(
       int operation_index,
       const TreePath &path,
       OperationHandler &handler
-    ) const
-  {
-    operationFunction(operation_index,path)(handler);
-  }
+    ) const = 0;
 
   virtual void
     withChildWrapper(
