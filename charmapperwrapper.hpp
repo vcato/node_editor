@@ -16,12 +16,6 @@ struct CharmapperWrapper : VoidWrapper {
   {
   }
 
-  void
-    withOperations(
-      const TreePath &path,
-      const OperationVisitor &visitor
-    ) const override;
-
   std::vector<std::string> operationNames() const;
 
   virtual PerformOperationFunction

@@ -58,14 +58,6 @@ struct FloatWrapper : NumericWrapper {
   }
 
   void
-    withOperations(
-      const TreePath &,
-      const OperationVisitor &
-    ) const override
-  {
-  }
-
-  void
     withChildWrapper(
       int /*child_index*/,
       const WrapperVisitor &
@@ -120,14 +112,6 @@ struct Point2DWrapper : VoidWrapper {
     assert(false);
   }
 
-  void
-    withOperations(
-      const TreePath &,
-      const OperationVisitor &
-    ) const override
-  {
-  }
-
   virtual void
     withChildWrapper(
       int child_index,
@@ -178,14 +162,6 @@ struct NameWrapper : StringWrapper {
     ) const
   {
     assert(false);
-  }
-
-  void
-    withOperations(
-      const TreePath &,
-      const OperationVisitor &
-    ) const override
-  {
   }
 
   int nChildren() const override { return 0; }
@@ -275,15 +251,6 @@ struct BodyWrapper : VoidWrapper {
     assert(false);
   }
 
-  void
-    withOperations(
-      const TreePath &path,
-      const OperationVisitor &visitor
-    ) const override
-  {
-    visitor("Add Body",operationFunction(0,path));
-  }
-
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
@@ -351,21 +318,6 @@ std::function<void (TreeOperationHandler &)>
 
   assert(false);
 }
-
-void
-  SceneWrapper::withOperations(
-    const TreePath &path,
-    const OperationVisitor &visitor
-  ) const
-{
-  vector<string> operation_names = operationNames();
-  int n_operations = operation_names.size();
-
-  for (int i=0; i!=n_operations; ++i) {
-    visitor(operation_names[i],operationFunction(i,path));
-  }
-}
-
 
 void
   SceneWrapper::withChildWrapper(

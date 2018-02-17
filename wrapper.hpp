@@ -60,27 +60,19 @@ struct Wrapper {
       const TreePath &path
     ) const = 0;
 
-#if 1
-  virtual void
-    withOperations(
-      const TreePath &,
-      const OperationVisitor &
-    ) const = 0;
-#else
   void
     withOperations(
-      const TreePath &,
-      const OperationVisitor &
+      const TreePath &path,
+      const OperationVisitor &visitor
     ) const
   {
-    vector<string> operation_names = operationNames();
+    std::vector<std::string> operation_names = operationNames();
     int n_operations = operation_names.size();
 
     for (int i=0; i!=n_operations; ++i) {
       visitor(operation_names[i],operationFunction(i,path));
     }
   }
-#endif
 
   virtual void
     withChildWrapper(

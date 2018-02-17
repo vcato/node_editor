@@ -10,12 +10,6 @@ struct WorldWrapper : VoidWrapper
 
   WorldWrapper(World &world_arg) : world(world_arg) { }
 
-  void
-    withOperations(
-      const TreePath &path,
-      const OperationVisitor &visitor
-    ) const override;
-
   std::vector<std::string> operationNames() const;
 
   virtual PerformOperationFunction

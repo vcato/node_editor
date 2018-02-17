@@ -11,12 +11,6 @@ struct SceneWrapper : VoidWrapper {
 
   SceneWrapper(Scene &scene_arg,NotifyFunction notify);
 
-  void
-    withOperations(
-      const TreePath &path,
-      const OperationVisitor &visitor
-    ) const override;
-
   std::vector<std::string> operationNames() const;
   std::function<void (TreeOperationHandler &)>
     operationFunction(int operation_index,const TreePath &path) const;

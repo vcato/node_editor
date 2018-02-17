@@ -210,17 +210,6 @@ WorldWrapper::PerformOperationFunction
 
 
 void
-  WorldWrapper::withOperations(
-    const TreePath &path,
-    const OperationVisitor &visitor
-  ) const
-{
-  visitor(operationNames()[0],operationFunction(0,path));
-  visitor(operationNames()[1],operationFunction(1,path));
-}
-
-
-void
   WorldWrapper::withChildWrapper(
     int child_index,const WrapperVisitor &visitor
   ) const

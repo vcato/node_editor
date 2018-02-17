@@ -48,14 +48,6 @@ struct MotionPassWrapper : VoidWrapper {
       assert(false);
     }
 
-    void
-      withOperations(
-        const TreePath &,
-        const OperationVisitor &
-      ) const override
-    {
-    }
-
     virtual Diagram *diagramPtr() const
     {
       return &channel.diagram;
@@ -88,14 +80,6 @@ struct MotionPassWrapper : VoidWrapper {
     PositionWrapper(Position &position_arg,const char *label_arg)
     : position(position_arg),
       label_member(label_arg)
-    {
-    }
-
-    void
-      withOperations(
-        const TreePath &,
-        const OperationVisitor &
-      ) const override
     {
     }
 
@@ -187,15 +171,6 @@ struct MotionPassWrapper : VoidWrapper {
       assert(false);
     }
 
-    void
-      withOperations(
-        const TreePath &,
-        const OperationVisitor &
-      ) const override
-    {
-      assert(false);
-    }
-
     virtual Diagram *diagramPtr() const
     {
       assert(false);
@@ -277,14 +252,6 @@ struct MotionPassWrapper : VoidWrapper {
       return n_children;
     }
 
-    void
-      withOperations(
-        const TreePath &,
-        const OperationVisitor &
-      ) const override
-    {
-    }
-
     virtual std::vector<std::string> operationNames() const
     {
       return {};
@@ -347,14 +314,6 @@ struct MotionPassWrapper : VoidWrapper {
 
     BodyWrapper(const SceneList &scene_list_arg)
     : scene_list(scene_list_arg)
-    {
-    }
-
-    void
-      withOperations(
-        const TreePath &,
-        const OperationVisitor &
-      ) const override
     {
     }
 
@@ -431,14 +390,6 @@ struct MotionPassWrapper : VoidWrapper {
     PosExprWrapper(PosExpr &pos_expr_arg,const SceneList &scene_list_arg)
     : pos_expr(pos_expr_arg),
       scene_list(scene_list_arg)
-    {
-    }
-
-    void
-      withOperations(
-        const TreePath &,
-        const OperationVisitor &
-      ) const override
     {
     }
 
@@ -521,15 +472,6 @@ struct MotionPassWrapper : VoidWrapper {
     assert(false);
   }
 
-  void
-    withOperations(
-      const TreePath &path,
-      const OperationVisitor &visitor
-    ) const override
-  {
-    visitor(operationNames()[0],operationFunction(0,path));
-  }
-
   virtual Diagram *diagramPtr() const { return nullptr; }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
@@ -573,19 +515,6 @@ Wrapper::PerformOperationFunction
   }
 
   assert(false);
-}
-
-
-void
-  CharmapperWrapper::withOperations(
-    const TreePath &path,
-    const OperationVisitor &visitor
-  ) const
-{
-  visitor(
-    operationNames()[0],
-    operationFunction(0,path)
-  );
 }
 
 
