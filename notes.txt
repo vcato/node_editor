@@ -250,38 +250,6 @@ Maybe a good thing to work on is being able to draw a spline.
 We'll need a way to create a window, create a drawing area within the
 window, and then provide a diagram that generates what we will draw.
 ---
-Maybe have separate OperationHandler and OperationWithPathHandler.
-The visitOperations() which take an OperationHandler is implemented
-by the derived wrappers, which only has relative operations like
-addChild().  The OperationWithPathVisitor can then turn this into
-a full path.
-
-Work towards being able to have the list of target bodies in charmapper
-automatically updated as bodies are added to the scene.
-
-If the notify function is called while visiting a SceneWrapper, then
-the WorldWrapper can tell the charmappers to update their target
-bodies.  An operation handler would be involved so that the tree
-editor could be updated.
-
-charmapper_wrapper.notifySceneChanged(charmapper_path,operation_handler);
-
-The charmapper_path is passed so that it send the proper paths to
-operation_handler.
-
-It might make more sense for a wrapper operation to be passed the wrapper.
-You visit the operations on a wrapper which produces functions.  Each
-of the function require a wrapper to operate on.  This may make the usage
-less error prone.  Right now, you have to be careful to capture what
-you need from the wrapper by value, since the wrapper itself won't be
-the same when the function is executed.  By passing the wrapper as
-a parameter explicitly, that makes it more obvious.  Likewise, the path
-could be passed to the operation function, so it doesn't need to be
-captured.
-
-Need to let bodies and scenes have names, so the body names can be displayed
-in the combo boxes.
-
 Need a way to make paths based on labels instead of indices.
 This will make it easier to have tests like testAddingBodies() be stable.
 
@@ -292,7 +260,3 @@ of the appropriate type.  Not clear if it is worth it yet.
 It would be convenient if we had Wrapper::accept methods which took
 functions for specific types of wrappers.  It would call the function
 if the wrapper had the appropriate type, and assert otherwise.
-
-Crash if we try to change the position of a body when we have a pos expr.
-
-Rename Wrapper::visitWrapper() to visitSubWrapper()
