@@ -92,10 +92,7 @@ static void
 
   OperationHandler operation_handler(stream);
 
-  Wrapper::PerformOperationFunction add_body_function =
-    findAddBodyFunction(wrapper,path);
-
-  add_body_function(operation_handler);
+  executeAddBodyFunction(wrapper,path,operation_handler);
 }
 
 

@@ -61,6 +61,16 @@ struct Wrapper {
     ) const = 0;
 
   virtual void
+    executeOperation(
+      int operation_index,
+      const TreePath &path,
+      OperationHandler &handler
+    ) const
+  {
+    operationFunction(operation_index,path)(handler);
+  }
+
+  virtual void
     withChildWrapper(
       int child_index,
       const WrapperVisitor &visitor

@@ -539,7 +539,6 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 
   QMenu menu;
   list<QtSlot> item_slots;
-  OperationHandler operation_handler(*this);
   world().visitWrapper(
     path,
     [&](const Wrapper &wrapper){
@@ -547,12 +546,16 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
       int n_operations = operation_names.size();
 
       for (int i=0; i!=n_operations; ++i) {
-        const auto &operation_name = operation_names[i];
-        auto perform_function = wrapper.operationFunction(i,path);
-        QAction &action = createAction(menu,operation_name);
+        QAction &action = createAction(menu,operation_names[i]);
         auto perform_operation_function =
-          [&operation_handler,perform_function](){
-            perform_function(operation_handler);
+          [this,i,path](){
+            world().visitWrapper(
+              path,
+              [&](const Wrapper &wrapper){
+                OperationHandler operation_handler(*this);
+                wrapper.executeOperation(i,path,operation_handler);
+              }
+            );
           };
         item_slots.emplace_back(perform_operation_function);
         item_slots.back().connectSignal(action,SIGNAL(triggered()));

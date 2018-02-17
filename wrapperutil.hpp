@@ -1,11 +1,16 @@
 #include "wrapper.hpp"
 
 
-// In this version, the wrapper is the wrapper for the given path.
-extern Wrapper::PerformOperationFunction
-  findAddBodyFunction(const Wrapper &wrapper,const TreePath &path);
+extern void
+  executeAddBodyFunction2(
+    const Wrapper &world_wrapper,
+    const TreePath &scene_path,
+    Wrapper::OperationHandler &handler
+  );
 
-// In this version, the wrapper is an ancestor and we want to find
-// the function for the descendant given by the path.
-extern Wrapper::PerformOperationFunction
-  findAddBodyFunction2(const Wrapper &wrapper,const TreePath &path);
+extern void
+  executeAddBodyFunction(
+    const Wrapper &sub_wrapper,
+    const TreePath &path,
+    Wrapper::OperationHandler &operation_handler
+  );

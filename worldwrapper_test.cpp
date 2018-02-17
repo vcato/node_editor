@@ -80,13 +80,10 @@ static void testAddingABodyToTheSceneWithACharmapper()
   WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
 
-  Wrapper::PerformOperationFunction add_body_function =
-    findAddBodyFunction2(world_wrapper,scene_path);
-
   ostringstream command_stream;
   FakeOperationHandler handler(command_stream);
 
-  add_body_function(handler);
+  executeAddBodyFunction2(world_wrapper,scene_path,handler);
 
   string command_string = command_stream.str();
   string expected_command_string =
