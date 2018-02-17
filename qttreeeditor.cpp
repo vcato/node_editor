@@ -137,6 +137,29 @@ void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
 }
 
 
+namespace {
+struct QtComboBoxTreeItemWidget : QWidget {
+  QtComboBox *combo_box_ptr;
+
+  QtComboBox &comboBox()
+  {
+    assert(combo_box_ptr);
+    return *combo_box_ptr;
+  }
+
+  QtComboBoxTreeItemWidget(const string &label)
+  : combo_box_ptr(0)
+  {
+    QHBoxLayout &layout = createLayout<QHBoxLayout>(*this);
+    QLabel &label_widget = createWidget<QLabel>(layout);
+    label_widget.setText(QString::fromStdString(label));
+    QtComboBox& combo_box = createWidget<QtComboBox>(layout);
+    combo_box_ptr = &combo_box;
+  }
+};
+}
+
+
 QTreeWidgetItem&
   QtTreeEditor::createComboBoxItem(
     QTreeWidgetItem &parent_item,
@@ -145,12 +168,15 @@ QTreeWidgetItem&
   )
 {
   QTreeWidgetItem &item = createChildItem(parent_item);
-  QtComboBox &combo_box = createItemWidget<QtComboBox>(item,label);
+  QtComboBoxTreeItemWidget *widget_ptr =
+    new QtComboBoxTreeItemWidget(label);
+  QtComboBox &combo_box = widget_ptr->comboBox();
+  setItemWidget(&item,/*column*/0,widget_ptr);
   combo_box.current_index_changed_function =
     [this,&item](int index){
       handleComboBoxItemIndexChanged(&item,index);
     };
-  combo_box.addItems(enumeration_names);
+  combo_box.setItems(enumeration_names);
   return item;
 }
 
@@ -302,9 +328,84 @@ void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
 }
 
 
+namespace {
+struct EnumerationVisitor : Wrapper::Visitor {
+  using Function = std::function<void(const EnumerationWrapper &)>;
+  Function function;
+
+  EnumerationVisitor(const Function &function_arg)
+  : function(function_arg)
+  {
+  }
+
+  virtual void operator()(const VoidWrapper &) const
+  {
+    assert(false);
+  }
+
+  virtual void operator()(const NumericWrapper &) const
+  {
+    assert(false);
+  }
+
+  virtual void operator()(const EnumerationWrapper &wrapper) const
+  {
+    function(wrapper);
+  }
+
+  virtual void operator()(const StringWrapper &) const
+  {
+    assert(false);
+  }
+};
+}
+
+
+static void
+  visitEnumeration(
+    const Wrapper &wrapper,
+    const TreePath &path,
+    std::function<void(const EnumerationWrapper &)> f
+  )
+{
+  wrapper.visitWrapper(
+    path,
+    [&](const Wrapper &sub_wrapper){
+      sub_wrapper.accept(EnumerationVisitor(f));
+    }
+  );
+}
+
+
+#if 1
+static vector<string>
+  getEnumerationNames(const Wrapper &wrapper,const TreePath &path)
+{
+  vector<string> enumeration_names;
+
+  visitEnumeration(
+    wrapper,
+    path,
+    [&](const EnumerationWrapper &enumeration_wrapper){
+      enumeration_names = enumeration_wrapper.enumerationNames();
+    }
+  );
+
+  return enumeration_names;
+}
+#endif
+
+
 void QtTreeEditor::changeEnumerationValues(const TreePath &path)
 {
-  cerr << "QtTreeEditor::changeEnumerationValues: path=" << path << "\n";
+  vector<string> enumeration_names = getEnumerationNames(world(),path);
+  QTreeWidgetItem &item = itemFromPath(path);
+  QWidget *widget_ptr = itemWidget(&item,/*column*/0);
+  QtComboBoxTreeItemWidget *combobox_item_widget_ptr =
+    dynamic_cast<QtComboBoxTreeItemWidget*>(widget_ptr);
+  assert(combobox_item_widget_ptr);
+  QtComboBox &combo_box = combobox_item_widget_ptr->comboBox();
+  combo_box.setItems(enumeration_names);
 }
 
 
@@ -331,50 +432,17 @@ void
   TreePath path = itemPath(*item_ptr);
   OperationHandler operation_handler(*this);
 
-  struct EnumerationVisitor : Wrapper::Visitor {
-    using Function = std::function<void(const EnumerationWrapper &)>;
-    Function function;
 
-    EnumerationVisitor(const Function &function_arg)
-    : function(function_arg)
-    {
-    }
-
-    virtual void operator()(const VoidWrapper &) const
-    {
-      assert(false);
-    }
-
-    virtual void operator()(const NumericWrapper &) const
-    {
-      assert(false);
-    }
-
-    virtual void operator()(const EnumerationWrapper &wrapper) const
-    {
-      function(wrapper);
-    }
-
-    virtual void operator()(const StringWrapper &) const
-    {
-      assert(false);
-    }
-  };
-
-  world().visitWrapper(
+  visitEnumeration(
+    world(),
     path,
-    [&](const Wrapper &wrapper){
-      wrapper.accept(
-	EnumerationVisitor(
-	  [&](const EnumerationWrapper &enumeration_wrapper){
-	    enumeration_wrapper.comboBoxItemIndexChanged(
-	      path,index,operation_handler
-	    );
-	  }
-	)
+    [&](const EnumerationWrapper &enumeration_wrapper){
+      enumeration_wrapper.comboBoxItemIndexChanged(
+        path,index,operation_handler
       );
     }
   );
+
 }
 
 

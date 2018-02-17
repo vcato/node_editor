@@ -44,6 +44,8 @@ class QtTreeEditor : public QTreeWidget {
     T &createItemWidget(QTreeWidgetItem &item,const std::string &label)
     {
       QWidget *wrapper_widget_ptr = new QWidget();
+      // NOTE: setting the item widget before adding the contents makes
+      // it not have the proper size.
       QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
       QLabel &label_widget = createWidget<QLabel>(layout);
       label_widget.setText(QString::fromStdString(label));

@@ -309,6 +309,10 @@ mistakes where the functions aren't capturing enough information and
 it also lets us get a list of operations for a wrapper without having
 to pass it a path.
 
-I tried to add a charmapper, motion pass, pos expr,  and then add a scene, then
-add a body to the scene.  The target body combobox in the pos expr didn't
-update.
+I need to be able to get access to the combobox for an item in the tree.
+It seems like the most natural way would be to have a QtComboBoxTreeWidgetItem
+so we can do a dynamic_cast  from QTreeWidgetItem and then get the combobox
+from it.  An alternative would be to have a QtComboBoxTreeItemWidget, so
+we get the QTreeWidgetItem, get the widget from the item, and then dynamic
+cast to the QtComboBoxTreeItemWidget.  This seems like a slightly better
+separation of concerns.

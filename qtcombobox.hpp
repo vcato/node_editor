@@ -11,7 +11,7 @@ class QtComboBox : public QComboBox {
   public:
     QtComboBox();
 
-    void addItems(const std::vector<std::string> &enumeration_names);
+    void setItems(const std::vector<std::string> &names);
 
     std::function<void(int)> current_index_changed_function;
 
@@ -19,6 +19,8 @@ class QtComboBox : public QComboBox {
     void currentIndexChangedSlot(int);
 
   private:
+    void addItems(const std::vector<std::string> &enumeration_names);
+
     bool ignore_signals;
 };
 
