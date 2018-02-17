@@ -54,6 +54,12 @@ struct Wrapper {
 
   virtual std::vector<std::string> operationNames() const = 0;
 
+  virtual PerformOperationFunction
+    operationFunction(
+      int operation_index,
+      const TreePath &path
+    ) const = 0;
+
 #if 1
   virtual void
     withOperations(

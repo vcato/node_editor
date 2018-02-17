@@ -39,6 +39,15 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
+    virtual PerformOperationFunction
+      operationFunction(
+        int /*operation_index*/,
+        const TreePath &
+      ) const
+    {
+      assert(false);
+    }
+
     void
       withOperations(
         const TreePath &,
@@ -93,6 +102,15 @@ struct MotionPassWrapper : VoidWrapper {
     virtual std::vector<std::string> operationNames() const
     {
       return {};
+    }
+
+    virtual PerformOperationFunction
+      operationFunction(
+          int /*operation_index*/,
+          const TreePath &
+          ) const
+    {
+      assert(false);
     }
 
     virtual Diagram *diagramPtr() const
@@ -156,6 +174,15 @@ struct MotionPassWrapper : VoidWrapper {
     }
 
     virtual std::vector<std::string> operationNames() const
+    {
+      assert(false);
+    }
+
+    virtual PerformOperationFunction
+      operationFunction(
+        int /*operation_index*/,
+        const TreePath &
+      ) const
     {
       assert(false);
     }
@@ -263,6 +290,14 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
+    virtual PerformOperationFunction
+      operationFunction(
+        int /*operation_index*/,
+        const TreePath &
+      ) const
+    {
+      assert(false);
+    }
 
     virtual Diagram *diagramPtr() const
     {
@@ -326,6 +361,15 @@ struct MotionPassWrapper : VoidWrapper {
     virtual std::vector<std::string> operationNames() const
     {
       return {};
+    }
+
+    virtual PerformOperationFunction
+      operationFunction(
+        int /*operation_index*/,
+        const TreePath &
+      ) const
+    {
+      assert(false);
     }
 
     void withChildWrapper(int /*child_index*/,const WrapperVisitor &) const
@@ -403,6 +447,15 @@ struct MotionPassWrapper : VoidWrapper {
       return {};
     }
 
+    virtual PerformOperationFunction
+      operationFunction(
+        int /*operation_index*/,
+        const TreePath &
+      ) const
+    {
+      assert(false);
+    }
+
     virtual Diagram *diagramPtr() const
     {
       return &pos_expr.diagram;
@@ -449,21 +502,32 @@ struct MotionPassWrapper : VoidWrapper {
     return { "Add Pos Expr" };
   }
 
+  virtual PerformOperationFunction
+    operationFunction(
+      int operation_index,
+      const TreePath &path
+    ) const
+  {
+    switch (operation_index) {
+      case 0:
+        return
+          [path,&motion_pass=motion_pass](TreeOperationHandler &handler){
+            int index = motion_pass.nExprs();
+            motion_pass.addPosExpr();
+            handler.addItem(join(path,index));
+          };
+    }
+
+    assert(false);
+  }
+
   void
     withOperations(
       const TreePath &path,
       const OperationVisitor &visitor
     ) const override
   {
-    Charmapper::MotionPass &motion_pass = this->motion_pass;
-    visitor(
-      operationNames()[0],
-      [path,&motion_pass](TreeOperationHandler &handler){
-        int index = motion_pass.nExprs();
-        motion_pass.addPosExpr();
-        handler.addItem(join(path,index));
-      }
-    );
+    visitor(operationNames()[0],operationFunction(0,path));
   }
 
   virtual Diagram *diagramPtr() const { return nullptr; }
@@ -493,20 +557,34 @@ std::vector<std::string> CharmapperWrapper::operationNames() const
 }
 
 
+Wrapper::PerformOperationFunction
+  CharmapperWrapper::operationFunction(
+    int operation_index,
+    const TreePath &path
+  ) const
+{
+  switch (operation_index) {
+    case 0:
+      return [path,&charmapper=charmapper](TreeOperationHandler &handler){
+        int index = charmapper.nPasses();
+        charmapper.addMotionPass();
+        handler.addItem(join(path,index));
+      };
+  }
+
+  assert(false);
+}
+
+
 void
   CharmapperWrapper::withOperations(
     const TreePath &path,
     const OperationVisitor &visitor
   ) const
 {
-  Charmapper &charmapper = this->charmapper;
   visitor(
     operationNames()[0],
-    [path,&charmapper](TreeOperationHandler &handler){
-      int index = charmapper.nPasses();
-      charmapper.addMotionPass();
-      handler.addItem(join(path,index));
-    }
+    operationFunction(0,path)
   );
 }
 

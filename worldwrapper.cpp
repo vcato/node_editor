@@ -182,28 +182,41 @@ std::vector<std::string> WorldWrapper::operationNames() const
 }
 
 
+WorldWrapper::PerformOperationFunction
+  WorldWrapper::operationFunction(
+    int operation_index,
+    const TreePath &path
+  ) const
+{
+  switch (operation_index) {
+    case 0:
+      return
+        [path,this](TreeOperationHandler &handler){
+          int index = world.nMembers();
+          world.addCharmapper();
+          handler.addItem(join(path,index));
+        };
+    case 1:
+      return
+        [path,this](TreeOperationHandler &handler){
+          int index = world.nMembers();
+          world.addScene();
+          handler.addItem(join(path,index));
+        };
+  }
+
+  assert(false);
+}
+
+
 void
   WorldWrapper::withOperations(
     const TreePath &path,
     const OperationVisitor &visitor
   ) const
 {
-  visitor(
-    operationNames()[0],
-    [path,this](TreeOperationHandler &handler){
-      int index = world.nMembers();
-      world.addCharmapper();
-      handler.addItem(join(path,index));
-    }
-  );
-  visitor(
-    operationNames()[1],
-    [path,this](TreeOperationHandler &handler){
-      int index = world.nMembers();
-      world.addScene();
-      handler.addItem(join(path,index));
-    }
-  );
+  visitor(operationNames()[0],operationFunction(0,path));
+  visitor(operationNames()[1],operationFunction(1,path));
 }
 
 

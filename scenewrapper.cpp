@@ -48,6 +48,15 @@ struct FloatWrapper : NumericWrapper {
 
   vector<string> operationNames() const { return {}; }
 
+  virtual PerformOperationFunction
+    operationFunction(
+      int /*operation_index*/,
+      const TreePath &
+    ) const
+  {
+    assert(false);
+  }
+
   void
     withOperations(
       const TreePath &,
@@ -102,6 +111,15 @@ struct Point2DWrapper : VoidWrapper {
 
   vector<string> operationNames() const { return {}; }
 
+  virtual PerformOperationFunction
+    operationFunction(
+      int /*operation_index*/,
+      const TreePath &
+    ) const
+  {
+    assert(false);
+  }
+
   void
     withOperations(
       const TreePath &,
@@ -152,6 +170,15 @@ struct NameWrapper : StringWrapper {
   }
 
   vector<string> operationNames() const { return {}; }
+
+  virtual PerformOperationFunction
+    operationFunction(
+      int /*operation_index*/,
+      const TreePath &
+    ) const
+  {
+    assert(false);
+  }
 
   void
     withOperations(
@@ -227,27 +254,34 @@ struct BodyWrapper : VoidWrapper {
     return {"Add Body"};
   }
 
+  virtual PerformOperationFunction
+    operationFunction(
+      int operation_index,
+      const TreePath &path
+    ) const
+  {
+    switch (operation_index) {
+      case 0:
+        return [notify=notify,&body=body,&scene=scene,path](
+          TreeOperationHandler &handler
+        ){
+          int index = body.nChildren();
+          scene.addChildBodyTo(body);
+          notify(handler);
+          handler.addItem(join(path,index+nBodyAttributes()));
+        };
+    }
+
+    assert(false);
+  }
+
   void
     withOperations(
       const TreePath &path,
       const OperationVisitor &visitor
     ) const override
   {
-    visitor(
-      "Add Body",
-      [notify=notify,&body=body,&scene=scene,path](
-        TreeOperationHandler &handler
-      ){
-#if 1
-	int index = body.nChildren();
-	scene.addChildBodyTo(body);
-	notify(handler);
-	handler.addItem(join(path,index+nBodyAttributes()));
-#else
-        executeOperation(0,path,handler):
-#endif
-      }
-    );
+    visitor("Add Body",operationFunction(0,path));
   }
 
   virtual Diagram *diagramPtr() const { return nullptr; }

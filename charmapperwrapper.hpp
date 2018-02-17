@@ -24,6 +24,12 @@ struct CharmapperWrapper : VoidWrapper {
 
   std::vector<std::string> operationNames() const;
 
+  virtual PerformOperationFunction
+    operationFunction(
+      int operation_index,
+      const TreePath &path
+    ) const;
+
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
