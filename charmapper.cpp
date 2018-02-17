@@ -5,6 +5,8 @@
 
 using std::make_unique;
 using std::cerr;
+using std::vector;
+using std::unique_ptr;
 using MotionPass = Charmapper::MotionPass;
 
 
@@ -13,16 +15,22 @@ Charmapper::MotionPass::MotionPass()
 }
 
 
-void Charmapper::MotionPass::addPosExpr()
+template <typename T>
+static T& create(vector<unique_ptr<T>> &ptr_vector)
 {
-  pos_exprs.push_back(make_unique<PosExpr>());
+  auto ptr = make_unique<T>();
+  T &result = *ptr;
+  ptr_vector.push_back(std::move(ptr));
+  return result;
+}
+
+auto Charmapper::MotionPass::addPosExpr() -> PosExpr&
+{
+  return create<PosExpr>(pos_exprs);
 }
 
 
 MotionPass& Charmapper::addMotionPass()
 {
-  auto motion_pass_ptr = make_unique<MotionPass>();
-  MotionPass &motion_pass = *motion_pass_ptr;
-  passes.push_back(std::move(motion_pass_ptr));
-  return motion_pass;
+  return create<MotionPass>(passes);
 }
