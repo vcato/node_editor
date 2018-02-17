@@ -11,7 +11,7 @@ struct SceneWrapper : VoidWrapper {
 
   SceneWrapper(Scene &scene_arg,NotifyFunction notify);
 
-  std::vector<std::string> operationNames() const;
+  std::vector<OperationName> operationNames() const;
 
   void
     executeOperation(

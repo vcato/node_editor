@@ -30,20 +30,13 @@ using WrapperVisitor = std::function<void(const Wrapper &)>;
 
 
 struct Wrapper {
-  using OperationName = const std::string;
-  using Path = TreePath;
+  using OperationName = std::string;
 
   struct OperationHandler {
-    virtual void addItem(const Path &) = 0;
-    virtual void replaceTreeItems(const Path &path) = 0;
-    virtual void changeEnumerationValues(const Path &path) const = 0;
+    virtual void addItem(const TreePath &) = 0;
+    virtual void replaceTreeItems(const TreePath &) = 0;
+    virtual void changeEnumerationValues(const TreePath &) const = 0;
   };
-
-  using PerformOperationFunction =
-    std::function<void (OperationHandler &)>;
-
-  using OperationVisitor =
-    std::function<void(const OperationName &,PerformOperationFunction)>;
 
   struct Visitor {
     virtual void operator()(const VoidWrapper &) const = 0;
@@ -52,7 +45,7 @@ struct Wrapper {
     virtual void operator()(const StringWrapper &) const = 0;
   };
 
-  virtual std::vector<std::string> operationNames() const = 0;
+  virtual std::vector<OperationName> operationNames() const = 0;
 
   virtual void
     executeOperation(
@@ -100,7 +93,7 @@ struct Wrapper {
     );
   }
 
-  int nChildren(const Path &path) const
+  int nChildren(const TreePath &path) const
   {
     int result = 0;
 
@@ -118,7 +111,7 @@ struct Wrapper {
 
   virtual Diagram *diagramPtr() const = 0;
 
-  Diagram *diagramPtr(const Path &path);
+  Diagram *diagramPtr(const TreePath &path);
 
   virtual void accept(const Visitor &) const = 0;
 

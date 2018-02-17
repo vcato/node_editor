@@ -46,7 +46,7 @@ struct FloatWrapper : NumericWrapper {
   {
   }
 
-  vector<string> operationNames() const { return {}; }
+  vector<OperationName> operationNames() const { return {}; }
 
   void
     executeOperation(
