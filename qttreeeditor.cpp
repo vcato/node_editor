@@ -259,7 +259,8 @@ void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 
   bool created = false;
 
-  world().visitWrapper(
+  visitSubWrapper(
+    world(),
     new_item_path,
     [&](const Wrapper &w){
       CreateChildItemVisitor
@@ -278,9 +279,20 @@ void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 }
 
 
+static int nChildren(const Wrapper &wrapper,const TreePath &path)
+{
+  int n_children = 0;
+
+  auto get_n_children_function =
+    [&](const Wrapper &sub_wrapper){ n_children = sub_wrapper.nChildren(); };
+  visitSubWrapper(wrapper,path,get_n_children_function);
+  return n_children;
+}
+
+
 void QtTreeEditor::addTreeItems(const TreePath &parent_path)
 {
-  int n_children = world().nChildren(parent_path);
+  int n_children = nChildren(world(),parent_path);
   for (int i=0; i!=n_children; ++i) {
     addTreeItem(join(parent_path,i));
   }
@@ -335,7 +347,8 @@ static void
     std::function<void(const EnumerationWrapper &)> f
   )
 {
-  wrapper.visitWrapper(
+  visitSubWrapper(
+    wrapper,
     path,
     [&](const Wrapper &sub_wrapper){
       sub_wrapper.accept(EnumerationVisitor(f));
@@ -423,7 +436,8 @@ void
 
   TreePath path = itemPath(*item_ptr);
 
-  world().visitWrapper(
+  visitSubWrapper(
+    world(),
     path,
     [&](const Wrapper &wrapper){
       wrapper.accept(
@@ -476,7 +490,8 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 
   QMenu menu;
   list<QtSlot> item_slots;
-  world().visitWrapper(
+  visitSubWrapper(
+    world(),
     path,
     [&](const Wrapper &wrapper){
       std::vector<std::string> operation_names = wrapper.operationNames();
@@ -486,7 +501,8 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
         QAction &action = createAction(menu,operation_names[i]);
         auto perform_operation_function =
           [this,i,path](){
-            world().visitWrapper(
+            visitSubWrapper(
+              world(),
               path,
               [&](const Wrapper &wrapper){
                 OperationHandler operation_handler(*this);

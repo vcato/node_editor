@@ -10,7 +10,8 @@ using std::ostream;
 static void
   printOperations(ostream &stream,const Wrapper &wrapper,const TreePath &path)
 {
-  wrapper.visitWrapper(
+  visitSubWrapper(
+    wrapper,
     path,
     [&](const Wrapper &sub_wrapper){
       stream << sub_wrapper.label() << " operations:\n";
@@ -52,7 +53,8 @@ void
     Wrapper::OperationHandler &handler
   )
 {
-  world_wrapper.visitWrapper(
+  visitSubWrapper(
+    world_wrapper,
     scene_path,
     [&](const Wrapper &sub_wrapper){
       executeAddBodyFunction(sub_wrapper,scene_path,handler);

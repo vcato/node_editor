@@ -13,7 +13,8 @@ Diagram *Wrapper::diagramPtr(const TreePath &path)
 {
   Diagram *result_ptr = 0;
 
-  visitWrapper(
+  visitSubWrapper(
+    *this,
     path,
     [&result_ptr](const Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
   );

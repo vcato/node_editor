@@ -99,7 +99,8 @@ static void
 static void
   addBodyTo(const Wrapper &wrapper,const TreePath &path,ostream &stream)
 {
-  wrapper.visitWrapper(
+  visitSubWrapper(
+    wrapper,
     path,
     [&](const Wrapper &body_wrapper){
       addBody2(body_wrapper,path,stream);

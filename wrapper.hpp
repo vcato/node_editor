@@ -60,53 +60,6 @@ struct Wrapper {
       const WrapperVisitor &visitor
     ) const = 0;
 
-  void
-    visitWrapper(
-      const TreePath &path,
-      const WrapperVisitor &visitor
-    ) const
-  {
-    visitWrapper(path,0,visitor);
-  }
-
-  void
-    visitWrapper(
-      const TreePath &path,
-      int depth,
-      const WrapperVisitor &visitor
-    ) const
-  {
-    int path_length = path.size();
-
-    if (depth==path_length) {
-      visitor(*this);
-      return;
-    }
-
-    int child_index = path[depth];
-
-    withChildWrapper(
-      child_index,
-      [&](const Wrapper &wrapper){
-        wrapper.visitWrapper(path,depth+1,visitor);
-      }
-    );
-  }
-
-  int nChildren(const TreePath &path) const
-  {
-    int result = 0;
-
-    visitWrapper(
-      path,
-      [&](const Wrapper &wrapper){
-	result = wrapper.nChildren();
-      }
-    );
-
-    return result;
-  }
-
   virtual int nChildren() const = 0;
 
   virtual Diagram *diagramPtr() const = 0;
@@ -117,6 +70,32 @@ struct Wrapper {
 
   virtual std::string label() const = 0;
 };
+
+
+inline void
+  visitSubWrapper(
+    const Wrapper &wrapper,
+    const TreePath &path,
+    const WrapperVisitor &visitor,
+    int depth = 0
+  )
+{
+  int path_length = path.size();
+
+  if (depth==path_length) {
+    visitor(wrapper);
+    return;
+  }
+
+  int child_index = path[depth];
+
+  wrapper.withChildWrapper(
+    child_index,
+    [&](const Wrapper &child_wrapper){
+      visitSubWrapper(child_wrapper,path,visitor,depth+1);
+    }
+  );
+}
 
 
 struct VoidWrapper : Wrapper {

@@ -103,7 +103,8 @@ static void withASceneAndCharmapperTestChangingABodyPositionInTheScene()
   Scene &scene = world.addScene(); // child 1
   scene.addBody(); // child 0
   WorldWrapper world_wrapper(world);
-  world_wrapper.visitWrapper(
+  visitSubWrapper(
+    world_wrapper,
     {/*scene*/1,/*body*/0,/*position*/1,/*x*/0},
     [](const Wrapper &sub_wrapper){
       sub_wrapper.accept(NumericVisitor(
