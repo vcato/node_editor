@@ -34,7 +34,7 @@ void World::addScene()
 }
 
 
-void World::visitMember(int child_index,MemberVisitor &visitor)
+void World::visitMember(int child_index,const MemberVisitor &visitor)
 {
   assert(world_members[child_index]);
   World::Member &child = *world_members[child_index];
@@ -42,7 +42,8 @@ void World::visitMember(int child_index,MemberVisitor &visitor)
 }
 
 
-void World::visitMember(int child_index,ConstMemberVisitor &visitor) const
+void
+  World::visitMember(int child_index, const ConstMemberVisitor &visitor) const
 {
   assert(world_members[child_index]);
   const World::Member &child = *world_members[child_index];

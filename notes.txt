@@ -309,4 +309,6 @@ mistakes where the functions aren't capturing enough information and
 it also lets us get a list of operations for a wrapper without having
 to pass it a path.
 
-Need to allow the World::MemberVisitor be const when passed to visitMember().
+I tried to add a charmapper, motion pass, pos expr,  and then add a scene, then
+add a body to the scene.  The target body combobox in the pos expr didn't
+update.

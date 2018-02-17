@@ -17,20 +17,20 @@ class World {
     struct ConstMemberVisitor;
 
     struct Member {
-      virtual void accept(MemberVisitor &) = 0;
-      virtual void acceptConst(ConstMemberVisitor &) const = 0;
+      virtual void accept(const MemberVisitor &) = 0;
+      virtual void acceptConst(const ConstMemberVisitor &) const = 0;
       virtual ~Member() {}
     };
 
     struct CharmapperMember : Member {
       Charmapper charmapper;
 
-      virtual void accept(MemberVisitor &visitor)
+      virtual void accept(const MemberVisitor &visitor)
       {
         visitor.visitCharmapper(*this);
       }
 
-      virtual void acceptConst(ConstMemberVisitor &visitor) const
+      virtual void acceptConst(const ConstMemberVisitor &visitor) const
       {
         visitor.visitCharmapper(*this);
       }
@@ -40,31 +40,31 @@ class World {
       Scene scene;
       SceneViewer *scene_viewer_ptr = nullptr;
 
-      virtual void accept(MemberVisitor &visitor)
+      virtual void accept(const MemberVisitor &visitor)
       {
         visitor.visitScene(*this);
       }
 
-      virtual void acceptConst(ConstMemberVisitor &visitor) const
+      virtual void acceptConst(const ConstMemberVisitor &visitor) const
       {
         visitor.visitScene(*this);
       }
     };
 
     struct MemberVisitor {
-      virtual void visitCharmapper(CharmapperMember &) = 0;
-      virtual void visitScene(SceneMember &) = 0;
+      virtual void visitCharmapper(CharmapperMember &) const = 0;
+      virtual void visitScene(SceneMember &) const = 0;
     };
 
     struct ConstMemberVisitor {
-      virtual void visitCharmapper(const CharmapperMember &) = 0;
-      virtual void visitScene(const SceneMember &) = 0;
+      virtual void visitCharmapper(const CharmapperMember &) const = 0;
+      virtual void visitScene(const SceneMember &) const = 0;
     };
 
     Charmapper& addCharmapper();
     void addScene();
-    void visitMember(int child_index,MemberVisitor &);
-    void visitMember(int child_index,ConstMemberVisitor &) const;
+    void visitMember(int child_index,const MemberVisitor &);
+    void visitMember(int child_index,const ConstMemberVisitor &) const;
     int nMembers() const { return world_members.size(); }
 
   private:

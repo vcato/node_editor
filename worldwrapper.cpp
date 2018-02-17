@@ -55,11 +55,11 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
       {
       }
 
-      virtual void visitCharmapper(const World::CharmapperMember &)
+      virtual void visitCharmapper(const World::CharmapperMember &) const
       {
       }
 
-      virtual void visitScene(const World::SceneMember &scene_member)
+      virtual void visitScene(const World::SceneMember &scene_member) const
       {
         ++scene_index;
 
@@ -114,7 +114,7 @@ static void
       }
 
       virtual void
-        visitCharmapper(World::CharmapperMember &charmapper_member)
+        visitCharmapper(World::CharmapperMember &charmapper_member) const
       {
 	CharmapperWrapper(
 	  charmapper_member.charmapper,
@@ -122,7 +122,7 @@ static void
 	).handleSceneChange(operation_handler,{member_index});
       }
 
-      virtual void visitScene(World::SceneMember &)
+      virtual void visitScene(World::SceneMember &) const
       {
       }
     };
@@ -148,12 +148,12 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   {
   }
 
-  virtual void visitCharmapper(World::CharmapperMember &member)
+  virtual void visitCharmapper(World::CharmapperMember &member) const
   {
     visitor(CharmapperWrapper{member.charmapper,WorldSceneList(world)});
   }
 
-  virtual void visitScene(World::SceneMember &member)
+  virtual void visitScene(World::SceneMember &member) const
   {
     auto notify =
       [&,&world=world]
