@@ -62,7 +62,7 @@ class World {
     };
 
     Charmapper& addCharmapper();
-    void addScene();
+    Scene& addScene();
     void visitMember(int child_index,const MemberVisitor &);
     void visitMember(int child_index,const ConstMemberVisitor &) const;
     int nMembers() const { return world_members.size(); }

@@ -16,7 +16,7 @@ World::~World()
 }
 
 
-Charmapper &World::addCharmapper()
+Charmapper& World::addCharmapper()
 {
   auto charmapper_member_ptr = make_unique<CharmapperMember>();
   Charmapper &charmapper = charmapper_member_ptr->charmapper;
@@ -25,12 +25,14 @@ Charmapper &World::addCharmapper()
 }
 
 
-void World::addScene()
+Scene& World::addScene()
 {
   unique_ptr<SceneMember> scene_object_ptr = make_unique<SceneMember>();
+  Scene& scene = scene_object_ptr->scene;
   SceneViewer &scene_viewer = createSceneViewerWindow(*scene_object_ptr);
   scene_object_ptr->scene_viewer_ptr = &scene_viewer;
   world_members.push_back(std::move(scene_object_ptr));
+  return scene;
 }
 
 

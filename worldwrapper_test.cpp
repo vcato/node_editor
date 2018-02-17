@@ -62,7 +62,7 @@ struct FakeWorld : World {
 }
 
 
-static void testAddingABodyToTheSceneWithACharmapper()
+static void withASceneAndCharmapperTestAddingABodyToTheScene()
 {
   // Create a world with a charmapper and a scene.
   //  Charmapper should have a motion pass with a position expression.
@@ -94,7 +94,32 @@ static void testAddingABodyToTheSceneWithACharmapper()
 }
 
 
+static void withASceneAndCharmapperTestChangingABodyPositionInTheScene()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  motion_pass.addPosExpr();
+  Scene &scene = world.addScene(); // child 1
+  scene.addBody(); // child 0
+  WorldWrapper world_wrapper(world);
+  world_wrapper.visitWrapper(
+    {/*scene*/1,/*body*/0,/*position*/1,/*x*/0},
+    [](const Wrapper &sub_wrapper){
+      sub_wrapper.accept(NumericVisitor(
+        [](const NumericWrapper &x_wrapper){
+          x_wrapper.setValue(1);
+        }
+      ));
+    }
+  );
+
+  // Just making sure it doesn't crash.
+}
+
+
 int main()
 {
-  testAddingABodyToTheSceneWithACharmapper();
+  withASceneAndCharmapperTestAddingABodyToTheScene();
+  withASceneAndCharmapperTestChangingABodyPositionInTheScene();
 }

@@ -23,7 +23,6 @@ namespace {
 
     virtual void changeEnumerationValues(const TreePath &) const
     {
-      assert(false);
     }
   };
 }

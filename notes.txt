@@ -292,3 +292,7 @@ of the appropriate type.  Not clear if it is worth it yet.
 It would be convenient if we had Wrapper::accept methods which took
 functions for specific types of wrappers.  It would call the function
 if the wrapper had the appropriate type, and assert otherwise.
+
+Crash if we try to change the position of a body when we have a pos expr.
+
+Rename Wrapper::visitWrapper() to visitSubWrapper()

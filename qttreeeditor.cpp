@@ -328,39 +328,6 @@ void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
 }
 
 
-namespace {
-struct EnumerationVisitor : Wrapper::Visitor {
-  using Function = std::function<void(const EnumerationWrapper &)>;
-  Function function;
-
-  EnumerationVisitor(const Function &function_arg)
-  : function(function_arg)
-  {
-  }
-
-  virtual void operator()(const VoidWrapper &) const
-  {
-    assert(false);
-  }
-
-  virtual void operator()(const NumericWrapper &) const
-  {
-    assert(false);
-  }
-
-  virtual void operator()(const EnumerationWrapper &wrapper) const
-  {
-    function(wrapper);
-  }
-
-  virtual void operator()(const StringWrapper &) const
-  {
-    assert(false);
-  }
-};
-}
-
-
 static void
   visitEnumeration(
     const Wrapper &wrapper,
@@ -455,36 +422,6 @@ void
   assert(item_ptr);
 
   TreePath path = itemPath(*item_ptr);
-
-  struct NumericVisitor : Wrapper::Visitor {
-    using Function = std::function<void(const NumericWrapper &)>;
-    Function function;
-
-    NumericVisitor(const Function &function_arg)
-    : function(function_arg)
-    {
-    }
-
-    virtual void operator()(const VoidWrapper &) const
-    {
-      assert(false);
-    }
-
-    virtual void operator()(const NumericWrapper &wrapper) const
-    {
-      function(wrapper);
-    }
-
-    virtual void operator()(const EnumerationWrapper &) const
-    {
-      assert(false);
-    }
-
-    virtual void operator()(const StringWrapper &) const
-    {
-      assert(false);
-    }
-  };
 
   world().visitWrapper(
     path,
