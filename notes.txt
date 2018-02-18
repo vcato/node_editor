@@ -262,3 +262,23 @@ functions for specific types of wrappers.  It would call the function
 if the wrapper had the appropriate type, and assert otherwise.
 
 Change the Local and Global positions in charmapper to just be 2D.
+
+Want to be able to use charmapper to actually manipulate a body.
+Add a charmapper
+add a scene
+add a body to the scene
+add motion pass to charmapper
+add a pos expr to the motion pass
+set the target body to the body in the scene
+set the x value of the global position to 15
+check that the body has a position of 15.
+
+We'll have to deal with the scene changing as far as updating charmapper
+to refer to the appropriate body.
+* We could add a body to the scene and have the old bodies move in memory.
+* We could remove a body from the scene that charmapper was referring to.
+
+If we make sure the bodies don't move in memory, then we could get away
+with just having a body pre-remove callback.
+
+Need to finish the test in wrapper_test

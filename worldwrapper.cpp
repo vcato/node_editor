@@ -13,7 +13,7 @@ using std::ostringstream;
 
 static void
   forEachBody(
-    const vector<Scene::Body> &bodies,
+    const Scene::Bodies &bodies,
     const std::function<void(const Scene::Body &)> &f
   )
 {

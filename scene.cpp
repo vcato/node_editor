@@ -34,17 +34,17 @@ string Scene::newBodyName() const
 }
 
 
-void Scene::addBody()
+auto Scene::addBody() -> Body &
 {
   string name = newBodyName();
 
-  bodies_member.push_back(Body());
-  Body &new_body = bodies_member.back();
+  Body& new_body = createChild(bodies_member);
   new_body.name = name;
+  return new_body;
 }
 
 
-bool Scene::hasBody(const vector<Body> &bodies,const std::string &name) const
+bool Scene::hasBody(const Bodies &bodies,const std::string &name) const
 {
   for (const Body &body : bodies) {
     if (body.name==name) {
@@ -69,6 +69,6 @@ bool Scene::hasBody(const std::string &name) const
 void Scene::addChildBodyTo(Body &parent)
 {
   string name = newBodyName();
-  parent.addChild();
-  parent.children.back().name = name;
+  Body &child = parent.addChild();
+  child.name = name;
 }

@@ -62,7 +62,8 @@ struct FakeWorld : World {
 }
 
 
-static void withASceneAndCharmapperTestAddingABodyToTheScene()
+namespace scene_and_charmapper_tests {
+static void testAddingABodyToTheScene()
 {
   // Create a world with a charmapper and a scene.
   //  Charmapper should have a motion pass with a position expression.
@@ -92,9 +93,11 @@ static void withASceneAndCharmapperTestAddingABodyToTheScene()
     "changeEnumerationValues([0,0,0,2,0])\n";
   assert(command_string==expected_command_string);
 }
+}
 
 
-static void withASceneAndCharmapperTestChangingABodyPositionInTheScene()
+namespace scene_and_charmapper_tests {
+static void testChangingABodyPositionInTheScene()
 {
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
@@ -117,10 +120,55 @@ static void withASceneAndCharmapperTestChangingABodyPositionInTheScene()
 
   // Just making sure it doesn't crash.
 }
+}
+
+
+namespace scene_and_charmapper_tests {
+static void testUsingCharmapperToMoveABody()
+{
+  FakeWorld world;
+
+  // Add a charmapper
+  Charmapper &charmapper = world.addCharmapper();
+  // add a scene
+  Scene &scene = world.addScene();
+  // add a body to the scene
+  Scene::Body &body = scene.addBody();
+  // add motion pass to charmapper
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  // add a pos expr to the motion pass
+  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  // set the target body to the body in the scene
+  pos_expr.target_body_ptr = &body;
+  // set the x value of the global position to 15
+  WorldWrapper wrapper(world);
+#if 0
+  TreePath path =
+    makePath(wrapper,"charmapper|motion pass|pos expr|global position|x");
+  visitSubWrapper(
+    wrapper,
+    path,
+    [](const Wrapper &sub_wrapper){
+      sub_wrapper.accept(
+        NumericVisitor([](const NumericWrapper &numeric_wrapper){
+          numeric_wrapper.setValue(15);
+        })
+      )
+    }
+  );
+#endif
+
+  // check that the body has a position of 15.
+}
+}
 
 
 int main()
 {
-  withASceneAndCharmapperTestAddingABodyToTheScene();
-  withASceneAndCharmapperTestChangingABodyPositionInTheScene();
+  {
+    namespace tests = scene_and_charmapper_tests;
+    tests::testAddingABodyToTheScene();
+    tests::testChangingABodyPositionInTheScene();
+    tests::testUsingCharmapperToMoveABody();
+  }
 }

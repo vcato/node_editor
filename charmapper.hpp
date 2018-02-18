@@ -6,6 +6,7 @@
 #include <cassert>
 #include "diagram.hpp"
 #include "defaultdiagrams.hpp"
+#include "scene.hpp"
 
 
 struct Charmapper {
@@ -95,6 +96,7 @@ struct Charmapper {
       Diagram diagram;
       Position local_position;
       GlobalPosition global_position;
+      Scene::Body *target_body_ptr = nullptr;
 
       PosExpr()
       : diagram(posExprDiagram()),
