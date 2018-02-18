@@ -29,7 +29,7 @@ namespace {
 
 
 namespace {
-struct FloatWrapper : NumericWrapper {
+struct FloatWrapper : LeafWrapper<NumericWrapper> {
   const char *label_member;
   float &value;
   const NotifyFunction &notify;
@@ -56,16 +56,6 @@ struct FloatWrapper : NumericWrapper {
   {
     assert(false);
   }
-
-  void
-    withChildWrapper(
-      int /*child_index*/,
-      const WrapperVisitor &
-    ) const override
-  {
-  }
-
-  int nChildren() const override { return 0; }
 
   Diagram *diagramPtr() const override { return nullptr; }
 
@@ -144,7 +134,7 @@ struct Point2DWrapper : VoidWrapper {
 
 
 namespace {
-struct NameWrapper : StringWrapper {
+struct NameWrapper : LeafWrapper<StringWrapper> {
   const char *label_member;
   const std::string &name;
 
@@ -161,17 +151,6 @@ struct NameWrapper : StringWrapper {
       int /*operation_index*/,
       const TreePath &,
       OperationHandler &
-    ) const override
-  {
-    assert(false);
-  }
-
-  int nChildren() const override { return 0; }
-
-  void
-    withChildWrapper(
-      int /*child_index*/,
-      const WrapperVisitor &
     ) const override
   {
     assert(false);

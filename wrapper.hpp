@@ -72,6 +72,24 @@ struct Wrapper {
 };
 
 
+template <typename T>
+struct LeafWrapper : T {
+  void
+    withChildWrapper(
+      int /*child_index*/,
+      const WrapperVisitor &
+    ) const override
+  {
+    assert(false);
+  }
+
+  int nChildren() const override
+  {
+    return 0;
+  }
+};
+
+
 inline void
   visitSubWrapper(
     const Wrapper &wrapper,

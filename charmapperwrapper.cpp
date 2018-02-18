@@ -24,7 +24,7 @@ struct MotionPassWrapper : VoidWrapper {
   MotionPass &motion_pass;
   const SceneList &scene_list;
 
-  struct ChannelWrapper : NumericWrapper {
+  struct ChannelWrapper : LeafWrapper<NumericWrapper> {
     Channel &channel;
     const char *label_member;
 
@@ -54,19 +54,9 @@ struct MotionPassWrapper : VoidWrapper {
       return &channel.diagram;
     }
 
-    void withChildWrapper(int /*child_index*/,const WrapperVisitor &) const
-    {
-      assert(false);
-    }
-
     virtual std::string label() const
     {
       return label_member;
-    }
-
-    virtual int nChildren() const
-    {
-      return 0;
     }
 
     virtual void setValue(int) const
@@ -310,7 +300,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct BodyWrapper : EnumerationWrapper {
+  struct BodyWrapper : LeafWrapper<EnumerationWrapper> {
     const SceneList &scene_list;
 
     BodyWrapper(const SceneList &scene_list_arg)
@@ -333,11 +323,6 @@ struct MotionPassWrapper : VoidWrapper {
       assert(false);
     }
 
-    void withChildWrapper(int /*child_index*/,const WrapperVisitor &) const
-    {
-      assert(false);
-    }
-
     virtual Diagram *diagramPtr() const
     {
       return nullptr;
@@ -350,11 +335,6 @@ struct MotionPassWrapper : VoidWrapper {
         OperationHandler &
       ) const override
     {
-    }
-
-    int nChildren() const override
-    {
-      return 0;
     }
 
     void
