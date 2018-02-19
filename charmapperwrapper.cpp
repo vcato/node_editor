@@ -225,7 +225,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
 
     virtual void
-      comboBoxItemIndexChanged(
+      setValue(
         const TreePath &path,
         int index,
         OperationHandler &operation_handler
@@ -281,7 +281,7 @@ struct MotionPassWrapper : VoidWrapper {
     std::string label() const override { return label_member; }
 
     void
-      comboBoxItemIndexChanged(
+      setValue(
         const TreePath &,
         int index,
         OperationHandler &

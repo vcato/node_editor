@@ -201,7 +201,7 @@ struct EnumerationWrapper : Wrapper {
   virtual std::vector<std::string> enumerationNames() const = 0;
 
   virtual void
-    comboBoxItemIndexChanged(
+    setValue(
       const TreePath &path,
       int index,
       OperationHandler &operation_handler

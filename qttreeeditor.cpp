@@ -423,7 +423,7 @@ void
     world(),
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
-      enumeration_wrapper.comboBoxItemIndexChanged(
+      enumeration_wrapper.setValue(
         path,index,operation_handler
       );
     }

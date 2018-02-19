@@ -135,7 +135,7 @@ static void testTargetBodyPtr()
   Charmapper &charmapper = world.addCharmapper();
   Scene &scene = world.addScene();
   Body &body = scene.addBody();
-  /*Charmapper::MotionPass &motion_pass =*/ charmapper.addMotionPass();
+  charmapper.addMotionPass();
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
   FakeOperationHandler operation_handler(command_stream);
@@ -153,7 +153,7 @@ static void testTargetBodyPtr()
       wrapper.accept(
         EnumerationVisitor(
           [&](const EnumerationWrapper &enumeration_wrapper){
-            enumeration_wrapper.comboBoxItemIndexChanged(
+            enumeration_wrapper.setValue(
               path,/*index*/1,operation_handler
             );
           }
