@@ -3,6 +3,7 @@
 #include <cassert>
 #include <string>
 #include <sstream>
+#include <algorithm>
 #include "world.hpp"
 #include "wrapperutil.hpp"
 #include "streamvector.hpp"
@@ -127,11 +128,27 @@ static void testChangingABodyPositionInTheScene()
 
 
 namespace {
+static int
+  enumerationLabelIndex(const EnumerationWrapper &wrapper,const string &label)
+{
+  auto names = wrapper.enumerationNames();
+  auto iter = std::find(names.begin(),names.end(),label);
+  if (iter==names.end()) {
+    cerr << "Can't find enumeration label " << label << "\n";
+    cerr << "labels: " << names << "\n";
+  }
+  assert(iter!=names.end());
+  return iter-names.begin();
+}
+}
+
+
+namespace {
 static void
   setEnumerationValue(
     const Wrapper &world_wrapper,
     const TreePath &path,
-    int index,
+    const string &enumeration_label,
     Wrapper::OperationHandler &operation_handler
   )
 {
@@ -142,6 +159,8 @@ static void
       wrapper.accept(
         EnumerationVisitor(
           [&](const EnumerationWrapper &enumeration_wrapper){
+            int index =
+              enumerationLabelIndex(enumeration_wrapper,enumeration_label);
             enumeration_wrapper.setValue(path,index,operation_handler);
           }
         )
@@ -196,6 +215,8 @@ static void testChangingTheTargetBody()
     executeOperation2(world_wrapper,path,"Add Pos Expr",operation_handler);
   }
 
+  Charmapper::MotionPass::PosExpr &pos_expr = charmapper.pass(0).expr(0);
+
   {
     TreePath path =
       makePath(
@@ -205,19 +226,29 @@ static void testChangingTheTargetBody()
     setNumericValue(world_wrapper,path,15);
   }
 
-  assert(!charmapper.pass(0).expr(0).hasATargetBody());
+  assert(!pos_expr.hasATargetBody());
 
-  {
-    TreePath path =
-      makePath(world_wrapper,"Charmapper|Motion Pass|Pos Expr|Target Body");
-    setEnumerationValue(world_wrapper,path,/*index*/1,operation_handler);
-  }
-  {
-    Body *target_body_ptr = charmapper.pass(0).expr(0).target_body_ptr;
-    assert(target_body_ptr);
-    assert(target_body_ptr==&body);
-    assert(body.position.x==15);
-  }
+  TreePath target_body_path =
+    makePath(world_wrapper,"Charmapper|Motion Pass|Pos Expr|Target Body");
+
+  setEnumerationValue(
+    world_wrapper,
+    target_body_path,
+    "scene 0:Body1",
+    operation_handler
+  );
+
+  assert(pos_expr.target_body_ptr==&body);
+  assert(body.position.x==15);
+
+  setEnumerationValue(
+    world_wrapper,
+    target_body_path,
+    "None",
+    operation_handler
+  );
+
+  assert(!pos_expr.target_body_ptr);
 }
 }
 

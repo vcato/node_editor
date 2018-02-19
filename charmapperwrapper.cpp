@@ -308,10 +308,12 @@ struct MotionPassWrapper : VoidWrapper {
       assert(index>=0);
 
       if (index==0) {
-        assert(false);
+        body_ptr = nullptr;
+      }
+      else {
+        body_ptr = callbacks.scene_list.allBodyPtrs()[index-1];
       }
 
-      body_ptr = callbacks.scene_list.allBodyPtrs()[index-1];
       callbacks.notifyCharmapChanged();
     }
   };
