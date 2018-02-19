@@ -20,7 +20,6 @@ struct SceneWrapper : VoidWrapper {
       OperationHandler &handler
     ) const override;
 
-  virtual Diagram *diagramPtr() const { return nullptr; }
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
   std::string label() const override { return "Scene"; }
   int nChildren() const override { return scene.nBodies(); }

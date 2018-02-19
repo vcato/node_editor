@@ -62,9 +62,7 @@ struct Wrapper {
 
   virtual int nChildren() const = 0;
 
-  virtual Diagram *diagramPtr() const = 0;
-
-  Diagram *diagramPtr(const TreePath &path);
+  virtual Diagram *diagramPtr() const { return nullptr; }
 
   virtual void accept(const Visitor &) const = 0;
 

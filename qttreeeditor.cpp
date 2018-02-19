@@ -459,13 +459,32 @@ QtDiagramEditor &QtTreeEditor::diagramEditor()
 }
 
 
+static Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path)
+{
+  Diagram *result_ptr = 0;
+
+  visitSubWrapper(
+    wrapper,
+    path,
+    [&result_ptr](const Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
+  );
+
+  if (!result_ptr) {
+    cerr << "No diagram found for " << path << "\n";
+    return nullptr;
+  }
+
+  return result_ptr;
+}
+
+
 Diagram *QtTreeEditor::maybeSelectedDiagram()
 {
   QTreeWidgetItem *selected_item_ptr = findSelectedItem();
   Diagram *diagram_ptr = 0;
 
   if (selected_item_ptr) {
-    diagram_ptr = world().diagramPtr(itemPath(*selected_item_ptr));
+    diagram_ptr = diagramPtr(world(),itemPath(*selected_item_ptr));
   }
 
   return diagram_ptr;

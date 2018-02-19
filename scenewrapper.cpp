@@ -45,8 +45,6 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   {
   }
 
-  Diagram *diagramPtr() const override { return nullptr; }
-
   std::string label() const override
   {
     return label_member;
@@ -99,8 +97,6 @@ struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
 
   int nChildren() const override { return 2; }
 
-  virtual Diagram *diagramPtr() const { return nullptr; }
-
   std::string label() const override
   {
     return label_member;
@@ -119,8 +115,6 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
     name(name_arg)
   {
   }
-
-  Diagram *diagramPtr() const override { return nullptr; }
 
   std::string label() const override { return label_member; }
 
@@ -195,8 +189,6 @@ struct BodyWrapper : VoidWrapper {
 
     assert(false);
   }
-
-  virtual Diagram *diagramPtr() const { return nullptr; }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {

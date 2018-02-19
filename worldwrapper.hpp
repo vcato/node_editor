@@ -24,8 +24,6 @@ struct WorldWrapper : VoidWrapper
       int child_index,const WrapperVisitor &visitor
     ) const;
 
-  virtual Diagram *diagramPtr() const { return nullptr; }
-
   virtual std::string label() const
   {
     assert(false);

@@ -5,26 +5,10 @@
 using std::string;
 
 
-#if 0
 namespace {
-struct TestWrapper : VoidWrapper {
-  virtual std::vector<OperationName> operationNames() const
-  {
-    return {};
-  }
-
-  virtual void
-    executeOperation(
-      int /*operation_index*/,
-      const TreePath &/*path*/,
-      OperationHandler &/*handler*/
-    ) const
-  {
-    assert(false);
-  }
+struct TestWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
 };
 }
-#endif
 
 
 #if 0

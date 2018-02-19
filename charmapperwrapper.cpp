@@ -34,7 +34,7 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    virtual Diagram *diagramPtr() const
+    Diagram *diagramPtr() const override
     {
       return &channel.diagram;
     }
@@ -59,7 +59,7 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    virtual Diagram *diagramPtr() const
+    Diagram *diagramPtr() const override
     {
       return &position.diagram;
     }
@@ -197,7 +197,7 @@ struct MotionPassWrapper : VoidWrapper {
       return n_children;
     }
 
-    virtual Diagram *diagramPtr() const
+    Diagram *diagramPtr() const override
     {
       return &global_position.diagram;
     }
@@ -248,11 +248,6 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    virtual Diagram *diagramPtr() const
-    {
-      return nullptr;
-    }
-
     void
       comboBoxItemIndexChanged(
         const TreePath &,
@@ -300,7 +295,7 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    virtual Diagram *diagramPtr() const
+    Diagram *diagramPtr() const override
     {
       return &pos_expr.diagram;
     }
@@ -365,8 +360,6 @@ struct MotionPassWrapper : VoidWrapper {
 
     assert(false);
   }
-
-  virtual Diagram *diagramPtr() const { return nullptr; }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
