@@ -24,7 +24,7 @@ struct MotionPassWrapper : VoidWrapper {
   MotionPass &motion_pass;
   const SceneList &scene_list;
 
-  struct ChannelWrapper : LeafWrapper<NumericWrapper> {
+  struct ChannelWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     Channel &channel;
     const char *label_member;
 
@@ -32,21 +32,6 @@ struct MotionPassWrapper : VoidWrapper {
     : channel(channel_arg),
       label_member(label_arg)
     {
-    }
-
-    virtual std::vector<std::string> operationNames() const
-    {
-      return {};
-    }
-
-    void
-      executeOperation(
-        int /*operation_index*/,
-        const TreePath &,
-        OperationHandler &
-      ) const override
-    {
-      assert(false);
     }
 
     virtual Diagram *diagramPtr() const
@@ -64,7 +49,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct PositionWrapper : VoidWrapper {
+  struct PositionWrapper : NoOperationWrapper<VoidWrapper> {
     Position &position;
     const char *label_member;
 
@@ -72,21 +57,6 @@ struct MotionPassWrapper : VoidWrapper {
     : position(position_arg),
       label_member(label_arg)
     {
-    }
-
-    virtual std::vector<std::string> operationNames() const
-    {
-      return {};
-    }
-
-    void
-      executeOperation(
-        int /*operation_index*/,
-        const TreePath &,
-        OperationHandler &
-      ) const override
-    {
-      assert(false);
     }
 
     virtual Diagram *diagramPtr() const
@@ -117,7 +87,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct FromBodyGlobalPositionWrapper : VoidWrapper {
+  struct FromBodyGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
     FromBodyGlobalPositionData &from_body_global_position;
     const SceneList &scene_list;
 
@@ -146,21 +116,6 @@ struct MotionPassWrapper : VoidWrapper {
       }
     }
 
-    virtual std::vector<std::string> operationNames() const
-    {
-      assert(false);
-    }
-
-    void
-      executeOperation(
-        int /*operation_index*/,
-        const TreePath &,
-        OperationHandler &
-      ) const override
-    {
-      assert(false);
-    }
-
     virtual Diagram *diagramPtr() const
     {
       assert(false);
@@ -177,7 +132,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct GlobalPositionWrapper : EnumerationWrapper {
+  struct GlobalPositionWrapper : NoOperationWrapper<EnumerationWrapper> {
     GlobalPosition &global_position;
     const SceneList &scene_list;
 
@@ -242,21 +197,6 @@ struct MotionPassWrapper : VoidWrapper {
       return n_children;
     }
 
-    virtual std::vector<std::string> operationNames() const
-    {
-      return {};
-    }
-
-    void
-      executeOperation(
-        int /*operation_index*/,
-        const TreePath &,
-        OperationHandler &
-      ) const override
-    {
-      assert(false);
-    }
-
     virtual Diagram *diagramPtr() const
     {
       return &global_position.diagram;
@@ -300,27 +240,12 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct BodyWrapper : LeafWrapper<EnumerationWrapper> {
+  struct BodyWrapper : NoOperationWrapper<LeafWrapper<EnumerationWrapper>> {
     const SceneList &scene_list;
 
     BodyWrapper(const SceneList &scene_list_arg)
     : scene_list(scene_list_arg)
     {
-    }
-
-    virtual std::vector<std::string> operationNames() const
-    {
-      return {};
-    }
-
-    void
-      executeOperation(
-        int /*operation_index*/,
-        const TreePath &,
-        OperationHandler &
-      ) const override
-    {
-      assert(false);
     }
 
     virtual Diagram *diagramPtr() const
@@ -365,7 +290,7 @@ struct MotionPassWrapper : VoidWrapper {
   };
 
 
-  struct PosExprWrapper : VoidWrapper {
+  struct PosExprWrapper : NoOperationWrapper<VoidWrapper> {
     PosExpr &pos_expr;
     const SceneList &scene_list;
 
@@ -373,21 +298,6 @@ struct MotionPassWrapper : VoidWrapper {
     : pos_expr(pos_expr_arg),
       scene_list(scene_list_arg)
     {
-    }
-
-    virtual std::vector<std::string> operationNames() const
-    {
-      return {};
-    }
-
-    void
-      executeOperation(
-        int /*operation_index*/,
-        const TreePath &,
-        OperationHandler &
-      ) const override
-    {
-      assert(false);
     }
 
     virtual Diagram *diagramPtr() const

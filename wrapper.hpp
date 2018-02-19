@@ -90,6 +90,25 @@ struct LeafWrapper : T {
 };
 
 
+template <typename T>
+struct NoOperationWrapper : T {
+  std::vector<std::string> operationNames() const override
+  {
+    return {};
+  }
+
+  void
+    executeOperation(
+      int /*operation_index*/,
+      const TreePath &,
+      Wrapper::OperationHandler &
+    ) const override
+  {
+    assert(false);
+  }
+};
+
+
 inline void
   visitSubWrapper(
     const Wrapper &wrapper,

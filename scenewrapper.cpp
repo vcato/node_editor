@@ -29,7 +29,7 @@ namespace {
 
 
 namespace {
-struct FloatWrapper : LeafWrapper<NumericWrapper> {
+struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   const char *label_member;
   float &value;
   const NotifyFunction &notify;
@@ -43,18 +43,6 @@ struct FloatWrapper : LeafWrapper<NumericWrapper> {
     value(value_arg),
     notify(notify_arg)
   {
-  }
-
-  vector<OperationName> operationNames() const { return {}; }
-
-  void
-    executeOperation(
-      int /*operation_index*/,
-      const TreePath &,
-      OperationHandler &
-    ) const override
-  {
-    assert(false);
   }
 
   Diagram *diagramPtr() const override { return nullptr; }
@@ -75,7 +63,7 @@ struct FloatWrapper : LeafWrapper<NumericWrapper> {
 
 
 namespace {
-struct Point2DWrapper : VoidWrapper {
+struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
   const char *label_member;
   Point2D &point;
   const NotifyFunction &notify;
@@ -89,18 +77,6 @@ struct Point2DWrapper : VoidWrapper {
     point(point_arg),
     notify(notify_arg)
   {
-  }
-
-  vector<string> operationNames() const { return {}; }
-
-  void
-    executeOperation(
-      int /*operation_index*/,
-      const TreePath &,
-      OperationHandler &
-    ) const override
-  {
-    assert(false);
   }
 
   virtual void
@@ -134,7 +110,7 @@ struct Point2DWrapper : VoidWrapper {
 
 
 namespace {
-struct NameWrapper : LeafWrapper<StringWrapper> {
+struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   const char *label_member;
   const std::string &name;
 
@@ -142,18 +118,6 @@ struct NameWrapper : LeafWrapper<StringWrapper> {
   : label_member(label),
     name(name_arg)
   {
-  }
-
-  vector<string> operationNames() const { return {}; }
-
-  void
-    executeOperation(
-      int /*operation_index*/,
-      const TreePath &,
-      OperationHandler &
-    ) const override
-  {
-    assert(false);
   }
 
   Diagram *diagramPtr() const override { return nullptr; }
