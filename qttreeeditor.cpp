@@ -20,6 +20,12 @@ using std::function;
 using std::list;
 
 
+static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
+{
+  return wrapper.enumerationNames();
+}
+
+
 struct QtTreeEditor::CreateChildItemVisitor : Wrapper::Visitor {
   QtTreeEditor &tree_editor;
   QTreeWidgetItem &parent_item;
@@ -51,7 +57,9 @@ struct QtTreeEditor::CreateChildItemVisitor : Wrapper::Visitor {
   void operator()(const EnumerationWrapper &wrapper) const override
   {
     tree_editor.createComboBoxItem(
-      parent_item,wrapper.label(),wrapper.enumerationNames()
+      parent_item,
+      wrapper.label(),
+      comboBoxItems(wrapper)
     );
     created = true;
   }
@@ -357,35 +365,33 @@ static void
 }
 
 
-#if 1
 static vector<string>
-  getEnumerationNames(const Wrapper &wrapper,const TreePath &path)
+  getComboBoxItems(const Wrapper &wrapper,const TreePath &path)
 {
-  vector<string> enumeration_names;
+  vector<string> items;
 
   visitEnumeration(
     wrapper,
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
-      enumeration_names = enumeration_wrapper.enumerationNames();
+      items = comboBoxItems(enumeration_wrapper);
     }
   );
 
-  return enumeration_names;
+  return items;
 }
-#endif
 
 
 void QtTreeEditor::changeEnumerationValues(const TreePath &path)
 {
-  vector<string> enumeration_names = getEnumerationNames(world(),path);
+  vector<string> items = getComboBoxItems(world(),path);
   QTreeWidgetItem &item = itemFromPath(path);
   QWidget *widget_ptr = itemWidget(&item,/*column*/0);
   QtComboBoxTreeItemWidget *combobox_item_widget_ptr =
     dynamic_cast<QtComboBoxTreeItemWidget*>(widget_ptr);
   assert(combobox_item_widget_ptr);
   QtComboBox &combo_box = combobox_item_widget_ptr->comboBox();
-  combo_box.setItems(enumeration_names);
+  combo_box.setItems(items);
 }
 
 

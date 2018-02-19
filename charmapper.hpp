@@ -5,7 +5,6 @@
 #include <memory>
 #include <cassert>
 #include "diagram.hpp"
-#include "defaultdiagrams.hpp"
 #include "scene.hpp"
 
 
@@ -15,6 +14,7 @@ struct Charmapper {
 
   struct Channel {
     Diagram diagram;
+    int value = 0;
   };
 
   struct Position {
@@ -34,11 +34,7 @@ struct Charmapper {
     Diagram diagram;
     std::unique_ptr<Data> global_position_ptr;
 
-    GlobalPosition()
-    : diagram(fromComponentsDiagram()),
-      global_position_ptr(std::make_unique<ComponentsData>())
-    {
-    }
+    GlobalPosition();
 
     struct Data {
       struct Visitor {
@@ -51,11 +47,9 @@ struct Charmapper {
 
     struct FromBodyData : Data {
       Position local_position;
+      Scene::Body *source_body_ptr;
 
-      FromBodyData()
-      : local_position(localPositionDiagram())
-      {
-      }
+      FromBodyData();
 
       virtual void accept(const Visitor &visitor)
       {
@@ -75,16 +69,34 @@ struct Charmapper {
       }
     };
 
-    void switchToComponents()
+    void switchToComponents();
+
+    void switchToFromBody();
+
+    bool isComponents() const
     {
-      diagram = fromComponentsDiagram();
-      global_position_ptr = std::make_unique<ComponentsData>();
+      if (dynamic_cast<ComponentsData*>(global_position_ptr.get())) {
+        return true;
+      }
+
+      assert(false);
+      return false;
     }
 
-    void switchToFromBody()
+    FromBodyData &fromBody()
     {
-      diagram = fromBodyDiagram();
-      global_position_ptr = std::make_unique<FromBodyData>();
+      FromBodyData *data_ptr =
+        dynamic_cast<FromBodyData*>(global_position_ptr.get());
+      assert(data_ptr);
+      return *data_ptr;
+    }
+
+    ComponentsData &components()
+    {
+      ComponentsData *data_ptr =
+        dynamic_cast<ComponentsData*>(global_position_ptr.get());
+      assert(data_ptr);
+      return *data_ptr;
     }
   };
 
@@ -96,25 +108,52 @@ struct Charmapper {
       Diagram diagram;
       Position local_position;
       GlobalPosition global_position;
-      Scene::Body *target_body_ptr = nullptr;
+      std::string target_body_name;
 
-      PosExpr()
-      : diagram(posExprDiagram()),
-        local_position(localPositionDiagram())
+      bool hasATargetBody() const
       {
+        return target_body_ptr!=nullptr;
       }
+
+      void setTargetBodyPtr(Scene::Body *arg)
+      {
+        target_body_ptr = arg;
+      }
+
+      PosExpr();
+      
+      Scene::Body *target_body_ptr = nullptr;
     };
 
-    std::vector<std::unique_ptr<PosExpr>> pos_exprs;
+    PosExpr &expr(int index)
+    {
+      assert(pos_exprs[index]);
+      return *pos_exprs[index];
+    }
 
     int nExprs() const { return pos_exprs.size(); }
+
     PosExpr& addPosExpr();
+
+    private:
+      std::vector<std::unique_ptr<PosExpr>> pos_exprs;
+
   };
 
-  std::vector<std::unique_ptr<MotionPass>> passes;
+  void apply();
 
   int nPasses() const { return passes.size(); }
+
+  MotionPass &pass(int pass_index)
+  {
+    assert(passes[pass_index]);
+    return *passes[pass_index];
+  }
+
   MotionPass& addMotionPass();
+
+  private:
+    std::vector<std::unique_ptr<MotionPass>> passes;
 };
 
 #endif /* CHARMAPPER_HPP_ */

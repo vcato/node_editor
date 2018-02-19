@@ -4,15 +4,30 @@
 
 struct CharmapperWrapper : VoidWrapper {
   struct SceneList {
+    virtual int nScenes() = 0;
     virtual std::vector<std::string> allBodyNames() const = 0;
+    virtual std::vector<Scene::Body *> allBodyPtrs() const = 0;
+  };
+
+  struct Callbacks {
+    const SceneList &scene_list;
+    virtual void notifyCharmapChanged() const = 0;
+
+    Callbacks(const SceneList &scene_list_arg)
+    : scene_list(scene_list_arg)
+    {
+    }
   };
 
   Charmapper &charmapper;
-  const SceneList &scene_list;
+  const Callbacks &callbacks;
 
-  CharmapperWrapper(Charmapper &charmapper_arg,const SceneList &scene_list_arg)
+  CharmapperWrapper(
+    Charmapper &charmapper_arg,
+    const Callbacks &callbacks_arg
+  )
   : charmapper(charmapper_arg),
-    scene_list(scene_list_arg)
+    callbacks(callbacks_arg)
   {
   }
 
@@ -34,7 +49,7 @@ struct CharmapperWrapper : VoidWrapper {
 
   virtual int nChildren() const
   {
-    return charmapper.passes.size();
+    return charmapper.nPasses();
   }
 
   void

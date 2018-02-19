@@ -44,8 +44,11 @@ struct FakeOperationHandler : Wrapper::OperationHandler {
 
 namespace {
 struct FakeSceneViewer : SceneViewer {
+  ostringstream command_stream;
+
   virtual void redrawScene()
   {
+    command_stream << "redrawScene()\n";
   }
 };
 }
@@ -124,41 +127,92 @@ static void testChangingABodyPositionInTheScene()
 
 
 namespace scene_and_charmapper_tests {
+static void testTargetBodyPtr()
+{
+  using Body = Scene::Body;
+  FakeWorld world;
+
+  Charmapper &charmapper = world.addCharmapper();
+  Scene &scene = world.addScene();
+  Body &body = scene.addBody();
+  /*Charmapper::MotionPass &motion_pass =*/ charmapper.addMotionPass();
+  WorldWrapper world_wrapper(world);
+  ostringstream command_stream;
+  FakeOperationHandler operation_handler(command_stream);
+  {
+    TreePath path = makePath(world_wrapper,"Charmapper|Motion Pass");
+    executeOperation2(world_wrapper,path,"Add Pos Expr",operation_handler);
+  }
+
+  assert(!charmapper.pass(0).expr(0).hasATargetBody());
+
+  {
+    TreePath path =
+      makePath(world_wrapper,"Charmapper|Motion Pass|Pos Expr|Target Body");
+    visitSubWrapper(world_wrapper,path,[&](const Wrapper &wrapper){
+      wrapper.accept(
+        EnumerationVisitor(
+          [&](const EnumerationWrapper &enumeration_wrapper){
+            enumeration_wrapper.comboBoxItemIndexChanged(
+              path,/*index*/1,operation_handler
+            );
+          }
+        )
+      );
+    });
+  }
+  {
+    Body *target_body_ptr = charmapper.pass(0).expr(0).target_body_ptr;
+    assert(target_body_ptr);
+    assert(target_body_ptr==&body);
+  }
+}
+}
+
+
+static void setValue(const Wrapper &wrapper,const string &path_string,int value)
+{
+  TreePath path = makePath(wrapper,path_string);
+
+  visitSubWrapper(
+    wrapper,
+    path,
+    [&](const Wrapper &sub_wrapper){
+      sub_wrapper.accept(
+        NumericVisitor(
+          [&](const NumericWrapper &numeric_wrapper){
+            numeric_wrapper.setValue(value);
+          }
+        )
+      );
+    }
+  );
+}
+
+namespace scene_and_charmapper_tests {
 static void testUsingCharmapperToMoveABody()
 {
   FakeWorld world;
 
-  // Add a charmapper
   Charmapper &charmapper = world.addCharmapper();
-  // add a scene
   Scene &scene = world.addScene();
-  // add a body to the scene
   Scene::Body &body = scene.addBody();
-  // add motion pass to charmapper
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  // add a pos expr to the motion pass
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
-  // set the target body to the body in the scene
-  pos_expr.target_body_ptr = &body;
-  // set the x value of the global position to 15
+  pos_expr.setTargetBodyPtr(&body);
   WorldWrapper wrapper(world);
-#if 0
-  TreePath path =
-    makePath(wrapper,"charmapper|motion pass|pos expr|global position|x");
-  visitSubWrapper(
-    wrapper,
-    path,
-    [](const Wrapper &sub_wrapper){
-      sub_wrapper.accept(
-        NumericVisitor([](const NumericWrapper &numeric_wrapper){
-          numeric_wrapper.setValue(15);
-        })
-      )
-    }
-  );
-#endif
+  auto &components = charmapper.pass(0).expr(0).global_position.components();
 
-  // check that the body has a position of 15.
+  setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|X",15);
+  assert(components.x.value==15);
+  assert(body.position.x==15);
+
+  string scene_viewer_commands = world.viewer.command_stream.str();
+  assert(scene_viewer_commands=="redrawScene()\n");
+
+  setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|Y",20);
+  assert(components.y.value==20);
+  assert(body.position.y==20);
 }
 }
 
@@ -169,6 +223,7 @@ int main()
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();
     tests::testChangingABodyPositionInTheScene();
+    tests::testTargetBodyPtr();
     tests::testUsingCharmapperToMoveABody();
   }
 }

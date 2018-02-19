@@ -54,13 +54,13 @@ struct Wrapper {
       OperationHandler &handler
     ) const = 0;
 
+  virtual int nChildren() const = 0;
+
   virtual void
     withChildWrapper(
       int child_index,
       const WrapperVisitor &visitor
     ) const = 0;
-
-  virtual int nChildren() const = 0;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
@@ -248,5 +248,9 @@ inline TreePath join(TreePath path,TreeItemIndex child_index)
   path.push_back(child_index);
   return path;
 }
+
+
+extern TreePath
+  makePath(const Wrapper &wrapper,const std::string &path_string);
 
 #endif /* WRAPPER_HPP_ */

@@ -18,7 +18,8 @@ run_unit_tests: \
   scene_test.pass \
   world_test.pass \
   scenewrapper_test.pass \
-  worldwrapper_test.pass
+  worldwrapper_test.pass \
+  charmapper_test.pass
 
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
@@ -82,7 +83,12 @@ scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   scenewrapper.o charmapperwrapper.o charmapper.o diagram.o defaultdiagrams.o \
   diagramnode.o diagramio.o linetext.o statementtext.o stringutil.o \
-  wrapperutil.o
+  wrapperutil.o wrapper.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
+  diagram.o diagramio.o diagramnode.o linetext.o statementtext.o \
+  stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

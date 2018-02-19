@@ -3,31 +3,124 @@
 #include <cassert>
 
 using std::string;
+using std::vector;
+using std::cerr;
+using std::function;
 
 
 namespace {
-struct TestWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
+struct ZWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
+  virtual std::string label() const { return "Z"; }
 };
 }
 
 
-#if 0
-static TreePath makePath(const Wrapper &,const string &path_string)
-{
-  if (path_string=="") {
+namespace {
+struct YWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
+  virtual std::string label() const { return "Y"; }
+
+  virtual int nChildren() const { return 1; }
+
+  virtual void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const
+  {
+    if (child_index==0) {
+      return visitor(ZWrapper());
+    }
+
     assert(false);
   }
-  else {
-    assert(false);
-  }
+};
 }
-#endif
+
+
+namespace {
+struct XWrapper : NoOperationWrapper<VoidWrapper> {
+  virtual std::string label() const { return "X"; }
+
+  virtual int nChildren() const { return 1; }
+
+  virtual void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const
+  {
+    if (child_index==0) {
+      return visitor(YWrapper());
+    }
+
+    assert(false);
+  }
+};
+}
+
+
+namespace {
+struct TestWrapper : NoOperationWrapper<VoidWrapper> {
+  string label() const { return "test"; }
+
+  virtual int nChildren() const
+  {
+    return 1;
+  }
+
+  virtual void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const
+  {
+    if (child_index==0) {
+      visitor(XWrapper());
+      return;
+    }
+
+    assert(false);
+  }
+};
+}
+
+
+static void testWithEmptyString()
+{
+  TestWrapper wrapper;
+  TreePath result = makePath(wrapper,"");
+  assert(result.empty());
+}
+
+
+static void testWithSingleComponent()
+{
+  TreePath result = makePath(TestWrapper(),"X");
+  TreePath expected_result = {0};
+  assert(result==expected_result);
+}
+
+
+static void testWithTwoComponents()
+{
+  TreePath result = makePath(TestWrapper(),"X|Y");
+  TreePath expected_result = {0,0};
+  assert(result==expected_result);
+}
+
+
+static void testWithThreeComponents()
+{
+  TreePath result = makePath(TestWrapper(),"X|Y|Z");
+  TreePath expected_result = {0,0,0};
+  assert(result==expected_result);
+}
 
 
 int main()
 {
-#if 0
-  TestWrapper wrapper;
-  makePath(wrapper,"");
-#endif
+  testWithEmptyString();
+  testWithSingleComponent();
+  testWithTwoComponents();
+  testWithThreeComponents();
 }

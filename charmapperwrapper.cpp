@@ -6,7 +6,7 @@
 using std::cerr;
 using std::vector;
 using std::string;
-using SceneList = CharmapperWrapper::SceneList;
+using Callbacks = CharmapperWrapper::Callbacks;
 
 
 namespace {
@@ -22,15 +22,21 @@ struct MotionPassWrapper : VoidWrapper {
     Charmapper::GlobalPosition::ComponentsData;
 
   MotionPass &motion_pass;
-  const SceneList &scene_list;
+  const Callbacks &callbacks;
 
   struct ChannelWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     Channel &channel;
     const char *label_member;
+    const Callbacks &callbacks;
 
-    ChannelWrapper(Channel &channel_arg,const char *label_arg)
+    ChannelWrapper(
+      Channel &channel_arg,
+      const char *label_arg,
+      const Callbacks &callbacks_arg
+    )
     : channel(channel_arg),
-      label_member(label_arg)
+      label_member(label_arg),
+      callbacks(callbacks_arg)
     {
     }
 
@@ -44,18 +50,26 @@ struct MotionPassWrapper : VoidWrapper {
       return label_member;
     }
 
-    virtual void setValue(int) const
+    virtual void setValue(int arg) const
     {
+      channel.value = arg;
+      callbacks.notifyCharmapChanged();
     }
   };
 
   struct PositionWrapper : NoOperationWrapper<VoidWrapper> {
     Position &position;
     const char *label_member;
+    const Callbacks &callbacks;
 
-    PositionWrapper(Position &position_arg,const char *label_arg)
+    PositionWrapper(
+      Position &position_arg,
+      const char *label_arg,
+      const Callbacks &callbacks_arg
+    )
     : position(position_arg),
-      label_member(label_arg)
+      label_member(label_arg),
+      callbacks(callbacks_arg)
     {
     }
 
@@ -73,10 +87,10 @@ struct MotionPassWrapper : VoidWrapper {
     {
       switch (child_index) {
         case 0:
-          visitor(ChannelWrapper(position.x,"X"));
+          visitor(ChannelWrapper(position.x,"X",callbacks));
           return;
         case 1:
-          visitor(ChannelWrapper(position.y,"Y"));
+          visitor(ChannelWrapper(position.y,"Y",callbacks));
           return;
       }
     }
@@ -89,25 +103,33 @@ struct MotionPassWrapper : VoidWrapper {
 
   struct FromBodyGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
     FromBodyGlobalPositionData &from_body_global_position;
-    const SceneList &scene_list;
+    const Callbacks &callbacks;
 
     FromBodyGlobalPositionWrapper(
       FromBodyGlobalPositionData &arg,
-      const SceneList &scene_list_arg
+      const Callbacks &callbacks_arg
     )
     : from_body_global_position(arg),
-      scene_list(scene_list_arg)
+      callbacks(callbacks_arg)
     {
     }
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
     {
       if (child_index==0) {
-        visitor(SourceBodyWrapper(scene_list));
+        visitor(
+          BodyWrapper(
+            "Source Body",
+            from_body_global_position.source_body_ptr,
+            callbacks
+          )
+        );
       }
       else if (child_index==1) {
         visitor(PositionWrapper(
-          from_body_global_position.local_position,"Local Position"
+          from_body_global_position.local_position,
+          "Local Position",
+          callbacks
         ));
       }
       else {
@@ -134,38 +156,38 @@ struct MotionPassWrapper : VoidWrapper {
 
   struct GlobalPositionWrapper : NoOperationWrapper<EnumerationWrapper> {
     GlobalPosition &global_position;
-    const SceneList &scene_list;
+    const Callbacks &callbacks;
 
     GlobalPositionWrapper(
       GlobalPosition &global_position_arg,
-      const SceneList &scene_list_arg
+      const Callbacks &callbacks_arg
     )
     : global_position(global_position_arg),
-      scene_list(scene_list_arg)
+      callbacks(callbacks_arg)
     {
     }
 
     struct ValueVisitor : GlobalPositionData::Visitor {
       const WrapperVisitor &visitor;
-      const SceneList &scene_list;
+      const Callbacks &callbacks;
 
       ValueVisitor(
         const WrapperVisitor &visitor_arg,
-        const SceneList &scene_list_arg
+        const Callbacks &callbacks_arg
       )
       : visitor(visitor_arg),
-        scene_list(scene_list_arg)
+        callbacks(callbacks_arg)
       {
       }
 
       virtual void visit(FromBodyGlobalPositionData &data) const
       {
-        visitor(FromBodyGlobalPositionWrapper(data,scene_list));
+        visitor(FromBodyGlobalPositionWrapper(data,callbacks));
       }
 
       virtual void visit(ComponentsGlobalPositionData &data) const
       {
-        visitor(PositionWrapper(data,"blah"));
+        visitor(PositionWrapper(data,"blah",callbacks));
       }
     };
 
@@ -173,7 +195,7 @@ struct MotionPassWrapper : VoidWrapper {
     {
       assert(global_position.global_position_ptr);
       global_position.global_position_ptr->accept(
-        ValueVisitor(visitor,scene_list)
+        ValueVisitor(visitor,callbacks)
       );
     }
 
@@ -241,20 +263,37 @@ struct MotionPassWrapper : VoidWrapper {
   };
 
   struct BodyWrapper : NoOperationWrapper<LeafWrapper<EnumerationWrapper>> {
-    const SceneList &scene_list;
+    const Callbacks &callbacks;
+    Scene::Body *&body_ptr;
+    const char *label_member;
 
-    BodyWrapper(const SceneList &scene_list_arg)
-    : scene_list(scene_list_arg)
+    BodyWrapper(
+      const char *label_arg,
+      Scene::Body *&body_ptr_arg,
+      const Callbacks &callbacks_arg
+    )
+    : callbacks(callbacks_arg),
+      body_ptr(body_ptr_arg),
+      label_member(label_arg)
     {
     }
+
+    std::string label() const override { return label_member; }
 
     void
       comboBoxItemIndexChanged(
         const TreePath &,
-        int /*index*/,
+        int index,
         OperationHandler &
       ) const override
     {
+      assert(index>=0);
+
+      if (index==0) {
+        assert(false);
+      }
+
+      body_ptr = callbacks.scene_list.allBodyPtrs()[index-1];
     }
 
     void
@@ -268,30 +307,24 @@ struct MotionPassWrapper : VoidWrapper {
 
     vector<string> enumerationNames() const override
     {
-      return scene_list.allBodyNames();
+      vector<string> result;
+      result.push_back("None");
+      vector<string> body_names = callbacks.scene_list.allBodyNames();
+      result.insert(result.end(),body_names.begin(),body_names.end());
+      return result;
     }
   };
 
-  struct TargetBodyWrapper : BodyWrapper {
-    using BodyWrapper::BodyWrapper;
-
-    std::string label() const override { return "Target Body"; }
-  };
-
-  struct SourceBodyWrapper : BodyWrapper {
-    using BodyWrapper::BodyWrapper;
-
-    std::string label() const override { return "Source Body"; }
-  };
-
-
   struct PosExprWrapper : NoOperationWrapper<VoidWrapper> {
     PosExpr &pos_expr;
-    const SceneList &scene_list;
+    const Callbacks &callbacks;
 
-    PosExprWrapper(PosExpr &pos_expr_arg,const SceneList &scene_list_arg)
+    PosExprWrapper(
+      PosExpr &pos_expr_arg,
+      const Callbacks &callbacks_arg
+    )
     : pos_expr(pos_expr_arg),
-      scene_list(scene_list_arg)
+      callbacks(callbacks_arg)
     {
     }
 
@@ -304,13 +337,17 @@ struct MotionPassWrapper : VoidWrapper {
     {
       if (child_index==0) {
         // Target body
-        visitor(TargetBodyWrapper(scene_list));
+        visitor(BodyWrapper("Target Body",pos_expr.target_body_ptr,callbacks));
       }
       else if (child_index==1) {
-        visitor(PositionWrapper(pos_expr.local_position,"Local Position"));
+        visitor(
+          PositionWrapper(pos_expr.local_position,"Local Position",callbacks)
+        );
       }
       else if (child_index==2) {
-        visitor(GlobalPositionWrapper(pos_expr.global_position,scene_list));
+        visitor(
+          GlobalPositionWrapper(pos_expr.global_position,callbacks)
+        );
       }
       else {
         assert(false);
@@ -330,9 +367,10 @@ struct MotionPassWrapper : VoidWrapper {
 
   MotionPassWrapper(
     Charmapper::MotionPass &motion_pass_arg,
-    const SceneList &scene_list_arg
+    const Callbacks &callbacks_arg
   )
-  : motion_pass(motion_pass_arg), scene_list(scene_list_arg)
+  : motion_pass(motion_pass_arg),
+    callbacks(callbacks_arg)
   {
   }
 
@@ -363,8 +401,8 @@ struct MotionPassWrapper : VoidWrapper {
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
-    PosExpr &pos_expr = *motion_pass.pos_exprs[child_index];
-    visitor(PosExprWrapper(pos_expr,scene_list));
+    PosExpr &pos_expr = motion_pass.expr(child_index);
+    visitor(PosExprWrapper(pos_expr,callbacks));
   }
 
   virtual std::string label() const
@@ -374,7 +412,7 @@ struct MotionPassWrapper : VoidWrapper {
 
   virtual int nChildren() const
   {
-    return motion_pass.pos_exprs.size();
+    return motion_pass.nExprs();
   }
 };
 }
@@ -412,8 +450,9 @@ void
     int child_index,const WrapperVisitor &visitor
   ) const
 {
-  assert(charmapper.passes[child_index]);
-  visitor(MotionPassWrapper{*charmapper.passes[child_index],scene_list});
+  visitor(
+    MotionPassWrapper{charmapper.pass(child_index),callbacks}
+  );
 }
 
 
@@ -448,7 +487,7 @@ void
     path_of_this,
     [&](const Wrapper &sub_wrapper,const TreePath &path_of_sub_wrapper)
     {
-      typedef MotionPassWrapper::BodyWrapper BodyWrapper;
+      using BodyWrapper = MotionPassWrapper::BodyWrapper;
 
       const BodyWrapper *body_wrapper_ptr =
         dynamic_cast<const BodyWrapper*>(&sub_wrapper);

@@ -66,6 +66,17 @@ class World {
     void visitMember(int child_index,const MemberVisitor &);
     void visitMember(int child_index,const ConstMemberVisitor &) const;
     int nMembers() const { return world_members.size(); }
+    // const Scene& scene(int scene_number);
+
+    void
+      forEachSceneMember(
+        std::function<void(const World::SceneMember &scene)> f
+      ) const;
+
+    void
+      forEachSceneMember(
+        std::function<void(World::SceneMember &scene)> f
+      );
 
   private:
     using WorldMembers = std::vector<std::unique_ptr<Member>>;

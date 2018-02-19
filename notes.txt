@@ -280,5 +280,7 @@ to refer to the appropriate body.
 
 If we make sure the bodies don't move in memory, then we could get away
 with just having a body pre-remove callback.
-
-Need to finish the test in wrapper_test
+---
+Rename EnumerationWrapper::comboBoxItemIndexChanged()
+---
+When we change the target body in the pos expr, it needs to apply the charmap

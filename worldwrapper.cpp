@@ -9,12 +9,15 @@ using std::cerr;
 using std::vector;
 using std::string;
 using std::ostringstream;
+using std::function;
+using Body = Scene::Body;
 
 
+template <typename Bodies,typename Body>
 static void
   forEachBody(
-    const Scene::Bodies &bodies,
-    const std::function<void(const Scene::Body &)> &f
+    Bodies &bodies,
+    const std::function<void(Body &)> &f
   )
 {
   int n_bodies = bodies.size();
@@ -25,62 +28,109 @@ static void
   }
 }
 
+template <typename Scene,typename Body>
 static void
-  forEachBody(
-    const Scene &scene,
-    const std::function<void(const Scene::Body &)> &f
+  forEachBodyInScene(
+    Scene &scene,
+    const std::function<void(Body &)> &f
   )
 {
   forEachBody(scene.bodies(),f);
 }
 
+
 namespace {
 struct WorldSceneList : CharmapperWrapper::SceneList {
-  const World &world;
+  World &world;
 
-  WorldSceneList(const World &world_arg)
+  WorldSceneList(World &world_arg)
   : world(world_arg)
   {
   }
 
-  std::vector<std::string> allBodyNames() const override
+  std::vector<std::string> sceneBodyNames(const Scene &scene) const
   {
-    struct Visitor : World::ConstMemberVisitor {
-      int &scene_index;
-      vector<string> &body_names;
+    vector<string> scene_body_names;
 
-      Visitor(int &scene_index_arg,vector<string> &body_names_arg)
-      : scene_index(scene_index_arg),
-        body_names(body_names_arg)
-      {
-      }
+    function<void(const Scene::Body&)> add_body_name_function =
+      [&](const Scene::Body &body){
+        scene_body_names.push_back(body.name);
+      };
 
-      virtual void visitCharmapper(const World::CharmapperMember &) const
-      {
-      }
+    forEachBodyInScene(scene,add_body_name_function);
 
-      virtual void visitScene(const World::SceneMember &scene_member) const
-      {
-        ++scene_index;
+    return scene_body_names;
+  }
 
-        forEachBody(scene_member.scene,[this](const Scene::Body &body){
-          ostringstream stream;
-          stream << "scene " << scene_index << ":" << body.name;
-          body_names.push_back(stream.str());
-        });
-      }
-    };
+  std::vector<Body *> sceneBodyPtrs(Scene &scene) const
+  {
+    vector<Body *> scene_body_ptrs;
 
-    int scene_index = 0;
-    vector<string> body_names;
-    Visitor visitor(scene_index,body_names);
-    int n_members = world.nMembers();
+    function<void(Scene::Body&)> add_body_function =
+      [&](Scene::Body &body){
+        scene_body_ptrs.push_back(&body);
+      };
 
-    for (int i=0; i!=n_members; ++i) {
-      world.visitMember(i,visitor);
+    forEachBodyInScene(scene,add_body_function);
+
+    return scene_body_ptrs;
+  }
+
+  void
+    addBodyNamesTo(
+      vector<string> &all_body_names,
+      int scene_index,
+      const vector<string> &body_names
+    ) const
+  {
+    for (auto &body_name : body_names) {
+      ostringstream stream;
+      stream << "scene " << scene_index << ":" << body_name;
+      all_body_names.push_back(stream.str());
     }
+  }
 
-    return body_names;
+  vector<Body *> allBodyPtrs() const override
+  {
+    vector<Body *> all_bodies;
+
+    world.forEachSceneMember([&](World::SceneMember &scene_member){
+      vector<Body *> scene_bodies = sceneBodyPtrs(scene_member.scene);
+      all_bodies.insert(
+        all_bodies.end(),
+        scene_bodies.begin(),
+        scene_bodies.end()
+      );
+    });
+
+    return all_bodies;
+  }
+
+  vector<string> allBodyNames() const override
+  {
+    int scene_index = 0;
+    vector<string> all_body_names;
+
+    world.forEachSceneMember([&](const World::SceneMember &scene_member){
+      vector<string> scene_body_names = sceneBodyNames(scene_member.scene);
+      addBodyNamesTo(all_body_names,scene_index,scene_body_names);
+      ++scene_index;
+    });
+
+    return all_body_names;
+  }
+
+  int nScenes() override
+  {
+    int n_scenes = 0;
+
+    world.forEachSceneMember(
+      [&](const World::SceneMember &){
+        ++n_scenes;
+      }
+    );
+
+    return n_scenes;
   }
 };
 }
@@ -116,9 +166,25 @@ static void
       virtual void
         visitCharmapper(World::CharmapperMember &charmapper_member) const
       {
+        struct Callbacks : CharmapperWrapper::Callbacks {
+          Callbacks(const SceneList &scene_list_arg)
+          : CharmapperWrapper::Callbacks(scene_list_arg)
+          {
+          }
+
+          virtual void notifyCharmapChanged() const
+          {
+            // The charmap changed due to a scene change.  We don't want
+            // to cause an inifinite loop, so we don't notify the scene
+            // of the charmap change.
+          }
+        };
+
+        Callbacks callbacks{scene_list};
+
 	CharmapperWrapper(
 	  charmapper_member.charmapper,
-	  scene_list
+	  callbacks
 	).handleSceneChange(operation_handler,{member_index});
       }
 
@@ -150,7 +216,36 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
   virtual void visitCharmapper(World::CharmapperMember &member) const
   {
-    visitor(CharmapperWrapper{member.charmapper,WorldSceneList(world)});
+    WorldSceneList scene_list(world);
+    struct Callbacks : CharmapperWrapper::Callbacks {
+      Charmapper &charmapper;
+      World &world;
+
+      Callbacks(
+        const CharmapperWrapper::SceneList &scene_list,
+        Charmapper &charmapper_arg,
+        World &world_arg
+      )
+      : CharmapperWrapper::Callbacks(scene_list),
+        charmapper(charmapper_arg),
+        world(world_arg)
+      {
+      }
+
+      virtual void notifyCharmapChanged() const
+      {
+        charmapper.apply();
+
+        world.forEachSceneMember([](const World::SceneMember &scene_member){
+          if (scene_member.scene_viewer_ptr) {
+            scene_member.scene_viewer_ptr->notifySceneChanged();
+          }
+        });
+      }
+    };
+
+    Callbacks callbacks{scene_list,member.charmapper,world};
+    visitor(CharmapperWrapper{member.charmapper,callbacks});
   }
 
   virtual void visitScene(World::SceneMember &member) const
