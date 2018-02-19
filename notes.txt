@@ -284,3 +284,9 @@ with just having a body pre-remove callback.
 Rename EnumerationWrapper::comboBoxItemIndexChanged()
 ---
 When we change the target body in the pos expr, it needs to apply the charmap
+
+Need to test changing target body to None
+
+What does it mean to apply a charmap? Are we creating a new layer of motion?
+  * It seems like if we have a charmap and then remove it, the motion should
+    reset.

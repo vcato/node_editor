@@ -19,7 +19,7 @@ extern void
 extern void
   executeOperation(
     const Wrapper &sub_wrapper,
-    const TreePath &path,
+    const TreePath &,
     const std::string &operation_name,
     Wrapper::OperationHandler &operation_handler
   );
@@ -28,7 +28,7 @@ extern void
 extern void
   executeOperation2(
     const Wrapper &world_wrapper,
-    const TreePath &scene_path,
+    const TreePath &,
     const std::string &operation_name,
     Wrapper::OperationHandler &handler
   );

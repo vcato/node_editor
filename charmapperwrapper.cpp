@@ -281,22 +281,6 @@ struct MotionPassWrapper : VoidWrapper {
     std::string label() const override { return label_member; }
 
     void
-      setValue(
-        const TreePath &,
-        int index,
-        OperationHandler &
-      ) const override
-    {
-      assert(index>=0);
-
-      if (index==0) {
-        assert(false);
-      }
-
-      body_ptr = callbacks.scene_list.allBodyPtrs()[index-1];
-    }
-
-    void
       handleSceneChange(
         const Wrapper::OperationHandler &operation_handler,
         const TreePath &path_of_this
@@ -312,6 +296,23 @@ struct MotionPassWrapper : VoidWrapper {
       vector<string> body_names = callbacks.scene_list.allBodyNames();
       result.insert(result.end(),body_names.begin(),body_names.end());
       return result;
+    }
+
+    void
+      setValue(
+        const TreePath &,
+        int index,
+        OperationHandler &
+      ) const override
+    {
+      assert(index>=0);
+
+      if (index==0) {
+        assert(false);
+      }
+
+      body_ptr = callbacks.scene_list.allBodyPtrs()[index-1];
+      callbacks.notifyCharmapChanged();
     }
   };
 

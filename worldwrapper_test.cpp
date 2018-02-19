@@ -126,8 +126,59 @@ static void testChangingABodyPositionInTheScene()
 }
 
 
+namespace {
+static void
+  setEnumerationValue(
+    const Wrapper &world_wrapper,
+    const TreePath &path,
+    int index,
+    Wrapper::OperationHandler &operation_handler
+  )
+{
+  visitSubWrapper(
+    world_wrapper,
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.accept(
+        EnumerationVisitor(
+          [&](const EnumerationWrapper &enumeration_wrapper){
+            enumeration_wrapper.setValue(path,index,operation_handler);
+          }
+        )
+      );
+    }
+  );
+}
+}
+
+
+namespace {
+static void
+  setNumericValue(
+    const Wrapper &world_wrapper,
+    const TreePath &path,
+    int value
+  )
+{
+  visitSubWrapper(
+    world_wrapper,
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.accept(
+        NumericVisitor(
+          [&](const NumericWrapper &numeric_wrapper){
+            numeric_wrapper.setValue(value);
+          }
+        )
+      );
+    }
+  );
+}
+}
+
+
 namespace scene_and_charmapper_tests {
-static void testTargetBodyPtr()
+static void testChangingTheTargetBody()
 {
   using Body = Scene::Body;
   FakeWorld world;
@@ -139,9 +190,19 @@ static void testTargetBodyPtr()
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
   FakeOperationHandler operation_handler(command_stream);
+
   {
     TreePath path = makePath(world_wrapper,"Charmapper|Motion Pass");
     executeOperation2(world_wrapper,path,"Add Pos Expr",operation_handler);
+  }
+
+  {
+    TreePath path =
+      makePath(
+        world_wrapper,
+        "Charmapper|Motion Pass|Pos Expr|Global Position|X"
+      );
+    setNumericValue(world_wrapper,path,15);
   }
 
   assert(!charmapper.pass(0).expr(0).hasATargetBody());
@@ -149,22 +210,13 @@ static void testTargetBodyPtr()
   {
     TreePath path =
       makePath(world_wrapper,"Charmapper|Motion Pass|Pos Expr|Target Body");
-    visitSubWrapper(world_wrapper,path,[&](const Wrapper &wrapper){
-      wrapper.accept(
-        EnumerationVisitor(
-          [&](const EnumerationWrapper &enumeration_wrapper){
-            enumeration_wrapper.setValue(
-              path,/*index*/1,operation_handler
-            );
-          }
-        )
-      );
-    });
+    setEnumerationValue(world_wrapper,path,/*index*/1,operation_handler);
   }
   {
     Body *target_body_ptr = charmapper.pass(0).expr(0).target_body_ptr;
     assert(target_body_ptr);
     assert(target_body_ptr==&body);
+    assert(body.position.x==15);
   }
 }
 }
@@ -223,7 +275,7 @@ int main()
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();
     tests::testChangingABodyPositionInTheScene();
-    tests::testTargetBodyPtr();
+    tests::testChangingTheTargetBody();
     tests::testUsingCharmapperToMoveABody();
   }
 }
