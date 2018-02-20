@@ -11,7 +11,7 @@ class Scene {
   public:
     struct Body;
 
-    struct NewBodies {
+    struct Bodies {
       std::vector<std::unique_ptr<Body>> body_ptrs;
       using Index = size_t;
 
@@ -39,10 +39,10 @@ class Scene {
       }
 
       struct const_iterator {
-        const NewBodies &bodies;
+        const Bodies &bodies;
         Index index;
 
-        const_iterator(const NewBodies &bodies_arg,Index index_arg)
+        const_iterator(const Bodies &bodies_arg,Index index_arg)
         : bodies(bodies_arg),
           index(index_arg)
         {
@@ -67,8 +67,6 @@ class Scene {
       const_iterator begin() const { return const_iterator(*this,0); }
       const_iterator end() const { return const_iterator(*this,size()); }
     };
-
-    using Bodies = NewBodies;
 
     static Body& createChild(Bodies &bodies)
     {
