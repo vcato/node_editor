@@ -72,3 +72,11 @@ void Scene::addChildBodyTo(Body &parent)
   Body &child = parent.addChild();
   child.name = name;
 }
+
+
+Scene::Bodies::Bodies(const Bodies &arg)
+{
+  for (auto& body : arg) {
+    createChild(body);
+  }
+}

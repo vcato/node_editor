@@ -46,10 +46,12 @@ struct FakeOperationHandler : Wrapper::OperationHandler {
 namespace {
 struct FakeSceneViewer : SceneViewer {
   ostringstream command_stream;
+  Scene last_drawn_scene;
 
   virtual void redrawScene()
   {
     command_stream << "redrawScene()\n";
+    // last_drawn_scene = *scenePtr();
   }
 };
 }
@@ -292,6 +294,7 @@ static void testUsingCharmapperToMoveABody()
 
   string scene_viewer_commands = world.viewer.command_stream.str();
   assert(scene_viewer_commands=="redrawScene()\n");
+  // assert(world.viewer.last_drawn_scene.bodies[0].position.x==15);
 
   setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|Y",20);
   assert(components.y.value==20);

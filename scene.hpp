@@ -5,6 +5,7 @@
 #include <memory>
 #include <cassert>
 #include "point2d.hpp"
+#include "ignore.hpp"
 
 
 class Scene {
@@ -14,6 +15,16 @@ class Scene {
     struct Bodies {
       std::vector<std::unique_ptr<Body>> body_ptrs;
       using Index = size_t;
+
+      Bodies() = default;
+
+      Bodies(const Bodies &arg);
+
+      Body& createChild(const Body& arg)
+      {
+        body_ptrs.push_back(std::make_unique<Body>(arg));
+        return *body_ptrs.back();
+      }
 
       Body& createChild()
       {

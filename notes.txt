@@ -276,5 +276,5 @@ What does it mean to apply a charmap? Are we creating a new layer of motion?
   * Maybe the scene viewer includes its own tree where you can view the
     properties of the scene as they are displayed (after charmapping).
 ---
-So I think I need something like a motion, which holds the scene state.
-Charmapper takes one scene state and produces another.
+Need a test where when we set the target body to None it takes away the
+effect of charmapper.

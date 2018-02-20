@@ -16,10 +16,6 @@ QtSceneViewer::~QtSceneViewer()
 }
 
 
-template <typename T>
-static inline void ignore(const T&) { }
-
-
 static void
   drawBodies(const Scene::Bodies &bodies,const Point2D &parent_global_position)
 {

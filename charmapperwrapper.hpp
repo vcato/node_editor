@@ -4,6 +4,9 @@
 
 struct CharmapperWrapper : VoidWrapper {
   struct SceneList {
+    // using State = std::vector<Scene>;
+    // State state() const;
+    // void setState(const State &);
     virtual int nScenes() = 0;
     virtual std::vector<std::string> allBodyNames() const = 0;
     virtual std::vector<Scene::Body *> allBodyPtrs() const = 0;
