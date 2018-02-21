@@ -10,6 +10,7 @@
 #include "qtspinbox.hpp"
 #include "streamvector.hpp"
 #include "qtcombobox.hpp"
+#include "qttreewidgetitem.hpp"
 
 
 using std::cerr;
@@ -123,19 +124,9 @@ QTreeWidgetItem&
     const std::string &label
   )
 {
-  QTreeWidgetItem &pass_item = createChildItem(parent_item);
+  QTreeWidgetItem &pass_item = ::createChildItem(parent_item);
   setItemText(pass_item,label);
   return pass_item;
-}
-
-
-QTreeWidgetItem& QtTreeEditor::createChildItem(QTreeWidgetItem &parent_item)
-{
-  QTreeWidgetItem *item_ptr = new QTreeWidgetItem;
-  parent_item.addChild(item_ptr);
-  QTreeWidgetItem &item = *item_ptr;
-  item.setExpanded(true);
-  return item;
 }
 
 
@@ -175,7 +166,7 @@ QTreeWidgetItem&
     const std::vector<std::string> &enumeration_names
   )
 {
-  QTreeWidgetItem &item = createChildItem(parent_item);
+  QTreeWidgetItem &item = ::createChildItem(parent_item);
   QtComboBoxTreeItemWidget *widget_ptr =
     new QtComboBoxTreeItemWidget(label);
   QtComboBox &combo_box = widget_ptr->comboBox();
@@ -196,7 +187,7 @@ void
     const std::string &value
   )
 {
-  QTreeWidgetItem &item = createChildItem(parent_item);
+  QTreeWidgetItem &item = ::createChildItem(parent_item);
   QLineEdit &line_edit = createItemWidget<QLineEdit>(item,label);
   line_edit.setText(QString::fromStdString(value));
 }
@@ -209,7 +200,7 @@ void
   )
 {
   QtTreeEditor &tree_widget = *this;
-  QTreeWidgetItem &item = createChildItem(parent_item);
+  QTreeWidgetItem &item = ::createChildItem(parent_item);
   QtSpinBox &spin_box = tree_widget.createItemWidget<QtSpinBox>(item,label);
   spin_box.value_changed_function =
     [this,&item](int value){

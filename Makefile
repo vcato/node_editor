@@ -32,7 +32,7 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
   world.o worldwrapper.o charmapperwrapper.o qtcombobox.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
-  moc_qtcombobox.o qtscenewindow.o
+  moc_qtcombobox.o qtscenewindow.o qttreewidgetitem.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -95,7 +95,7 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
-  qtsceneviewer.o draw.o scene.o
+  qtsceneviewer.o draw.o scene.o qttreewidgetitem.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

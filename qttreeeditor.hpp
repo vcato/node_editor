@@ -57,8 +57,6 @@ class QtTreeEditor : public QTreeWidget {
     static QTreeWidgetItem&
       createChildItem(QTreeWidgetItem &parent_item,const std::string &label);
 
-    static QTreeWidgetItem& createChildItem(QTreeWidgetItem &parent_item);
-
     static void setItemText(QTreeWidgetItem &item,const std::string &label);
 
     QTreeWidgetItem&
