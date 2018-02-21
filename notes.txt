@@ -279,5 +279,4 @@ What does it mean to apply a charmap? Are we creating a new layer of motion?
 Need a test where when we set the target body to None it takes away the
 effect of charmapper.
 
-Body::addChild() doesn't give a body a proper name, so it shouldn't be
-publicly available.
+If we add a body to the scene, it should show up in the scene window.
