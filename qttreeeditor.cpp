@@ -102,6 +102,7 @@ struct QtTreeEditor::OperationHandler : TreeOperationHandler {
 
 QtTreeEditor::QtTreeEditor()
 {
+  assert(header());
   header()->close();
   setContextMenuPolicy(Qt::CustomContextMenu);
 

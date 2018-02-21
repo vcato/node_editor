@@ -94,8 +94,14 @@ class Scene {
       Bodies children;
       std::string name;
 
-      Body& addChild() { return createChild(children); }
       int nChildren() const { return children.size(); }
+
+      Body& addChild(const std::string &name)
+      {
+        Body &result = createChild(children);
+        result.name = name;
+        return result;
+      }
     };
 
     Scene() { }

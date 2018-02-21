@@ -68,9 +68,7 @@ bool Scene::hasBody(const std::string &name) const
 
 void Scene::addChildBodyTo(Body &parent)
 {
-  string name = newBodyName();
-  Body &child = parent.addChild();
-  child.name = name;
+  parent.addChild(newBodyName());
 }
 
 
