@@ -1,7 +1,7 @@
 #include "qtworld.hpp"
 
 #include <QDialog>
-#include "qtsceneviewer.hpp"
+#include "qtscenewindow.hpp"
 
 
 QtWorld::QtWorld(QtMainWindow &main_window_arg)
@@ -12,11 +12,9 @@ QtWorld::QtWorld(QtMainWindow &main_window_arg)
 
 SceneViewer& QtWorld::createSceneViewerWindow(SceneMember &member)
 {
-  QDialog &dialog = createWidget<QDialog>(main_window);
-  QBoxLayout &layout = createLayout<QVBoxLayout>(dialog);
-  QtSceneViewer &viewer = createWidget<QtSceneViewer>(layout);
-  viewer.setScenePtr(&member.scene);
+  QtSceneWindow &window = createWidget<QtSceneWindow>(main_window);
+  window.setScenePtr(&member.scene);
+  window.show();
 
-  dialog.show();
-  return viewer;
+  return window.viewer();
 }

@@ -4,7 +4,7 @@ CXXFLAGS=-W -Wall -pedantic -std=c++14 -I`pkg-config --cflags $(PACKAGES)` \
 
 LDFLAGS=`pkg-config --libs $(PACKAGES)`
 
-all: run_unit_tests main
+all: run_unit_tests build_manual_tests main
 
 run_unit_tests: \
   diagrameditor_test.pass \
@@ -21,6 +21,9 @@ run_unit_tests: \
   worldwrapper_test.pass \
   charmapper_test.pass
 
+build_manual_tests: \
+  qtscenewindow_manualtest
+
 main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
   wrapper.o statementtext.o \
@@ -29,7 +32,7 @@ main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
   world.o worldwrapper.o charmapperwrapper.o qtcombobox.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
-  moc_qtcombobox.o
+  moc_qtcombobox.o qtscenewindow.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -89,6 +92,10 @@ worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   diagram.o diagramio.o diagramnode.o linetext.o statementtext.o \
   stringutil.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
+  qtsceneviewer.o draw.o scene.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
