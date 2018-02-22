@@ -280,3 +280,5 @@ Need a test where when we set the target body to None it takes away the
 effect of charmapper.
 
 If we add a body to the scene, it should show up in the scene window.
+
+Finish test in mainwindow_test

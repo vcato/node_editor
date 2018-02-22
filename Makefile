@@ -19,7 +19,8 @@ run_unit_tests: \
   world_test.pass \
   scenewrapper_test.pass \
   worldwrapper_test.pass \
-  charmapper_test.pass
+  charmapper_test.pass \
+  mainwindow_test.pass
 
 build_manual_tests: \
   qtscenewindow_manualtest
@@ -92,6 +93,9 @@ worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   diagram.o diagramio.o diagramnode.o linetext.o statementtext.o \
   stringutil.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+mainwindow_test: mainwindow_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \

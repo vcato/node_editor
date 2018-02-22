@@ -7,10 +7,11 @@
 #include "qtwidget.hpp"
 #include "qtdiagrameditor.hpp"
 #include "wrapper.hpp"
+#include "treeeditor.hpp"
 
 
 
-class QtTreeEditor : public QTreeWidget {
+class QtTreeEditor : public QTreeWidget, public TreeEditor {
   Q_OBJECT
 
   public:
@@ -39,6 +40,7 @@ class QtTreeEditor : public QTreeWidget {
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);
     void prepareMenu(const QPoint &pos);
+    void executeOperation(const TreePath &,int operation_index);
 
     template <typename T>
     T &createItemWidget(QTreeWidgetItem &item,const std::string &label)

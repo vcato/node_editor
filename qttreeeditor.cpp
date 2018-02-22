@@ -495,6 +495,19 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
+static vector<string>
+  operationNames(const Wrapper &wrapper,const TreePath &path)
+{
+  vector<string> operation_names;
+
+  visitSubWrapper(wrapper,path,[&](const Wrapper &sub_wrapper){
+    operation_names = sub_wrapper.operationNames();
+  });
+
+  return operation_names;
+}
+
+
 void QtTreeEditor::prepareMenu(const QPoint &pos)
 {
   QtTreeEditor &tree_editor = treeEditor();
@@ -507,33 +520,33 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 
   QMenu menu;
   list<QtSlot> item_slots;
+
+  std::vector<std::string> operation_names = operationNames(world(),path);
+
+  int n_operations = operation_names.size();
+
+  for (int i=0; i!=n_operations; ++i) {
+    QAction &action = createAction(menu,operation_names[i]);
+    auto perform_operation_function =
+      [this,i,path]{ executeOperation(path,i); };
+    item_slots.emplace_back(perform_operation_function);
+    item_slots.back().connectSignal(action,SIGNAL(triggered()));
+  }
+
+  menu.exec(tree_editor.mapToGlobal(pos));
+}
+
+
+void QtTreeEditor::executeOperation(const TreePath &path,int operation_index)
+{
   visitSubWrapper(
     world(),
     path,
     [&](const Wrapper &wrapper){
-      std::vector<std::string> operation_names = wrapper.operationNames();
-      int n_operations = operation_names.size();
-
-      for (int i=0; i!=n_operations; ++i) {
-        QAction &action = createAction(menu,operation_names[i]);
-        auto perform_operation_function =
-          [this,i,path](){
-            visitSubWrapper(
-              world(),
-              path,
-              [&](const Wrapper &wrapper){
-                OperationHandler operation_handler(*this);
-                wrapper.executeOperation(i,path,operation_handler);
-              }
-            );
-          };
-        item_slots.emplace_back(perform_operation_function);
-        item_slots.back().connectSignal(action,SIGNAL(triggered()));
-      }
+      OperationHandler operation_handler(*this);
+      wrapper.executeOperation(operation_index,path,operation_handler);
     }
   );
-
-  menu.exec(tree_editor.mapToGlobal(pos));
 }
 
 

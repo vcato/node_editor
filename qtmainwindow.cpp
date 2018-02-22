@@ -41,6 +41,12 @@ QtMainWindow::QtMainWindow()
 
 void QtMainWindow::setWorldPtr(Wrapper *world_ptr_arg)
 {
+  treeEditor().setWorldPtr(world_ptr_arg);
+}
+
+
+QtTreeEditor &QtMainWindow::treeEditor()
+{
   assert(tree_editor_ptr);
-  tree_editor_ptr->setWorldPtr(world_ptr_arg);
+  return *tree_editor_ptr;
 }
