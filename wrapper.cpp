@@ -85,3 +85,20 @@ TreePath makePath(const Wrapper &wrapper,const string &path_string)
     return result;
   }
 }
+
+
+void
+  visitEnumeration(
+    const Wrapper &wrapper,
+    const TreePath &path,
+    std::function<void(const EnumerationWrapper &)> f
+  )
+{
+  visitSubWrapper(
+    wrapper,
+    path,
+    [&](const Wrapper &sub_wrapper){
+      sub_wrapper.accept(EnumerationVisitor(f));
+    }
+  );
+}

@@ -25,11 +25,13 @@ run_unit_tests: \
 build_manual_tests: \
   qtscenewindow_manualtest
 
-main: main.o diagrameditor.o moc_qtmainwindow.o qtmainwindow.o \
+main: main.o diagrameditor.o \
+  moc_qtmainwindow.o qtmainwindow.o mainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
   wrapper.o statementtext.o \
   qtmenu.o qtspinbox.o moc_qtspinbox.o \
-  moc_qttreeeditor.o qttreeeditor.o diagramevaluation.o diagramio.o \
+  moc_qttreeeditor.o qttreeeditor.o treeeditor.o \
+  diagramevaluation.o diagramio.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
   world.o worldwrapper.o charmapperwrapper.o qtcombobox.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
@@ -95,7 +97,12 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-mainwindow_test: mainwindow_test.o
+mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
+  charmapperwrapper.o charmapper.o \
+  scenewrapper.o scene.o \
+  defaultdiagrams.o diagram.o diagramio.o diagramnode.o linetext.o \
+  statementtext.o stringutil.o \
+  treeeditor.o wrapper.o world.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \

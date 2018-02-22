@@ -1,7 +1,10 @@
 #include "treeeditor.hpp"
 
 
-struct MainWindow {
+class MainWindow {
+  public:
+    void setWorldPtr(Wrapper *);
+
   private:
     virtual TreeEditor &treeEditor() = 0;
 };

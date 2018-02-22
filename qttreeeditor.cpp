@@ -75,31 +75,6 @@ struct QtTreeEditor::CreateChildItemVisitor : Wrapper::Visitor {
 };
 
 
-struct QtTreeEditor::OperationHandler : TreeOperationHandler {
-  QtTreeEditor &tree_editor;
-
-  OperationHandler(QtTreeEditor &tree_editor_arg)
-  : tree_editor(tree_editor_arg)
-  {
-  }
-
-  virtual void addItem(const TreePath &path)
-  {
-    tree_editor.addTreeItem(path);
-  }
-
-  virtual void replaceTreeItems(const TreePath &path)
-  {
-    tree_editor.replaceTreeItems(path);
-  }
-
-  virtual void changeEnumerationValues(const TreePath &path) const
-  {
-    tree_editor.changeEnumerationValues(path);
-  }
-};
-
-
 QtTreeEditor::QtTreeEditor()
 {
   assert(header());
@@ -239,13 +214,6 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 }
 
 
-Wrapper &QtTreeEditor::world()
-{
-  assert(world_ptr);
-  return *world_ptr;
-}
-
-
 void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
 {
   TreePath parent_path = parentPath(new_item_path);
@@ -340,23 +308,6 @@ void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
 }
 
 
-static void
-  visitEnumeration(
-    const Wrapper &wrapper,
-    const TreePath &path,
-    std::function<void(const EnumerationWrapper &)> f
-  )
-{
-  visitSubWrapper(
-    wrapper,
-    path,
-    [&](const Wrapper &sub_wrapper){
-      sub_wrapper.accept(EnumerationVisitor(f));
-    }
-  );
-}
-
-
 static vector<string>
   getComboBoxItems(const Wrapper &wrapper,const TreePath &path)
 {
@@ -408,19 +359,7 @@ void
   assert(item_ptr);
 
   TreePath path = itemPath(*item_ptr);
-  OperationHandler operation_handler(*this);
-
-
-  visitEnumeration(
-    world(),
-    path,
-    [&](const EnumerationWrapper &enumeration_wrapper){
-      enumeration_wrapper.setValue(
-        path,index,operation_handler
-      );
-    }
-  );
-
+  setEnumerationIndex(path,index);
 }
 
 
@@ -495,19 +434,6 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
-static vector<string>
-  operationNames(const Wrapper &wrapper,const TreePath &path)
-{
-  vector<string> operation_names;
-
-  visitSubWrapper(wrapper,path,[&](const Wrapper &sub_wrapper){
-    operation_names = sub_wrapper.operationNames();
-  });
-
-  return operation_names;
-}
-
-
 void QtTreeEditor::prepareMenu(const QPoint &pos)
 {
   QtTreeEditor &tree_editor = treeEditor();
@@ -521,7 +447,7 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   QMenu menu;
   list<QtSlot> item_slots;
 
-  std::vector<std::string> operation_names = operationNames(world(),path);
+  std::vector<std::string> operation_names = operationNames(path);
 
   int n_operations = operation_names.size();
 
@@ -534,19 +460,6 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   }
 
   menu.exec(tree_editor.mapToGlobal(pos));
-}
-
-
-void QtTreeEditor::executeOperation(const TreePath &path,int operation_index)
-{
-  visitSubWrapper(
-    world(),
-    path,
-    [&](const Wrapper &wrapper){
-      OperationHandler operation_handler(*this);
-      wrapper.executeOperation(operation_index,path,operation_handler);
-    }
-  );
 }
 
 

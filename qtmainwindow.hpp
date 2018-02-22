@@ -13,7 +13,6 @@ class QtMainWindow : public QMainWindow, public MainWindow {
 
   public:
     QtMainWindow();
-    void setWorldPtr(Wrapper *);
 
   private:
     QMenu menu{"Tools"};

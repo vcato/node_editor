@@ -133,6 +133,14 @@ inline void
 }
 
 
+extern void
+  visitEnumeration(
+    const Wrapper &wrapper,
+    const TreePath &path,
+    std::function<void(const EnumerationWrapper &)> f
+  );
+
+
 struct VoidWrapper : Wrapper {
   void accept(const Visitor &visitor) const override
   {
