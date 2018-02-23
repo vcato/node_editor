@@ -1,6 +1,9 @@
 #ifndef SCENEVIEWER_HPP_
 #define SCENEVIEWER_HPP_
 
+#include "scene.hpp"
+
+
 class SceneViewer {
   public:
     void notifySceneChanged() { redrawScene(); }

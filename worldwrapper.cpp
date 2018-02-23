@@ -238,8 +238,8 @@ struct ChildWrapperVisitor : World::MemberVisitor {
         charmapper.apply();
 
         world.forEachSceneMember([](const World::SceneMember &scene_member){
-          if (scene_member.scene_viewer_ptr) {
-            scene_member.scene_viewer_ptr->notifySceneChanged();
+          if (scene_member.scene_window_ptr) {
+            scene_member.scene_window_ptr->notifySceneChanged();
           }
         });
         // scene_list.setState(starting_state);
@@ -256,8 +256,8 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       [&,&world=world]
       (const Wrapper::OperationHandler &operation_handler)
       {
-	if (member.scene_viewer_ptr) {
-	  member.scene_viewer_ptr->notifySceneChanged();
+	if (member.scene_window_ptr) {
+	  member.scene_window_ptr->notifySceneChanged();
 	}
 
 	// Update the body comboboxes in the charmappers.

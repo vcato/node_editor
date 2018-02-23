@@ -5,7 +5,7 @@
 #include <memory>
 #include "charmapper.hpp"
 #include "scene.hpp"
-#include "sceneviewer.hpp"
+#include "scenewindow.hpp"
 
 
 class World {
@@ -38,7 +38,7 @@ class World {
 
     struct SceneMember : Member {
       Scene scene;
-      SceneViewer *scene_viewer_ptr = nullptr;
+      SceneWindow *scene_window_ptr = nullptr;
 
       virtual void accept(const MemberVisitor &visitor)
       {
@@ -82,7 +82,7 @@ class World {
     using WorldMembers = std::vector<std::unique_ptr<Member>>;
     WorldMembers world_members;
 
-    virtual SceneViewer& createSceneViewerWindow(SceneMember &) = 0;
+    virtual SceneWindow& createSceneViewerWindow(SceneMember &) = 0;
 };
 
 

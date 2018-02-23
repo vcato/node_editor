@@ -35,7 +35,8 @@ main: main.o diagrameditor.o \
   moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
   world.o worldwrapper.o charmapperwrapper.o qtcombobox.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
-  moc_qtcombobox.o qtscenewindow.o qttreewidgetitem.o
+  moc_qtcombobox.o qtscenewindow.o qttreewidgetitem.o scenewindow.o \
+  qtscenetree.o scenetree.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -89,7 +90,7 @@ scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   scenewrapper.o charmapperwrapper.o charmapper.o diagram.o defaultdiagrams.o \
   diagramnode.o diagramio.o linetext.o statementtext.o stringutil.o \
-  wrapperutil.o wrapper.o
+  wrapperutil.o wrapper.o scenewindow.o scenetree.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
@@ -99,14 +100,15 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   charmapperwrapper.o charmapper.o \
-  scenewrapper.o scene.o \
+  scenewrapper.o scene.o scenewindow.o \
   defaultdiagrams.o diagram.o diagramio.o diagramnode.o linetext.o \
   statementtext.o stringutil.o \
-  treeeditor.o wrapper.o world.o
+  treeeditor.o wrapper.o world.o scenetree.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
-  qtsceneviewer.o draw.o scene.o qttreewidgetitem.o
+  qtsceneviewer.o draw.o scene.o qttreewidgetitem.o qtscenetree.o \
+  scenetree.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

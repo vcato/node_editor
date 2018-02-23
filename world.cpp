@@ -30,8 +30,8 @@ Scene& World::addScene()
 {
   unique_ptr<SceneMember> scene_object_ptr = make_unique<SceneMember>();
   Scene& scene = scene_object_ptr->scene;
-  SceneViewer &scene_viewer = createSceneViewerWindow(*scene_object_ptr);
-  scene_object_ptr->scene_viewer_ptr = &scene_viewer;
+  SceneWindow &scene_window = createSceneViewerWindow(*scene_object_ptr);
+  scene_object_ptr->scene_window_ptr = &scene_window;
   world_members.push_back(std::move(scene_object_ptr));
   return scene;
 }

@@ -56,13 +56,37 @@ struct FakeSceneViewer : SceneViewer {
 };
 }
 
+
+namespace {
+struct FakeSceneTree : SceneTree {
+  virtual void removeAllItems()
+  {
+  }
+
+  virtual void setItems(const Item &/*root*/)
+  {
+  }
+};
+}
+
+
+namespace {
+struct FakeSceneWindow : SceneWindow {
+  FakeSceneViewer viewer_member;
+  FakeSceneTree tree_member;
+
+  SceneViewer &viewer() override { return viewer_member; }
+  SceneTree &tree() override { return tree_member; }
+};
+}
+
 namespace {
 struct FakeWorld : World {
-  FakeSceneViewer viewer;
+  FakeSceneWindow scene_window;
 
-  SceneViewer& createSceneViewerWindow(SceneMember &) override
+  SceneWindow& createSceneViewerWindow(SceneMember &) override
   {
-    return viewer;
+    return scene_window;
   }
 };
 }
@@ -292,7 +316,8 @@ static void testUsingCharmapperToMoveABody()
   assert(components.x.value==15);
   assert(body.position.x==15);
 
-  string scene_viewer_commands = world.viewer.command_stream.str();
+  string scene_viewer_commands =
+    world.scene_window.viewer_member.command_stream.str();
   assert(scene_viewer_commands=="redrawScene()\n");
   // assert(world.viewer.last_drawn_scene.bodies[0].position.x==15);
 

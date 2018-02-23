@@ -4,8 +4,34 @@
 
 
 namespace {
-struct Window : SceneViewer {
+struct Viewer : SceneViewer {
   void redrawScene() override { }
+};
+}
+
+
+namespace {
+struct Tree : SceneTree {
+  virtual void removeAllItems()
+  {
+    assert(false);
+  }
+
+  virtual void setItems(const Item &/*root*/)
+  {
+    assert(false);
+  }
+};
+}
+
+
+namespace {
+struct Window : SceneWindow {
+  Viewer viewer_member;
+  Tree tree_member;
+
+  SceneViewer &viewer() override { return viewer_member; }
+  SceneTree &tree() override { return tree_member; }
 };
 }
 
@@ -19,7 +45,7 @@ struct FakeWorld : World {
 
   Window &window;
 
-  virtual SceneViewer& createSceneViewerWindow(SceneMember &)
+  virtual SceneWindow& createSceneViewerWindow(SceneMember &)
   {
     return window;
   }
