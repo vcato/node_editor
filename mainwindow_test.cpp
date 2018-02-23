@@ -8,6 +8,7 @@
 
 using std::string;
 using std::vector;
+using std::cerr;
 
 
 static int findIndex(const vector<string> &container,const string &element)
@@ -77,9 +78,9 @@ namespace {
 struct FakeSceneTree : SceneTree {
   Item root;
 
-  void setItems(const Item &/*root*/) override
+  void setItems(const Item &root_arg) override
   {
-    assert(false);
+    root = root_arg;
   }
 };
 }
@@ -108,7 +109,6 @@ struct FakeWorld : World {
 }
 
 
-#if 0
 static void testAddingABodyToTheScene()
 {
   FakeWorld world;
@@ -124,15 +124,11 @@ static void testAddingABodyToTheScene()
   main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
 
   // Assert the scene window shows a body in the tree.
-  // assert(world.scene_window.scene_tree.root.children[0].label=="Body1");
-  assert(false); // not implemented
+  assert(world.scene_window.tree_member.root.children[0].label=="Body1");
 }
-#endif
 
 
 int main()
 {
-#if 0
   testAddingABodyToTheScene();
-#endif
 }

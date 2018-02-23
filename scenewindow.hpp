@@ -10,6 +10,7 @@ struct SceneWindow {
   virtual SceneTree &tree() = 0;
 
   void notifySceneChanged();
+  void setScenePtr(Scene *);
 };
 
 #endif /* SCENEWINDOW_HPP_ */

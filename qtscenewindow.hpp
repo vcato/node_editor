@@ -9,7 +9,6 @@
 class QtSceneWindow : public QDialog, public SceneWindow {
   public:
     QtSceneWindow(QWidget *parent_widget_ptr);
-    void setScenePtr(Scene *);
 
     QtSceneViewer &viewer() override;
     QtSceneTree &tree() override;

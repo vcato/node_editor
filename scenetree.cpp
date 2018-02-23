@@ -2,6 +2,8 @@
 
 
 using Body = Scene::Body;
+using std::cerr;
+
 
 void SceneTree::notifySceneChanged()
 {

@@ -12,14 +12,8 @@ struct Viewer : SceneViewer {
 
 namespace {
 struct Tree : SceneTree {
-  virtual void removeAllItems()
-  {
-    assert(false);
-  }
-
   virtual void setItems(const Item &/*root*/)
   {
-    assert(false);
   }
 };
 }

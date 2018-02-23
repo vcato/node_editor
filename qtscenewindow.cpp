@@ -20,13 +20,6 @@ QtSceneWindow::QtSceneWindow(QWidget *parent_widget_ptr)
 }
 
 
-void QtSceneWindow::setScenePtr(Scene *arg)
-{
-  viewer().setScenePtr(arg);
-  tree().setScenePtr(arg);
-}
-
-
 QtSceneViewer &QtSceneWindow::viewer()
 {
   assert(viewer_ptr);

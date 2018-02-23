@@ -81,7 +81,7 @@ wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
 scene_test: scene_test.o scene.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-world_test: world_test.o world.o scene.o
+world_test: world_test.o world.o scene.o scenewindow.o scenetree.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o
@@ -108,7 +108,7 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
   qtsceneviewer.o draw.o scene.o qttreewidgetitem.o qtscenetree.o \
-  scenetree.o
+  scenetree.o scenewindow.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
