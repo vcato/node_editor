@@ -285,3 +285,14 @@ effect of charmapper.
 Need to switch to using sysvars for scene state.
 
 Finish use of USE_POINT2D_MAP macro
+
+I think we need a WrapperData that goes with the SceneWrapper so we don't have
+to pass a lot of individual parameters.
+* The scene
+* The notify function
+* THe frame
+
+Scene needs a background frame.
+
+Since a charmapper can affect multiple scenes, we'll need to pass a list
+of frames to the Charmapper::apply()

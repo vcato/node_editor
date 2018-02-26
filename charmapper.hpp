@@ -15,7 +15,7 @@ class Charmapper {
     Charmapper() = default;
     Charmapper(const Charmapper &) = delete;
 
-#if USE_POINT2D_MAP
+#if USE_FRAMES
     void apply(Scene::Frame &);
 #else
     void apply();

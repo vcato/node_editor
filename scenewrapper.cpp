@@ -8,11 +8,22 @@ using std::cerr;
 using std::vector;
 using std::string;
 using NotifyFunction = SceneWrapper::NotifyFunction;
-#if USE_POINT2D_MAP
+#if USE_FRAMES
 using Point2DMap = Scene::Point2DMap;
 using Frame = Scene::Frame;
 using FloatMap = Scene::FloatMap;
 #endif
+
+
+namespace {
+struct WrapperData {
+  Scene &scene;
+  const NotifyFunction &notify;
+#if USE_FRAMES
+  Frame &frame;
+#endif
+};
+}
 
 
 namespace {
@@ -34,35 +45,21 @@ namespace {
 }
 
 
+#if USE_FRAMES
 namespace {
-struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
+struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   const char *label_member;
-#if USE_POINT2D_MAP
-  Frame &frame;
-  FloatMap &map;
-#else
-  float &value;
-#endif
-  const NotifyFunction &notify;
+  Scene::FloatMap &map;
+  WrapperData wrapper_data;
 
-  FloatWrapper(
+  FloatMapWrapper(
     const char *label,
-#if USE_POINT2D_MAP
-    Frame &frame_arg,
     Scene::FloatMap &map_arg,
-#else
-    float &value_arg,
-#endif
-    const NotifyFunction &notify_arg
+    WrapperData wrapper_data_arg
   )
   : label_member(label),
-#if USE_POINT2D_MAP
-    frame(frame_arg),
     map(map_arg),
-#else
-    value(value_arg),
-#endif
-    notify(notify_arg)
+    wrapper_data(wrapper_data_arg)
   {
   }
 
@@ -71,21 +68,45 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     return label_member;
   }
 
-#if USE_POINT2D_MAP
   void setValue(int arg) const override
   {
-    frame[map.var_index] = arg;
+    wrapper_data.frame.var_values[map.var_index] = arg;
     StubOperationHandler operation_handler;
-    notify(operation_handler);
+    wrapper_data.notify(operation_handler);
   }
-#else
+};
+}
+#endif
+
+
+namespace {
+struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
+  const char *label_member;
+  float &value;
+  WrapperData wrapper_data;
+
+  FloatWrapper(
+    const char *label,
+    float &value_arg,
+    WrapperData wrapper_data_arg
+  )
+  : label_member(label),
+    value(value_arg),
+    wrapper_data(wrapper_data_arg)
+  {
+  }
+
+  std::string label() const override
+  {
+    return label_member;
+  }
+
   void setValue(int arg) const override
   {
     value = arg;
     StubOperationHandler operation_handler;
-    notify(operation_handler);
+    wrapper_data.notify(operation_handler);
   }
-#endif
 };
 }
 
@@ -93,25 +114,25 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 namespace {
 struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
   const char *label_member;
-#if USE_POINT2D_MAP
+#if USE_FRAMES
   Point2DMap &point;
 #else
   Point2D &point;
 #endif
-  const NotifyFunction &notify;
+  WrapperData wrapper_data;
 
   Point2DWrapper(
     const char *label_arg,
-#if USE_POINT2D_MAP
+#if USE_FRAMES
     Point2DMap &point_arg,
 #else
     Point2D &point_arg,
 #endif
-    const NotifyFunction &notify_arg
+    WrapperData wrapper_data_arg
   )
   : label_member(label_arg),
     point(point_arg),
-    notify(notify_arg)
+    wrapper_data(wrapper_data_arg)
   {
   }
 
@@ -123,10 +144,18 @@ struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
   {
     switch (child_index) {
       case 0:
-        visitor(FloatWrapper("x",point.x,notify));
+#if USE_FRAMES
+        visitor(FloatMapWrapper("x",point.x,wrapper_data));
+#else
+        visitor(FloatWrapper("x",point.x,wrapper_data));
+#endif
         return;
       case 1:
-        visitor(FloatWrapper("y",point.y,notify));
+#if USE_FRAMES
+        visitor(FloatMapWrapper("y",point.y,wrapper_data));
+#else
+        visitor(FloatWrapper("y",point.y,wrapper_data));
+#endif
         return;
     }
 
@@ -168,17 +197,17 @@ namespace {
 struct BodyWrapper : VoidWrapper {
   Scene &scene;
   Scene::Body &body;
-  const NotifyFunction &notify;
+  WrapperData wrapper_data;
   static int nBodyAttributes() { return 2; }
 
   BodyWrapper(
     Scene &scene_arg,
     Scene::Body &body_arg,
-    const NotifyFunction &notify_arg
+    WrapperData wrapper_data_arg
   )
   : scene(scene_arg),
     body(body_arg),
-    notify(notify_arg)
+    wrapper_data(wrapper_data_arg)
   {
   }
 
@@ -194,7 +223,7 @@ struct BodyWrapper : VoidWrapper {
         {
           int index = body.nChildren();
           scene.addChildBodyTo(body);
-          notify(handler);
+          wrapper_data.notify(handler);
           handler.addItem(join(path,index+nBodyAttributes()));
         }
         return;
@@ -219,7 +248,7 @@ struct BodyWrapper : VoidWrapper {
         {
           int index = body.nChildren();
           scene.addChildBodyTo(body);
-          notify(handler);
+          wrapper_data.notify(handler);
           handler.addItem(join(path,index+nBodyAttributes()));
         }
         return;
@@ -236,13 +265,13 @@ struct BodyWrapper : VoidWrapper {
     }
 
     if (child_index==1) {
-      visitor(Point2DWrapper("position",body.position,notify));
+      visitor(Point2DWrapper("position",body.position,wrapper_data));
       return;
     }
 
     Scene::Body &child = body.children[child_index-nBodyAttributes()];
 
-    visitor(BodyWrapper(scene,child,notify));
+    visitor(BodyWrapper(scene,child,wrapper_data));
   }
 
   virtual std::string label() const
@@ -302,5 +331,12 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  visitor(BodyWrapper{scene,scene.bodies()[child_index],notify});
+#if USE_FRAMES
+  WrapperData wrapper_data = {scene,notify,scene.backgroundFrame()};
+#else
+  WrapperData wrapper_data = {scene,notify};
+#endif
+  visitor(
+    BodyWrapper{scene,scene.bodies()[child_index],wrapper_data}
+  );
 }

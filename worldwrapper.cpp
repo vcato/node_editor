@@ -234,7 +234,6 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
       virtual void notifyCharmapChanged() const
       {
-        // SceneList::State starting_state = scene_list.state();
         charmapper.apply();
 
         world.forEachSceneMember([](const World::SceneMember &scene_member){
@@ -242,7 +241,6 @@ struct ChildWrapperVisitor : World::MemberVisitor {
             scene_member.scene_window_ptr->notifySceneChanged();
           }
         });
-        // scene_list.setState(starting_state);
       }
     };
 

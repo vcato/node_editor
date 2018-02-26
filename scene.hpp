@@ -8,7 +8,7 @@
 #include "ignore.hpp"
 
 
-#define USE_POINT2D_MAP 0
+#define USE_FRAMES 0
 
 
 class Scene {
@@ -108,7 +108,7 @@ class Scene {
       VarValue operator()(const Frame &) const { assert(false); }
     };
 
-#if USE_POINT2D_MAP
+#if USE_FRAMES
     struct Point2DMap {
       FloatMap x;
       FloatMap y;
@@ -116,7 +116,7 @@ class Scene {
 #endif
 
     struct Body {
-#if !USE_POINT2D_MAP
+#if !USE_FRAMES
       Point2D position;
 #else
       Point2DMap position;
@@ -134,8 +134,15 @@ class Scene {
       }
     };
 
+#if USE_FRAMES
+    Frame &backgroundFrame() { return background_frame; }
+#endif
+
   private:
     Bodies bodies_member;
+#if USE_FRAMES
+    Frame background_frame;
+#endif
 
     std::string newBodyName() const;
     bool hasBody(const Bodies &bodies,const std::string &name) const;

@@ -10,7 +10,7 @@ static void testWithTargetBody()
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_ptr = &body;
   pos_expr.global_position.components().x.value = 15;
-#if USE_POINT2D_MAP
+#if USE_FRAMES
   Scene::Frame frame = scene.makeFrame();
   charmapper.apply(frame);
   assert(body.position.x(frame)==15);
@@ -44,7 +44,7 @@ static void testWithFrame()
   pos_expr.setTargetBodyPtr(&body);
   pos_expr.global_position.components().x.value = 15;
 
-#if USE_POINT2D_MAP
+#if USE_FRAMES
   frame.var_values[body.position.x.var_index] = 0;
   charmapper.apply(scene);
   assert(frame.var_values[body.position.x.value] == 15);
