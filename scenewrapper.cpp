@@ -1,12 +1,18 @@
 #include "scenewrapper.hpp"
 
 #include <functional>
+#include "float.hpp"
 
 
 using std::cerr;
 using std::vector;
 using std::string;
 using NotifyFunction = SceneWrapper::NotifyFunction;
+#if USE_POINT2D_MAP
+using Point2DMap = Scene::Point2DMap;
+using Frame = Scene::Frame;
+using FloatMap = Scene::FloatMap;
+#endif
 
 
 namespace {
@@ -31,16 +37,31 @@ namespace {
 namespace {
 struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   const char *label_member;
+#if USE_POINT2D_MAP
+  Frame &frame;
+  FloatMap &map;
+#else
   float &value;
+#endif
   const NotifyFunction &notify;
 
   FloatWrapper(
     const char *label,
+#if USE_POINT2D_MAP
+    Frame &frame_arg,
+    Scene::FloatMap &map_arg,
+#else
     float &value_arg,
+#endif
     const NotifyFunction &notify_arg
   )
   : label_member(label),
+#if USE_POINT2D_MAP
+    frame(frame_arg),
+    map(map_arg),
+#else
     value(value_arg),
+#endif
     notify(notify_arg)
   {
   }
@@ -50,12 +71,21 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     return label_member;
   }
 
+#if USE_POINT2D_MAP
+  void setValue(int arg) const override
+  {
+    frame[map.var_index] = arg;
+    StubOperationHandler operation_handler;
+    notify(operation_handler);
+  }
+#else
   void setValue(int arg) const override
   {
     value = arg;
     StubOperationHandler operation_handler;
     notify(operation_handler);
   }
+#endif
 };
 }
 
@@ -63,12 +93,20 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 namespace {
 struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
   const char *label_member;
+#if USE_POINT2D_MAP
+  Point2DMap &point;
+#else
   Point2D &point;
+#endif
   const NotifyFunction &notify;
 
   Point2DWrapper(
     const char *label_arg,
+#if USE_POINT2D_MAP
+    Point2DMap &point_arg,
+#else
     Point2D &point_arg,
+#endif
     const NotifyFunction &notify_arg
   )
   : label_member(label_arg),

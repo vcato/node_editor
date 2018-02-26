@@ -8,10 +8,16 @@
 #include "ignore.hpp"
 
 
+#define USE_POINT2D_MAP 0
+
+
 class Scene {
   public:
     struct Body;
     struct Bodies;
+    struct Frame;
+    using VarIndex = int;
+    using VarValue = float;
 
     Scene() { }
     ~Scene();
@@ -22,8 +28,13 @@ class Scene {
     const Bodies &bodies() const { return bodies_member; }
     Bodies &bodies() { return bodies_member; }
     Body &body(int index) { return bodies_member[index]; }
+    Frame makeFrame() const;
 
   public:
+    struct Frame {
+      std::vector<float> var_values;
+    };
+
     struct Bodies {
       std::vector<std::unique_ptr<Body>> body_ptrs;
       using Index = size_t;
@@ -91,8 +102,25 @@ class Scene {
       const_iterator end() const { return const_iterator(*this,size()); }
     };
 
+    struct FloatMap {
+      VarIndex var_index;
+
+      VarValue operator()(const Frame &) const { assert(false); }
+    };
+
+#if USE_POINT2D_MAP
+    struct Point2DMap {
+      FloatMap x;
+      FloatMap y;
+    };
+#endif
+
     struct Body {
+#if !USE_POINT2D_MAP
       Point2D position;
+#else
+      Point2DMap position;
+#endif
       Bodies children;
       std::string name;
 

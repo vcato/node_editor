@@ -6,6 +6,7 @@
 using std::cerr;
 using std::string;
 using std::vector;
+using Frame = Scene::Frame;
 
 
 Scene::~Scene()
@@ -77,4 +78,10 @@ Scene::Bodies::Bodies(const Bodies &arg)
   for (auto& body : arg) {
     createChild(body);
   }
+}
+
+
+Frame Scene::makeFrame() const
+{
+  return Frame();
 }

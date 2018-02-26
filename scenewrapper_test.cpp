@@ -34,7 +34,6 @@ static void testHierarchy()
   Scene scene;
   auto notify = [](const Wrapper::OperationHandler &){ assert(false); };
   Scene::Body &body = scene.addBody();
-  body.position.x = 1;
   scene.addChildBodyTo(body);
   SceneWrapper wrapper(scene,notify);
   ostringstream stream;
