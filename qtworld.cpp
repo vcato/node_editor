@@ -10,7 +10,7 @@ QtWorld::QtWorld(QtMainWindow &main_window_arg)
 }
 
 
-SceneWindow& QtWorld::createSceneViewerWindow(SceneMember &member)
+SceneWindow& QtWorld::createSceneViewerWindow(SceneMember &)
 {
   QtSceneWindow &window = createWidget<QtSceneWindow>(main_window);
   window.show();

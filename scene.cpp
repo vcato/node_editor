@@ -38,7 +38,7 @@ auto Scene::addBody() -> Body &
 {
   string name = newBodyName();
 
-  Body& new_body = createChild(bodies_member);
+  Body& new_body = bodies_member.createChild();
   new_body.name = name;
   return new_body;
 }

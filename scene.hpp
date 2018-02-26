@@ -11,7 +11,19 @@
 class Scene {
   public:
     struct Body;
+    struct Bodies;
 
+    Scene() { }
+    ~Scene();
+
+    int nBodies() const { return bodies_member.size(); }
+    Body &addBody();
+    void addChildBodyTo(Body &parent);
+    const Bodies &bodies() const { return bodies_member; }
+    Bodies &bodies() { return bodies_member; }
+    Body &body(int index) { return bodies_member[index]; }
+
+  public:
     struct Bodies {
       std::vector<std::unique_ptr<Body>> body_ptrs;
       using Index = size_t;
@@ -79,16 +91,6 @@ class Scene {
       const_iterator end() const { return const_iterator(*this,size()); }
     };
 
-    static Body& createChild(Bodies &bodies)
-    {
-      return bodies.createChild();
-    }
-
-    static Body& child(Bodies &bodies,int index)
-    {
-      return bodies[index];
-    }
-
     struct Body {
       Point2D position;
       Bodies children;
@@ -98,22 +100,11 @@ class Scene {
 
       Body& addChild(const std::string &name)
       {
-        Body &result = createChild(children);
+        Body &result = children.createChild();
         result.name = name;
         return result;
       }
     };
-
-    Scene() { }
-    ~Scene();
-
-    int nBodies() const { return bodies_member.size(); }
-
-    Body &addBody();
-    void addChildBodyTo(Body &parent);
-    const Bodies &bodies() const { return bodies_member; }
-    Bodies &bodies() { return bodies_member; }
-    Body &body(int index) { return child(bodies_member,index); }
 
   private:
     Bodies bodies_member;
