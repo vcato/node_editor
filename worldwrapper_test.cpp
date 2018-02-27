@@ -264,7 +264,7 @@ static void testChangingTheTargetBody()
     operation_handler
   );
 
-  assert(pos_expr.target_body_ptr==&body);
+  assert(pos_expr.target_body.bodyPtr()==&body);
   assert(body.position.x==15);
 
   setEnumerationValue(
@@ -274,7 +274,7 @@ static void testChangingTheTargetBody()
     operation_handler
   );
 
-  assert(!pos_expr.target_body_ptr);
+  assert(!pos_expr.target_body.body_ptr);
 }
 }
 

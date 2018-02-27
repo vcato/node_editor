@@ -32,6 +32,33 @@ class Charmapper {
     MotionPass& addMotionPass();
 
   public:
+    class BodyLink {
+      public:
+        void set(Scene::Body *body_ptr_arg)
+        {
+          body_ptr = body_ptr_arg;
+        }
+
+        bool hasValue() const
+        {
+          return body_ptr!=nullptr;
+        }
+
+        Scene::Body *bodyPtr() const
+        {
+          return body_ptr;
+        }
+
+        void clear()
+        {
+          *this = BodyLink();
+        }
+
+      public:
+        Scene *scene_ptr = nullptr;
+        Scene::Body *body_ptr = nullptr;
+    };
+
     struct Channel {
       Diagram diagram;
       int value = 0;
@@ -67,7 +94,7 @@ class Charmapper {
 
       struct FromBodyData : Data {
         Position local_position;
-        Scene::Body *source_body_ptr;
+        BodyLink source_body_link;
 
         FromBodyData();
 
@@ -123,26 +150,24 @@ class Charmapper {
     struct MotionPass {
       MotionPass();
       MotionPass(const MotionPass &) = delete;
-
+      
       struct PosExpr {
-        Diagram diagram;
-        Position local_position;
-        GlobalPosition global_position;
-        std::string target_body_name;
+        PosExpr();
 
         bool hasATargetBody() const
         {
-          return target_body_ptr!=nullptr;
+          return target_body.hasValue();
         }
 
         void setTargetBodyPtr(Scene::Body *arg)
         {
-          target_body_ptr = arg;
+          target_body.set(arg);
         }
 
-        PosExpr();
-
-        Scene::Body *target_body_ptr = nullptr;
+        Diagram diagram;
+        Position local_position;
+        GlobalPosition global_position;
+        BodyLink target_body;
       };
 
       PosExpr &expr(int index)

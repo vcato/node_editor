@@ -45,8 +45,7 @@ Charmapper::GlobalPosition::GlobalPosition()
 
 
 Charmapper::GlobalPosition::FromBodyData::FromBodyData()
-: local_position(localPositionDiagram()),
-  source_body_ptr(0)
+: local_position(localPositionDiagram())
 {
 }
 
@@ -82,11 +81,24 @@ void Charmapper::apply()
     for (int i=0; i!=n_exprs; ++i) {
       auto &expr = pass.expr(i);
       if (expr.global_position.isComponents()) {
-        if (expr.target_body_ptr) {
-          expr.target_body_ptr->position.x =
+        if (expr.target_body.body_ptr) {
+#if !USE_FRAMES
+          expr.target_body.body_ptr->position.x =
             expr.global_position.components().x.value;
-          expr.target_body_ptr->position.y =
+          expr.target_body.body_ptr->position.y =
             expr.global_position.components().y.value;
+#else
+          // Scene *scene_ptr = expr.target_body.scene_ptr;
+          // Scene *body_ptr = expr.target_body.body_ptr;
+          // Frame *frame_ptr = frame_map[scene_ptr];
+          // assert(frame_ptr);
+          // Frame &frame = *frame_ptr;
+          // assert(body_ptr);
+          // Point2DMap &position = body_ptr->position;
+          // Components &components = expr.global_position.components();
+          // position.x.set(frame,components.x.value);
+          // position.y.set(frame,components.y.value);
+#endif
         }
       }
       else {

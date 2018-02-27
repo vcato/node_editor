@@ -8,7 +8,7 @@ static void testWithTargetBody()
   Scene::Body &body = scene.addBody();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
-  pos_expr.target_body_ptr = &body;
+  pos_expr.target_body.body_ptr = &body;
   pos_expr.global_position.components().x.value = 15;
 #if USE_FRAMES
   Scene::Frame frame = scene.makeFrame();

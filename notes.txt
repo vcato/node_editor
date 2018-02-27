@@ -296,3 +296,13 @@ Scene needs a background frame.
 
 Since a charmapper can affect multiple scenes, we'll need to pass a list
 of frames to the Charmapper::apply()
+
+Seems like we need the target_body_ptr to have both a scene and a body.
+We need some way to find the appropriate frame.
+Having a scene index would be a natural way to do it, then we could have
+a parallel array of frames for the scenes.
+
+Having a map from scene to frame would be a bit more expressive.  Maybe it
+is best to do that initially.
+
+Add a scene pointer to the Charmapper::BodyLink

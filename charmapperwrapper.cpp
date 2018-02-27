@@ -120,7 +120,7 @@ struct MotionPassWrapper : VoidWrapper {
         visitor(
           BodyWrapper(
             "Source Body",
-            from_body_global_position.source_body_ptr,
+            from_body_global_position.source_body_link,
             callbacks
           )
         );
@@ -264,16 +264,16 @@ struct MotionPassWrapper : VoidWrapper {
 
   struct BodyWrapper : NoOperationWrapper<LeafWrapper<EnumerationWrapper>> {
     const Callbacks &callbacks;
-    Scene::Body *&body_ptr;
+    Charmapper::BodyLink &body_link;
     const char *label_member;
 
     BodyWrapper(
       const char *label_arg,
-      Scene::Body *&body_ptr_arg,
+      Charmapper::BodyLink &body_link_arg,
       const Callbacks &callbacks_arg
     )
     : callbacks(callbacks_arg),
-      body_ptr(body_ptr_arg),
+      body_link(body_link_arg),
       label_member(label_arg)
     {
     }
@@ -308,10 +308,10 @@ struct MotionPassWrapper : VoidWrapper {
       assert(index>=0);
 
       if (index==0) {
-        body_ptr = nullptr;
+        body_link.clear();
       }
       else {
-        body_ptr = callbacks.scene_list.allBodyPtrs()[index-1];
+        body_link.set(callbacks.scene_list.allBodyPtrs()[index-1]);
       }
 
       callbacks.notifyCharmapChanged();
@@ -340,7 +340,7 @@ struct MotionPassWrapper : VoidWrapper {
     {
       if (child_index==0) {
         // Target body
-        visitor(BodyWrapper("Target Body",pos_expr.target_body_ptr,callbacks));
+        visitor(BodyWrapper("Target Body",pos_expr.target_body,callbacks));
       }
       else if (child_index==1) {
         visitor(
