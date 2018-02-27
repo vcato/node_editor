@@ -306,3 +306,6 @@ Having a map from scene to frame would be a bit more expressive.  Maybe it
 is best to do that initially.
 
 Add a scene pointer to the Charmapper::BodyLink
+
+Looks like we should be passing around BodyLinks instead of separate scene
+and body pointers.

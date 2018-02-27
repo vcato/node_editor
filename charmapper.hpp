@@ -34,8 +34,17 @@ class Charmapper {
   public:
     class BodyLink {
       public:
-        void set(Scene::Body *body_ptr_arg)
+        BodyLink(Scene *scene_ptr_arg,Scene::Body *body_ptr_arg)
+        : scene_ptr(scene_ptr_arg),
+          body_ptr(body_ptr_arg)
         {
+        }
+
+        BodyLink() = default;
+
+        void set(Scene *scene_ptr_arg,Scene::Body *body_ptr_arg)
+        {
+          scene_ptr = scene_ptr_arg;
           body_ptr = body_ptr_arg;
         }
 
@@ -157,11 +166,6 @@ class Charmapper {
         bool hasATargetBody() const
         {
           return target_body.hasValue();
-        }
-
-        void setTargetBodyPtr(Scene::Body *arg)
-        {
-          target_body.set(arg);
         }
 
         Diagram diagram;

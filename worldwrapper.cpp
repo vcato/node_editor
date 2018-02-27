@@ -39,6 +39,13 @@ static void
 }
 
 
+template <typename T>
+static void appendTo(vector<T> &container,const vector<T> &new_elements)
+{
+  container.insert(container.end(),new_elements.begin(),new_elements.end());
+}
+
+
 namespace {
 struct WorldSceneList : CharmapperWrapper::SceneList {
   World &world;
@@ -62,18 +69,18 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
     return scene_body_names;
   }
 
-  std::vector<Body *> sceneBodyPtrs(Scene &scene) const
+  BodyLinks sceneBodyLinks(Scene &scene) const
   {
-    vector<Body *> scene_body_ptrs;
+    BodyLinks result;
 
     function<void(Scene::Body&)> add_body_function =
       [&](Scene::Body &body){
-        scene_body_ptrs.push_back(&body);
+        result.push_back(BodyLink(&scene,&body));
       };
 
     forEachBodyInScene(scene,add_body_function);
 
-    return scene_body_ptrs;
+    return result;
   }
 
   void
@@ -90,17 +97,12 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
     }
   }
 
-  vector<Body *> allBodyPtrs() const override
+  BodyLinks allBodyLinks() const override
   {
-    vector<Body *> all_bodies;
+    BodyLinks all_bodies;
 
     world.forEachSceneMember([&](World::SceneMember &scene_member){
-      vector<Body *> scene_bodies = sceneBodyPtrs(scene_member.scene);
-      all_bodies.insert(
-        all_bodies.end(),
-        scene_bodies.begin(),
-        scene_bodies.end()
-      );
+      appendTo(all_bodies,sceneBodyLinks(scene_member.scene));
     });
 
     return all_bodies;

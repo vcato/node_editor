@@ -311,7 +311,7 @@ struct MotionPassWrapper : VoidWrapper {
         body_link.clear();
       }
       else {
-        body_link.set(callbacks.scene_list.allBodyPtrs()[index-1]);
+        body_link = callbacks.scene_list.allBodyLinks()[index-1];
       }
 
       callbacks.notifyCharmapChanged();

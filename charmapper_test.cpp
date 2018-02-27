@@ -1,6 +1,9 @@
 #include "charmapper.hpp"
 
 
+using BodyLink = Charmapper::BodyLink;
+
+
 static void testWithTargetBody()
 {
   Charmapper charmapper;
@@ -41,7 +44,7 @@ static void testWithFrame()
   Charmapper charmapper;
   auto& motion_pass = charmapper.addMotionPass();
   auto& pos_expr = motion_pass.addPosExpr();
-  pos_expr.setTargetBodyPtr(&body);
+  pos_expr.target_body = BodyLink(&scene,&body);
   pos_expr.global_position.components().x.value = 15;
 
 #if USE_FRAMES

@@ -308,7 +308,7 @@ static void testUsingCharmapperToMoveABody()
   Scene::Body &body = scene.addBody();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
-  pos_expr.setTargetBodyPtr(&body);
+  pos_expr.target_body = Charmapper::BodyLink(&scene,&body);
   WorldWrapper wrapper(world);
   auto &components = charmapper.pass(0).expr(0).global_position.components();
 

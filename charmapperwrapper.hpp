@@ -9,7 +9,9 @@ struct CharmapperWrapper : VoidWrapper {
     // void setState(const State &);
     virtual int nScenes() = 0;
     virtual std::vector<std::string> allBodyNames() const = 0;
-    virtual std::vector<Scene::Body *> allBodyPtrs() const = 0;
+    using BodyLink = Charmapper::BodyLink;
+    using BodyLinks = std::vector<BodyLink>;
+    virtual BodyLinks allBodyLinks() const = 0;
   };
 
   struct Callbacks {
