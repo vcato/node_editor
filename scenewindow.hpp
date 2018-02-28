@@ -11,6 +11,7 @@ struct SceneWindow {
 
   void notifySceneChanged();
   void setScenePtr(Scene *);
+  void setDisplayFrame(const Scene::Frame &);
 };
 
 #endif /* SCENEWINDOW_HPP_ */

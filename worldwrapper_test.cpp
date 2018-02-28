@@ -126,29 +126,49 @@ static void testAddingABodyToTheScene()
 }
 
 
+namespace {
+static void
+  setNumericValue(
+    const Wrapper &world_wrapper,
+    const TreePath &path,
+    int value
+  )
+{
+  visitSubWrapper(
+    world_wrapper,
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.accept(
+        NumericVisitor(
+          [&](const NumericWrapper &numeric_wrapper){
+            numeric_wrapper.setValue(value);
+          }
+        )
+      );
+    }
+  );
+}
+}
+
+
 namespace scene_and_charmapper_tests {
 static void testChangingABodyPositionInTheScene()
 {
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  motion_pass.addPosExpr();
+  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
   Scene &scene = world.addScene(); // child 1
-  scene.addBody(); // child 0
+  Scene::Body &body = scene.addBody(); // child 0
   WorldWrapper world_wrapper(world);
-  visitSubWrapper(
-    world_wrapper,
-    {/*scene*/1,/*body*/0,/*position*/1,/*x*/0},
-    [](const Wrapper &sub_wrapper){
-      sub_wrapper.accept(NumericVisitor(
-        [](const NumericWrapper &x_wrapper){
-          x_wrapper.setValue(1);
-        }
-      ));
-    }
-  );
 
-  // Just making sure it doesn't crash.
+  pos_expr.target_body = Charmapper::BodyLink(&scene,&body);
+  assert(pos_expr.target_body.hasValue());
+  TreePath path = makePath(world_wrapper,"Scene|Body|position|x");
+  setNumericValue(world_wrapper,path,1);
+
+  // The charmap should override this value
+  assert(body.position.x(scene.displayFrame())==0);
 }
 }
 
@@ -188,31 +208,6 @@ static void
             int index =
               enumerationLabelIndex(enumeration_wrapper,enumeration_label);
             enumeration_wrapper.setValue(path,index,operation_handler);
-          }
-        )
-      );
-    }
-  );
-}
-}
-
-
-namespace {
-static void
-  setNumericValue(
-    const Wrapper &world_wrapper,
-    const TreePath &path,
-    int value
-  )
-{
-  visitSubWrapper(
-    world_wrapper,
-    path,
-    [&](const Wrapper &wrapper){
-      wrapper.accept(
-        NumericVisitor(
-          [&](const NumericWrapper &numeric_wrapper){
-            numeric_wrapper.setValue(value);
           }
         )
       );
@@ -265,7 +260,7 @@ static void testChangingTheTargetBody()
   );
 
   assert(pos_expr.target_body.bodyPtr()==&body);
-  assert(body.position.x==15);
+  assert(body.position.x(scene.displayFrame())==15);
 
   setEnumerationValue(
     world_wrapper,
@@ -274,7 +269,7 @@ static void testChangingTheTargetBody()
     operation_handler
   );
 
-  assert(!pos_expr.target_body.body_ptr);
+  assert(!pos_expr.target_body.hasValue());
 }
 }
 
@@ -314,7 +309,7 @@ static void testUsingCharmapperToMoveABody()
 
   setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|X",15);
   assert(components.x.value==15);
-  assert(body.position.x==15);
+  assert(body.position.x(scene.displayFrame())==15);
 
   string scene_viewer_commands =
     world.scene_window.viewer_member.command_stream.str();
@@ -323,7 +318,7 @@ static void testUsingCharmapperToMoveABody()
 
   setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|Y",20);
   assert(components.y.value==20);
-  assert(body.position.y==20);
+  assert(body.position.y(scene.displayFrame())==20);
 }
 }
 

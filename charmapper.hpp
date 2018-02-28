@@ -2,6 +2,7 @@
 #define CHARMAPPER_HPP_
 
 #include <vector>
+#include <map>
 #include <memory>
 #include <cassert>
 #include "diagram.hpp"
@@ -15,11 +16,7 @@ class Charmapper {
     Charmapper() = default;
     Charmapper(const Charmapper &) = delete;
 
-#if USE_FRAMES
-    void apply(Scene::Frame &);
-#else
     void apply();
-#endif
 
     int nPasses() const { return passes.size(); }
 
@@ -42,8 +39,15 @@ class Charmapper {
 
         BodyLink() = default;
 
+        Scene &scene()
+        {
+          assert(scene_ptr);
+          return *scene_ptr;
+        }
+
         void set(Scene *scene_ptr_arg,Scene::Body *body_ptr_arg)
         {
+          assert(!body_ptr_arg || scene_ptr_arg);
           scene_ptr = scene_ptr_arg;
           body_ptr = body_ptr_arg;
         }
@@ -58,12 +62,18 @@ class Charmapper {
           return body_ptr;
         }
 
+        Scene::Body &body() const
+        {
+          assert(body_ptr);
+          return *body_ptr;
+        }
+
         void clear()
         {
           *this = BodyLink();
         }
 
-      public:
+      private:
         Scene *scene_ptr = nullptr;
         Scene::Body *body_ptr = nullptr;
     };
@@ -135,7 +145,15 @@ class Charmapper {
           return true;
         }
 
-        assert(false);
+        return false;
+      }
+
+      bool isFromBody() const
+      {
+        if (dynamic_cast<FromBodyData*>(global_position_ptr.get())) {
+          return true;
+        }
+
         return false;
       }
 

@@ -8,20 +8,16 @@ using std::cerr;
 using std::vector;
 using std::string;
 using NotifyFunction = SceneWrapper::NotifyFunction;
-#if USE_FRAMES
 using Point2DMap = Scene::Point2DMap;
 using Frame = Scene::Frame;
 using FloatMap = Scene::FloatMap;
-#endif
 
 
 namespace {
 struct WrapperData {
   Scene &scene;
   const NotifyFunction &notify;
-#if USE_FRAMES
   Frame &frame;
-#endif
 };
 }
 
@@ -45,7 +41,6 @@ namespace {
 }
 
 
-#if USE_FRAMES
 namespace {
 struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   const char *label_member;
@@ -70,13 +65,12 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
   void setValue(int arg) const override
   {
-    wrapper_data.frame.var_values[map.var_index] = arg;
+    map.set(wrapper_data.frame,arg);
     StubOperationHandler operation_handler;
     wrapper_data.notify(operation_handler);
   }
 };
 }
-#endif
 
 
 namespace {
@@ -114,20 +108,12 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 namespace {
 struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
   const char *label_member;
-#if USE_FRAMES
   Point2DMap &point;
-#else
-  Point2D &point;
-#endif
   WrapperData wrapper_data;
 
   Point2DWrapper(
     const char *label_arg,
-#if USE_FRAMES
     Point2DMap &point_arg,
-#else
-    Point2D &point_arg,
-#endif
     WrapperData wrapper_data_arg
   )
   : label_member(label_arg),
@@ -144,18 +130,10 @@ struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
   {
     switch (child_index) {
       case 0:
-#if USE_FRAMES
         visitor(FloatMapWrapper("x",point.x,wrapper_data));
-#else
-        visitor(FloatWrapper("x",point.x,wrapper_data));
-#endif
         return;
       case 1:
-#if USE_FRAMES
         visitor(FloatMapWrapper("y",point.y,wrapper_data));
-#else
-        visitor(FloatWrapper("y",point.y,wrapper_data));
-#endif
         return;
     }
 
@@ -331,11 +309,7 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-#if USE_FRAMES
   WrapperData wrapper_data = {scene,notify,scene.backgroundFrame()};
-#else
-  WrapperData wrapper_data = {scene,notify};
-#endif
   visitor(
     BodyWrapper{scene,scene.bodies()[child_index],wrapper_data}
   );

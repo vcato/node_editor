@@ -8,9 +8,6 @@
 #include "ignore.hpp"
 
 
-#define USE_FRAMES 0
-
-
 class Scene {
   public:
     struct Body;
@@ -19,7 +16,7 @@ class Scene {
     using VarIndex = int;
     using VarValue = float;
 
-    Scene() { }
+    Scene();
     ~Scene();
 
     int nBodies() const { return bodies_member.size(); }
@@ -33,120 +30,152 @@ class Scene {
   public:
     struct Frame {
       std::vector<float> var_values;
-    };
+      static float defaultVariableValue() { return 0; }
 
-    struct Bodies {
-      std::vector<std::unique_ptr<Body>> body_ptrs;
-      using Index = size_t;
-
-      Bodies() = default;
-
-      Bodies(const Bodies &arg);
-
-      Body& createChild(const Body& arg)
+      Frame(int n_variables = 0)
+      : var_values(n_variables,defaultVariableValue())
       {
-        body_ptrs.push_back(std::make_unique<Body>(arg));
-        return *body_ptrs.back();
       }
 
-      Body& createChild()
+      int nVariables() const { return var_values.size(); }
+
+      void setNVariables(int arg)
       {
-        body_ptrs.push_back(std::make_unique<Body>());
-        return *body_ptrs.back();
+        var_values.resize(arg,defaultVariableValue());
       }
-
-      Index size() const
-      {
-        return body_ptrs.size();
-      }
-
-      Body& operator[](Index index)
-      {
-        assert(body_ptrs[index]);
-        return *body_ptrs[index];
-      }
-
-      const Body& operator[](Index index) const
-      {
-        assert(body_ptrs[index]);
-        return *body_ptrs[index];
-      }
-
-      struct const_iterator {
-        const Bodies &bodies;
-        Index index;
-
-        const_iterator(const Bodies &bodies_arg,Index index_arg)
-        : bodies(bodies_arg),
-          index(index_arg)
-        {
-        }
-
-        bool operator!=(const_iterator arg) const
-        {
-          assert(&bodies==&arg.bodies);
-          return index!=arg.index;
-        }
-
-        const_iterator& operator++()
-        {
-          assert(index<bodies.size());
-          ++index;
-          return *this;
-        }
-
-        const Body &operator*() const { return bodies[index]; }
-      };
-
-      const_iterator begin() const { return const_iterator(*this,0); }
-      const_iterator end() const { return const_iterator(*this,size()); }
     };
 
     struct FloatMap {
       VarIndex var_index;
 
-      VarValue operator()(const Frame &) const { assert(false); }
+      FloatMap(VarIndex var_index_arg) : var_index(var_index_arg) { }
+
+      VarValue operator()(const Frame &frame) const
+      {
+        return frame.var_values[var_index];
+      }
+
+      void set(Frame &frame,VarValue value)
+      {
+        frame.var_values[var_index] = value;
+      }
     };
 
-#if USE_FRAMES
     struct Point2DMap {
       FloatMap x;
       FloatMap y;
     };
-#endif
 
-    struct Body {
-#if !USE_FRAMES
-      Point2D position;
-#else
-      Point2DMap position;
-#endif
-      Bodies children;
-      std::string name;
+    class Bodies {
+      public:
+        using Index = size_t;
 
-      int nChildren() const { return children.size(); }
+        Bodies() = default;
 
-      Body& addChild(const std::string &name)
-      {
-        Body &result = children.createChild();
-        result.name = name;
-        return result;
-      }
+        Bodies(const Bodies &arg);
+
+        Index size() const
+        {
+          return body_ptrs.size();
+        }
+
+        Body& operator[](Index index)
+        {
+          assert(body_ptrs[index]);
+          return *body_ptrs[index];
+        }
+
+        const Body& operator[](Index index) const
+        {
+          assert(body_ptrs[index]);
+          return *body_ptrs[index];
+        }
+
+        struct const_iterator {
+          const Bodies &bodies;
+          Index index;
+
+          const_iterator(const Bodies &bodies_arg,Index index_arg)
+          : bodies(bodies_arg),
+            index(index_arg)
+          {
+          }
+
+          bool operator!=(const_iterator arg) const
+          {
+            assert(&bodies==&arg.bodies);
+            return index!=arg.index;
+          }
+
+          const_iterator& operator++()
+          {
+            assert(index<bodies.size());
+            ++index;
+            return *this;
+          }
+
+          const Body &operator*() const { return bodies[index]; }
+        };
+
+        const_iterator begin() const { return const_iterator(*this,0); }
+        const_iterator end() const { return const_iterator(*this,size()); }
+
+      private:
+        friend class Scene;
+
+        std::vector<std::unique_ptr<Body>> body_ptrs;
+
+        Body& createChild(const Body& arg)
+        {
+          body_ptrs.push_back(std::make_unique<Body>(arg));
+          return *body_ptrs.back();
+        }
+
+        Body& createChild(const Point2DMap &position_map)
+        {
+          body_ptrs.push_back(std::make_unique<Body>(position_map));
+          return *body_ptrs.back();
+        }
     };
 
-#if USE_FRAMES
+    class Body {
+      public:
+        Body(const Point2DMap &position_arg) : position(position_arg) { }
+
+        Point2DMap position;
+        Bodies children;
+        std::string name;
+
+        int nChildren() const { return children.size(); }
+
+      private:
+        friend class Scene;
+
+        Body& addChild(const std::string &name,const Point2DMap &position_map)
+        {
+          Body &result = children.createChild(position_map);
+          result.name = name;
+          return result;
+        }
+    };
+
+    int nFrameVariables() const { return n_frame_variables; }
     Frame &backgroundFrame() { return background_frame; }
-#endif
+    const Frame &backgroundFrame() const { return background_frame; }
+    const Frame &displayFrame() const { return display_frame; }
+    Frame &displayFrame() { return display_frame; }
 
   private:
+    int n_frame_variables = 0;
     Bodies bodies_member;
-#if USE_FRAMES
     Frame background_frame;
-#endif
+    Frame display_frame;
 
     std::string newBodyName() const;
     bool hasBody(const Bodies &bodies,const std::string &name) const;
     bool hasBody(const std::string &name) const;
+    void addVars(int n_vars);
+    Point2DMap newPositionMap();
 };
 
 #endif /* SCENE_HPP_ */

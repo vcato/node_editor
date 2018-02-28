@@ -4,6 +4,7 @@
 #include "draw.hpp"
 
 using std::cerr;
+using Frame = Scene::Frame;
 
 
 QtSceneViewer::QtSceneViewer()
@@ -17,13 +18,17 @@ QtSceneViewer::~QtSceneViewer()
 
 
 static void
-  drawBodies(const Scene::Bodies &bodies,const Point2D &parent_global_position)
+  drawBodies(
+    const Scene::Bodies &bodies,
+    const Point2D &parent_global_position,
+    const Frame& frame
+  )
 {
   for (const Scene::Body &body : bodies) {
     float gx = parent_global_position.x;
     float gy = parent_global_position.y;
-    float x1 = gx + body.position.x;
-    float y1 = gy + body.position.y;
+    float x1 = gx + body.position.x(frame);
+    float y1 = gy + body.position.y(frame);
     Point2D global_position(x1,y1);
     float x2 = x1 + 10;
     float y2 = y1 + 10;
@@ -36,7 +41,7 @@ static void
     drawLine(p3,p4);
     drawLine(p4,p1);
     ignore(body);
-    drawBodies(body.children,global_position);
+    drawBodies(body.children,global_position,frame);
   }
 }
 
@@ -49,10 +54,11 @@ void QtSceneViewer::paintGL()
 
   if (!scene_ptr) return;
 
+  const Scene &scene = *scene_ptr;
+
   Point2D parent_global_position(0,0);
 
-  drawBodies(scene_ptr->bodies(),parent_global_position);
-
+  drawBodies(scene.bodies(),parent_global_position,scene.displayFrame());
 }
 
 

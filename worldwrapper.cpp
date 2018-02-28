@@ -2,11 +2,13 @@
 
 #include <iostream>
 #include <sstream>
+#include <map>
 #include "charmapperwrapper.hpp"
 #include "scenewrapper.hpp"
 
 using std::cerr;
 using std::vector;
+using std::map;
 using std::string;
 using std::ostringstream;
 using std::function;
@@ -188,6 +190,8 @@ static void
 	  charmapper_member.charmapper,
 	  callbacks
 	).handleSceneChange(operation_handler,{member_index});
+
+	charmapper_member.charmapper.apply();
       }
 
       virtual void visitScene(World::SceneMember &) const
@@ -236,9 +240,12 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
       virtual void notifyCharmapChanged() const
       {
+        // This needs to be more sophisticated.  We'll start with the
+        // background frame in each scene, apply charmapper, and end up
+        // with the frames that we actually see in each scene view.
         charmapper.apply();
 
-        world.forEachSceneMember([](const World::SceneMember &scene_member){
+        world.forEachSceneMember([&](const World::SceneMember &scene_member){
           if (scene_member.scene_window_ptr) {
             scene_member.scene_window_ptr->notifySceneChanged();
           }
@@ -256,15 +263,18 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       [&,&world=world]
       (const Wrapper::OperationHandler &operation_handler)
       {
-	if (member.scene_window_ptr) {
-	  member.scene_window_ptr->notifySceneChanged();
-	}
-
 	// Update the body comboboxes in the charmappers.
 	// This doesn't work because the wrappers don't necessarily exist
 	// when the function is executed.
 
+	member.scene.displayFrame() = member.scene.backgroundFrame();
+
 	notifyCharmappersOfSceneChange(world,operation_handler);
+
+	// Notify the scene window after notifying charmapper
+	if (member.scene_window_ptr) {
+	  member.scene_window_ptr->notifySceneChanged();
+	}
       };
 
     visitor(SceneWrapper{member.scene,notify});

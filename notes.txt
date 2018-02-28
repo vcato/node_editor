@@ -305,7 +305,18 @@ a parallel array of frames for the scenes.
 Having a map from scene to frame would be a bit more expressive.  Maybe it
 is best to do that initially.
 
-Add a scene pointer to the Charmapper::BodyLink
+Maybe the Scene should have a background frame and a display frame.  That
+seems to simplify some things.
+Having the scene contain the frames is a bit awkward, since we have to
+update the number of variables in the frame whenever new bodies are added
+to the scene.
 
-Looks like we should be passing around BodyLinks instead of separate scene
-and body pointers.
+If we have no charmapper, and we change the position of a body in the scene,
+then the body should be displayed in the new position.
+
+We no longer need WrapperData::frame
+
+If we have a charmapper and a body is being charmapped, then changing the
+position of that body in the scene shouldn't affect its displayed position.
+
+If I set the target body to none in the charmap, the charmap isn't reapplied.
