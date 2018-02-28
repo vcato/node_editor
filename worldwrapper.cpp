@@ -240,6 +240,11 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
       virtual void notifyCharmapChanged() const
       {
+        world.forEachSceneMember([&](World::SceneMember &scene_member){
+          scene_member.scene.displayFrame() =
+            scene_member.scene.backgroundFrame();
+        });
+
         // This needs to be more sophisticated.  We'll start with the
         // background frame in each scene, apply charmapper, and end up
         // with the frames that we actually see in each scene view.

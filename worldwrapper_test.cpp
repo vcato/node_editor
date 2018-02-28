@@ -189,7 +189,6 @@ static int
 }
 
 
-namespace {
 static void
   setEnumerationValue(
     const Wrapper &world_wrapper,
@@ -198,22 +197,15 @@ static void
     Wrapper::OperationHandler &operation_handler
   )
 {
-  visitSubWrapper(
+  visitEnumeration(
     world_wrapper,
     path,
-    [&](const Wrapper &wrapper){
-      wrapper.accept(
-        EnumerationVisitor(
-          [&](const EnumerationWrapper &enumeration_wrapper){
-            int index =
-              enumerationLabelIndex(enumeration_wrapper,enumeration_label);
-            enumeration_wrapper.setValue(path,index,operation_handler);
-          }
-        )
-      );
+    [&](const EnumerationWrapper &enumeration_wrapper){
+      int index =
+        enumerationLabelIndex(enumeration_wrapper,enumeration_label);
+      enumeration_wrapper.setValue(path,index,operation_handler);
     }
   );
-}
 }
 
 
@@ -270,6 +262,7 @@ static void testChangingTheTargetBody()
   );
 
   assert(!pos_expr.target_body.hasValue());
+  assert(body.position.x(scene.displayFrame())==0);
 }
 }
 

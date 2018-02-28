@@ -279,5 +279,5 @@ What does it mean to apply a charmap? Are we creating a new layer of motion?
 If we change the name of a body in the tree editor, it should change in
 the scene view.
 
-Need a test where when we set the target body to None it takes away the
-effect of charmapper.
+Need a test with two charmappers.  Show that if we interactively change one
+charmapper, then both are applied.
