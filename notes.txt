@@ -281,3 +281,6 @@ the scene view.
 
 Need a test with two charmappers.  Show that if we interactively change one
 charmapper, then both are applied.
+
+
+Finish scene_and_charmapper_tests::testWithTwoCharmappers()

@@ -316,6 +316,38 @@ static void testUsingCharmapperToMoveABody()
 }
 
 
+namespace scene_and_charmapper_tests {
+static void testWithTwoCharmappers()
+{
+  FakeWorld world;
+
+  Scene &scene = world.addScene();
+  Scene::Body &body1 = scene.addBody();
+  Scene::Body &body2 = scene.addBody();
+
+  Charmapper &charmapper1 = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass1 = charmapper1.addMotionPass();
+  Charmapper::MotionPass::PosExpr &pos_expr1 = motion_pass1.addPosExpr();
+  pos_expr1.target_body = Charmapper::BodyLink(&scene,&body1);
+  pos_expr1.global_position.components().x.value = 1;
+
+  Charmapper &charmapper2 = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass2 = charmapper2.addMotionPass();
+  Charmapper::MotionPass::PosExpr &pos_expr2 = motion_pass2.addPosExpr();
+  pos_expr2.target_body = Charmapper::BodyLink(&scene,&body2);
+  pos_expr2.global_position.components().x.value = 2;
+
+  WorldWrapper wrapper(world);
+
+  setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|X",3);
+
+  // Make sure both charmaps still have an effect after changing a value
+  // in one of them.
+  //assert(body2.position.x(scene.displayFrame())==2);
+}
+}
+
+
 int main()
 {
   {
@@ -324,5 +356,6 @@ int main()
     tests::testChangingABodyPositionInTheScene();
     tests::testChangingTheTargetBody();
     tests::testUsingCharmapperToMoveABody();
+    tests::testWithTwoCharmappers();
   }
 }
