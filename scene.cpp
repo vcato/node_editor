@@ -2,10 +2,12 @@
 
 #include <cassert>
 #include <iostream>
+#include "generatename.hpp"
 
 using std::cerr;
 using std::string;
 using std::vector;
+using std::function;
 using Frame = Scene::Frame;
 using Point2DMap = Scene::Point2DMap;
 
@@ -22,22 +24,11 @@ Scene::~Scene()
 
 string Scene::newBodyName() const
 {
-  string name;
+  auto name_exists_function = [this](const string &name){
+    return hasBody(name);
+  };
 
-  {
-    int body_number = 1;
-    for (;;) {
-      name = "Body" + std::to_string(body_number);
-
-      if (!hasBody(name)) {
-	break;
-      }
-
-      ++body_number;
-    }
-  }
-
-  return name;
+  return generateName("Body",name_exists_function);
 }
 
 

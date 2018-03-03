@@ -92,6 +92,17 @@ struct FakeWorld : World {
 }
 
 
+static void testAddingACharmapper()
+{
+  FakeWorld world;
+  WorldWrapper wrapper(world);
+  world.addCharmapper();
+  wrapper.withChildWrapper(0,[](const Wrapper &child_wrapper){
+    assert(child_wrapper.label()=="Charmapper1");
+  });
+}
+
+
 namespace scene_and_charmapper_tests {
 static void testAddingABodyToTheScene()
 {
@@ -164,7 +175,7 @@ static void testChangingABodyPositionInTheScene()
 
   pos_expr.target_body = Charmapper::BodyLink(&scene,&body);
   assert(pos_expr.target_body.hasValue());
-  TreePath path = makePath(world_wrapper,"Scene|Body|position|x");
+  TreePath path = makePath(world_wrapper,"Scene1|Body|position|x");
   setNumericValue(world_wrapper,path,1);
 
   // The charmap should override this value
@@ -222,9 +233,10 @@ static void testChangingTheTargetBody()
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
   FakeOperationHandler operation_handler(command_stream);
+  string motion_pass_path = "Charmapper1|Motion Pass";
 
   {
-    TreePath path = makePath(world_wrapper,"Charmapper|Motion Pass");
+    TreePath path = makePath(world_wrapper,motion_pass_path);
     executeOperation2(world_wrapper,path,"Add Pos Expr",operation_handler);
   }
 
@@ -234,7 +246,7 @@ static void testChangingTheTargetBody()
     TreePath path =
       makePath(
         world_wrapper,
-        "Charmapper|Motion Pass|Pos Expr|Global Position|X"
+        motion_pass_path + "|Pos Expr|Global Position|X"
       );
     setNumericValue(world_wrapper,path,15);
   }
@@ -242,7 +254,7 @@ static void testChangingTheTargetBody()
   assert(!pos_expr.hasATargetBody());
 
   TreePath target_body_path =
-    makePath(world_wrapper,"Charmapper|Motion Pass|Pos Expr|Target Body");
+    makePath(world_wrapper,motion_pass_path + "|Pos Expr|Target Body");
 
   setEnumerationValue(
     world_wrapper,
@@ -299,17 +311,18 @@ static void testUsingCharmapperToMoveABody()
   pos_expr.target_body = Charmapper::BodyLink(&scene,&body);
   WorldWrapper wrapper(world);
   auto &components = charmapper.pass(0).expr(0).global_position.components();
+  string global_position_path =
+    "Charmapper1|Motion Pass|Pos Expr|Global Position";
 
-  setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|X",15);
+  setValue(wrapper,global_position_path + "|X",15);
   assert(components.x.value==15);
   assert(body.position.x(scene.displayFrame())==15);
 
   string scene_viewer_commands =
     world.scene_window.viewer_member.command_stream.str();
   assert(scene_viewer_commands=="redrawScene()\n");
-  // assert(world.viewer.last_drawn_scene.bodies[0].position.x==15);
 
-  setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|Y",20);
+  setValue(wrapper,global_position_path + "|Y",20);
   assert(components.y.value==20);
   assert(body.position.y(scene.displayFrame())==20);
 }
@@ -339,17 +352,20 @@ static void testWithTwoCharmappers()
 
   WorldWrapper wrapper(world);
 
-  setValue(wrapper,"Charmapper|Motion Pass|Pos Expr|Global Position|X",3);
+  setValue(wrapper,"Charmapper1|Motion Pass|Pos Expr|Global Position|X",3);
+  assert(pos_expr1.global_position.components().x.value==3);
 
   // Make sure both charmaps still have an effect after changing a value
   // in one of them.
-  //assert(body2.position.x(scene.displayFrame())==2);
+  float x_position_of_body_2 = body2.position.x(scene.displayFrame());
+  assert(x_position_of_body_2==2);
 }
 }
 
 
 int main()
 {
+  testAddingACharmapper();
   {
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();

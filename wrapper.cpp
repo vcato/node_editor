@@ -35,6 +35,7 @@ static int indexOfChildWithLabel(const Wrapper &wrapper,const string &label)
   for (int i=0; i!=n_children; ++i) {
     wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){
       if (child_wrapper.label()==label) {
+        assert(index==-1);
         index = i;
       }
     });

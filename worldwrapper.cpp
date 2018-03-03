@@ -188,7 +188,8 @@ static void
 
 	CharmapperWrapper(
 	  charmapper_member.charmapper,
-	  callbacks
+	  callbacks,
+          charmapper_member.name
 	).handleSceneChange(operation_handler,{member_index});
 
 	charmapper_member.charmapper.apply();
@@ -240,26 +241,18 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
       virtual void notifyCharmapChanged() const
       {
-        world.forEachSceneMember([&](World::SceneMember &scene_member){
-          scene_member.scene.displayFrame() =
-            scene_member.scene.backgroundFrame();
-        });
-
-        // This needs to be more sophisticated.  We'll start with the
-        // background frame in each scene, apply charmapper, and end up
-        // with the frames that we actually see in each scene view.
-        charmapper.apply();
-
-        world.forEachSceneMember([&](const World::SceneMember &scene_member){
-          if (scene_member.scene_window_ptr) {
-            scene_member.scene_window_ptr->notifySceneChanged();
-          }
-        });
+        world.applyCharmaps();
       }
     };
 
     Callbacks callbacks{scene_list,member.charmapper,world};
-    visitor(CharmapperWrapper{member.charmapper,callbacks});
+    visitor(
+      CharmapperWrapper{
+        member.charmapper,
+        callbacks,
+        member.name
+      }
+    );
   }
 
   virtual void visitScene(World::SceneMember &member) const
@@ -282,7 +275,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 	}
       };
 
-    visitor(SceneWrapper{member.scene,notify});
+    visitor(SceneWrapper{member.scene,notify,member.name});
   }
 };
 }

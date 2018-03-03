@@ -24,7 +24,7 @@ struct WorldWrapper : VoidWrapper
       int child_index,const WrapperVisitor &visitor
     ) const;
 
-  virtual std::string label() const
+  virtual Label label() const
   {
     assert(false);
   }

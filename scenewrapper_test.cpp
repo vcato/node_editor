@@ -35,7 +35,7 @@ static void testHierarchy()
   auto notify = [](const Wrapper::OperationHandler &){ assert(false); };
   Scene::Body &body = scene.addBody();
   scene.addChildBodyTo(body);
-  SceneWrapper wrapper(scene,notify);
+  SceneWrapper wrapper(scene,notify,"Scene");
   ostringstream stream;
   printTree(stream,wrapper);
   string output = stream.str();
@@ -111,7 +111,7 @@ static void
 static void testAddingBodies()
 {
   Scene scene;
-  SceneWrapper wrapper(scene,[](const Wrapper::OperationHandler &){});
+  SceneWrapper wrapper(scene,[](const Wrapper::OperationHandler &){},"Scene");
   ostringstream stream;
 
   int body_index = 2;

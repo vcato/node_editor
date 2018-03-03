@@ -279,8 +279,8 @@ What does it mean to apply a charmap? Are we creating a new layer of motion?
 If we change the name of a body in the tree editor, it should change in
 the scene view.
 
-Need a test with two charmappers.  Show that if we interactively change one
-charmapper, then both are applied.
+In the Body combo box, it should now be displaying the actual scene names.
 
-
-Finish scene_and_charmapper_tests::testWithTwoCharmappers()
+The way notifyCharmappersOfSceneChange() is written, the charmaps may not
+  get applied properly in certain situations because the it isn't going
+  through the full process.  I think there needs to be a World::applyCharmaps()

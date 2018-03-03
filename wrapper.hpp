@@ -31,6 +31,7 @@ using WrapperVisitor = std::function<void(const Wrapper &)>;
 
 struct Wrapper {
   using OperationName = std::string;
+  using Label = std::string;
 
   struct OperationHandler {
     virtual void addItem(const TreePath &) = 0;
@@ -66,7 +67,7 @@ struct Wrapper {
 
   virtual void accept(const Visitor &) const = 0;
 
-  virtual std::string label() const = 0;
+  virtual Label label() const = 0;
 };
 
 

@@ -8,8 +8,9 @@ struct SceneWrapper : VoidWrapper {
 
   Scene &scene;
   const NotifyFunction notify;
+  Label label_member;
 
-  SceneWrapper(Scene &scene_arg,NotifyFunction notify);
+  SceneWrapper(Scene &scene_arg,NotifyFunction notify,const std::string &label);
 
   std::vector<OperationName> operationNames() const;
 
@@ -21,6 +22,6 @@ struct SceneWrapper : VoidWrapper {
     ) const override;
 
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
-  std::string label() const override { return "Scene"; }
+  Label label() const override;
   int nChildren() const override { return scene.nBodies(); }
 };

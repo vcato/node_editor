@@ -120,7 +120,7 @@ static void testAddingABodyToTheScene()
   main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
 
   // Use selects Add Body on the scene.
-  TreePath scene_path = makePath(world_wrapper,{"Scene"});
+  TreePath scene_path = makePath(world_wrapper,{"Scene1"});
   main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
 
   // Assert the scene window shows a body in the tree.

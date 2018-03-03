@@ -29,7 +29,7 @@ build_manual_tests: \
 main: main.o diagrameditor.o \
   moc_qtmainwindow.o qtmainwindow.o mainwindow.o \
   qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
-  wrapper.o statementtext.o \
+  wrapper.o statementtext.o generatename.o \
   qtmenu.o qtspinbox.o moc_qtspinbox.o \
   moc_qttreeeditor.o qttreeeditor.o treeeditor.o \
   diagramevaluation.o diagramio.o \
@@ -79,24 +79,27 @@ wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
   diagramio.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-scene_test: scene_test.o scene.o
+scene_test: scene_test.o scene.o generatename.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-world_test: world_test.o world.o scene.o scenewindow.o scenetree.o
+world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
+  generatename.o charmapper.o defaultdiagrams.o diagram.o diagramio.o \
+  diagramnode.o linetext.o statementtext.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o
+scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
+  generatename.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   scenewrapper.o charmapperwrapper.o charmapper.o diagram.o defaultdiagrams.o \
   diagramnode.o diagramio.o linetext.o statementtext.o stringutil.o \
-  wrapperutil.o wrapper.o scenewindow.o scenetree.o
+  wrapperutil.o wrapper.o scenewindow.o scenetree.o generatename.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   diagram.o diagramio.o diagramnode.o linetext.o statementtext.o \
-  stringutil.o
+  stringutil.o generatename.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 treeeditor_test: treeeditor_test.o
@@ -107,12 +110,12 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   scenewrapper.o scene.o scenewindow.o \
   defaultdiagrams.o diagram.o diagramio.o diagramnode.o linetext.o \
   statementtext.o stringutil.o \
-  treeeditor.o wrapper.o world.o scenetree.o
+  treeeditor.o wrapper.o world.o scenetree.o generatename.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
   qtsceneviewer.o draw.o scene.o qttreewidgetitem.o qtscenetree.o \
-  scenetree.o scenewindow.o
+  scenetree.o scenewindow.o generatename.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

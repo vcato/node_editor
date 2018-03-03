@@ -11,6 +11,7 @@ using NotifyFunction = SceneWrapper::NotifyFunction;
 using Point2DMap = Scene::Point2DMap;
 using Frame = Scene::Frame;
 using FloatMap = Scene::FloatMap;
+using Label = SceneWrapper::Label;
 
 
 namespace {
@@ -58,7 +59,7 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   {
   }
 
-  std::string label() const override
+  Label label() const override
   {
     return label_member;
   }
@@ -90,7 +91,7 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   {
   }
 
-  std::string label() const override
+  Label label() const override
   {
     return label_member;
   }
@@ -142,7 +143,7 @@ struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
 
   int nChildren() const override { return 2; }
 
-  std::string label() const override
+  Label label() const override
   {
     return label_member;
   }
@@ -161,7 +162,7 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   {
   }
 
-  std::string label() const override { return label_member; }
+  Label label() const override { return label_member; }
 
   virtual std::string value() const
   {
@@ -252,7 +253,7 @@ struct BodyWrapper : VoidWrapper {
     visitor(BodyWrapper(scene,child,wrapper_data));
   }
 
-  virtual std::string label() const
+  virtual Label label() const
   {
     return "Body";
   }
@@ -267,10 +268,12 @@ struct BodyWrapper : VoidWrapper {
 
 SceneWrapper::SceneWrapper(
   Scene &scene_arg,
-  NotifyFunction notify_arg
+  NotifyFunction notify_arg,
+  const Label &label_arg
 )
 : scene(scene_arg),
-  notify(notify_arg)
+  notify(notify_arg),
+  label_member(label_arg)
 {
 }
 
@@ -313,4 +316,10 @@ void
   visitor(
     BodyWrapper{scene,scene.bodies()[child_index],wrapper_data}
   );
+}
+
+
+Label SceneWrapper::label() const
+{
+  return label_member;
 }

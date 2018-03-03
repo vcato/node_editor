@@ -10,14 +10,14 @@ using std::function;
 
 namespace {
 struct ZWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
-  virtual std::string label() const { return "Z"; }
+  virtual Label label() const { return "Z"; }
 };
 }
 
 
 namespace {
 struct YWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
-  virtual std::string label() const { return "Y"; }
+  virtual Label label() const { return "Y"; }
 
   virtual int nChildren() const { return 1; }
 
@@ -39,7 +39,7 @@ struct YWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
 
 namespace {
 struct XWrapper : NoOperationWrapper<VoidWrapper> {
-  virtual std::string label() const { return "X"; }
+  virtual Label label() const { return "X"; }
 
   virtual int nChildren() const { return 1; }
 
@@ -61,7 +61,7 @@ struct XWrapper : NoOperationWrapper<VoidWrapper> {
 
 namespace {
 struct TestWrapper : NoOperationWrapper<VoidWrapper> {
-  string label() const { return "test"; }
+  Label label() const { return "test"; }
 
   virtual int nChildren() const
   {

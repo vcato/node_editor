@@ -7,6 +7,7 @@ using std::cerr;
 using std::vector;
 using std::string;
 using Callbacks = CharmapperWrapper::Callbacks;
+using Label = CharmapperWrapper::Label;
 
 
 namespace {
@@ -45,7 +46,7 @@ struct MotionPassWrapper : VoidWrapper {
       return &channel.diagram;
     }
 
-    virtual std::string label() const
+    virtual Label label() const
     {
       return label_member;
     }
@@ -95,7 +96,7 @@ struct MotionPassWrapper : VoidWrapper {
       }
     }
 
-    virtual std::string label() const
+    virtual Label label() const
     {
       return label_member;
     }
@@ -143,7 +144,7 @@ struct MotionPassWrapper : VoidWrapper {
       assert(false);
     }
 
-    virtual std::string label() const
+    virtual Label label() const
     {
       assert(false);
     }
@@ -256,7 +257,7 @@ struct MotionPassWrapper : VoidWrapper {
       return {"Components","From Body"};
     }
 
-    virtual std::string label() const
+    virtual Label label() const
     {
       return "Global Position";
     }
@@ -278,7 +279,7 @@ struct MotionPassWrapper : VoidWrapper {
     {
     }
 
-    std::string label() const override { return label_member; }
+    Label label() const override { return label_member; }
 
     void
       handleSceneChange(
@@ -357,7 +358,7 @@ struct MotionPassWrapper : VoidWrapper {
       }
     }
 
-    virtual std::string label() const
+    virtual Label label() const
     {
       return "Pos Expr";
     }
@@ -408,7 +409,7 @@ struct MotionPassWrapper : VoidWrapper {
     visitor(PosExprWrapper(pos_expr,callbacks));
   }
 
-  virtual std::string label() const
+  virtual Label label() const
   {
     return "Motion Pass";
   }
@@ -502,4 +503,10 @@ void
       }
     }
   );
+}
+
+
+Label CharmapperWrapper::label() const
+{
+  return label_member;
 }
