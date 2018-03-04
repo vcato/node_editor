@@ -280,7 +280,4 @@ If we change the name of a body in the tree editor, it should change in
 the scene view.
 
 In the Body combo box, it should now be displaying the actual scene names.
-
-The way notifyCharmappersOfSceneChange() is written, the charmaps may not
-  get applied properly in certain situations because the it isn't going
-  through the full process.  I think there needs to be a World::applyCharmaps()
+This is determined by the enumeration names of the 

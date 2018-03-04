@@ -259,7 +259,7 @@ static void testChangingTheTargetBody()
   setEnumerationValue(
     world_wrapper,
     target_body_path,
-    "scene 0:Body1",
+    "Scene1:Body1",
     operation_handler
   );
 

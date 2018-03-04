@@ -5,13 +5,11 @@
 class CharmapperWrapper : public VoidWrapper {
   public:
     struct SceneList {
-      // using State = std::vector<Scene>;
-      // State state() const;
-      // void setState(const State &);
-      virtual int nScenes() = 0;
-      virtual std::vector<std::string> allBodyNames() const = 0;
       using BodyLink = Charmapper::BodyLink;
       using BodyLinks = std::vector<BodyLink>;
+
+      virtual int nScenes() = 0;
+      virtual std::vector<std::string> allBodyNames() const = 0;
       virtual BodyLinks allBodyLinks() const = 0;
     };
 

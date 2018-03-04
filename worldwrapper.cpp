@@ -88,13 +88,13 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
   void
     addBodyNamesTo(
       vector<string> &all_body_names,
-      int scene_index,
+      const string &scene_name,
       const vector<string> &body_names
     ) const
   {
     for (auto &body_name : body_names) {
       ostringstream stream;
-      stream << "scene " << scene_index << ":" << body_name;
+      stream << scene_name << ":" << body_name;
       all_body_names.push_back(stream.str());
     }
   }
@@ -117,7 +117,8 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
 
     world.forEachSceneMember([&](const World::SceneMember &scene_member){
       vector<string> scene_body_names = sceneBodyNames(scene_member.scene);
-      addBodyNamesTo(all_body_names,scene_index,scene_body_names);
+      const string &scene_name = scene_member.name;
+      addBodyNamesTo(all_body_names,scene_name,scene_body_names);
       ++scene_index;
     });
 
@@ -140,6 +141,63 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
 }
 
 
+namespace {
+struct NotifyCharmapperVisitor : World::MemberVisitor {
+  using SceneList = CharmapperWrapper::SceneList;
+  const int member_index;
+  const Wrapper::OperationHandler &operation_handler;
+  const SceneList &scene_list;
+
+  NotifyCharmapperVisitor(
+    int member_index_arg,
+    const Wrapper::OperationHandler &operation_handler_arg,
+    const SceneList &scene_list_arg
+  )
+  : member_index(member_index_arg),
+    operation_handler(operation_handler_arg),
+    scene_list(scene_list_arg)
+  {
+  }
+
+  virtual void
+    visitCharmapper(World::CharmapperMember &charmapper_member) const
+  {
+    struct Callbacks : CharmapperWrapper::Callbacks {
+      Callbacks(const SceneList &scene_list_arg)
+      : CharmapperWrapper::Callbacks(scene_list_arg)
+      {
+      }
+
+      virtual void notifyCharmapChanged() const
+      {
+        // The charmap changed due to a scene change.  We don't want
+        // to cause an inifinite loop, so we don't notify the scene
+        // of the charmap change.
+      }
+    };
+
+    Callbacks callbacks{scene_list};
+
+    CharmapperWrapper(
+      charmapper_member.charmapper,
+      callbacks,
+      charmapper_member.name
+    ).handleSceneChange(operation_handler,{member_index});
+
+    // This may not be sufficient.  It would probably be better to
+    // call world.applyCharmaps().  Need an example of where this doesn't
+    // work.
+    charmapper_member.charmapper.apply();
+  }
+
+  virtual void visitScene(World::SceneMember &) const
+  {
+  }
+};
+
+}
+
+
 static void
   notifyCharmappersOfSceneChange(
     World &world,
@@ -147,62 +205,11 @@ static void
   )
 {
   int n_members = world.nMembers();
-  using SceneList = CharmapperWrapper::SceneList;
   WorldSceneList scene_list(world);
 
-  for (int i=0; i!=n_members; ++i) {
-    struct Visitor : World::MemberVisitor {
-      const int member_index;
-      const Wrapper::OperationHandler &operation_handler;
-      const SceneList &scene_list;
-
-      Visitor(
-        int member_index_arg,
-        const Wrapper::OperationHandler &operation_handler_arg,
-        const SceneList &scene_list_arg
-      )
-      : member_index(member_index_arg),
-        operation_handler(operation_handler_arg),
-        scene_list(scene_list_arg)
-      {
-      }
-
-      virtual void
-        visitCharmapper(World::CharmapperMember &charmapper_member) const
-      {
-        struct Callbacks : CharmapperWrapper::Callbacks {
-          Callbacks(const SceneList &scene_list_arg)
-          : CharmapperWrapper::Callbacks(scene_list_arg)
-          {
-          }
-
-          virtual void notifyCharmapChanged() const
-          {
-            // The charmap changed due to a scene change.  We don't want
-            // to cause an inifinite loop, so we don't notify the scene
-            // of the charmap change.
-          }
-        };
-
-        Callbacks callbacks{scene_list};
-
-	CharmapperWrapper(
-	  charmapper_member.charmapper,
-	  callbacks,
-          charmapper_member.name
-	).handleSceneChange(operation_handler,{member_index});
-
-	charmapper_member.charmapper.apply();
-      }
-
-      virtual void visitScene(World::SceneMember &) const
-      {
-      }
-    };
-
-    Visitor visitor(i,operation_handler,scene_list);
-
-    world.visitMember(i,visitor);
+  for (int member_index=0; member_index!=n_members; ++member_index) {
+    NotifyCharmapperVisitor visitor(member_index,operation_handler,scene_list);
+    world.visitMember(member_index,visitor);
   }
 }
 
