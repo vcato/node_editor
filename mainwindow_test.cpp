@@ -41,6 +41,11 @@ struct FakeTreeEditor : TreeEditor {
     executeOperation(path,index);
   }
 
+  void userChangesStringValue(const TreePath &path,const string &new_value)
+  {
+    stringItemValueChanged(path,new_value);
+  }
+
   void addTreeItem(const TreePath & /*new_item_path*/) override
   {
   }
@@ -119,7 +124,7 @@ static void testAddingABodyToTheScene()
   // User executes Add Scene in the tree editor.
   main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
 
-  // Use selects Add Body on the scene.
+  // User selects Add Body on the scene.
   TreePath scene_path = makePath(world_wrapper,{"Scene1"});
   main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
 
@@ -128,7 +133,31 @@ static void testAddingABodyToTheScene()
 }
 
 
+static void testChangingABodyName()
+{
+  FakeWorld world;
+  WorldWrapper world_wrapper(world);
+  FakeMainWindow main_window;
+  main_window.setWorldPtr(&world_wrapper);
+
+  // User executes Add Scene in the tree editor.
+  main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
+
+  // User selects Add Body on the scene.
+  TreePath scene_path = makePath(world_wrapper,"Scene1");
+  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+
+  // User changes the body name.
+  TreePath body_name_path = makePath(world_wrapper,"Scene1|Body|name");
+  main_window.tree_editor.userChangesStringValue(body_name_path,"Test");
+
+  // Assert the scene window shows the new body name.
+  assert(world.scene_window.tree_member.root.children[0].label=="Test");
+}
+
+
 int main()
 {
   testAddingABodyToTheScene();
+  testChangingABodyName();
 }

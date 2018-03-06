@@ -135,7 +135,7 @@ inline void
 
 
 extern void
-  visitEnumeration(
+  visitEnumerationSubWrapper(
     const Wrapper &wrapper,
     const TreePath &path,
     std::function<void(const EnumerationWrapper &)> f
@@ -160,36 +160,12 @@ struct NumericWrapper : Wrapper {
 };
 
 
-struct NumericVisitor : Wrapper::Visitor {
-  using Function = std::function<void(const NumericWrapper &)>;
-  Function function;
-
-  NumericVisitor(const Function &function_arg)
-  : function(function_arg)
-  {
-  }
-
-  virtual void operator()(const VoidWrapper &) const
-  {
-    assert(false);
-  }
-
-  virtual void operator()(const NumericWrapper &wrapper) const
-  {
-    function(wrapper);
-  }
-
-  virtual void operator()(const EnumerationWrapper &) const
-  {
-    assert(false);
-  }
-
-  virtual void operator()(const StringWrapper &) const
-  {
-    assert(false);
-  }
-};
-
+extern void
+  visitNumericSubWrapper(
+    const Wrapper &wrapper,
+    const TreePath &path,
+    const std::function<void(const NumericWrapper &)> &f
+  );
 
 struct StringWrapper : Wrapper {
   void accept(const Visitor &visitor) const override
@@ -198,7 +174,17 @@ struct StringWrapper : Wrapper {
   }
 
   virtual std::string value() const = 0;
+
+  virtual void setValue(const std::string &) const = 0;
 };
+
+
+extern void
+  visitStringSubWrapper(
+    const Wrapper &wrapper,
+    const TreePath &path,
+    const std::function<void(const StringWrapper &)> &f
+  );
 
 
 struct EnumerationWrapper : Wrapper {
@@ -215,37 +201,6 @@ struct EnumerationWrapper : Wrapper {
       int index,
       OperationHandler &operation_handler
     ) const = 0;
-};
-
-
-struct EnumerationVisitor : Wrapper::Visitor {
-  using Function = std::function<void(const EnumerationWrapper &)>;
-  Function function;
-
-  EnumerationVisitor(const Function &function_arg)
-  : function(function_arg)
-  {
-  }
-
-  virtual void operator()(const VoidWrapper &) const
-  {
-    assert(false);
-  }
-
-  virtual void operator()(const NumericWrapper &) const
-  {
-    assert(false);
-  }
-
-  virtual void operator()(const EnumerationWrapper &wrapper) const
-  {
-    function(wrapper);
-  }
-
-  virtual void operator()(const StringWrapper &) const
-  {
-    assert(false);
-  }
 };
 
 

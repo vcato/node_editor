@@ -278,6 +278,3 @@ What does it mean to apply a charmap? Are we creating a new layer of motion?
 ---
 If we change the name of a body in the tree editor, it should change in
 the scene view.
-
-In the Body combo box, it should now be displaying the actual scene names.
-This is determined by the enumeration names of the 

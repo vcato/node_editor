@@ -20,7 +20,6 @@ void QtComboBox::currentIndexChangedSlot(int index)
 {
   if (ignore_signals) return;
 
-  cerr << "QtComboBox::currentIndexChangedSlot()\n";
   current_index_changed_function(index);
 }
 

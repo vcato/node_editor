@@ -145,17 +145,11 @@ static void
     int value
   )
 {
-  visitSubWrapper(
+  visitNumericSubWrapper(
     world_wrapper,
     path,
-    [&](const Wrapper &wrapper){
-      wrapper.accept(
-        NumericVisitor(
-          [&](const NumericWrapper &numeric_wrapper){
-            numeric_wrapper.setValue(value);
-          }
-        )
-      );
+    [&](const NumericWrapper &numeric_wrapper){
+      numeric_wrapper.setValue(value);
     }
   );
 }
@@ -208,7 +202,7 @@ static void
     Wrapper::OperationHandler &operation_handler
   )
 {
-  visitEnumeration(
+  visitEnumerationSubWrapper(
     world_wrapper,
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
@@ -283,20 +277,15 @@ static void setValue(const Wrapper &wrapper,const string &path_string,int value)
 {
   TreePath path = makePath(wrapper,path_string);
 
-  visitSubWrapper(
+  visitNumericSubWrapper(
     wrapper,
     path,
-    [&](const Wrapper &sub_wrapper){
-      sub_wrapper.accept(
-        NumericVisitor(
-          [&](const NumericWrapper &numeric_wrapper){
-            numeric_wrapper.setValue(value);
-          }
-        )
-      );
+    [&](const NumericWrapper &numeric_wrapper){
+      numeric_wrapper.setValue(value);
     }
   );
 }
+
 
 namespace scene_and_charmapper_tests {
 static void testUsingCharmapperToMoveABody()

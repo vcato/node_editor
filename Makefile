@@ -27,16 +27,23 @@ build_manual_tests: \
   qtscenewindow_manualtest
 
 main: main.o diagrameditor.o \
-  moc_qtmainwindow.o qtmainwindow.o mainwindow.o \
-  qtdiagrameditor.o circle.o stringutil.o linetext.o diagramnode.o diagram.o \
+  qtmainwindow.o    moc_qtmainwindow.o \
+  qtspinbox.o       moc_qtspinbox.o \
+  qttreeeditor.o    moc_qttreeeditor.o \
+  qtdiagrameditor.o moc_qtdiagrameditor.o \
+  qtslot.o          moc_qtslot.o \
+  qtcombobox.o      moc_qtcombobox.o \
+  qtlineedit.o      moc_qtlineedit.o \
+  mainwindow.o \
+  circle.o stringutil.o linetext.o diagramnode.o diagram.o \
   wrapper.o statementtext.o generatename.o \
-  qtmenu.o qtspinbox.o moc_qtspinbox.o \
-  moc_qttreeeditor.o qttreeeditor.o treeeditor.o \
+  qtmenu.o \
+  treeeditor.o \
   diagramevaluation.o diagramio.o \
-  moc_qtdiagrameditor.o qtslot.o moc_qtslot.o defaultdiagrams.o \
-  world.o worldwrapper.o charmapperwrapper.o qtcombobox.o \
+  defaultdiagrams.o \
+  world.o worldwrapper.o charmapperwrapper.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
-  moc_qtcombobox.o qtscenewindow.o qttreewidgetitem.o scenewindow.o \
+  qtscenewindow.o qttreewidgetitem.o scenewindow.o \
   qtscenetree.o scenetree.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 

@@ -154,11 +154,17 @@ struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
 namespace {
 struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   const char *label_member;
-  const std::string &name;
+  std::string &name;
+  WrapperData wrapper_data;
 
-  NameWrapper(const char *label,const std::string &name_arg)
+  NameWrapper(
+    const char *label,
+    string &name_arg,
+    const WrapperData &wrapper_data_arg
+  )
   : label_member(label),
-    name(name_arg)
+    name(name_arg),
+    wrapper_data(wrapper_data_arg)
   {
   }
 
@@ -167,6 +173,13 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   virtual std::string value() const
   {
     return name;
+  }
+
+  void setValue(const string &arg) const
+  {
+    name = arg;
+    StubOperationHandler operation_handler;
+    wrapper_data.notify(operation_handler);
   }
 };
 }
@@ -239,7 +252,7 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==0) {
-      visitor(NameWrapper{"name",body.name});
+      visitor(NameWrapper{"name",body.name,wrapper_data});
       return;
     }
 

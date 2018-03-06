@@ -53,7 +53,7 @@ void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
 {
   OperationHandler operation_handler(*this);
 
-  visitEnumeration(
+  visitEnumerationSubWrapper(
     world(),
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
@@ -78,3 +78,16 @@ void TreeEditor::executeOperation(const TreePath &path,int operation_index)
 }
 
 
+void
+  TreeEditor::stringItemValueChanged(
+    const TreePath &path,const string &value
+  )
+{
+  visitStringSubWrapper(
+    world(),
+    path,
+    [&](const StringWrapper &string_wrapper){
+      string_wrapper.setValue(value);
+    }
+  );
+}

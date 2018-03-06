@@ -10,6 +10,7 @@
 #include "qtspinbox.hpp"
 #include "streamvector.hpp"
 #include "qtcombobox.hpp"
+#include "qtlineedit.hpp"
 #include "qttreewidgetitem.hpp"
 
 
@@ -164,7 +165,10 @@ void
   )
 {
   QTreeWidgetItem &item = ::createChildItem(parent_item);
-  QLineEdit &line_edit = createItemWidget<QLineEdit>(item,label);
+  QtLineEdit &line_edit = createItemWidget<QtLineEdit>(item,label);
+  line_edit.text_changed_function = [&](const string &new_text){
+    handleLineEditItemValueChanged(&item,new_text);
+  };
   line_edit.setText(QString::fromStdString(value));
 }
 
@@ -313,7 +317,7 @@ static vector<string>
 {
   vector<string> items;
 
-  visitEnumeration(
+  visitEnumerationSubWrapper(
     wrapper,
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
@@ -373,19 +377,24 @@ void
 
   TreePath path = itemPath(*item_ptr);
 
-  visitSubWrapper(
+  visitNumericSubWrapper(
     world(),
     path,
-    [&](const Wrapper &wrapper){
-      wrapper.accept(
-	NumericVisitor(
-	  [&](const NumericWrapper &numeric_wrapper){
-	    numeric_wrapper.setValue(value);
-	  }
-	)
-      );
+    [&](const NumericWrapper &numeric_wrapper){
+      numeric_wrapper.setValue(value);
     }
   );
+}
+
+
+void
+  QtTreeEditor::handleLineEditItemValueChanged(
+    QTreeWidgetItem *item_ptr,
+    const string &value
+  )
+{
+  assert(item_ptr);
+  stringItemValueChanged(itemPath(*item_ptr),value);
 }
 
 

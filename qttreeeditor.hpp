@@ -88,6 +88,12 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
         int value
       );
 
+    void
+      handleLineEditItemValueChanged(
+        QTreeWidgetItem *item_ptr,
+        const std::string &value
+      );
+
     void removeChildItems(const TreePath &path);
 
     void addTreeItem(const TreePath &new_item_path) override;
