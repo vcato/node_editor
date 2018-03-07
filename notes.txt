@@ -275,6 +275,3 @@ What does it mean to apply a charmap? Are we creating a new layer of motion?
     the state of the scene after the charmap is applied.
   * Maybe the scene viewer includes its own tree where you can view the
     properties of the scene as they are displayed (after charmapping).
----
-If we change the name of a body in the tree editor, it should change in
-the scene view.
