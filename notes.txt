@@ -254,8 +254,7 @@ We may end up wanting to create handles for items in the tree of a specific
 type, so that when we visit the wrapper, we automatically get the wrapper
 of the appropriate type.  Not clear if it is worth it yet.
 
-* The scene viewer tree should show the body positions.
-* If collapse a body in the scene viewer, then it should stay collaped when
+* If we collapse a body in the scene viewer, then it should stay collaped when
   we add other bodies to the scene.
   * To make this work, it seems like we'll need more detailed information
     on how the scene changed.
