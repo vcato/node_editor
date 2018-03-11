@@ -5,13 +5,16 @@
 #include "scenetree.hpp"
 
 
-struct SceneWindow {
-  virtual SceneViewer &viewer() = 0;
-  virtual SceneTree &tree() = 0;
+class SceneWindow {
+  public:
+    void notifySceneChanged();
+    void setScenePtr(Scene *,const std::string &name);
+    void setDisplayFrame(const Scene::Frame &);
 
-  void notifySceneChanged();
-  void setScenePtr(Scene *);
-  void setDisplayFrame(const Scene::Frame &);
+  private:
+    virtual SceneViewer &viewer() = 0;
+    virtual SceneTree &tree() = 0;
+    virtual void setTitle(const std::string &) = 0;
 };
 
 #endif /* SCENEWINDOW_HPP_ */

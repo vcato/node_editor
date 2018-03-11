@@ -7,7 +7,7 @@
 class SceneViewer {
   public:
     void notifySceneChanged() { redrawScene(); }
-    void setScenePtr(Scene *arg) { scene_ptr = arg; }
+    void setScenePtr(Scene *arg);
 
   protected:
     Scene *scene_ptr = nullptr;

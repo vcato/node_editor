@@ -2,6 +2,8 @@
 
 #include <cstdlib>
 
+using std::string;
+
 
 namespace {
 struct Viewer : SceneViewer {
@@ -26,6 +28,7 @@ struct Window : SceneWindow {
 
   SceneViewer &viewer() override { return viewer_member; }
   SceneTree &tree() override { return tree_member; }
+  void setTitle(const string &) override { }
 };
 }
 

@@ -12,6 +12,7 @@ class QtSceneWindow : public QDialog, public SceneWindow {
 
     QtSceneViewer &viewer() override;
     QtSceneTree &tree() override;
+    void setTitle(const std::string &) override;
 
   private:
     Scene *scene_ptr;

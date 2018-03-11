@@ -58,7 +58,7 @@ Scene& World::addScene()
   scene_member_ptr->name = generateMemberName("Scene");
   Scene& scene = scene_member_ptr->scene;
   SceneWindow &scene_window = createSceneViewerWindow(*scene_member_ptr);
-  scene_window.setScenePtr(&scene);
+  scene_window.setScenePtr(&scene,scene_member_ptr->name);
   scene_member_ptr->scene_window_ptr = &scene_window;
   world_members.push_back(std::move(scene_member_ptr));
   return scene;

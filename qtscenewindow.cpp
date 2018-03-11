@@ -32,3 +32,9 @@ QtSceneTree &QtSceneWindow::tree()
   assert(tree_ptr);
   return *tree_ptr;
 }
+
+
+void QtSceneWindow::setTitle(const std::string &arg)
+{
+  QDialog::setWindowTitle(QString::fromStdString(arg));
+}

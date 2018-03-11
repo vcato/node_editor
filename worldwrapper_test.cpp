@@ -77,6 +77,7 @@ struct FakeSceneWindow : SceneWindow {
 
   SceneViewer &viewer() override { return viewer_member; }
   SceneTree &tree() override { return tree_member; }
+  void setTitle(const std::string &) override { }
 };
 }
 

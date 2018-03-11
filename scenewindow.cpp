@@ -1,5 +1,7 @@
 #include "scenewindow.hpp"
 
+using std::string;
+
 
 void SceneWindow::notifySceneChanged()
 {
@@ -8,8 +10,10 @@ void SceneWindow::notifySceneChanged()
 }
 
 
-void SceneWindow::setScenePtr(Scene *arg)
+void SceneWindow::setScenePtr(Scene *arg,const string &name)
 {
   viewer().setScenePtr(arg);
   tree().setScenePtr(arg);
+  assert(arg);
+  setTitle(name);
 }

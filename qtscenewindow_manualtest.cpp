@@ -12,7 +12,7 @@ int main(int argc,char** argv)
   scene.addChildBodyTo(body1);
   scene.addBody();
   QtSceneWindow scene_window(nullptr);
-  scene_window.setScenePtr(&scene);
+  scene_window.setScenePtr(&scene,"Scene Window");
   scene_window.show();
   return app.exec();
 }

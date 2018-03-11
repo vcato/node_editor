@@ -250,28 +250,12 @@ Maybe a good thing to work on is being able to draw a spline.
 We'll need a way to create a window, create a drawing area within the
 window, and then provide a diagram that generates what we will draw.
 ---
-Need a way to make paths based on labels instead of indices.
-This will make it easier to have tests like testAddingBodies() be stable.
-
 We may end up wanting to create handles for items in the tree of a specific
 type, so that when we visit the wrapper, we automatically get the wrapper
 of the appropriate type.  Not clear if it is worth it yet.
 
-It would be convenient if we had Wrapper::accept methods which took
-functions for specific types of wrappers.  It would call the function
-if the wrapper had the appropriate type, and assert otherwise.
-
----
-What does it mean to apply a charmap? Are we creating a new layer of motion?
-  * It seems like if we have a charmap and then remove it, the motion should
-    reset.
-  * I think we want the body properties to be displayed as they are after
-    the charmap is applied, but we shouldn't be able to change those.
-  * Should we have a place where we change what we are seeing?
-    * Change between viewing uncharmapped vs charmapped motion.
-    * Seems like it would be limiting.  Instead, we could disable things when
-      we want to see what it looks like.
-  * Maybe when we add a charmap we have a child of the charmap, which is
-    the state of the scene after the charmap is applied.
-  * Maybe the scene viewer includes its own tree where you can view the
-    properties of the scene as they are displayed (after charmapping).
+* The scene viewer tree should show the body positions.
+* If collapse a body in the scene viewer, then it should stay collaped when
+  we add other bodies to the scene.
+  * To make this work, it seems like we'll need more detailed information
+    on how the scene changed.

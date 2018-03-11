@@ -44,7 +44,7 @@ main: main.o diagrameditor.o \
   world.o worldwrapper.o charmapperwrapper.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
   qtscenewindow.o qttreewidgetitem.o scenewindow.o \
-  qtscenetree.o scenetree.o
+  qtscenetree.o scenetree.o sceneviewer.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -91,7 +91,7 @@ scene_test: scene_test.o scene.o generatename.o
 
 world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
   generatename.o charmapper.o defaultdiagrams.o diagram.o diagramio.o \
-  diagramnode.o linetext.o statementtext.o stringutil.o
+  diagramnode.o linetext.o statementtext.o stringutil.o sceneviewer.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
@@ -101,7 +101,8 @@ scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   scenewrapper.o charmapperwrapper.o charmapper.o diagram.o defaultdiagrams.o \
   diagramnode.o diagramio.o linetext.o statementtext.o stringutil.o \
-  wrapperutil.o wrapper.o scenewindow.o scenetree.o generatename.o
+  wrapperutil.o wrapper.o scenewindow.o scenetree.o generatename.o \
+  sceneviewer.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
@@ -117,12 +118,12 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   scenewrapper.o scene.o scenewindow.o \
   defaultdiagrams.o diagram.o diagramio.o diagramnode.o linetext.o \
   statementtext.o stringutil.o \
-  treeeditor.o wrapper.o world.o scenetree.o generatename.o
+  treeeditor.o wrapper.o world.o scenetree.o generatename.o sceneviewer.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
   qtsceneviewer.o draw.o scene.o qttreewidgetitem.o qtscenetree.o \
-  scenetree.o scenewindow.o generatename.o
+  scenetree.o scenewindow.o generatename.o sceneviewer.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
