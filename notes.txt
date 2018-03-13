@@ -253,3 +253,7 @@ window, and then provide a diagram that generates what we will draw.
 We may end up wanting to create handles for items in the tree of a specific
 type, so that when we visit the wrapper, we automatically get the wrapper
 of the appropriate type.  Not clear if it is worth it yet.
+
+If you add a body to another body, it comes out wrong in the scene tree.
+The path indices aren't being computed properly because it doesn't consider
+the position attribute.
