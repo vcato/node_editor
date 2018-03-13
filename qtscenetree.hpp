@@ -5,5 +5,8 @@
 class QtSceneTree : public QTreeWidget, public SceneTree {
   public:
     QtSceneTree();
-    void setItems(const Item &root) override;
+
+  private:
+    void setItems(const ItemData &root) override;
+    void insertItem(const std::vector<int> &path,const ItemData &) override;
 };

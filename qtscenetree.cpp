@@ -5,17 +5,15 @@
 #include "qttreewidgetitem.hpp"
 
 
-static void
-  addBodiesTo(
-    QTreeWidgetItem &parent_item,
-    const SceneTree::Item::Children &item_children
-  )
+using std::vector;
+using std::string;
+using std::cerr;
+
+
+
+static void setText(QTreeWidgetItem &item1,const string &text)
 {
-  for (auto &item : item_children) {
-    QTreeWidgetItem &item1 = createChildItem(parent_item);
-    item1.setText(/*column*/0,QString::fromStdString(item.label));
-    addBodiesTo(item1,item.children);
-  }
+  item1.setText(/*column*/0,QString::fromStdString(text));
 }
 
 
@@ -26,9 +24,19 @@ QtSceneTree::QtSceneTree()
 }
 
 
-void QtSceneTree::setItems(const Item &root)
+void QtSceneTree::setItems(const ItemData &root)
 {
   clear();
   assert(invisibleRootItem());
   addBodiesTo(*invisibleRootItem(),root.children);
+}
+
+
+void QtSceneTree::insertItem(const vector<int> &path,const ItemData &item)
+{
+  vector<int> parent_path = path;
+  parent_path.pop_back();
+  QTreeWidgetItem &parent_item =
+    itemFromPath(*invisibleRootItem(),parent_path);
+  insertBodyIn(parent_item,/*index*/path.back(),item);
 }

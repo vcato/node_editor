@@ -10,6 +10,7 @@ using std::vector;
 using std::function;
 using Frame = Scene::Frame;
 using Point2DMap = Scene::Point2DMap;
+using Body = Scene::Body;
 
 
 Scene::Scene()
@@ -59,9 +60,9 @@ auto Scene::addBody() -> Body &
 }
 
 
-void Scene::addChildBodyTo(Body &parent)
+Body& Scene::addChildBodyTo(Body &parent)
 {
-  parent.addChild(newBodyName(),newPositionMap());
+  return parent.addChild(newBodyName(),newPositionMap());
 }
 
 

@@ -3,6 +3,7 @@
 
 using std::vector;
 using std::string;
+using std::cerr;
 
 
 Wrapper &TreeEditor::world()

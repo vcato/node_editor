@@ -1,6 +1,7 @@
 #include "scenewindow.hpp"
 
 using std::string;
+using std::cerr;
 
 
 void SceneWindow::notifySceneChanged()
@@ -16,4 +17,10 @@ void SceneWindow::setScenePtr(Scene *arg,const string &name)
   tree().setScenePtr(arg);
   assert(arg);
   setTitle(name);
+}
+
+
+void SceneWindow::notifyBodyAdded(const Scene::Body &body)
+{
+  tree().notifyBodyAdded(body);
 }

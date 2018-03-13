@@ -32,7 +32,9 @@ static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
 static void testHierarchy()
 {
   Scene scene;
-  auto notify = [](const Wrapper::OperationHandler &){ assert(false); };
+  SceneWrapper::SceneObserver notify(
+    [](const Wrapper::OperationHandler &){ assert(false); }
+  );
   Scene::Body &body = scene.addBody();
   scene.addChildBodyTo(body);
   SceneWrapper wrapper(scene,notify,"Scene");
@@ -111,7 +113,8 @@ static void
 static void testAddingBodies()
 {
   Scene scene;
-  SceneWrapper wrapper(scene,[](const Wrapper::OperationHandler &){},"Scene");
+  SceneWrapper::SceneObserver notify([](const Wrapper::OperationHandler &){});
+  SceneWrapper wrapper(scene,notify,"Scene");
   ostringstream stream;
 
   int body_index = 2;

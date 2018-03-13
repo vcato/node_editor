@@ -14,8 +14,13 @@ struct Viewer : SceneViewer {
 
 namespace {
 struct Tree : SceneTree {
-  virtual void setItems(const Item &/*root*/)
+  virtual void setItems(const ItemData &/*root*/)
   {
+  }
+
+  virtual void insertItem(const std::vector<int> &,const ItemData &)
+  {
+    assert(false);
   }
 };
 }

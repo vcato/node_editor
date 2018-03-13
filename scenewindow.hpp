@@ -8,6 +8,7 @@
 class SceneWindow {
   public:
     void notifySceneChanged();
+    void notifyBodyAdded(const Scene::Body &);
     void setScenePtr(Scene *,const std::string &name);
     void setDisplayFrame(const Scene::Frame &);
 

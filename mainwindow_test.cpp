@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "world.hpp"
 #include "worldwrapper.hpp"
+#include "streamvector.hpp"
 
 
 using std::string;
@@ -81,14 +82,54 @@ struct FakeSceneViewer : SceneViewer {
 
 namespace {
 struct FakeSceneTree : SceneTree {
+  struct Item {
+    bool is_expanded;
+    string label;
+    vector<Item> children;
+
+    Item()
+    : is_expanded(true)
+    {
+    }
+
+    int childCount() const { return children.size(); }
+    Item *child(int index) { return &children[index]; }
+
+    friend Item& insertChildItem(Item &parent_item,int index)
+    {
+      parent_item.children.insert(
+        parent_item.children.begin()+index,
+        Item()
+      );
+
+      return parent_item.children[index];
+    }
+
+    friend void setText(Item &item,const string &text)
+    {
+      item.label = text;
+    }
+  };
+
   Item root;
 
-  void setItems(const Item &root_arg) override
+  void setItems(const ItemData &root_arg) override
   {
-    root = root_arg;
+    root = Item();
+    addBodiesTo(root,root_arg.children);
+  }
+
+  void
+    insertItem(const std::vector<int> &path,const ItemData &new_item) override
+  {
+    vector<int> parent_path = path;
+    parent_path.pop_back();
+    Item &parent_item = itemFromPath(root,parent_path);
+    insertBodyIn(parent_item,/*index*/path.back(),new_item);
   }
 };
 }
+
 
 
 namespace {
@@ -131,6 +172,18 @@ static void testAddingABodyToTheScene()
 
   // Assert the scene window shows a body in the tree.
   assert(world.scene_window.tree_member.root.children[0].label=="Body1");
+
+  // User collapses the item for the first body
+  world.scene_window.tree_member.root.children[0].is_expanded = false;
+
+  // User adds another body.
+  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+
+  // Assert that the first body is still collapsed and the new body
+  // is expanded.
+  assert(world.scene_window.tree_member.root.children[0].is_expanded == false);
+  assert(world.scene_window.tree_member.root.children[1].is_expanded == true);
+  assert(world.scene_window.tree_member.root.children.size()==2);
 }
 
 
@@ -143,9 +196,9 @@ static void testChangingABodyName()
 
   // User executes Add Scene in the tree editor.
   main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
+  TreePath scene_path = makePath(world_wrapper,"Scene1");
 
   // User selects Add Body on the scene.
-  TreePath scene_path = makePath(world_wrapper,"Scene1");
   main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
 
   // User changes the body name.

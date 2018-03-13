@@ -264,7 +264,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
   virtual void visitScene(World::SceneMember &member) const
   {
-    auto notify =
+    auto changed_func =
       [&,&world=world]
       (const Wrapper::OperationHandler &operation_handler)
       {
@@ -282,7 +282,23 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 	}
       };
 
-    visitor(SceneWrapper{member.scene,notify,member.name});
+    // We also need to get an operation handler
+    auto body_added_func =
+      [&](
+        const Scene::Body &body,
+        const Wrapper::OperationHandler &operation_handler
+      )
+      {
+        notifyCharmappersOfSceneChange(world,operation_handler);
+
+        if (member.scene_window_ptr) {
+          member.scene_window_ptr->notifyBodyAdded(body);
+        }
+      };
+
+    SceneWrapper::SceneObserver callbacks(changed_func);
+    callbacks.body_added_func = body_added_func;
+    visitor(SceneWrapper{member.scene,callbacks,member.name});
   }
 };
 }

@@ -21,7 +21,7 @@ class Scene {
 
     int nBodies() const { return bodies_member.size(); }
     Body &addBody();
-    void addChildBodyTo(Body &parent);
+    Body& addChildBodyTo(Body &parent);
     const Bodies &bodies() const { return bodies_member; }
     Bodies &bodies() { return bodies_member; }
     Body &body(int index) { return bodies_member[index]; }

@@ -63,7 +63,11 @@ struct FakeSceneTree : SceneTree {
   {
   }
 
-  virtual void setItems(const Item &/*root*/)
+  virtual void setItems(const ItemData &/*root*/)
+  {
+  }
+
+  virtual void insertItem(const std::vector<int> &,const ItemData &)
   {
   }
 };
@@ -133,6 +137,12 @@ static void testAddingABodyToTheScene()
     "addItem([1,0])\n"
     "changeEnumerationValues([0,0,0,0])\n"
     "changeEnumerationValues([0,0,0,2,0])\n";
+
+  if (command_string!=expected_command_string) {
+    cerr << "command_string:\n";
+    cerr << command_string << "\n";
+  }
+
   assert(command_string==expected_command_string);
 }
 }

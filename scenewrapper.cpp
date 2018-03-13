@@ -7,7 +7,7 @@
 using std::cerr;
 using std::vector;
 using std::string;
-using NotifyFunction = SceneWrapper::NotifyFunction;
+using Callbacks = SceneWrapper::SceneObserver;
 using Point2DMap = Scene::Point2DMap;
 using Frame = Scene::Frame;
 using FloatMap = Scene::FloatMap;
@@ -17,7 +17,7 @@ using Label = SceneWrapper::Label;
 namespace {
 struct WrapperData {
   Scene &scene;
-  const NotifyFunction &notify;
+  const Callbacks &callbacks;
   Frame &frame;
 };
 }
@@ -68,7 +68,7 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   {
     map.set(wrapper_data.frame,arg);
     StubOperationHandler operation_handler;
-    wrapper_data.notify(operation_handler);
+    wrapper_data.callbacks.changed_func(operation_handler);
   }
 };
 }
@@ -100,7 +100,7 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   {
     value = arg;
     StubOperationHandler operation_handler;
-    wrapper_data.notify(operation_handler);
+    wrapper_data.callbacks.changed_func(operation_handler);
   }
 };
 }
@@ -179,7 +179,7 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   {
     name = arg;
     StubOperationHandler operation_handler;
-    wrapper_data.notify(operation_handler);
+    wrapper_data.callbacks.changed_func(operation_handler);
   }
 };
 }
@@ -215,7 +215,7 @@ struct BodyWrapper : VoidWrapper {
         {
           int index = body.nChildren();
           scene.addChildBodyTo(body);
-          wrapper_data.notify(handler);
+          wrapper_data.callbacks.changed_func(handler);
           handler.addItem(join(path,index+nBodyAttributes()));
         }
         return;
@@ -239,8 +239,10 @@ struct BodyWrapper : VoidWrapper {
       case 0:
         {
           int index = body.nChildren();
-          scene.addChildBodyTo(body);
-          wrapper_data.notify(handler);
+          Scene::Body &new_body = scene.addChildBodyTo(body);
+          if (wrapper_data.callbacks.body_added_func) {
+            wrapper_data.callbacks.body_added_func(new_body,handler);
+          }
           handler.addItem(join(path,index+nBodyAttributes()));
         }
         return;
@@ -281,11 +283,11 @@ struct BodyWrapper : VoidWrapper {
 
 SceneWrapper::SceneWrapper(
   Scene &scene_arg,
-  NotifyFunction notify_arg,
+  const Callbacks &notify_arg,
   const Label &label_arg
 )
 : scene(scene_arg),
-  notify(notify_arg),
+  callbacks(notify_arg),
   label_member(label_arg)
 {
 }
@@ -308,10 +310,15 @@ void
     case 0:
       {
         int index = scene.nBodies();
-        scene.addBody();
+        Scene::Body &new_body = scene.addBody();
+
         handler.addItem(join(path,index));
-        notify(handler);
+
+        if (callbacks.body_added_func) {
+          callbacks.body_added_func(new_body,handler);
+        }
       }
+
       return;
   }
 
@@ -325,7 +332,7 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  WrapperData wrapper_data = {scene,notify,scene.backgroundFrame()};
+  WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
   visitor(
     BodyWrapper{scene,scene.bodies()[child_index],wrapper_data}
   );

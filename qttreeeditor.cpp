@@ -169,7 +169,7 @@ void
   line_edit.text_changed_function = [&](const string &new_text){
     handleLineEditItemValueChanged(&item,new_text);
   };
-  line_edit.setText(QString::fromStdString(value));
+  line_edit.setText(value);
 }
 
 
