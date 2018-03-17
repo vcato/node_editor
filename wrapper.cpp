@@ -151,22 +151,22 @@ void
     {
     }
 
-    virtual void operator()(const VoidWrapper &) const
+    void operator()(const VoidWrapper &) const override
     {
       assert(false);
     }
 
-    virtual void operator()(const NumericWrapper &) const
+    void operator()(const NumericWrapper &) const override
     {
       assert(false);
     }
 
-    virtual void operator()(const EnumerationWrapper &) const
+    void operator()(const EnumerationWrapper &) const override
     {
       assert(false);
     }
 
-    virtual void operator()(const StringWrapper &wrapper) const
+    void operator()(const StringWrapper &wrapper) const override
     {
       function(wrapper);
     }
