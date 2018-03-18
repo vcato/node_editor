@@ -104,19 +104,20 @@ static bool
     vector<int> &path,
     const Scene::Bodies &bodies,
     int depth,
-    const Scene::Body &body
+    const Scene::Body &body,
+    int offset
   )
 {
   int n_bodies = bodies.size();
 
   for (int i=0; i!=n_bodies; ++i) {
-    path.push_back(i);
+    path.push_back(i+offset);
 
     if (&bodies[i]==&body) {
       return true;
     }
 
-    if (makePath(path,bodies[i].children,depth+1,body)) {
+    if (makePath(path,bodies[i].children,depth+1,body,/*offset*/1)) {
       return true;
     }
 
@@ -133,7 +134,7 @@ void SceneTree::notifyBodyAdded(const Scene::Body &body)
   assert(scene_ptr);
   Scene &scene = *scene_ptr;
 
-  if (!makePath(path,scene.bodies(),0,body)) {
+  if (!makePath(path,scene.bodies(),0,body,/*offset*/0)) {
     // Couldn't find the body that was added in the scene.
     assert(false);
   }

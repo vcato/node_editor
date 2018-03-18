@@ -42,7 +42,7 @@ static int indexOfChildWithLabel(const Wrapper &wrapper,const string &label)
   }
 
   if (index<0) {
-    cerr << "Couldn't find label " << label << "\n";
+    cerr << "Couldn't find label '" << label << "'\n";
 
     for (int i=0; i!=n_children; ++i) {
       wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){

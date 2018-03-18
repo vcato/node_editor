@@ -167,7 +167,7 @@ static void testAddingABodyToTheScene()
   main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
 
   // User selects Add Body on the scene.
-  TreePath scene_path = makePath(world_wrapper,{"Scene1"});
+  TreePath scene_path = makePath(world_wrapper,"Scene1");
   main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
 
   // Assert the scene window shows a body in the tree.
@@ -184,6 +184,38 @@ static void testAddingABodyToTheScene()
   assert(world.scene_window.tree_member.root.children[0].is_expanded == false);
   assert(world.scene_window.tree_member.root.children[1].is_expanded == true);
   assert(world.scene_window.tree_member.root.children.size()==2);
+}
+
+
+static void testAddingABodyToABody()
+{
+  FakeWorld world;
+  WorldWrapper world_wrapper(world);
+  FakeMainWindow main_window;
+  main_window.setWorldPtr(&world_wrapper);
+
+  // User executes Add Scene in the tree editor.
+  main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
+
+  // User selects Add Body on the scene.
+  TreePath scene_path = makePath(world_wrapper,"Scene1");
+  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+
+  {
+    string label_for_first_child_of_body =
+      world.scene_window.tree_member.root.children[0].children[0].label;
+    assert(label_for_first_child_of_body=="Position:");
+  }
+
+  // User selects Add Body on the body.
+  TreePath body_path = makePath(world_wrapper,"Scene1|Body");
+  main_window.tree_editor.userSelectsContextMenuItem(body_path,"Add Body");
+
+  {
+    string label_for_first_child_of_body =
+      world.scene_window.tree_member.root.children[0].children[0].label;
+    assert(label_for_first_child_of_body=="Position:");
+  }
 }
 
 
@@ -213,5 +245,6 @@ static void testChangingABodyName()
 int main()
 {
   testAddingABodyToTheScene();
+  testAddingABodyToABody();
   testChangingABodyName();
 }
