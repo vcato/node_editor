@@ -3,6 +3,8 @@ std::ostream& operator<<(std::ostream &stream,const std::vector<T> &value)
 {
   bool first = true;
 
+  stream << "[";
+
   for (auto &x : value) {
     if (!first) {
       stream << ",";
@@ -13,6 +15,8 @@ std::ostream& operator<<(std::ostream &stream,const std::vector<T> &value)
 
     stream << x;
   }
+
+  stream << "]";
 
   return stream;
 }

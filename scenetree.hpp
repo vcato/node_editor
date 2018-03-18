@@ -4,6 +4,22 @@
 #include "scene.hpp"
 
 
+template <typename Item>
+inline Item &
+  itemFromPath(Item &root_item,const std::vector<int> &path)
+{
+  Item *item_ptr = &root_item;
+  int path_size = path.size();
+
+  for (int depth = 0; depth<path_size; ++depth) {
+    item_ptr = item_ptr->child(path[depth]);
+  }
+
+  assert(item_ptr);
+  return *item_ptr;
+}
+
+
 class SceneTree {
   public:
     struct ItemData {
@@ -18,20 +34,6 @@ class SceneTree {
     void setScenePtr(Scene *);
 
   public:
-    template <typename Item>
-    static Item &
-      itemFromPath(Item &root_item,const std::vector<int> &path)
-    {
-      Item *item_ptr = &root_item;
-      int path_size = path.size();
-
-      for (int depth = 0; depth<path_size; ++depth) {
-        item_ptr = item_ptr->child(path[depth]);
-      }
-
-      assert(item_ptr);
-      return *item_ptr;
-    }
 
     template <typename Item>
     static void

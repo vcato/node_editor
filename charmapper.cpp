@@ -100,3 +100,9 @@ void Charmapper::apply()
     }
   }
 }
+
+
+void Charmapper::removePass(int pass_index)
+{
+  passes.erase(passes.begin()+pass_index);
+}

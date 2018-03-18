@@ -38,6 +38,11 @@ namespace {
     virtual void changeEnumerationValues(const TreePath &) const
     {
     }
+
+    virtual void removeItem(const TreePath &)
+    {
+      assert(false);
+    }
   };
 }
 

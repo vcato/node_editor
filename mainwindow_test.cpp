@@ -17,13 +17,59 @@ static int findIndex(const vector<string> &container,const string &element)
   auto b = container.begin();
   auto e = container.end();
   auto iter = std::find(b,e,element);
+
+  if (iter==e) {
+    cerr << "Could not find " << element << " in " << container << "\n";
+  }
+
   assert(iter!=e);
   return iter-b;
 }
 
 
 namespace {
+struct FakeTreeItem {
+  bool is_expanded;
+  string label;
+  vector<FakeTreeItem> children;
+
+  FakeTreeItem()
+  : is_expanded(true)
+  {
+  }
+
+  int childCount() const { return children.size(); }
+  FakeTreeItem *child(int index) { return &children[index]; }
+
+  friend FakeTreeItem& insertChildItem(FakeTreeItem &parent_item,int index)
+  {
+    parent_item.children.insert(
+      parent_item.children.begin()+index,
+      FakeTreeItem()
+    );
+
+    return parent_item.children[index];
+  }
+
+  friend void removeChildItem(FakeTreeItem &parent_item,int index)
+  {
+    parent_item.children.erase(parent_item.children.begin() + index);
+  }
+
+  friend void setText(FakeTreeItem &item,const string &text)
+  {
+    item.label = text;
+  }
+};
+}
+
+
+namespace {
 struct FakeTreeEditor : TreeEditor {
+  using Item = FakeTreeItem;
+
+  Item root;
+
   void userSelectsContextMenuItem(const string &operation_name)
   {
     TreePath path = {};
@@ -47,8 +93,10 @@ struct FakeTreeEditor : TreeEditor {
     stringItemValueChanged(path,new_value);
   }
 
-  void addTreeItem(const TreePath & /*new_item_path*/) override
+  void addMainTreeItem(const TreePath &new_item_path) override
   {
+    Item &parent_item = itemFromPath(root,parentPath(new_item_path));
+    insertChildItem(parent_item,new_item_path.back());
   }
 
   void replaceTreeItems(const TreePath &/*parent_path*/) override
@@ -57,6 +105,12 @@ struct FakeTreeEditor : TreeEditor {
 
   void changeEnumerationValues(const TreePath &) override
   {
+  }
+
+  void removeTreeItem(const TreePath &path) override
+  {
+    Item &parent_item = itemFromPath(root,parentPath(path));
+    removeChildItem(parent_item,path.back());
   }
 };
 }
@@ -82,34 +136,7 @@ struct FakeSceneViewer : SceneViewer {
 
 namespace {
 struct FakeSceneTree : SceneTree {
-  struct Item {
-    bool is_expanded;
-    string label;
-    vector<Item> children;
-
-    Item()
-    : is_expanded(true)
-    {
-    }
-
-    int childCount() const { return children.size(); }
-    Item *child(int index) { return &children[index]; }
-
-    friend Item& insertChildItem(Item &parent_item,int index)
-    {
-      parent_item.children.insert(
-        parent_item.children.begin()+index,
-        Item()
-      );
-
-      return parent_item.children[index];
-    }
-
-    friend void setText(Item &item,const string &text)
-    {
-      item.label = text;
-    }
-  };
+  using Item = FakeTreeItem;
 
   Item root;
 
@@ -122,9 +149,7 @@ struct FakeSceneTree : SceneTree {
   void
     insertItem(const std::vector<int> &path,const ItemData &new_item) override
   {
-    vector<int> parent_path = path;
-    parent_path.pop_back();
-    Item &parent_item = itemFromPath(root,parent_path);
+    Item &parent_item = itemFromPath(root,parentPath(path));
     insertBodyIn(parent_item,/*index*/path.back(),new_item);
   }
 };
@@ -219,6 +244,37 @@ static void testAddingABodyToABody()
 }
 
 
+static void testRemovingAMotionPass()
+{
+  FakeWorld world;
+  WorldWrapper world_wrapper(world);
+  FakeMainWindow main_window;
+  main_window.setWorldPtr(&world_wrapper);
+
+  // User executes Add Charmapper in the tree editor.
+  main_window.tree_editor.userSelectsContextMenuItem("Add Charmapper");
+  TreePath charmapper_path = makePath(world_wrapper,"Charmapper1");
+
+  // User executes Add Motion Pass on the charmapper.
+  main_window.tree_editor.userSelectsContextMenuItem(
+    charmapper_path,"Add Motion Pass"
+  );
+  TreePath motion_pass_path = makePath(world_wrapper,"Charmapper1|Motion Pass");
+
+  // Check that the charmapper has one child.
+  assert(world.charmapperMember(0).charmapper.nPasses()==1);
+
+  // User executes Remove on the motion pass.
+  main_window.tree_editor.userSelectsContextMenuItem(motion_pass_path,"Remove");
+
+  // Check that the charmapper has no children.
+  assert(world.charmapperMember(0).charmapper.nPasses()==0);
+
+  // Check that the item was removed from the tree editor.
+  assert(main_window.tree_editor.root.children[0].childCount()==0);
+}
+
+
 static void testChangingABodyName()
 {
   FakeWorld world;
@@ -246,5 +302,6 @@ int main()
 {
   testAddingABodyToTheScene();
   testAddingABodyToABody();
+  testRemovingAMotionPass();
   testChangingABodyName();
 }

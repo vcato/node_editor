@@ -36,6 +36,7 @@ struct Wrapper {
   struct OperationHandler {
     virtual void addItem(const TreePath &) = 0;
     virtual void replaceTreeItems(const TreePath &) = 0;
+    virtual void removeItem(const TreePath &) = 0;
     virtual void changeEnumerationValues(const TreePath &) const = 0;
   };
 

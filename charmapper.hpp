@@ -28,6 +28,8 @@ class Charmapper {
 
     MotionPass& addMotionPass();
 
+    void removePass(int pass_index);
+
   public:
     class BodyLink {
       public:

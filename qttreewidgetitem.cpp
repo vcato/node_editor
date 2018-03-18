@@ -19,3 +19,9 @@ QTreeWidgetItem& insertChildItem(QTreeWidgetItem &parent_item,int index)
   item.setExpanded(true);
   return item;
 }
+
+
+void removeChildItem(QTreeWidgetItem &parent_item,int index)
+{
+  parent_item.removeChild(parent_item.child(index));
+}

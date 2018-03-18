@@ -22,7 +22,9 @@ struct MotionPassWrapper : VoidWrapper {
   using ComponentsGlobalPositionData =
     Charmapper::GlobalPosition::ComponentsData;
 
+  Charmapper &charmapper;
   MotionPass &motion_pass;
+  const int pass_index;
   const Callbacks &callbacks;
 
   struct ChannelWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
@@ -370,17 +372,21 @@ struct MotionPassWrapper : VoidWrapper {
   };
 
   MotionPassWrapper(
+    Charmapper &charmapper_arg,
     Charmapper::MotionPass &motion_pass_arg,
+    int pass_index_arg,
     const Callbacks &callbacks_arg
   )
-  : motion_pass(motion_pass_arg),
+  : charmapper(charmapper_arg),
+    motion_pass(motion_pass_arg),
+    pass_index(pass_index_arg),
     callbacks(callbacks_arg)
   {
   }
 
   virtual std::vector<std::string> operationNames() const
   {
-    return { "Add Pos Expr" };
+    return { "Add Pos Expr", "Remove" };
   }
 
   void
@@ -396,6 +402,12 @@ struct MotionPassWrapper : VoidWrapper {
           int index = motion_pass.nExprs();
           motion_pass.addPosExpr();
           handler.addItem(join(path,index));
+        }
+        return;
+      case 1:
+        {
+          charmapper.removePass(pass_index);
+          handler.removeItem(path);
         }
         return;
     }
@@ -455,7 +467,12 @@ void
   ) const
 {
   visitor(
-    MotionPassWrapper{charmapper.pass(child_index),callbacks}
+    MotionPassWrapper{
+      charmapper,
+      charmapper.pass(child_index),
+      child_index,
+      callbacks
+    }
   );
 }
 

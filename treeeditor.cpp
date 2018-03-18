@@ -47,6 +47,11 @@ struct TreeEditor::OperationHandler : TreeOperationHandler {
   {
     tree_editor.changeEnumerationValues(path);
   }
+
+  virtual void removeItem(const TreePath &path)
+  {
+    tree_editor.removeTreeItem(path);
+  }
 };
 
 
@@ -91,4 +96,32 @@ void
       string_wrapper.setValue(value);
     }
   );
+}
+
+
+void TreeEditor::addTreeItem(const TreePath &new_item_path)
+{
+  addMainTreeItem(new_item_path);
+  addChildTreeItems(new_item_path);
+}
+
+
+static int nChildren(const Wrapper &wrapper,const TreePath &path)
+{
+  int n_children = 0;
+
+  auto get_n_children_function =
+    [&](const Wrapper &sub_wrapper){ n_children = sub_wrapper.nChildren(); };
+  visitSubWrapper(wrapper,path,get_n_children_function);
+  return n_children;
+}
+
+
+void TreeEditor::addChildTreeItems(const TreePath &parent_path)
+{
+  int n_children = nChildren(world(),parent_path);
+
+  for (int i=0; i!=n_children; ++i) {
+    addTreeItem(join(parent_path,i));
+  }
 }

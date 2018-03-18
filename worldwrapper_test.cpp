@@ -26,7 +26,7 @@ struct FakeOperationHandler : Wrapper::OperationHandler {
 
   virtual void addItem(const TreePath &path)
   {
-    command_stream << "addItem([" << path << "])\n";
+    command_stream << "addItem(" << path << ")\n";
   }
 
   virtual void replaceTreeItems(const TreePath &)
@@ -36,9 +36,13 @@ struct FakeOperationHandler : Wrapper::OperationHandler {
 
   virtual void changeEnumerationValues(const TreePath &path) const
   {
-    command_stream << "changeEnumerationValues([" << path << "])\n";
+    command_stream << "changeEnumerationValues(" << path << ")\n";
   }
 
+  virtual void removeItem(const TreePath &)
+  {
+    assert(false);
+  }
 };
 }
 

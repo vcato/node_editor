@@ -18,9 +18,12 @@ struct TreeEditor {
     void setEnumerationIndex(const TreePath &path,int index);
     void executeOperation(const TreePath &,int operation_index);
     void stringItemValueChanged(const TreePath &path,const std::string &value);
+    void addTreeItem(const TreePath &new_item_path);
+    void addChildTreeItems(const TreePath &parent_path);
+    virtual void removeTreeItem(const TreePath &path) = 0;
 
   private:
-    virtual void addTreeItem(const TreePath &new_item_path) = 0;
+    virtual void addMainTreeItem(const TreePath &new_item_path) = 0;
     virtual void replaceTreeItems(const TreePath &parent_path) = 0;
     virtual void changeEnumerationValues(const TreePath &) = 0;
 };

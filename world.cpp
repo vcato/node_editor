@@ -10,6 +10,7 @@ using std::cerr;
 using std::function;
 using std::string;
 using Member = World::Member;
+using CharmapperMember = World::CharmapperMember;
 
 
 
@@ -135,4 +136,15 @@ void World::applyCharmaps()
       scene_member.scene_window_ptr->notifySceneChanged();
     }
   });
+}
+
+
+CharmapperMember &World::charmapperMember(int index)
+{
+  Member *member_ptr = world_members[index].get();
+  assert(member_ptr);
+  CharmapperMember *charmapper_member_ptr =
+    dynamic_cast<CharmapperMember*>(member_ptr);
+  assert(charmapper_member_ptr);
+  return *charmapper_member_ptr;
 }

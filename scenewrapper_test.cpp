@@ -89,6 +89,11 @@ static void
     {
       assert(false);
     }
+
+    virtual void removeItem(const TreePath &)
+    {
+      assert(false);
+    }
   };
 
   OperationHandler operation_handler(stream);
@@ -129,9 +134,9 @@ static void testAddingBodies()
   string body_index_str = std::to_string(body_index);
   string commands = stream.str();
   string expected_commands =
-    "addItem: path=0\n"
-    "addItem: path=0," + body_index_str + "\n"
-    "addItem: path=0," + body_index_str + "," + body_index_str + "\n";
+    "addItem: path=[0]\n"
+    "addItem: path=[0," + body_index_str + "]\n"
+    "addItem: path=[0," + body_index_str + "," + body_index_str + "]\n";
 
 
   if (commands!=expected_commands) {

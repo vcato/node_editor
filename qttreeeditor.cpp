@@ -218,7 +218,7 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 }
 
 
-void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
+void QtTreeEditor::addMainTreeItem(const TreePath &new_item_path)
 {
   TreePath parent_path = parentPath(new_item_path);
   TreeItemIndex child_index = new_item_path.back();
@@ -246,28 +246,15 @@ void QtTreeEditor::addTreeItem(const TreePath &new_item_path)
     cerr << "No item created for parent " << parent_path << "\n";
     assert(created);
   }
-
-  addTreeItems(new_item_path);
 }
 
 
-static int nChildren(const Wrapper &wrapper,const TreePath &path)
+void QtTreeEditor::removeTreeItem(const TreePath &path)
 {
-  int n_children = 0;
-
-  auto get_n_children_function =
-    [&](const Wrapper &sub_wrapper){ n_children = sub_wrapper.nChildren(); };
-  visitSubWrapper(wrapper,path,get_n_children_function);
-  return n_children;
-}
-
-
-void QtTreeEditor::addTreeItems(const TreePath &parent_path)
-{
-  int n_children = nChildren(world(),parent_path);
-  for (int i=0; i!=n_children; ++i) {
-    addTreeItem(join(parent_path,i));
-  }
+  TreePath parent_path = parentPath(path);
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  TreeItemIndex child_index = path.back();
+  ::removeChildItem(parent_item,child_index);
 }
 
 
@@ -306,7 +293,7 @@ void QtTreeEditor::removeChildItems(const TreePath &path)
 void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
 {
   removeChildItems(parent_path);
-  addTreeItems(parent_path);
+  addChildTreeItems(parent_path);
   diagramEditor().setDiagramPtr(maybeSelectedDiagram());
   diagramEditor().redraw();
 }

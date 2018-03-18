@@ -74,7 +74,8 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
 
     QTreeWidgetItem* findSelectedItem();
 
-    void addTreeItems(const TreePath &parent_path);
+    void addMainTreeItem(const TreePath &new_item_path) override;
+    void removeTreeItem(const TreePath &path) override;
 
     void
       handleComboBoxItemIndexChanged(
@@ -95,8 +96,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       );
 
     void removeChildItems(const TreePath &path);
-
-    void addTreeItem(const TreePath &new_item_path) override;
     void replaceTreeItems(const TreePath &parent_path) override;
     void changeEnumerationValues(const TreePath &) override;
 };
