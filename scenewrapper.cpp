@@ -193,17 +193,22 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
 namespace {
 struct BodyWrapper : VoidWrapper {
   Scene &scene;
+  Scene::Body &parent_body;
+  int body_index;
   Scene::Body &body;
   WrapperData wrapper_data;
   static int nBodyAttributes() { return 2; }
 
   BodyWrapper(
     Scene &scene_arg,
-    Scene::Body &body_arg,
+    Scene::Body &parent_body_arg,
+    int body_index_arg,
     WrapperData wrapper_data_arg
   )
   : scene(scene_arg),
-    body(body_arg),
+    parent_body(parent_body_arg),
+    body_index(body_index_arg),
+    body(parent_body_arg.children[body_index_arg]),
     wrapper_data(wrapper_data_arg)
   {
   }
@@ -230,7 +235,7 @@ struct BodyWrapper : VoidWrapper {
 
   vector<string> operationNames() const
   {
-    return {"Add Body"};
+    return {"Add Body","Remove"};
   }
 
   virtual void
@@ -245,11 +250,28 @@ struct BodyWrapper : VoidWrapper {
         {
           int index = body.nChildren();
           Scene::Body &new_body = scene.addChildBodyTo(body);
+
           if (wrapper_data.callbacks.body_added_func) {
             wrapper_data.callbacks.body_added_func(new_body,handler);
           }
+
           handler.addItem(join(path,index+nBodyAttributes()));
         }
+        return;
+      case 1:
+        {
+          if (wrapper_data.callbacks.removing_body_func) {
+            wrapper_data.callbacks.removing_body_func(body);
+          }
+
+          scene.removeChildBodyFrom(parent_body,body_index);
+          handler.removeItem(path);
+
+          if (wrapper_data.callbacks.removed_body_func) {
+            wrapper_data.callbacks.removed_body_func(handler);
+          }
+        }
+
         return;
     }
 
@@ -268,9 +290,8 @@ struct BodyWrapper : VoidWrapper {
       return;
     }
 
-    Scene::Body &child = body.children[child_index-nBodyAttributes()];
-
-    visitor(BodyWrapper(scene,child,wrapper_data));
+    int body_index = child_index-nBodyAttributes();
+    visitor(BodyWrapper(scene,body,body_index,wrapper_data));
   }
 
   virtual Label label() const
@@ -339,7 +360,7 @@ void
 {
   WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
   visitor(
-    BodyWrapper{scene,scene.bodies()[child_index],wrapper_data}
+    BodyWrapper{scene,scene.rootBody(),child_index,wrapper_data}
   );
 }
 

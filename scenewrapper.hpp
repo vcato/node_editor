@@ -7,9 +7,15 @@ struct SceneWrapper : VoidWrapper {
     using ChangedFunc = std::function<void(const Wrapper::OperationHandler &)>;
     using BodyAddedFunc =
       std::function<void(const Scene::Body&,const Wrapper::OperationHandler &)>;
+    using RemovingBodyFunc =
+      std::function<void(const Scene::Body&)>;
+    using RemovedBodyFunc =
+      std::function<void(const Wrapper::OperationHandler &)>;
 
     ChangedFunc changed_func;
     BodyAddedFunc body_added_func;
+    RemovingBodyFunc removing_body_func;
+    RemovedBodyFunc removed_body_func;
 
     SceneObserver(const ChangedFunc &func_arg) : changed_func(func_arg) { }
   };

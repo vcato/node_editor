@@ -3,6 +3,7 @@
 #include <cassert>
 #include <QHeaderView>
 #include "qttreewidgetitem.hpp"
+#include "treepath.hpp"
 
 
 using std::vector;
@@ -34,9 +35,15 @@ void QtSceneTree::setItems(const ItemData &root)
 
 void QtSceneTree::insertItem(const vector<int> &path,const ItemData &item)
 {
-  vector<int> parent_path = path;
-  parent_path.pop_back();
   QTreeWidgetItem &parent_item =
-    itemFromPath(*invisibleRootItem(),parent_path);
+    itemFromPath(*invisibleRootItem(),parentPath(path));
   insertBodyIn(parent_item,/*index*/path.back(),item);
+}
+
+
+void QtSceneTree::removeItem(const std::vector<int> &path)
+{
+  QTreeWidgetItem &parent_item =
+    itemFromPath(*invisibleRootItem(),parentPath(path));
+  removeBodyFrom(parent_item,/*index*/path.back());
 }

@@ -24,3 +24,9 @@ void SceneWindow::notifyBodyAdded(const Scene::Body &body)
 {
   tree().notifyBodyAdded(body);
 }
+
+
+void SceneWindow::notifyRemovingBody(const Scene::Body &body)
+{
+  tree().notifyRemovingBody(body);
+}

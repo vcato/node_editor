@@ -19,12 +19,13 @@ class Scene {
     Scene();
     ~Scene();
 
-    int nBodies() const { return bodies_member.size(); }
+    int nBodies() const { return bodies().size(); }
     Body &addBody();
     Body& addChildBodyTo(Body &parent);
-    const Bodies &bodies() const { return bodies_member; }
-    Bodies &bodies() { return bodies_member; }
-    Body &body(int index) { return bodies_member[index]; }
+    void removeChildBodyFrom(Body &parent,int child_index);
+    const Bodies &bodies() const { return root_body.children; }
+    Bodies &bodies() { return root_body.children; }
+    Body &body(int index) { return bodies()[index]; }
     Frame makeFrame() const;
 
   public:
@@ -136,6 +137,11 @@ class Scene {
           body_ptrs.push_back(std::make_unique<Body>(position_map));
           return *body_ptrs.back();
         }
+
+        void remove(int child_index)
+        {
+          body_ptrs.erase(body_ptrs.begin() + child_index);
+        }
     };
 
     class Body {
@@ -157,6 +163,11 @@ class Scene {
           result.name = name;
           return result;
         }
+
+        void removeChild(int child_index)
+        {
+          children.remove(child_index);
+        }
     };
 
     int nFrameVariables() const { return n_frame_variables; }
@@ -164,10 +175,11 @@ class Scene {
     const Frame &backgroundFrame() const { return background_frame; }
     const Frame &displayFrame() const { return display_frame; }
     Frame &displayFrame() { return display_frame; }
+    Body &rootBody() { return root_body; }
 
   private:
     int n_frame_variables = 0;
-    Bodies bodies_member;
+    Body root_body = Body{{0,0}};
     Frame background_frame;
     Frame display_frame;
 

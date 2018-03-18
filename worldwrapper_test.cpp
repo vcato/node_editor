@@ -39,9 +39,9 @@ struct FakeOperationHandler : Wrapper::OperationHandler {
     command_stream << "changeEnumerationValues(" << path << ")\n";
   }
 
-  virtual void removeItem(const TreePath &)
+  virtual void removeItem(const TreePath &path)
   {
-    assert(false);
+    command_stream << "removeItem(" << path << ")\n";
   }
 };
 }
@@ -62,7 +62,7 @@ struct FakeSceneViewer : SceneViewer {
 
 
 namespace {
-struct FakeSceneTree : SceneTree {
+struct StubSceneTree : SceneTree {
   virtual void removeAllItems()
   {
   }
@@ -74,6 +74,10 @@ struct FakeSceneTree : SceneTree {
   virtual void insertItem(const std::vector<int> &,const ItemData &)
   {
   }
+
+  virtual void removeItem(const std::vector<int> &/*path*/)
+  {
+  }
 };
 }
 
@@ -81,7 +85,7 @@ struct FakeSceneTree : SceneTree {
 namespace {
 struct FakeSceneWindow : SceneWindow {
   FakeSceneViewer viewer_member;
-  FakeSceneTree tree_member;
+  StubSceneTree tree_member;
 
   SceneViewer &viewer() override { return viewer_member; }
   SceneTree &tree() override { return tree_member; }
@@ -367,6 +371,47 @@ static void testWithTwoCharmappers()
 }
 
 
+namespace scene_and_charmapper_tests {
+static void testRemovingABodyFromTheScene()
+{
+  // Create a world with a charmapper and a scene with one body.
+  // Charmapper should have a motion pass with a position expression.
+  // Remove the body from the scene.
+  // Check that the operation handler is called to handle changing the
+  // enumeration values in the target body.
+
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  /*Charmapper::MotionPass::PosExpr &pos_expr =*/ motion_pass.addPosExpr();
+
+  Scene &scene = world.addScene();
+  scene.addBody();
+  WorldWrapper world_wrapper(world);
+  TreePath scene_path = {1};
+  TreePath body_path = join(scene_path,0);
+
+  ostringstream command_stream;
+  FakeOperationHandler handler(command_stream);
+
+  executeOperation2(world_wrapper,body_path,"Remove",handler);
+
+  string command_string = command_stream.str();
+  string expected_command_string =
+    "removeItem([1,0])\n"
+    "changeEnumerationValues([0,0,0,0])\n"
+    ;
+
+  if (command_string!=expected_command_string) {
+    cerr << "command_string:\n";
+    cerr << command_string << "\n";
+  }
+
+  assert(command_string==expected_command_string);
+}
+}
+
+
 int main()
 {
   testAddingACharmapper();
@@ -377,5 +422,6 @@ int main()
     tests::testChangingTheTargetBody();
     tests::testUsingCharmapperToMoveABody();
     tests::testWithTwoCharmappers();
+    tests::testRemovingABodyFromTheScene();
   }
 }

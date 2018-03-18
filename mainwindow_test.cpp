@@ -152,6 +152,12 @@ struct FakeSceneTree : SceneTree {
     Item &parent_item = itemFromPath(root,parentPath(path));
     insertBodyIn(parent_item,/*index*/path.back(),new_item);
   }
+
+  void removeItem(const std::vector<int> &path) override
+  {
+    Item &parent_item = itemFromPath(root,parentPath(path));
+    removeBodyFrom(parent_item,/*index*/path.back());
+  }
 };
 }
 
@@ -298,10 +304,42 @@ static void testChangingABodyName()
 }
 
 
+static void testRemovingABody()
+{
+  FakeWorld world;
+  WorldWrapper world_wrapper(world);
+  FakeMainWindow main_window;
+  main_window.setWorldPtr(&world_wrapper);
+
+  // User executes Add Scene in the tree editor.
+  main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
+  TreePath scene_path = makePath(world_wrapper,"Scene1");
+
+  // User selects Add Body on the scene.
+  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+  TreePath body_path = makePath(world_wrapper,"Scene1|Body");
+  assert(world.sceneMember(0).scene.bodies().size()==1);
+  assert(world.scene_window.tree_member.root.children.size()==1);
+
+  // User selects Remove on the body.
+  main_window.tree_editor.userSelectsContextMenuItem(body_path,"Remove");
+
+  // Assert that the body was removed from the scene.
+  assert(world.sceneMember(0).scene.bodies().size()==0);
+
+  // Assert the body was removed from the tree editor.
+  assert(main_window.tree_editor.root.children[0].children.size()==0);
+
+  // Assert the body was removed from the scene view.
+  assert(world.scene_window.tree_member.root.children.size()==0);
+}
+
+
 int main()
 {
   testAddingABodyToTheScene();
   testAddingABodyToABody();
   testRemovingAMotionPass();
   testChangingABodyName();
+  testRemovingABody();
 }

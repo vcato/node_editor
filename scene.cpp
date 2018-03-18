@@ -54,7 +54,7 @@ auto Scene::addBody() -> Body &
 {
   string name = newBodyName();
   Point2DMap position_map = newPositionMap();
-  Body& new_body = bodies_member.createChild(position_map);
+  Body& new_body = bodies().createChild(position_map);
   new_body.name = name;
   return new_body;
 }
@@ -63,6 +63,12 @@ auto Scene::addBody() -> Body &
 Body& Scene::addChildBodyTo(Body &parent)
 {
   return parent.addChild(newBodyName(),newPositionMap());
+}
+
+
+void Scene::removeChildBodyFrom(Body &parent,int child_index)
+{
+  parent.removeChild(child_index);
 }
 
 

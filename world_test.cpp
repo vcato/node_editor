@@ -22,6 +22,11 @@ struct Tree : SceneTree {
   {
     assert(false);
   }
+
+  virtual void removeItem(const std::vector<int> &/*path*/)
+  {
+    assert(false);
+  }
 };
 }
 

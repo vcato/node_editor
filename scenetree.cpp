@@ -128,20 +128,35 @@ static bool
 }
 
 
-void SceneTree::notifyBodyAdded(const Scene::Body &body)
+vector<int> SceneTree::bodyPath(const Scene::Body &body)
 {
   vector<int> path;
-  assert(scene_ptr);
-  Scene &scene = *scene_ptr;
 
-  if (!makePath(path,scene.bodies(),0,body,/*offset*/0)) {
+  if (!makePath(path,scene().bodies(),0,body,/*offset*/0)) {
     // Couldn't find the body that was added in the scene.
     assert(false);
   }
 
+  return path;
+}
+
+
+void SceneTree::notifyBodyAdded(const Scene::Body &body)
+{
   Item new_body_item;
-  buildBodyItem(new_body_item,body,scene.displayFrame());
-  insertItem(path,new_body_item);
-  // Need to get the item for the parent body, find the position where
-  // the new body goes and insert it.
+  buildBodyItem(new_body_item,body,scene().displayFrame());
+  insertItem(bodyPath(body),new_body_item);
+}
+
+
+void SceneTree::notifyRemovingBody(const Scene::Body &body)
+{
+  removeItem(bodyPath(body));
+}
+
+
+Scene &SceneTree::scene()
+{
+  assert(scene_ptr);
+  return *scene_ptr;
 }

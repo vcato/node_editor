@@ -31,6 +31,7 @@ class SceneTree {
 
     void notifySceneChanged();
     void notifyBodyAdded(const Scene::Body &body);
+    void notifyRemovingBody(const Scene::Body &body);
     void setScenePtr(Scene *);
 
   public:
@@ -48,6 +49,11 @@ class SceneTree {
       addBodiesTo(item1,item.children);
     }
 
+    template <typename Item>
+    static void removeBodyFrom(Item &parent_item,int index)
+    {
+      removeChildItem(parent_item,index);
+    }
 
     template <typename Item>
     static void
@@ -62,14 +68,15 @@ class SceneTree {
       }
     }
 
-
-
   private:
     Scene *scene_ptr = 0;
 
+    Scene &scene();
     virtual void setItems(const ItemData &root) = 0;
     virtual void insertItem(const std::vector<int> &path,const ItemData &) = 0;
+    virtual void removeItem(const std::vector<int> &path) = 0;
     void updateItems();
+    std::vector<int> bodyPath(const Scene::Body &body);
 };
 
 #endif /* SCENETREE_HPP_ */

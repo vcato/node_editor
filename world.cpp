@@ -11,6 +11,7 @@ using std::function;
 using std::string;
 using Member = World::Member;
 using CharmapperMember = World::CharmapperMember;
+using SceneMember = World::SceneMember;
 
 
 
@@ -147,4 +148,15 @@ CharmapperMember &World::charmapperMember(int index)
     dynamic_cast<CharmapperMember*>(member_ptr);
   assert(charmapper_member_ptr);
   return *charmapper_member_ptr;
+}
+
+
+SceneMember &World::sceneMember(int index)
+{
+  Member *member_ptr = world_members[index].get();
+  assert(member_ptr);
+  SceneMember *scene_member_ptr =
+    dynamic_cast<SceneMember*>(member_ptr);
+  assert(scene_member_ptr);
+  return *scene_member_ptr;
 }

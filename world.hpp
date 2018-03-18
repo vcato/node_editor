@@ -23,6 +23,7 @@ class World {
     int nMembers() const { return world_members.size(); }
     void applyCharmaps();
     CharmapperMember &charmapperMember(int index);
+    SceneMember &sceneMember(int index);
 
     void
       forEachSceneMember(

@@ -253,5 +253,3 @@ window, and then provide a diagram that generates what we will draw.
 We may end up wanting to create handles for items in the tree of a specific
 type, so that when we visit the wrapper, we automatically get the wrapper
 of the appropriate type.  Not clear if it is worth it yet.
-
-Need to be able to delete a motion pass.

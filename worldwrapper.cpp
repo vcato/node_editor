@@ -296,8 +296,23 @@ struct ChildWrapperVisitor : World::MemberVisitor {
         }
       };
 
+    auto removing_body_func = [&](const Scene::Body &body)
+      {
+        if (member.scene_window_ptr) {
+          member.scene_window_ptr->notifyRemovingBody(body);
+        }
+      };
+
+    auto removed_body_func =
+      [&](const Wrapper::OperationHandler &operation_handler)
+      {
+        notifyCharmappersOfSceneChange(world,operation_handler);
+      };
+
     SceneWrapper::SceneObserver callbacks(changed_func);
     callbacks.body_added_func = body_added_func;
+    callbacks.removing_body_func = removing_body_func;
+    callbacks.removed_body_func = removed_body_func;
     visitor(SceneWrapper{member.scene,callbacks,member.name});
   }
 };
