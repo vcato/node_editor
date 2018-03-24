@@ -127,8 +127,11 @@ struct FakeMainWindow : MainWindow {
 
 namespace {
 struct FakeSceneViewer : SceneViewer {
+  int redraw_count = 0;
+
   virtual void redrawScene()
   {
+    ++redraw_count;
   }
 };
 }
@@ -197,12 +200,17 @@ static void testAddingABodyToTheScene()
   // User executes Add Scene in the tree editor.
   main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
 
+  world.scene_window.viewer_member.redraw_count = 0;
+
   // User selects Add Body on the scene.
   TreePath scene_path = makePath(world_wrapper,"Scene1");
   main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
 
   // Assert the scene window shows a body in the tree.
   assert(world.scene_window.tree_member.root.children[0].label=="Body1");
+
+  // Assert the scene viewer was redrawn.
+  assert(world.scene_window.viewer_member.redraw_count==1);
 
   // User collapses the item for the first body
   world.scene_window.tree_member.root.children[0].is_expanded = false;
@@ -321,6 +329,8 @@ static void testRemovingABody()
   assert(world.sceneMember(0).scene.bodies().size()==1);
   assert(world.scene_window.tree_member.root.children.size()==1);
 
+  world.scene_window.viewer_member.redraw_count = 0;
+
   // User selects Remove on the body.
   main_window.tree_editor.userSelectsContextMenuItem(body_path,"Remove");
 
@@ -330,8 +340,11 @@ static void testRemovingABody()
   // Assert the body was removed from the tree editor.
   assert(main_window.tree_editor.root.children[0].children.size()==0);
 
-  // Assert the body was removed from the scene view.
+  // Assert the body was removed from the scene window tree.
   assert(world.scene_window.tree_member.root.children.size()==0);
+
+  // Assert that the scene window viewer was redrawn.
+  assert(world.scene_window.viewer_member.redraw_count==1);
 }
 
 

@@ -307,6 +307,10 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       [&](const Wrapper::OperationHandler &operation_handler)
       {
         notifyCharmappersOfSceneChange(world,operation_handler);
+
+        if (member.scene_window_ptr) {
+          member.scene_window_ptr->notifySceneChanged();
+        }
       };
 
     SceneWrapper::SceneObserver callbacks(changed_func);

@@ -253,3 +253,10 @@ window, and then provide a diagram that generates what we will draw.
 We may end up wanting to create handles for items in the tree of a specific
 type, so that when we visit the wrapper, we automatically get the wrapper
 of the appropriate type.  Not clear if it is worth it yet.
+
+Be able to make a diagram that makes a body have a position between two
+  other bodies.
+Diagram for global position needs to remove Z component.
+Need to be able to copy diagram nodes by ctrl-dragging.
+---
+When we add the first body to the scene.  It doesn't show up in the scene view.

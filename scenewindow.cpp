@@ -23,6 +23,7 @@ void SceneWindow::setScenePtr(Scene *arg,const string &name)
 void SceneWindow::notifyBodyAdded(const Scene::Body &body)
 {
   tree().notifyBodyAdded(body);
+  viewer().notifySceneChanged();
 }
 
 
