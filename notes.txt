@@ -256,5 +256,4 @@ of the appropriate type.  Not clear if it is worth it yet.
 
 Be able to make a diagram that makes a body have a position between two
   other bodies.
-Diagram for global position needs to remove Z component.
 Need to be able to copy diagram nodes by ctrl-dragging.
