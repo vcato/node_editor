@@ -190,4 +190,13 @@ class Scene {
     Point2DMap newPositionMap();
 };
 
+extern void
+  setBodyPosition(
+    Scene::Body &body,
+    Scene::Frame &frame,
+    const Point2D &new_position
+  );
+
+extern Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame);
+
 #endif /* SCENE_HPP_ */

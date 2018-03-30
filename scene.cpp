@@ -106,3 +106,24 @@ Frame Scene::makeFrame() const
 {
   return Frame(nFrameVariables());
 }
+
+
+void
+  setBodyPosition(
+    Scene::Body &body,
+    Scene::Frame &frame,
+    const Point2D &new_position
+  )
+{
+  body.position.x.set(frame,new_position.x);
+  body.position.y.set(frame,new_position.y);
+}
+
+
+Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame)
+{
+  auto x = body.position.x(frame);
+  auto y = body.position.y(frame);
+
+  return Point2D(x,y);
+}

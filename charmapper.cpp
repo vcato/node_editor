@@ -71,6 +71,40 @@ Charmapper::MotionPass::PosExpr::PosExpr()
 }
 
 
+static void
+  setDisplayedBodyPosition(
+    Charmapper::BodyLink &target_body_link,
+    const Point2D &new_position
+  )
+{
+  Scene::Body &target_body = target_body_link.body();
+  Scene &target_scene = target_body_link.scene();
+  Scene::Frame &target_frame = target_scene.displayFrame();
+  setBodyPosition(target_body,target_frame,new_position);
+}
+
+
+static Point2D displayedBodyPosition(Charmapper::BodyLink &source_body_link)
+{
+  Scene::Body &source_body = source_body_link.body();
+  Scene &source_scene = source_body_link.scene();
+  Scene::Frame &source_frame = source_scene.displayFrame();
+  return bodyPosition(source_body,source_frame);
+}
+
+
+static Point2D makePoint2D(const Charmapper::Position &p)
+{
+  return Point2D(p.x.value,p.y.value);
+}
+
+
+static Vector2D makeVector2D(const Charmapper::Position &p)
+{
+  return Vector2D(p.x.value,p.y.value);
+}
+
+
 void Charmapper::apply()
 {
   int n_passes = nPasses();
@@ -80,22 +114,29 @@ void Charmapper::apply()
     auto n_exprs = pass.nExprs();
     for (int i=0; i!=n_exprs; ++i) {
       auto &expr = pass.expr(i);
-      if (expr.global_position.isComponents()) {
-        if (expr.target_body.hasValue()) {
-          Scene::Point2DMap &position = expr.target_body.body().position;
-          Scene &scene = expr.target_body.scene();
-          const Position &global_position = expr.global_position.components();
-          position.x.set(scene.displayFrame(),global_position.x.value);
-          position.y.set(scene.displayFrame(),global_position.y.value);
+      BodyLink &target_body_link = expr.target_body_link;
+
+      if (target_body_link.hasValue()) {
+        Point2D new_position(0,0);
+
+        if (expr.global_position.isComponents()) {
+          new_position = makePoint2D(expr.global_position.components());
         }
-      }
-      else if (expr.global_position.isFromBody()) {
-        if (expr.target_body.hasValue()) {
+        else if (expr.global_position.isFromBody()) {
+          auto &from_body_data = expr.global_position.fromBody();
+          BodyLink &source_body_link = from_body_data.source_body_link;
+
+          if (source_body_link.hasValue()) {
+            new_position = displayedBodyPosition(source_body_link);
+          }
+
+          new_position += makeVector2D(from_body_data.local_position);
+        }
+        else {
           assert(false);
         }
-      }
-      else {
-        assert(false);
+
+        setDisplayedBodyPosition(target_body_link,new_position);
       }
     }
   }

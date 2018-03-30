@@ -343,7 +343,7 @@ struct MotionPassWrapper : VoidWrapper {
     {
       if (child_index==0) {
         // Target body
-        visitor(BodyWrapper("Target Body",pos_expr.target_body,callbacks));
+        visitor(BodyWrapper("Target Body",pos_expr.target_body_link,callbacks));
       }
       else if (child_index==1) {
         visitor(

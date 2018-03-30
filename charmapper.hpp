@@ -81,8 +81,9 @@ class Charmapper {
     };
 
     struct Channel {
+      using Value = int;
       Diagram diagram;
-      int value = 0;
+      Value value = 0;
     };
 
     struct Position {
@@ -185,13 +186,13 @@ class Charmapper {
 
         bool hasATargetBody() const
         {
-          return target_body.hasValue();
+          return target_body_link.hasValue();
         }
 
         Diagram diagram;
         Position local_position;
         GlobalPosition global_position;
-        BodyLink target_body;
+        BodyLink target_body_link;
       };
 
       PosExpr &expr(int index)

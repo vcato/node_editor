@@ -28,6 +28,40 @@ struct Point2D {
 };
 
 
+struct Vector2D {
+  float x,y;
+
+  Vector2D()
+  : x(0), y(0)
+  {
+  }
+
+  Vector2D(float x_arg,float y_arg)
+  : x(x_arg), y(y_arg)
+  {
+  }
+
+  bool operator==(const Vector2D &arg) const
+  {
+    return x==arg.x && y==arg.y;
+  }
+
+  bool operator!=(const Vector2D &arg) const
+  {
+    return !operator==(arg);
+  }
+};
+
+
+inline Point2D &operator+=(Point2D &point,const Vector2D &vector)
+{
+  point.x += vector.x;
+  point.y += vector.y;
+  return point;
+}
+
+
+
 inline std::ostream& operator<<(std::ostream &stream,const Point2D &p)
 {
   stream << "Point2D(" << p.x << "," << p.y << ")";

@@ -259,4 +259,4 @@ Be able to make a diagram that makes a body have a position between two
 Diagram for global position needs to remove Z component.
 Need to be able to copy diagram nodes by ctrl-dragging.
 ---
-When we add the first body to the scene.  It doesn't show up in the scene view.
+The local position on the target body doesn't have an effect.
