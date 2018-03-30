@@ -136,6 +136,8 @@ void Charmapper::apply()
           assert(false);
         }
 
+        new_position -= makeVector2D(expr.local_position);
+
         setDisplayedBodyPosition(target_body_link,new_position);
       }
     }

@@ -1,6 +1,9 @@
 #include "charmapper.hpp"
 
+#include <iostream>
+
 using BodyLink = Charmapper::BodyLink;
+using std::cerr;
 
 static void testWithTargetBody()
 {
@@ -110,6 +113,28 @@ static void testFromSourceBodyWithLocalOffsetAndNoSourceBody()
 }
 
 
+static void testTargetLocalOffset()
+{
+  Scene scene;
+  auto &body1 = scene.addBody();
+
+  Charmapper charmapper;
+  auto &motion_pass = charmapper.addMotionPass();
+  auto &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link = BodyLink(&scene,&body1);
+  pos_expr.local_position.x.value = 10;
+  pos_expr.local_position.y.value = 20;
+  pos_expr.global_position.switchToComponents();
+  pos_expr.global_position.components().x.value = 1;
+  pos_expr.global_position.components().y.value = 2;
+
+  charmapper.apply();
+
+  Point2D final_position = bodyPosition(body1,scene.displayFrame());
+  assert(final_position==Point2D(1-10,2-20));
+}
+
+
 int main()
 {
   testWithTargetBody();
@@ -118,4 +143,5 @@ int main()
   testFromSourceBody();
   testFromSourceBodyWithLocalOffset();
   testFromSourceBodyWithLocalOffsetAndNoSourceBody();
+  testTargetLocalOffset();
 }
