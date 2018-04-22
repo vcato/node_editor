@@ -9,6 +9,12 @@ class QtSlot : public QObject {
   Q_OBJECT
 
   public:
+    QtSlot(QObject *parent_ptr,std::function<void()> function_arg)
+    : QObject(parent_ptr),
+      slot_function(function_arg)
+    {
+    }
+
     QtSlot(std::function<void()> function_arg)
     : slot_function(function_arg)
     {

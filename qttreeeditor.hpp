@@ -35,6 +35,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);
     void prepareMenu(const QPoint &pos);
+    void openDiagramEditor(const TreePath &);
 
     template <typename T>
     T &createItemWidget(QTreeWidgetItem &item,const std::string &label)

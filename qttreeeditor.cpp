@@ -430,6 +430,14 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
+#if 0
+void QtTreeEditor::openDiagramEditor(const TreePath &)
+{
+  cerr << "openDiagramEditor()\n";
+}
+#endif
+
+
 void QtTreeEditor::prepareMenu(const QPoint &pos)
 {
   QtTreeEditor &tree_editor = treeEditor();
@@ -441,19 +449,20 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   }
 
   QMenu menu;
-  list<QtSlot> item_slots;
 
   std::vector<std::string> operation_names = operationNames(path);
 
   int n_operations = operation_names.size();
 
   for (int i=0; i!=n_operations; ++i) {
-    QAction &action = createAction(menu,operation_names[i]);
-    auto perform_operation_function =
-      [this,i,path]{ executeOperation(path,i); };
-    item_slots.emplace_back(perform_operation_function);
-    item_slots.back().connectSignal(action,SIGNAL(triggered()));
+    createAction(menu,operation_names[i],[&,i]{ executeOperation(path,i); });
   }
+
+#if 0
+  if (diagramPtr(world(),path)) {
+    createAction(menu,"Edit Diagram...",[&]{ openDiagramEditor(path); });
+  }
+#endif
 
   menu.exec(tree_editor.mapToGlobal(pos));
 }
