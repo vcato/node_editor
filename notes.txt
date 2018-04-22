@@ -257,3 +257,48 @@ of the appropriate type.  Not clear if it is worth it yet.
 Be able to make a diagram that makes a body have a position between two
   other bodies.
 Need to be able to copy diagram nodes by ctrl-dragging.
+
+Seems like the diagram editor is secondary now.  Maybe it should just
+come up with the tree, and we do some other operation to open the diagram
+editor.
+
+I think you should right-click on the tree node and select "Edit Diagram..."
+
+Seems like we could avoid having separate operationNames() and
+executeOperation() methods and just have an operations() method.  It
+could return a list of operations which have a name and a function to
+execute.  The thing is, we need to make sure the function doesn't try
+to capture anything from the wrapper, since the wrapper will be
+destroyed.
+
+We could use the visitor pattern and have a withOperation() or a
+forEachOperation() method.  In a sense, operations are like other children,
+which have some kind of event type.
+
+If we had a function ref which didn't allocate, but just provided a way
+to type-erase the function, then we could use visitors more effectively.
+
+
+void g(FunctionRef<void()> f)
+{
+  f();
+}
+
+g(functionRef([](){}));
+
+the function ref needs to be created within the scope of the caller with
+the appropriate type, and then the type-erased version is created which
+references the full version.
+
+
+I think it needs to be broken out like this:
+
+struct Visitor {
+  template <typename T>
+  void visit(const T &f)
+  {
+    _visit(BasicFunctionRef<void(),T>(f));
+  }
+
+  virtual void _visit(const FunctionRef<void()> &) = 0;
+};

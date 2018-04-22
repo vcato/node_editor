@@ -12,6 +12,8 @@ using Label = CharmapperWrapper::Label;
 
 namespace {
 struct MotionPassWrapper : VoidWrapper {
+  private: using Self = MotionPassWrapper;
+  public:
   using MotionPass = Charmapper::MotionPass;
   using Position = Charmapper::Position;
   using PosExpr = MotionPass::PosExpr;
@@ -321,7 +323,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct PosExprWrapper : NoOperationWrapper<VoidWrapper> {
+  struct PosExprWrapper : VoidWrapper {
     PosExpr &pos_expr;
     const Callbacks &callbacks;
 
@@ -337,6 +339,21 @@ struct MotionPassWrapper : VoidWrapper {
     Diagram *diagramPtr() const override
     {
       return &pos_expr.diagram;
+    }
+
+    virtual std::vector<OperationName> operationNames() const
+    {
+      return {};
+    }
+
+    virtual void
+      executeOperation(
+        int /*operation_index*/,
+        const TreePath &,
+        OperationHandler &
+      ) const
+    {
+      assert(false);
     }
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
@@ -384,9 +401,58 @@ struct MotionPassWrapper : VoidWrapper {
   {
   }
 
-  virtual std::vector<std::string> operationNames() const
+  void
+    addPosExprOperation(
+      const TreePath &path,
+      OperationHandler &handler
+    ) const
   {
-    return { "Add Pos Expr", "Remove" };
+    int index = motion_pass.nExprs();
+    motion_pass.addPosExpr();
+    handler.addItem(join(path,index));
+  }
+
+  void
+    removeOperation(
+      const TreePath &path,
+      OperationHandler &handler
+    ) const
+  {
+    charmapper.removePass(pass_index);
+    handler.removeItem(path);
+  }
+
+  struct OperationTableEntry {
+    const char *name;
+    void (Self::*method)(const TreePath &,OperationHandler &) const;
+  };
+
+  using OperationTable = std::vector<OperationTableEntry>;
+
+  static OperationTable operationTable()
+  {
+    return {
+      {"Add Pos Expr",&Self::addPosExprOperation},
+      {"Remove",      &Self::removeOperation}
+    };
+  }
+
+  static std::vector<std::string>
+    operationNamesOf(const OperationTable &table)
+  {
+    std::vector<std::string> names;
+    names.reserve(table.size());
+
+    for (auto &entry : table) {
+      names.push_back(entry.name);
+    }
+
+    return names;
+  }
+
+  std::vector<std::string> operationNames() const override
+  {
+    return operationNamesOf(operationTable());
   }
 
   void
@@ -396,23 +462,8 @@ struct MotionPassWrapper : VoidWrapper {
       OperationHandler &handler
     ) const override
   {
-    switch (operation_index) {
-      case 0:
-        {
-          int index = motion_pass.nExprs();
-          motion_pass.addPosExpr();
-          handler.addItem(join(path,index));
-        }
-        return;
-      case 1:
-        {
-          charmapper.removePass(pass_index);
-          handler.removeItem(path);
-        }
-        return;
-    }
-
-    assert(false);
+    auto method = operationTable()[operation_index].method;
+    return (this ->* method)(path,handler);
   }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
