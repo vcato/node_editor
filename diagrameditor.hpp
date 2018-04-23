@@ -141,6 +141,7 @@ class DiagramEditor {
   public:
     DiagramEditor();
     void setDiagramPtr(Diagram *);
+    Diagram *diagramPtr() const;
 
   protected:
     static NodeIndex noNodeIndex() { return -1; }

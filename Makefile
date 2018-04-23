@@ -24,16 +24,18 @@ run_unit_tests: \
   mainwindow_test.pass
 
 build_manual_tests: \
-  qtscenewindow_manualtest
+  qtscenewindow_manualtest \
+  qtdiagrameditorwindow_manualtest
 
 main: main.o diagrameditor.o \
-  qtmainwindow.o    moc_qtmainwindow.o \
-  qtspinbox.o       moc_qtspinbox.o \
-  qttreeeditor.o    moc_qttreeeditor.o \
-  qtdiagrameditor.o moc_qtdiagrameditor.o \
-  qtslot.o          moc_qtslot.o \
-  qtcombobox.o      moc_qtcombobox.o \
-  qtlineedit.o      moc_qtlineedit.o \
+  qtmainwindow.o          moc_qtmainwindow.o \
+  qtspinbox.o             moc_qtspinbox.o \
+  qttreeeditor.o          moc_qttreeeditor.o \
+  qtdiagrameditor.o       moc_qtdiagrameditor.o \
+  qtslot.o                moc_qtslot.o \
+  qtcombobox.o            moc_qtcombobox.o \
+  qtlineedit.o            moc_qtlineedit.o \
+  qtdiagrameditorwindow.o \
   mainwindow.o \
   circle.o stringutil.o linetext.o diagramnode.o diagram.o \
   wrapper.o statementtext.o generatename.o \
@@ -44,7 +46,7 @@ main: main.o diagrameditor.o \
   world.o worldwrapper.o charmapperwrapper.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
   qtscenewindow.o qttreewidgetitem.o scenewindow.o \
-  qtscenetree.o scenetree.o sceneviewer.o
+  qtscenetree.o scenetree.o sceneviewer.o wrapperutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -83,7 +85,7 @@ diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
 
 wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
   statementtext.o stringutil.o diagramevaluation.o defaultdiagrams.o \
-  diagramio.o
+  diagramio.o wrapperutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scene_test: scene_test.o scene.o generatename.o
@@ -110,7 +112,9 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   stringutil.o generatename.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-treeeditor_test: treeeditor_test.o
+treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
+  diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
+  statementtext.o stringutil.o fakediagrameditorwindows.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
@@ -118,12 +122,20 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   scenewrapper.o scene.o scenewindow.o \
   defaultdiagrams.o diagram.o diagramio.o diagramnode.o linetext.o \
   statementtext.o stringutil.o \
-  treeeditor.o wrapper.o world.o scenetree.o generatename.o sceneviewer.o
+  treeeditor.o wrapper.o world.o scenetree.o generatename.o sceneviewer.o \
+  wrapperutil.o diagrameditor.o circle.o fakediagrameditorwindows.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
   qtsceneviewer.o draw.o scene.o qttreewidgetitem.o qtscenetree.o \
   scenetree.o scenewindow.o generatename.o sceneviewer.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+qtdiagrameditorwindow_manualtest: qtdiagrameditorwindow_manualtest.o \
+  qtdiagrameditor.o moc_qtdiagrameditor.o diagrameditor.o diagramio.o \
+  qtmenu.o draw.o diagram.o diagramevaluation.o diagramnode.o circle.o \
+  qtslot.o moc_qtslot.o linetext.o statementtext.o stringutil.o \
+  qtdiagrameditorwindow.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

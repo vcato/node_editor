@@ -324,35 +324,58 @@ struct MotionPassWrapper : VoidWrapper {
   };
 
   struct PosExprWrapper : VoidWrapper {
-    PosExpr &pos_expr;
+    MotionPass &motion_pass;
+    int index;
     const Callbacks &callbacks;
 
     PosExprWrapper(
-      PosExpr &pos_expr_arg,
+      MotionPass &motion_pass_arg,
+      int index_arg,
       const Callbacks &callbacks_arg
     )
-    : pos_expr(pos_expr_arg),
+    : motion_pass(motion_pass_arg),
+      index(index_arg),
       callbacks(callbacks_arg)
     {
     }
 
+    PosExpr &posExpr() const
+    {
+      return motion_pass.expr(index);
+    }
+
     Diagram *diagramPtr() const override
     {
-      return &pos_expr.diagram;
+      return &posExpr().diagram;
+    }
+
+    void
+      executeRemoveOperation(
+        const TreePath &path,
+        OperationHandler &handler
+      ) const
+    {
+      handler.removeItem(path);
+      motion_pass.removePosExpr(index);
     }
 
     virtual std::vector<OperationName> operationNames() const
     {
-      return {};
+      return {"Remove"};
     }
 
     virtual void
       executeOperation(
-        int /*operation_index*/,
-        const TreePath &,
-        OperationHandler &
+        int operation_index,
+        const TreePath &path,
+        OperationHandler &handler
       ) const
     {
+      if (operation_index==0) {
+        executeRemoveOperation(path,handler);
+        return;
+      }
+
       assert(false);
     }
 
@@ -360,16 +383,18 @@ struct MotionPassWrapper : VoidWrapper {
     {
       if (child_index==0) {
         // Target body
-        visitor(BodyWrapper("Target Body",pos_expr.target_body_link,callbacks));
+        visitor(
+          BodyWrapper("Target Body",posExpr().target_body_link,callbacks)
+        );
       }
       else if (child_index==1) {
         visitor(
-          PositionWrapper(pos_expr.local_position,"Local Position",callbacks)
+          PositionWrapper(posExpr().local_position,"Local Position",callbacks)
         );
       }
       else if (child_index==2) {
         visitor(
-          GlobalPositionWrapper(pos_expr.global_position,callbacks)
+          GlobalPositionWrapper(posExpr().global_position,callbacks)
         );
       }
       else {
@@ -468,8 +493,7 @@ struct MotionPassWrapper : VoidWrapper {
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
-    PosExpr &pos_expr = motion_pass.expr(child_index);
-    visitor(PosExprWrapper(pos_expr,callbacks));
+    visitor(PosExprWrapper(motion_pass,child_index,callbacks));
   }
 
   virtual Label label() const

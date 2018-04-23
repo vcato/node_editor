@@ -9,10 +9,11 @@
 #include "qtslot.hpp"
 #include "qtspinbox.hpp"
 #include "streamvector.hpp"
+#include "wrapperutil.hpp"
 #include "qtcombobox.hpp"
 #include "qtlineedit.hpp"
 #include "qttreewidgetitem.hpp"
-
+#include "qtdiagrameditorwindow.hpp"
 
 using std::cerr;
 using std::vector;
@@ -251,10 +252,9 @@ void QtTreeEditor::addMainTreeItem(const TreePath &new_item_path)
 
 void QtTreeEditor::removeTreeItem(const TreePath &path)
 {
-  TreePath parent_path = parentPath(path);
-  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  TreeItemIndex child_index = path.back();
-  ::removeChildItem(parent_item,child_index);
+  auto parent_path = parentPath(path);
+  auto child_index = path.back();
+  ::removeChildItem(itemFromPath(parent_path),child_index);
 }
 
 
@@ -392,25 +392,6 @@ QtDiagramEditor &QtTreeEditor::diagramEditor()
 }
 
 
-static Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path)
-{
-  Diagram *result_ptr = 0;
-
-  visitSubWrapper(
-    wrapper,
-    path,
-    [&result_ptr](const Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
-  );
-
-  if (!result_ptr) {
-    cerr << "No diagram found for " << path << "\n";
-    return nullptr;
-  }
-
-  return result_ptr;
-}
-
-
 Diagram *QtTreeEditor::maybeSelectedDiagram()
 {
   QTreeWidgetItem *selected_item_ptr = findSelectedItem();
@@ -430,12 +411,12 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
-#if 0
-void QtTreeEditor::openDiagramEditor(const TreePath &)
+QtDiagramEditorWindow& QtTreeEditor::createDiagramEditor()
 {
-  cerr << "openDiagramEditor()\n";
+  auto window_ptr = new QtDiagramEditorWindow;
+  window_ptr->show();
+  return *window_ptr;
 }
-#endif
 
 
 void QtTreeEditor::prepareMenu(const QPoint &pos)
@@ -458,11 +439,9 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
     createAction(menu,operation_names[i],[&,i]{ executeOperation(path,i); });
   }
 
-#if 0
   if (diagramPtr(world(),path)) {
     createAction(menu,"Edit Diagram...",[&]{ openDiagramEditor(path); });
   }
-#endif
 
   menu.exec(tree_editor.mapToGlobal(pos));
 }
@@ -477,4 +456,10 @@ void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
 void QtTreeEditor::selectItem(const TreePath &path)
 {
   itemFromPath(path).setSelected(true);
+}
+
+
+void QtTreeEditor::setDiagramEditorPtr(QtDiagramEditor *arg)
+{
+  diagram_editor_ptr = arg;
 }

@@ -203,8 +203,4 @@ inline TreePath join(TreePath path,TreeItemIndex child_index)
   return path;
 }
 
-
-extern TreePath
-  makePath(const Wrapper &wrapper,const std::string &path_string);
-
 #endif /* WRAPPER_HPP_ */

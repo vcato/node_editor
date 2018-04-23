@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "defaultdiagrams.hpp"
+#include "removefrom.hpp"
 
 
 using std::make_unique;
@@ -68,6 +69,12 @@ Charmapper::MotionPass::PosExpr::PosExpr()
 : diagram(posExprDiagram()),
   local_position(localPositionDiagram())
 {
+}
+
+
+void Charmapper::MotionPass::removePosExpr(int index)
+{
+  removeFrom(pos_exprs,pos_exprs[index]);
 }
 
 

@@ -5,6 +5,8 @@
 #include "world.hpp"
 #include "worldwrapper.hpp"
 #include "streamvector.hpp"
+#include "wrapperutil.hpp"
+#include "fakediagrameditorwindows.hpp"
 
 
 using std::string;
@@ -70,6 +72,17 @@ struct FakeTreeEditor : TreeEditor {
 
   Item root;
 
+  void
+    userSelectsContextMenuItem(
+      const string &path_string,
+      const string &operation_name
+    )
+  {
+    TreePath path = makePath(world(),path_string);
+    userSelectsContextMenuItem(path,operation_name);
+  }
+
+
   void userSelectsContextMenuItem(const string &operation_name)
   {
     TreePath path = {};
@@ -83,9 +96,12 @@ struct FakeTreeEditor : TreeEditor {
       const TreePath &path,const string &operation_name
     )
   {
-    vector<string> operation_names = operationNames(path);
-    int index = findIndex(operation_names,operation_name);
-    executeOperation(path,index);
+    if (operation_name=="Edit Diagram...") {
+      openDiagramEditor(path);
+    }
+    else {
+      executeOperation(path,operationIndex2(world(),path,operation_name));
+    }
   }
 
   void userChangesStringValue(const TreePath &path,const string &new_value)
@@ -112,6 +128,13 @@ struct FakeTreeEditor : TreeEditor {
     Item &parent_item = itemFromPath(root,parentPath(path));
     removeChildItem(parent_item,path.back());
   }
+
+  virtual DiagramEditorWindow& createDiagramEditor()
+  {
+    return diagram_editor_windows.create();
+  }
+
+  FakeDiagramEditorWindows diagram_editor_windows;
 };
 }
 
@@ -348,6 +371,29 @@ static void testRemovingABody()
 }
 
 
+static void testRemovingAPosExpr()
+{
+  FakeWorld world;
+  WorldWrapper world_wrapper(world);
+  FakeMainWindow main_window;
+  main_window.setWorldPtr(&world_wrapper);
+
+  main_window.tree_editor.userSelectsContextMenuItem("Add Charmapper");
+  main_window.tree_editor.userSelectsContextMenuItem(
+    "Charmapper1","Add Motion Pass"
+  );
+  main_window.tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Motion Pass","Add Pos Expr"
+  );
+  main_window.tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Motion Pass|Pos Expr","Edit Diagram..."
+  );
+  main_window.tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Motion Pass|Pos Expr","Remove"
+  );
+}
+
+
 int main()
 {
   testAddingABodyToTheScene();
@@ -355,4 +401,5 @@ int main()
   testRemovingAMotionPass();
   testChangingABodyName();
   testRemovingABody();
+  testRemovingAPosExpr();
 }

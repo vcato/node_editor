@@ -1,6 +1,7 @@
 #include "wrapper.hpp"
 
 #include <cassert>
+#include "wrapperutil.hpp"
 
 using std::string;
 using std::vector;

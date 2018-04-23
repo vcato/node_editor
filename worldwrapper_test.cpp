@@ -409,6 +409,30 @@ static void testRemovingABodyFromTheScene()
 
   assert(command_string==expected_command_string);
 }
+
+
+static void testRemovingAPosExprFromAMotionPass()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  motion_pass.addPosExpr();
+  WorldWrapper world_wrapper(world);
+  ostringstream command_stream;
+  FakeOperationHandler operation_handler(command_stream);
+
+  executeOperation(
+    world_wrapper,
+    "Charmapper1|Motion Pass|Pos Expr","Remove",
+    operation_handler
+  );
+
+  assert(motion_pass.nExprs()==0);
+  string command_string = command_stream.str();
+  string expected_command_string = "removeItem([0,0,0])\n";
+  assert(command_string==expected_command_string);
+}
+
 }
 
 
@@ -423,5 +447,6 @@ int main()
     tests::testUsingCharmapperToMoveABody();
     tests::testWithTwoCharmappers();
     tests::testRemovingABodyFromTheScene();
+    tests::testRemovingAPosExprFromAMotionPass();
   }
 }

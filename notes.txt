@@ -265,3 +265,14 @@ editor.
 I think you should right-click on the tree node and select "Edit Diagram..."
 
 If there is a diagram pointer, we can add that menu entry.
+
+If you are editing an object's diagram, and you remove that object, then
+the diagram editor will need to be destroyed as well.  That means we may
+need to keep a list of paths and diagram editor window pointers.
+
+TreeEditor::removeTreeItem() could find any diagram editor windows whose
+path begins with the removed path and delete the corresponding window.
+
+May want to consider creating an abstract tree widget class.
+
+Maybe rename OperationHandler to TreeObserver
