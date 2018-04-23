@@ -511,7 +511,7 @@ struct MotionPassWrapper : VoidWrapper {
 
 std::vector<std::string> CharmapperWrapper::operationNames() const
 {
-  return { "Add Motion Pass" };
+  return { "Add Motion Pass", "Remove" };
 }
 
 
@@ -528,6 +528,12 @@ void
         int index = charmapper.nPasses();
         charmapper.addMotionPass();
         tree_observer.itemAdded(join(path,index));
+      }
+      return;
+    case 1:
+      {
+        tree_observer.itemRemoved(path);
+        callbacks.removeCharmapper();
       }
       return;
   }

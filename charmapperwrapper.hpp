@@ -16,6 +16,7 @@ class CharmapperWrapper : public VoidWrapper {
     struct Callbacks {
       const SceneList &scene_list;
       virtual void notifyCharmapChanged() const = 0;
+      virtual void removeCharmapper() const = 0;
 
       Callbacks(const SceneList &scene_list_arg)
       : scene_list(scene_list_arg)

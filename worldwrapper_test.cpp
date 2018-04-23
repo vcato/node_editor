@@ -433,6 +433,21 @@ static void testRemovingAPosExprFromAMotionPass()
   assert(command_string==expected_command_string);
 }
 
+
+static void testRemovingACharmapper()
+{
+  FakeWorld world;
+  world.addCharmapper();
+  WorldWrapper world_wrapper(world);
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+  executeOperation(world_wrapper,"Charmapper1","Remove",tree_observer);
+  assert(world.nMembers()==0);
+  string expected_command_string = "removeItem([0])\n";
+  string command_string = command_stream.str();
+  assert(command_string==expected_command_string);
+}
+
 }
 
 
@@ -448,5 +463,6 @@ int main()
     tests::testWithTwoCharmappers();
     tests::testRemovingABodyFromTheScene();
     tests::testRemovingAPosExprFromAMotionPass();
+    tests::testRemovingACharmapper();
   }
 }

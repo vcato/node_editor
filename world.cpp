@@ -160,3 +160,9 @@ SceneMember &World::sceneMember(int index)
   assert(scene_member_ptr);
   return *scene_member_ptr;
 }
+
+
+void World::removeMember(int index)
+{
+  world_members.erase(world_members.begin() + index);
+}

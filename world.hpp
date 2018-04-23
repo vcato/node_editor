@@ -20,10 +20,11 @@ class World {
 
     Charmapper& addCharmapper();
     Scene& addScene();
+    void removeMember(int member_index);
     int nMembers() const { return world_members.size(); }
     void applyCharmaps();
-    CharmapperMember &charmapperMember(int index);
-    SceneMember &sceneMember(int index);
+    CharmapperMember &charmapperMember(int member_index);
+    SceneMember &sceneMember(int member_index);
 
     void
       forEachSceneMember(

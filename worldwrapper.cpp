@@ -174,6 +174,11 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
         // to cause an inifinite loop, so we don't notify the scene
         // of the charmap change.
       }
+
+      virtual void removeCharmapper() const
+      {
+        assert(false);
+      }
     };
 
     Callbacks callbacks{scene_list};
@@ -218,13 +223,16 @@ namespace {
 struct ChildWrapperVisitor : World::MemberVisitor {
   World &world;
   const WrapperVisitor &visitor;
+  const int member_index;
 
   ChildWrapperVisitor(
     World &world_arg,
-    const std::function<void(const Wrapper&)> &visitor_arg
+    const std::function<void(const Wrapper&)> &visitor_arg,
+    int member_index_arg
   )
   : world(world_arg),
-    visitor(visitor_arg)
+    visitor(visitor_arg),
+    member_index(member_index_arg)
   {
   }
 
@@ -234,15 +242,18 @@ struct ChildWrapperVisitor : World::MemberVisitor {
     struct Callbacks : CharmapperWrapper::Callbacks {
       Charmapper &charmapper;
       World &world;
+      const int member_index;
 
       Callbacks(
         const CharmapperWrapper::SceneList &scene_list,
         Charmapper &charmapper_arg,
-        World &world_arg
+        World &world_arg,
+        int member_index_arg
       )
       : CharmapperWrapper::Callbacks(scene_list),
         charmapper(charmapper_arg),
-        world(world_arg)
+        world(world_arg),
+        member_index(member_index_arg)
       {
       }
 
@@ -250,9 +261,15 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       {
         world.applyCharmaps();
       }
+
+      virtual void removeCharmapper() const
+      {
+        world.removeMember(member_index);
+      }
     };
 
-    Callbacks callbacks{scene_list,member.charmapper,world};
+    Callbacks callbacks{scene_list,member.charmapper,world,member_index};
+
     visitor(
       CharmapperWrapper{
         member.charmapper,
@@ -362,7 +379,8 @@ void
     int child_index,const WrapperVisitor &visitor
   ) const
 {
-  ChildWrapperVisitor wrapper_visitor(world,visitor);
+  int member_index = child_index;
+  ChildWrapperVisitor wrapper_visitor(world,visitor,member_index);
 
-  world.visitMember(child_index,wrapper_visitor);
+  world.visitMember(member_index,wrapper_visitor);
 }
