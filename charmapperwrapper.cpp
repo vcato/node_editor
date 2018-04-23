@@ -233,7 +233,7 @@ struct MotionPassWrapper : VoidWrapper {
       setValue(
         const TreePath &path,
         int index,
-        OperationHandler &operation_handler
+        TreeObserver &tree_observer
       ) const
     {
       switch (index) {
@@ -241,14 +241,14 @@ struct MotionPassWrapper : VoidWrapper {
           // Components
           {
             global_position.switchToComponents();
-            operation_handler.replaceTreeItems(path);
+            tree_observer.itemReplaced(path);
           }
           break;
         case 1:
           // From Body
           {
             global_position.switchToFromBody();
-            operation_handler.replaceTreeItems(path);
+            tree_observer.itemReplaced(path);
           }
           break;
         default:
@@ -287,11 +287,11 @@ struct MotionPassWrapper : VoidWrapper {
 
     void
       handleSceneChange(
-        const Wrapper::OperationHandler &operation_handler,
+        const Wrapper::TreeObserver &tree_observer,
         const TreePath &path_of_this
       ) const
     {
-      operation_handler.changeEnumerationValues(path_of_this);
+      tree_observer.enumarationValuesChanged(path_of_this);
     }
 
     vector<string> enumerationNames() const override
@@ -307,7 +307,7 @@ struct MotionPassWrapper : VoidWrapper {
       setValue(
         const TreePath &,
         int index,
-        OperationHandler &
+        TreeObserver &
       ) const override
     {
       assert(index>=0);
@@ -352,10 +352,10 @@ struct MotionPassWrapper : VoidWrapper {
     void
       executeRemoveOperation(
         const TreePath &path,
-        OperationHandler &handler
+        TreeObserver &tree_observer
       ) const
     {
-      handler.removeItem(path);
+      tree_observer.itemRemoved(path);
       motion_pass.removePosExpr(index);
     }
 
@@ -368,11 +368,11 @@ struct MotionPassWrapper : VoidWrapper {
       executeOperation(
         int operation_index,
         const TreePath &path,
-        OperationHandler &handler
+        TreeObserver &tree_observer
       ) const
     {
       if (operation_index==0) {
-        executeRemoveOperation(path,handler);
+        executeRemoveOperation(path,tree_observer);
         return;
       }
 
@@ -429,27 +429,27 @@ struct MotionPassWrapper : VoidWrapper {
   void
     addPosExprOperation(
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &tree_observer
     ) const
   {
     int index = motion_pass.nExprs();
     motion_pass.addPosExpr();
-    handler.addItem(join(path,index));
+    tree_observer.itemAdded(join(path,index));
   }
 
   void
     removeOperation(
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &tree_observer
     ) const
   {
     charmapper.removePass(pass_index);
-    handler.removeItem(path);
+    tree_observer.itemRemoved(path);
   }
 
   struct OperationTableEntry {
     const char *name;
-    void (Self::*method)(const TreePath &,OperationHandler &) const;
+    void (Self::*method)(const TreePath &,TreeObserver &) const;
   };
 
   using OperationTable = std::vector<OperationTableEntry>;
@@ -484,11 +484,11 @@ struct MotionPassWrapper : VoidWrapper {
     executeOperation(
       int operation_index,
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &tree_observer
     ) const override
   {
     auto method = operationTable()[operation_index].method;
-    return (this ->* method)(path,handler);
+    return (this ->* method)(path,tree_observer);
   }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
@@ -519,7 +519,7 @@ void
   CharmapperWrapper::executeOperation(
     int operation_index,
     const TreePath &path,
-    OperationHandler &handler
+    TreeObserver &tree_observer
   ) const
 {
   switch (operation_index) {
@@ -527,7 +527,7 @@ void
       {
         int index = charmapper.nPasses();
         charmapper.addMotionPass();
-        handler.addItem(join(path,index));
+        tree_observer.itemAdded(join(path,index));
       }
       return;
   }
@@ -574,7 +574,7 @@ static void
 
 void
   CharmapperWrapper::handleSceneChange(
-    const OperationHandler &operation_handler,
+    const TreeObserver &tree_observer,
     const TreePath &path_of_this
   )
 {
@@ -590,7 +590,7 @@ void
 
       if (body_wrapper_ptr) {
         body_wrapper_ptr->handleSceneChange(
-          operation_handler,path_of_sub_wrapper
+          tree_observer,path_of_sub_wrapper
         );
       }
     }

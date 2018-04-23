@@ -33,7 +33,7 @@ static void testHierarchy()
 {
   Scene scene;
   SceneWrapper::SceneObserver notify(
-    [](const Wrapper::OperationHandler &){ assert(false); }
+    [](const Wrapper::TreeObserver &){ assert(false); }
   );
   Scene::Body &body = scene.addBody();
   scene.addChildBodyTo(body);
@@ -67,36 +67,36 @@ static void testHierarchy()
 static void
   addBody2(const Wrapper &wrapper,const TreePath &path,ostream &stream)
 {
-  struct OperationHandler : Wrapper::OperationHandler {
+  struct TreeObserver : Wrapper::TreeObserver {
     ostream &stream;
 
-    OperationHandler(ostream &stream_arg)
+    TreeObserver(ostream &stream_arg)
     : stream(stream_arg)
     {
     }
 
-    virtual void addItem(const TreePath &path)
+    virtual void itemAdded(const TreePath &path)
     {
       stream << "addItem: path=" << path << "\n";
     }
 
-    virtual void replaceTreeItems(const TreePath &)
+    virtual void itemReplaced(const TreePath &)
     {
       assert(false);
     }
 
-    virtual void changeEnumerationValues(const TreePath &) const
+    virtual void enumarationValuesChanged(const TreePath &) const
     {
       assert(false);
     }
 
-    virtual void removeItem(const TreePath &)
+    virtual void itemRemoved(const TreePath &)
     {
       assert(false);
     }
   };
 
-  OperationHandler operation_handler(stream);
+  TreeObserver operation_handler(stream);
 
   executeAddBodyFunction(wrapper,path,operation_handler);
 }
@@ -118,7 +118,7 @@ static void
 static void testAddingBodies()
 {
   Scene scene;
-  SceneWrapper::SceneObserver notify([](const Wrapper::OperationHandler &){});
+  SceneWrapper::SceneObserver notify([](const Wrapper::TreeObserver &){});
   SceneWrapper wrapper(scene,notify,"Scene");
   ostringstream stream;
 

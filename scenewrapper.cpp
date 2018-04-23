@@ -24,22 +24,22 @@ struct WrapperData {
 
 
 namespace {
-  struct StubOperationHandler : Wrapper::OperationHandler {
-    virtual void addItem(const TreePath &)
+  struct StubTreeObserver : Wrapper::TreeObserver {
+    virtual void itemAdded(const TreePath &)
     {
       assert(false);
     }
 
-    virtual void replaceTreeItems(const TreePath &)
+    virtual void itemReplaced(const TreePath &)
     {
       assert(false);
     }
 
-    virtual void changeEnumerationValues(const TreePath &) const
+    virtual void enumarationValuesChanged(const TreePath &) const
     {
     }
 
-    virtual void removeItem(const TreePath &)
+    virtual void itemRemoved(const TreePath &)
     {
       assert(false);
     }
@@ -72,8 +72,8 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   void setValue(int arg) const override
   {
     map.set(wrapper_data.frame,arg);
-    StubOperationHandler operation_handler;
-    wrapper_data.callbacks.changed_func(operation_handler);
+    StubTreeObserver tree_observer;
+    wrapper_data.callbacks.changed_func(tree_observer);
   }
 };
 }
@@ -104,8 +104,8 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   void setValue(int arg) const override
   {
     value = arg;
-    StubOperationHandler operation_handler;
-    wrapper_data.callbacks.changed_func(operation_handler);
+    StubTreeObserver tree_observer;
+    wrapper_data.callbacks.changed_func(tree_observer);
   }
 };
 }
@@ -183,8 +183,8 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   void setValue(const string &arg) const
   {
     name = arg;
-    StubOperationHandler operation_handler;
-    wrapper_data.callbacks.changed_func(operation_handler);
+    StubTreeObserver tree_observer;
+    wrapper_data.callbacks.changed_func(tree_observer);
   }
 };
 }
@@ -217,7 +217,7 @@ struct BodyWrapper : VoidWrapper {
     executeOperation(
       int operation_index,
       const TreePath &path,
-      TreeOperationHandler &handler
+      TreeObserver &tree_observer
     )
   {
     switch (operation_index) {
@@ -225,8 +225,8 @@ struct BodyWrapper : VoidWrapper {
         {
           int index = body.nChildren();
           scene.addChildBodyTo(body);
-          wrapper_data.callbacks.changed_func(handler);
-          handler.addItem(join(path,index+nBodyAttributes()));
+          wrapper_data.callbacks.changed_func(tree_observer);
+          tree_observer.itemAdded(join(path,index+nBodyAttributes()));
         }
         return;
     }
@@ -242,7 +242,7 @@ struct BodyWrapper : VoidWrapper {
     executeOperation(
       int operation_index,
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &tree_observer
     ) const
   {
     switch (operation_index) {
@@ -252,10 +252,10 @@ struct BodyWrapper : VoidWrapper {
           Scene::Body &new_body = scene.addChildBodyTo(body);
 
           if (wrapper_data.callbacks.body_added_func) {
-            wrapper_data.callbacks.body_added_func(new_body,handler);
+            wrapper_data.callbacks.body_added_func(new_body,tree_observer);
           }
 
-          handler.addItem(join(path,index+nBodyAttributes()));
+          tree_observer.itemAdded(join(path,index+nBodyAttributes()));
         }
         return;
       case 1:
@@ -265,10 +265,10 @@ struct BodyWrapper : VoidWrapper {
           }
 
           scene.removeChildBodyFrom(parent_body,body_index);
-          handler.removeItem(path);
+          tree_observer.itemRemoved(path);
 
           if (wrapper_data.callbacks.removed_body_func) {
-            wrapper_data.callbacks.removed_body_func(handler);
+            wrapper_data.callbacks.removed_body_func(tree_observer);
           }
         }
 
@@ -329,7 +329,7 @@ void
   SceneWrapper::executeOperation(
     int operation_index,
     const TreePath &path,
-    OperationHandler &handler
+    TreeObserver &tree_observer
   ) const
 {
   switch (operation_index) {
@@ -338,10 +338,10 @@ void
         int index = scene.nBodies();
         Scene::Body &new_body = scene.addBody();
 
-        handler.addItem(join(path,index));
+        tree_observer.itemAdded(join(path,index));
 
         if (callbacks.body_added_func) {
-          callbacks.body_added_func(new_body,handler);
+          callbacks.body_added_func(new_body,tree_observer);
         }
       }
 

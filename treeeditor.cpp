@@ -31,30 +31,30 @@ vector<string> TreeEditor::operationNames(const TreePath &path)
 }
 
 
-struct TreeEditor::OperationHandler : TreeOperationHandler {
+struct TreeEditor::TreeObserver : ::TreeObserver {
   TreeEditor &tree_editor;
 
-  OperationHandler(TreeEditor &tree_editor_arg)
+  TreeObserver(TreeEditor &tree_editor_arg)
   : tree_editor(tree_editor_arg)
   {
   }
 
-  virtual void addItem(const TreePath &path)
+  virtual void itemAdded(const TreePath &path)
   {
     tree_editor.addTreeItem(path);
   }
 
-  virtual void replaceTreeItems(const TreePath &path)
+  virtual void itemReplaced(const TreePath &path)
   {
     tree_editor.replaceTreeItems(path);
   }
 
-  virtual void changeEnumerationValues(const TreePath &path) const
+  virtual void enumarationValuesChanged(const TreePath &path) const
   {
     tree_editor.changeEnumerationValues(path);
   }
 
-  virtual void removeItem(const TreePath &path)
+  virtual void itemRemoved(const TreePath &path)
   {
     tree_editor.removeTreeItem(path);
     tree_editor.removeDiagramEditors(path);
@@ -64,14 +64,14 @@ struct TreeEditor::OperationHandler : TreeOperationHandler {
 
 void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
 {
-  OperationHandler operation_handler(*this);
+  TreeObserver tree_observer(*this);
 
   visitEnumerationSubWrapper(
     world(),
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
       enumeration_wrapper.setValue(
-        path,index,operation_handler
+        path,index,tree_observer
       );
     }
   );
@@ -84,8 +84,8 @@ void TreeEditor::executeOperation(const TreePath &path,int operation_index)
     world(),
     path,
     [&](const Wrapper &wrapper){
-      OperationHandler operation_handler(*this);
-      wrapper.executeOperation(operation_index,path,operation_handler);
+      TreeObserver tree_observer(*this);
+      wrapper.executeOperation(operation_index,path,tree_observer);
     }
   );
 }

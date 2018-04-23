@@ -11,7 +11,6 @@ struct TreeEditor {
     int nDiagramEditorWindows() const;
 
   protected:
-    struct OperationHandler;
     Wrapper *world_ptr = 0;
 
     Wrapper &world();
@@ -27,6 +26,7 @@ struct TreeEditor {
     virtual void removeTreeItem(const TreePath &path) = 0;
 
   private:
+    struct TreeObserver;
     virtual void removeDiagramEditors(const TreePath &);
 
   private:

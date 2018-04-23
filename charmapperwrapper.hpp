@@ -43,8 +43,8 @@ class CharmapperWrapper : public VoidWrapper {
     void
       executeOperation(
         int operation_index,
-        const TreePath &path,
-        OperationHandler &handler
+        const TreePath &,
+        TreeObserver &
       ) const override;
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
@@ -58,7 +58,7 @@ class CharmapperWrapper : public VoidWrapper {
 
     void
       handleSceneChange(
-        const OperationHandler &,
+        const TreeObserver &,
         const TreePath &charmapper_path
       );
 };

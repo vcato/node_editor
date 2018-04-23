@@ -145,16 +145,16 @@ namespace {
 struct NotifyCharmapperVisitor : World::MemberVisitor {
   using SceneList = CharmapperWrapper::SceneList;
   const int member_index;
-  const Wrapper::OperationHandler &operation_handler;
+  const Wrapper::TreeObserver &tree_observer;
   const SceneList &scene_list;
 
   NotifyCharmapperVisitor(
     int member_index_arg,
-    const Wrapper::OperationHandler &operation_handler_arg,
+    const Wrapper::TreeObserver &operation_handler_arg,
     const SceneList &scene_list_arg
   )
   : member_index(member_index_arg),
-    operation_handler(operation_handler_arg),
+    tree_observer(operation_handler_arg),
     scene_list(scene_list_arg)
   {
   }
@@ -182,7 +182,7 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
       charmapper_member.charmapper,
       callbacks,
       charmapper_member.name
-    ).handleSceneChange(operation_handler,{member_index});
+    ).handleSceneChange(tree_observer,{member_index});
 
     // This may not be sufficient.  It would probably be better to
     // call world.applyCharmaps().  Need an example of where this doesn't
@@ -201,14 +201,14 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
 static void
   notifyCharmappersOfSceneChange(
     World &world,
-    const Wrapper::OperationHandler &operation_handler
+    const Wrapper::TreeObserver &tree_observer
   )
 {
   int n_members = world.nMembers();
   WorldSceneList scene_list(world);
 
   for (int member_index=0; member_index!=n_members; ++member_index) {
-    NotifyCharmapperVisitor visitor(member_index,operation_handler,scene_list);
+    NotifyCharmapperVisitor visitor(member_index,tree_observer,scene_list);
     world.visitMember(member_index,visitor);
   }
 }
@@ -266,7 +266,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   {
     auto changed_func =
       [&,&world=world]
-      (const Wrapper::OperationHandler &operation_handler)
+      (const Wrapper::TreeObserver &tree_observer)
       {
 	// Update the body comboboxes in the charmappers.
 	// This doesn't work because the wrappers don't necessarily exist
@@ -274,7 +274,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
 	member.scene.displayFrame() = member.scene.backgroundFrame();
 
-	notifyCharmappersOfSceneChange(world,operation_handler);
+	notifyCharmappersOfSceneChange(world,tree_observer);
 
 	// Notify the scene window after notifying charmapper
 	if (member.scene_window_ptr) {
@@ -282,14 +282,14 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 	}
       };
 
-    // We also need to get an operation handler
+    // We also need to get an tree observer
     auto body_added_func =
       [&](
         const Scene::Body &body,
-        const Wrapper::OperationHandler &operation_handler
+        const Wrapper::TreeObserver &tree_observer
       )
       {
-        notifyCharmappersOfSceneChange(world,operation_handler);
+        notifyCharmappersOfSceneChange(world,tree_observer);
 
         if (member.scene_window_ptr) {
           member.scene_window_ptr->notifyBodyAdded(body);
@@ -304,9 +304,9 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       };
 
     auto removed_body_func =
-      [&](const Wrapper::OperationHandler &operation_handler)
+      [&](const Wrapper::TreeObserver &tree_observer)
       {
-        notifyCharmappersOfSceneChange(world,operation_handler);
+        notifyCharmappersOfSceneChange(world,tree_observer);
 
         if (member.scene_window_ptr) {
           member.scene_window_ptr->notifySceneChanged();
@@ -333,7 +333,7 @@ void
   WorldWrapper::executeOperation(
     int operation_index,
     const TreePath &path,
-    OperationHandler &handler
+    TreeObserver &tree_observer
   ) const
 {
   switch (operation_index) {
@@ -341,14 +341,14 @@ void
       {
         int index = world.nMembers();
         world.addCharmapper();
-        handler.addItem(join(path,index));
+        tree_observer.itemAdded(join(path,index));
       }
       return;
     case 1:
       {
         int index = world.nMembers();
         world.addScene();
-        handler.addItem(join(path,index));
+        tree_observer.itemAdded(join(path,index));
       }
       return;
   }

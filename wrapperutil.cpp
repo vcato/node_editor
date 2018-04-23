@@ -71,11 +71,11 @@ void
     const Wrapper &sub_wrapper,
     const TreePath &path,
     const string &operation_name,
-    Wrapper::OperationHandler &operation_handler
+    Wrapper::TreeObserver &tree_observer
   )
 {
   int operation_index = operationIndex(sub_wrapper,operation_name);
-  sub_wrapper.executeOperation(operation_index,path,operation_handler);
+  sub_wrapper.executeOperation(operation_index,path,tree_observer);
 }
 
 
@@ -84,14 +84,14 @@ void
     const Wrapper &world_wrapper,
     const TreePath &scene_path,
     const string &operation_name,
-    Wrapper::OperationHandler &handler
+    Wrapper::TreeObserver &tree_observer
   )
 {
   visitSubWrapper(
     world_wrapper,
     scene_path,
     [&](const Wrapper &sub_wrapper){
-      executeOperation(sub_wrapper,scene_path,operation_name,handler);
+      executeOperation(sub_wrapper,scene_path,operation_name,tree_observer);
     }
   );
 }
@@ -107,14 +107,14 @@ void
   executeAddBodyFunction(
     const Wrapper &sub_wrapper,
     const TreePath &path,
-    Wrapper::OperationHandler &operation_handler
+    Wrapper::TreeObserver &tree_observer
   )
 {
   executeOperation(
     sub_wrapper,
     path,
     addBodyOperationName(),
-    operation_handler
+    tree_observer
   );
 }
 
@@ -123,14 +123,14 @@ void
   executeAddBodyFunction2(
     const Wrapper &world_wrapper,
     const TreePath &scene_path,
-    Wrapper::OperationHandler &handler
+    Wrapper::TreeObserver &tree_observer
   )
 {
   executeOperation2(
     world_wrapper,
     scene_path,
     addBodyOperationName(),
-    handler
+    tree_observer
   );
 }
 
@@ -240,9 +240,9 @@ void
     const Wrapper &wrapper,
     const string &path_string,
     const string &operation_name,
-    Wrapper::OperationHandler &operation_handler
+    Wrapper::TreeObserver &tree_observer
   )
 {
   TreePath path = makePath(wrapper,path_string);
-  executeOperation2(wrapper,path,operation_name,operation_handler);
+  executeOperation2(wrapper,path,operation_name,tree_observer);
 }

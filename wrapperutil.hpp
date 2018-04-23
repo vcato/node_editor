@@ -5,14 +5,14 @@ extern void
   executeAddBodyFunction2(
     const Wrapper &world_wrapper,
     const TreePath &scene_path,
-    Wrapper::OperationHandler &handler
+    Wrapper::TreeObserver &
   );
 
 extern void
   executeAddBodyFunction(
     const Wrapper &sub_wrapper,
     const TreePath &path,
-    Wrapper::OperationHandler &operation_handler
+    Wrapper::TreeObserver &
   );
 
 // Execute the operation on a particular wrapper.
@@ -21,7 +21,7 @@ extern void
     const Wrapper &sub_wrapper,
     const TreePath &,
     const std::string &operation_name,
-    Wrapper::OperationHandler &operation_handler
+    Wrapper::TreeObserver &
   );
 
 // Execute the operation on a sub-wrapper of the wrapper.
@@ -30,7 +30,7 @@ extern void
     const Wrapper &world_wrapper,
     const TreePath &,
     const std::string &operation_name,
-    Wrapper::OperationHandler &handler
+    Wrapper::TreeObserver &
   );
 
 extern void
@@ -38,7 +38,7 @@ extern void
     const Wrapper &wrapper,
     const std::string &path_string,
     const std::string &operation_name,
-    Wrapper::OperationHandler &operation_handler
+    Wrapper::TreeObserver &
   );
 
 extern int

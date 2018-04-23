@@ -16,7 +16,7 @@ struct WorldWrapper : VoidWrapper
     executeOperation(
       int operation_index,
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &
     ) const override;
 
   void

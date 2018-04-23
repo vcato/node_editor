@@ -99,12 +99,12 @@ struct TestWrapper : VoidWrapper {
     executeOperation(
       int operation_index,
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &handler
     ) const
   {
     assert(operation_index==0);
     assert(parent_ptr);
-    handler.removeItem(path);
+    handler.itemRemoved(path);
     removeFrom(parent_ptr->children,this);
   }
 
