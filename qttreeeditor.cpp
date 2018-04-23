@@ -421,16 +421,16 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 
   QMenu menu;
 
+  if (diagramPtr(world(),path)) {
+    createAction(menu,"Edit Diagram...",[&]{ openDiagramEditor(path); });
+  }
+
   std::vector<std::string> operation_names = operationNames(path);
 
   int n_operations = operation_names.size();
 
   for (int i=0; i!=n_operations; ++i) {
     createAction(menu,operation_names[i],[&,i]{ executeOperation(path,i); });
-  }
-
-  if (diagramPtr(world(),path)) {
-    createAction(menu,"Edit Diagram...",[&]{ openDiagramEditor(path); });
   }
 
   menu.exec(tree_editor.mapToGlobal(pos));

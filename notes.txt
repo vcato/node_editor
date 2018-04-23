@@ -276,3 +276,5 @@ path begins with the removed path and delete the corresponding window.
 May want to consider creating an abstract tree widget class.
 
 Maybe rename OperationHandler to TreeObserver
+
+Charmapper needs a remove operation
