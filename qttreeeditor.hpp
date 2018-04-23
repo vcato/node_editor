@@ -17,7 +17,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
   public:
     QtTreeEditor();
 
-    void setDiagramEditorPtr(QtDiagramEditor *arg);
     void selectItem(const TreePath &path);
 
   private slots:
@@ -27,9 +26,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
   private:
     struct CreateChildItemVisitor;
 
-    QtDiagramEditor *diagram_editor_ptr = 0;
-
-    QtDiagramEditor &diagramEditor();
     QtTreeEditor &treeEditor() { return *this; }
     Diagram *maybeSelectedDiagram();
     QTreeWidgetItem &itemFromPath(const TreePath &path) const;

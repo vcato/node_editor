@@ -294,8 +294,6 @@ void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
 {
   removeChildItems(parent_path);
   addChildTreeItems(parent_path);
-  diagramEditor().setDiagramPtr(maybeSelectedDiagram());
-  diagramEditor().redraw();
 }
 
 
@@ -385,13 +383,6 @@ void
 }
 
 
-QtDiagramEditor &QtTreeEditor::diagramEditor()
-{
-  assert(diagram_editor_ptr);
-  return *diagram_editor_ptr;
-}
-
-
 Diagram *QtTreeEditor::maybeSelectedDiagram()
 {
   QTreeWidgetItem *selected_item_ptr = findSelectedItem();
@@ -407,7 +398,6 @@ Diagram *QtTreeEditor::maybeSelectedDiagram()
 
 void QtTreeEditor::itemSelectionChangedSlot()
 {
-  diagramEditor().setDiagramPtr(maybeSelectedDiagram());
 }
 
 
@@ -456,10 +446,4 @@ void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
 void QtTreeEditor::selectItem(const TreePath &path)
 {
   itemFromPath(path).setSelected(true);
-}
-
-
-void QtTreeEditor::setDiagramEditorPtr(QtDiagramEditor *arg)
-{
-  diagram_editor_ptr = arg;
 }

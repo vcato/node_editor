@@ -17,7 +17,6 @@ class QtMainWindow : public QMainWindow, public MainWindow {
   private:
     QMenu menu{"Tools"};
     QtTreeEditor *tree_editor_ptr;
-    QtDiagramEditor *diagram_editor_ptr;
 
     QtTreeEditor &treeEditor();
 };
