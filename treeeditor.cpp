@@ -9,6 +9,7 @@
 using std::vector;
 using std::string;
 using std::cerr;
+using std::function;
 
 
 Wrapper &TreeEditor::world()
@@ -139,21 +140,52 @@ void TreeEditor::diagramEditorClosed(DiagramEditorWindow &window)
 }
 
 
+static void
+  forEachDescendant(const Wrapper &wrapper,function<void(const Wrapper &)> f)
+{
+  int n_children = wrapper.nChildren();
+
+  for (int i=0; i!=n_children; ++i) {
+    wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){
+      forEachDescendant(child_wrapper,f);
+    });
+  }
+
+  f(wrapper);
+}
+
+
 void TreeEditor::removeDiagramEditors(const TreePath &path)
 {
   if (diagram_editor_window_ptrs.empty()) {
     return;
   }
 
-  Diagram *diagram_ptr = diagramPtr(world(),path);
+  // Find the diagrams 
+
+  vector<Diagram *> diagrams_being_removed;
+
+  visitSubWrapper(world(),path,[&](const Wrapper &wrapper){
+    forEachDescendant(wrapper,
+      [&](const Wrapper &wrapper){
+        Diagram *diagram_ptr = wrapper.diagramPtr();
+
+        if (diagram_ptr) {
+          diagrams_being_removed.push_back(diagram_ptr);
+        }
+      }
+    );
+  });
 
   vector<DiagramEditorWindow *> windows_to_close;
 
-  for (auto window_ptr : diagram_editor_window_ptrs) {
-    assert(window_ptr);
+  for (Diagram *diagram_ptr : diagrams_being_removed) {
+    for (auto window_ptr : diagram_editor_window_ptrs) {
+      assert(window_ptr);
 
-    if (window_ptr->diagramPtr()==diagram_ptr) {
-      windows_to_close.push_back(window_ptr);
+      if (window_ptr->diagramPtr()==diagram_ptr) {
+        windows_to_close.push_back(window_ptr);
+      }
     }
   }
 

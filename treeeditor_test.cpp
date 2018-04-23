@@ -148,8 +148,24 @@ static void testEditingDiagramThenRemovingItem()
 }
 
 
+static void testEditingChildDiagramThenRemovingItem()
+{
+  Diagram diagram;
+  TestWrapper world;
+  TestWrapper &parent = world.createChild("parent");
+  TestWrapper &child = parent.createChild("child");
+  child.diagram_ptr = &diagram;
+  FakeTreeEditor editor;
+  editor.setWorldPtr(&world);
+  editor.userSelectsContextMenuItem("parent|child","Edit Diagram...");
+  editor.userSelectsContextMenuItem("parent","Remove");
+  assert(editor.nDiagramEditorWindows()==0);
+}
+
+
 int main()
 {
   testEditingDiagramThenClosingTheDiagramEditorWindow();
   testEditingDiagramThenRemovingItem();
+  testEditingChildDiagramThenRemovingItem();
 }
