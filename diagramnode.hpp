@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "textobject.hpp"
-#include "linetext.hpp"
 #include "nodeindex.hpp"
 
 

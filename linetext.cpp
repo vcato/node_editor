@@ -4,11 +4,13 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <functional>
 
 using std::cerr;
 using std::string;
 using std::ostringstream;
 using std::ostream;
+using std::vector;
 
 
 int lineTextInputCount(const string &text)
@@ -162,6 +164,12 @@ static bool isAssignment(const std::string &text)
 }
 
 
+static bool isReturnStatement(const std::string &text)
+{
+  return startsWith(text,"return");
+}
+
+
 static bool isNumber(const std::string &text)
 {
   int index = 0;
@@ -197,6 +205,7 @@ bool lineTextHasOutput(const std::string &text_arg)
   string text = trimmed(text_arg);
   if (text=="") return false;
   if (isAssignment(text)) return false;
+  if (isReturnStatement(text)) return false;
   if (text==")") return false;
 
   return true;
@@ -211,6 +220,158 @@ float lineTextValue(const string &line_text)
 }
 
 
+
+static bool
+  evaluateExpression(
+    Parser &parser,
+    const std::function<void(float)> &handler,
+    const vector<float> &input_values,
+    int &input_index
+  )
+{
+  float value = 0;
+
+  if (parser.getNumber(value)) {
+    handler(value);
+    return true;
+  }
+
+  if (parser.peek()=='$') {
+    float value = input_values[input_index];
+    ++input_index;
+    ++parser.index;
+    handler(value);
+    return true;
+  }
+
+  return false;
+}
+
+
+void
+  evaluateLineText(
+    const string &line_text_arg,
+    const vector<float> &input_values,
+    Executor &executor
+  )
+{
+  string line_text = trimmed(line_text_arg);
+  int input_index = 0;
+
+  if (isNumber(line_text)) {
+    float result = std::stoi(line_text);
+    executor.output(result);
+    return;
+  }
+
+  int character_index = 0;
+  Parser parser{line_text,character_index};
+  string identifier;
+
+  if (parser.getIdentifier(identifier)) {
+    if (identifier=="show") {
+      if (parser.peek()!='(') {
+        return;
+      }
+
+      ++character_index;
+
+      bool was_evaluated =
+        evaluateExpression(
+          parser,
+          [&](float result){ executor.executeShow(result); },
+          input_values,
+          input_index
+        );
+
+      if (!was_evaluated) {
+        return;
+      }
+
+      if (parser.peek()!=')') {
+        return;
+      }
+
+      ++character_index;
+
+      if (!parser.atEnd()) {
+        return;
+      }
+
+      return;
+    }
+
+    if (identifier=="return") {
+      // bool was_evaluated =
+        evaluateExpression(
+          parser,
+          [&](float result){ executor.executeReturn(result); },
+          input_values,
+          input_index
+        );
+      return;
+    }
+
+    return;
+  }
+
+  if (line_text=="$+$") {
+    float input1 = input_values[input_index++];
+    float input2 = input_values[input_index++];
+    executor.output(input1 + input2);
+    return;
+  }
+
+  if (line_text=="$") {
+    auto value = input_values[input_index];
+    ++input_index;
+    executor.output(value);
+    return;
+  }
+}
+
+
+namespace {
+struct StreamExecutor : Executor {
+  ostream &stream;
+  float output_value = 0;
+
+  StreamExecutor(ostream &stream_arg)
+  : stream(stream_arg)
+  {
+  }
+
+  void executeShow(float value)
+  {
+    stream << value << "\n";
+  }
+
+  virtual void output(float arg)
+  {
+    output_value = arg;
+  }
+
+  virtual void executeReturn(float)
+  {
+    assert(false);
+  }
+};
+}
+
+
+float
+  lineTextValue(
+    const string &line_text,
+    ostream &stream,
+    const vector<float> &input_values
+  )
+{
+  StreamExecutor executor = {stream};
+  evaluateLineText(line_text,input_values,executor);
+  return executor.output_value;
+}
+
+
 float
   lineTextValue(
     const string &line_text_arg,
@@ -218,44 +379,5 @@ float
     const float input_value
   )
 {
-  string line_text = trimmed(line_text_arg);
-
-  if (isNumber(line_text)) {
-    return std::stoi(line_text);
-  }
-
-  int index = 0;
-  Parser parser{line_text,index};
-  string identifier;
-  if (parser.getIdentifier(identifier)) {
-    if (identifier=="show") {
-      if (parser.peek()!='(') {
-        return 0;
-      }
-      ++index;
-      float value = 0;
-      if (parser.getNumber(value)) {
-        stream << value << "\n";
-      }
-      if (parser.peek()=='$') {
-        stream << input_value << "\n";
-        ++index;
-      }
-      if (parser.peek()!=')') {
-        return 0;
-      }
-      ++index;
-      if (!parser.atEnd()) {
-        return 0;
-      }
-      return 0;
-    }
-    return 0;
-  }
-
-  if (line_text=="$") {
-    return input_value;
-  }
-
-  return 0;
+  return lineTextValue(line_text_arg,stream,vector<float>{input_value});
 }

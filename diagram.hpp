@@ -20,6 +20,9 @@ class Diagram {
     NodeIndex addNode(const std::string &text);
 
     Node &createNode(NodeIndex);
+      // This creates a node with a particular index.  This is mainly useful
+      // when we are rebuilding diagrams that are read from a file where
+      // the nodes have particular indices that we need to preserve.
 
     void deleteNode(NodeIndex index);
 

@@ -7,6 +7,7 @@ LDFLAGS=`pkg-config --libs $(PACKAGES)`
 all: run_unit_tests build_manual_tests main
 
 run_unit_tests: \
+  diagramevaluation_test.pass \
   diagrameditor_test.pass \
   nodetexteditor_test.pass \
   linetext_test.pass \
@@ -55,6 +56,10 @@ moc_%.cpp: %.hpp
 %.pass: %
 	./$*
 	touch $@
+
+diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
+  linetext.o statementtext.o stringutil.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
   linetext.o diagramnode.o diagram.o circle.o statementtext.o \

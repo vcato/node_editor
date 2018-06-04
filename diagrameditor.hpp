@@ -7,7 +7,6 @@
 #include <map>
 #include "point2d.hpp"
 #include "stringutil.hpp"
-#include "linetext.hpp"
 #include "textobject.hpp"
 #include "diagramnode.hpp"
 #include "nodetexteditor.hpp"

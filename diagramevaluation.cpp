@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include "linetext.hpp"
 
 using std::ostream;
 using std::vector;
@@ -12,8 +13,12 @@ using Node = DiagramNode;
 static void
   evaluateDiagramNodeLine(
     Diagram &diagram,
-    Node &node,int line_index,int output_index,ostream &stream,
-    int source_output_index,int source_node
+    Node &node,
+    int line_index,
+    int output_index,
+    ostream &stream,
+    int source_output_index,
+    int source_node
   )
 {
   if (output_index<0) {
@@ -43,7 +48,10 @@ static void
 {
   assert(node_index>=0);
 
-  if (evaluated_flags[node_index]) return;
+  if (evaluated_flags[node_index]) {
+    return;
+  }
+
   Node &node = diagram.node(node_index);
   int n_inputs = node.inputs.size();
 
