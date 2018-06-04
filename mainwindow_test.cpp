@@ -109,6 +109,16 @@ struct FakeTreeEditor : TreeEditor {
     stringItemValueChanged(path,new_value);
   }
 
+  void userChangesNumberValue(const TreePath &path,int new_value)
+  {
+    numberItemValueChanged(path,new_value);
+  }
+
+  void userChangesNumberValue(const string &path_string,int new_value)
+  {
+    userChangesNumberValue(makePath(world(),path_string),new_value);
+  }
+
   void addMainTreeItem(const TreePath &new_item_path) override
   {
     Item &parent_item = itemFromPath(root,parentPath(new_item_path));
@@ -213,69 +223,90 @@ struct FakeWorld : World {
 }
 
 
+namespace {
+struct Tester {
+  FakeWorld world;
+  WorldWrapper world_wrapper{world};
+  FakeMainWindow main_window;
+
+  Tester()
+  {
+    main_window.setWorldPtr(&world_wrapper);
+  }
+};
+}
+
+
+static bool
+  containsBody(const FakeSceneTree &scene_tree,const string &body_name)
+{
+  // This is over-specific.  It can be changed later if needed.
+  return scene_tree.root.children[0].label == body_name;
+}
+
 static void testAddingABodyToTheScene()
 {
-  FakeWorld world;
-  WorldWrapper world_wrapper(world);
-  FakeMainWindow main_window;
-  main_window.setWorldPtr(&world_wrapper);
+  Tester tester;
+
+  FakeMainWindow &main_window = tester.main_window;
+  FakeWorld &world = tester.world;
+  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeSceneTree &scene_tree = world.scene_window.tree_member;
+  FakeSceneViewer &scene_viewer = world.scene_window.viewer_member;
 
   // User executes Add Scene in the tree editor.
-  main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
+  tree_editor.userSelectsContextMenuItem("Add Scene");
 
-  world.scene_window.viewer_member.redraw_count = 0;
+  scene_viewer.redraw_count = 0;
 
   // User selects Add Body on the scene.
-  TreePath scene_path = makePath(world_wrapper,"Scene1");
-  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
 
-  // Assert the scene window shows a body in the tree.
-  assert(world.scene_window.tree_member.root.children[0].label=="Body1");
-
-  // Assert the scene viewer was redrawn.
-  assert(world.scene_window.viewer_member.redraw_count==1);
+  assert(containsBody(scene_tree,"Body1"));
+  assert(scene_viewer.redraw_count==1);
 
   // User collapses the item for the first body
-  world.scene_window.tree_member.root.children[0].is_expanded = false;
+  scene_tree.root.children[0].is_expanded = false;
 
   // User adds another body.
-  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
 
   // Assert that the first body is still collapsed and the new body
   // is expanded.
-  assert(world.scene_window.tree_member.root.children[0].is_expanded == false);
-  assert(world.scene_window.tree_member.root.children[1].is_expanded == true);
-  assert(world.scene_window.tree_member.root.children.size()==2);
+  assert(scene_tree.root.children[0].is_expanded == false);
+  assert(scene_tree.root.children[1].is_expanded == true);
+  assert(scene_tree.root.children.size()==2);
 }
 
 
 static void testAddingABodyToABody()
 {
-  FakeWorld world;
-  WorldWrapper world_wrapper(world);
-  FakeMainWindow main_window;
-  main_window.setWorldPtr(&world_wrapper);
+  Tester tester;
+
+  FakeWorld &world = tester.world;
+  FakeMainWindow &main_window = tester.main_window;
+  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeSceneWindow &scene_window = world.scene_window;
+  FakeSceneTree &scene_tree = scene_window.tree_member;
 
   // User executes Add Scene in the tree editor.
-  main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
+  tree_editor.userSelectsContextMenuItem("Add Scene");
 
   // User selects Add Body on the scene.
-  TreePath scene_path = makePath(world_wrapper,"Scene1");
-  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
 
   {
     string label_for_first_child_of_body =
-      world.scene_window.tree_member.root.children[0].children[0].label;
+      scene_tree.root.children[0].children[0].label;
     assert(label_for_first_child_of_body=="Position:");
   }
 
   // User selects Add Body on the body.
-  TreePath body_path = makePath(world_wrapper,"Scene1|Body");
-  main_window.tree_editor.userSelectsContextMenuItem(body_path,"Add Body");
+  tree_editor.userSelectsContextMenuItem("Scene1|Body","Add Body");
 
   {
     string label_for_first_child_of_body =
-      world.scene_window.tree_member.root.children[0].children[0].label;
+      scene_tree.root.children[0].children[0].label;
     assert(label_for_first_child_of_body=="Position:");
   }
 }
@@ -283,52 +314,51 @@ static void testAddingABodyToABody()
 
 static void testRemovingAMotionPass()
 {
-  FakeWorld world;
-  WorldWrapper world_wrapper(world);
-  FakeMainWindow main_window;
-  main_window.setWorldPtr(&world_wrapper);
+  Tester tester;
+
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.world_wrapper;
+  FakeMainWindow &main_window = tester.main_window;
+  FakeTreeEditor &tree_editor = main_window.tree_editor;
 
   // User executes Add Charmapper in the tree editor.
-  main_window.tree_editor.userSelectsContextMenuItem("Add Charmapper");
-  TreePath charmapper_path = makePath(world_wrapper,"Charmapper1");
+  tree_editor.userSelectsContextMenuItem("Add Charmapper");
 
   // User executes Add Motion Pass on the charmapper.
-  main_window.tree_editor.userSelectsContextMenuItem(
-    charmapper_path,"Add Motion Pass"
-  );
+  tree_editor.userSelectsContextMenuItem("Charmapper1","Add Motion Pass");
   TreePath motion_pass_path = makePath(world_wrapper,"Charmapper1|Motion Pass");
 
   // Check that the charmapper has one child.
   assert(world.charmapperMember(0).charmapper.nPasses()==1);
 
   // User executes Remove on the motion pass.
-  main_window.tree_editor.userSelectsContextMenuItem(motion_pass_path,"Remove");
+  tree_editor.userSelectsContextMenuItem(motion_pass_path,"Remove");
 
   // Check that the charmapper has no children.
   assert(world.charmapperMember(0).charmapper.nPasses()==0);
 
   // Check that the item was removed from the tree editor.
-  assert(main_window.tree_editor.root.children[0].childCount()==0);
+  assert(tree_editor.root.children[0].childCount()==0);
 }
 
 
 static void testChangingABodyName()
 {
-  FakeWorld world;
-  WorldWrapper world_wrapper(world);
-  FakeMainWindow main_window;
-  main_window.setWorldPtr(&world_wrapper);
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.world_wrapper;
+  FakeMainWindow &main_window = tester.main_window;
+  FakeTreeEditor &tree_editor = main_window.tree_editor;
 
   // User executes Add Scene in the tree editor.
-  main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
-  TreePath scene_path = makePath(world_wrapper,"Scene1");
+  tree_editor.userSelectsContextMenuItem("Add Scene");
 
   // User selects Add Body on the scene.
-  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
 
   // User changes the body name.
   TreePath body_name_path = makePath(world_wrapper,"Scene1|Body|name");
-  main_window.tree_editor.userChangesStringValue(body_name_path,"Test");
+  tree_editor.userChangesStringValue(body_name_path,"Test");
 
   // Assert the scene window shows the new body name.
   assert(world.scene_window.tree_member.root.children[0].label=="Test");
@@ -337,61 +367,106 @@ static void testChangingABodyName()
 
 static void testRemovingABody()
 {
-  FakeWorld world;
-  WorldWrapper world_wrapper(world);
-  FakeMainWindow main_window;
-  main_window.setWorldPtr(&world_wrapper);
+  Tester tester;
+  FakeWorld &world = tester.world;
+  FakeMainWindow &main_window = tester.main_window;
+  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeSceneWindow &scene_window = world.scene_window;
 
   // User executes Add Scene in the tree editor.
-  main_window.tree_editor.userSelectsContextMenuItem("Add Scene");
-  TreePath scene_path = makePath(world_wrapper,"Scene1");
+  tree_editor.userSelectsContextMenuItem("Add Scene");
 
   // User selects Add Body on the scene.
-  main_window.tree_editor.userSelectsContextMenuItem(scene_path,"Add Body");
-  TreePath body_path = makePath(world_wrapper,"Scene1|Body");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
   assert(world.sceneMember(0).scene.bodies().size()==1);
-  assert(world.scene_window.tree_member.root.children.size()==1);
+  assert(scene_window.tree_member.root.children.size()==1);
 
-  world.scene_window.viewer_member.redraw_count = 0;
+  scene_window.viewer_member.redraw_count = 0;
 
   // User selects Remove on the body.
-  main_window.tree_editor.userSelectsContextMenuItem(body_path,"Remove");
+  tree_editor.userSelectsContextMenuItem("Scene1|Body","Remove");
 
   // Assert that the body was removed from the scene.
   assert(world.sceneMember(0).scene.bodies().size()==0);
 
   // Assert the body was removed from the tree editor.
-  assert(main_window.tree_editor.root.children[0].children.size()==0);
+  assert(tree_editor.root.children[0].children.size()==0);
 
   // Assert the body was removed from the scene window tree.
-  assert(world.scene_window.tree_member.root.children.size()==0);
+  assert(scene_window.tree_member.root.children.size()==0);
 
   // Assert that the scene window viewer was redrawn.
-  assert(world.scene_window.viewer_member.redraw_count==1);
+  assert(scene_window.viewer_member.redraw_count==1);
 }
 
 
 static void testRemovingAPosExpr()
 {
-  FakeWorld world;
-  WorldWrapper world_wrapper(world);
-  FakeMainWindow main_window;
-  main_window.setWorldPtr(&world_wrapper);
+  Tester tester;
+  FakeTreeEditor &tree_editor = tester.main_window.tree_editor;
 
-  main_window.tree_editor.userSelectsContextMenuItem("Add Charmapper");
-  main_window.tree_editor.userSelectsContextMenuItem(
+  tree_editor.userSelectsContextMenuItem(
+    "Add Charmapper"
+  );
+  tree_editor.userSelectsContextMenuItem(
     "Charmapper1","Add Motion Pass"
   );
-  main_window.tree_editor.userSelectsContextMenuItem(
+  tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass","Add Pos Expr"
   );
-  main_window.tree_editor.userSelectsContextMenuItem(
+  tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass|Pos Expr","Edit Diagram..."
   );
-  main_window.tree_editor.userSelectsContextMenuItem(
+  tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass|Pos Expr","Remove"
   );
 }
+
+
+#if 0
+static void testCreatingABodyWithAnAveragePosition()
+{
+  Tester tester;
+  //WorldWrapper &world_wrapper = tester.world_wrapper;
+  FakeMainWindow &main_window = tester.main_window;
+  FakeTreeEditor &tree_editor = main_window.tree_editor;
+
+  tree_editor.userSelectsContextMenuItem("Add Scene");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
+  tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
+  tree_editor.userSelectsContextMenuItem("Add Charmapper");
+  tree_editor.userSelectsContextMenuItem("Charmapper1","Add Motion Pass");
+  tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Motion Pass","Add Pos Expr"
+  );
+  tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Motion Pass|Pos Expr|Global Position","Edit Diagram..."
+  );
+  assert(tree_editor.diagram_editor_windows[0]);
+  FakeDiagramEditor &diagram_editor =
+    tree_editor.diagram_editor_windows[0]->diagram_editor;
+  int body1_node_index =
+    diagram_editor.userAddsANodeWithText("Scene1:Body1.position");
+  int body2_node_index =
+    diagram_editor.userAddsANodeWithText("Scene1:Body2.position");
+  int add_node = diagram_editor.userAddsANodeWithText("$+$");
+  diagram_editor.userConnects(body1_node_index,0,add_node,0);
+  diagram_editor.userConnects(body2_node_index,0,add_node,1);
+  int divide_node = diagram_editor.userAddsANodeWithText("$/2");
+  diagram_editor.userConnects(add_node,0,divide_node,0);
+  int return_node = diagram_editor.userAddsANodeWithText("return $");
+  diagram_editor.userConnects(divide_node,0,return_node,0);
+
+  tree_editor.userChangesNumberValue("Scene1|Body-1|position|x",2);
+  tree_editor.userChangesNumberValue("Scene1|Body-2|position|x",4);
+
+  FakeWorld &world = tester.world;;
+  Scene::Body &body3 = world.sceneMember(0).scene.bodies()[2];
+  Scene::Frame &frame = world.sceneMember(0).scene.displayFrame();
+  assert(body3.position.x(frame)==3);
+}
+#endif
 
 
 int main()
@@ -402,4 +477,5 @@ int main()
   testChangingABodyName();
   testRemovingABody();
   testRemovingAPosExpr();
+  // testCreatingABodyWithAnAveragePosition();
 }

@@ -3,6 +3,7 @@
 #include <iostream>
 #include "defaultdiagrams.hpp"
 #include "removefrom.hpp"
+#include "diagramevaluation.hpp"
 
 
 using std::make_unique;
@@ -127,6 +128,8 @@ void Charmapper::apply()
         Point2D new_position(0,0);
 
         if (expr.global_position.isComponents()) {
+          Diagram &diagram = expr.global_position.diagram;
+          evaluateDiagram(diagram);
           new_position = makePoint2D(expr.global_position.components());
         }
         else if (expr.global_position.isFromBody()) {

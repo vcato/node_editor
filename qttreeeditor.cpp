@@ -359,16 +359,7 @@ void
   )
 {
   assert(item_ptr);
-
-  TreePath path = itemPath(*item_ptr);
-
-  visitNumericSubWrapper(
-    world(),
-    path,
-    [&](const NumericWrapper &numeric_wrapper){
-      numeric_wrapper.setValue(value);
-    }
-  );
+  numberItemValueChanged(itemPath(*item_ptr),value);
 }
 
 

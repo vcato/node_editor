@@ -174,22 +174,32 @@ static vector<string> split(const string &arg)
 }
 
 
-static int indexOfChildWithLabel(const Wrapper &wrapper,const string &label)
+static int
+  indexOfChildWithLabel(
+    const Wrapper &wrapper,
+    const string &label,
+    int which_occurance
+  )
 {
   int index = -1;
   int n_children = wrapper.nChildren();
+  int occurance = 0;
 
   for (int i=0; i!=n_children; ++i) {
     wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){
       if (child_wrapper.label()==label) {
-        assert(index==-1);
-        index = i;
+        ++occurance;
+
+        if (occurance==which_occurance) {
+          assert(index==-1);
+          index = i;
+        }
       }
     });
   }
 
   if (index<0) {
-    cerr << "Couldn't find label '" << label << "'\n";
+    cerr << "Couldn't find label '" << label << "'-" << which_occurance << "\n";
 
     for (int i=0; i!=n_children; ++i) {
       wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){
@@ -200,6 +210,21 @@ static int indexOfChildWithLabel(const Wrapper &wrapper,const string &label)
   }
 
   return index;
+}
+
+
+static int indexOfChildWithLabel(const Wrapper &wrapper,const string &label)
+{
+  auto index = label.find('-');
+
+  if (index!=label.npos) {
+    const string &base_label = label.substr(0,index);
+    const string &occurance_string = label.substr(index+1);
+    int occurance = std::stoi(occurance_string);
+    return indexOfChildWithLabel(wrapper,base_label,occurance);
+  }
+
+  return indexOfChildWithLabel(wrapper,label,1);
 }
 
 

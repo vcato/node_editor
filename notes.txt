@@ -260,3 +260,9 @@ Need to be able to copy diagram nodes by ctrl-dragging.
 
 May want to consider creating an abstract tree widget class.
   Could be used as a tree observer.
+
+Charmapper::apply() has an evaluateDiagram(), but it needs to use one that
+takes a visitor which handles various types of returns.
+
+We need an evaluateDiagram that takes a visitor which handles
+returns.  This way, we can have returns of various types.

@@ -106,6 +106,18 @@ void
 }
 
 
+void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
+{
+  visitNumericSubWrapper(
+    world(),
+    path,
+    [&](const NumericWrapper &numeric_wrapper){
+      numeric_wrapper.setValue(value);
+    }
+  );
+}
+
+
 void TreeEditor::addTreeItem(const TreePath &new_item_path)
 {
   addMainTreeItem(new_item_path);

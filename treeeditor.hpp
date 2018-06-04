@@ -19,6 +19,7 @@ struct TreeEditor {
     void setEnumerationIndex(const TreePath &path,int index);
     void executeOperation(const TreePath &,int operation_index);
     void stringItemValueChanged(const TreePath &path,const std::string &value);
+    void numberItemValueChanged(const TreePath &path,int value);
     void addTreeItem(const TreePath &new_item_path);
     void addChildTreeItems(const TreePath &parent_path);
     void diagramEditorClosed(DiagramEditorWindow &);
