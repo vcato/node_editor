@@ -14,7 +14,9 @@ using std::vector;
 static float lineTextValue(const char *text,float input_value)
 {
   ostringstream stream;
-  float result = lineTextValue(text,stream,input_value);
+  StreamExecutor executor = {stream};
+  evaluateLineText(text,vector<float>{input_value},executor);
+  float result = executor.output_value;
   string output = stream.str();
   assert(output=="");
   return result;
@@ -24,7 +26,9 @@ static float lineTextValue(const char *text,float input_value)
 static float lineTextValue(const char *text,vector<float> input_values)
 {
   ostringstream stream;
-  float result = lineTextValue(text,stream,input_values);
+  StreamExecutor executor = {stream};
+  evaluateLineText(text,input_values,executor);
+  float result = executor.output_value;
   string output = stream.str();
   assert(output=="");
   return result;
@@ -55,6 +59,16 @@ struct FakeExecutor : Executor {
   {
   }
 };
+}
+
+
+static float lineTextValue(const string &line_text)
+{
+  ostringstream dummy_stream;
+  float input_value = 0;
+  StreamExecutor executor = {dummy_stream};
+  evaluateLineText(line_text,vector<float>{input_value},executor);
+  return executor.output_value;
 }
 
 

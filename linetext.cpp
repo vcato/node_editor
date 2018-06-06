@@ -2,14 +2,11 @@
 
 #include <cassert>
 #include <algorithm>
-#include <iostream>
 #include <sstream>
 #include <functional>
 
 using std::cerr;
 using std::string;
-using std::ostringstream;
-using std::ostream;
 using std::vector;
 
 
@@ -212,15 +209,6 @@ bool lineTextHasOutput(const std::string &text_arg)
 }
 
 
-float lineTextValue(const string &line_text)
-{
-  ostringstream dummy_stream;
-  float input_value = 0;
-  return lineTextValue(line_text,dummy_stream,input_value);
-}
-
-
-
 static bool
   evaluateExpression(
     Parser &parser,
@@ -328,56 +316,4 @@ void
     executor.output(value);
     return;
   }
-}
-
-
-namespace {
-struct StreamExecutor : Executor {
-  ostream &stream;
-  float output_value = 0;
-
-  StreamExecutor(ostream &stream_arg)
-  : stream(stream_arg)
-  {
-  }
-
-  void executeShow(float value)
-  {
-    stream << value << "\n";
-  }
-
-  virtual void output(float arg)
-  {
-    output_value = arg;
-  }
-
-  virtual void executeReturn(float)
-  {
-    assert(false);
-  }
-};
-}
-
-
-float
-  lineTextValue(
-    const string &line_text,
-    ostream &stream,
-    const vector<float> &input_values
-  )
-{
-  StreamExecutor executor = {stream};
-  evaluateLineText(line_text,input_values,executor);
-  return executor.output_value;
-}
-
-
-float
-  lineTextValue(
-    const string &line_text_arg,
-    ostream &stream,
-    const float input_value
-  )
-{
-  return lineTextValue(line_text_arg,stream,vector<float>{input_value});
 }

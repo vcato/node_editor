@@ -271,7 +271,3 @@ The Executor in lineText needs to handle returns of lists.
 
 diagramevaluation.cpp evaluateDiagramNodeLine needs to work with an
   executor so it can handle returns.
-
-Start factoring the StreamExecutor out of linetext.cpp: make the callers
-  create a stream executor and pass that in instead of passing in a
-  stream directly.
