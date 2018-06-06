@@ -271,3 +271,7 @@ The Executor in lineText needs to handle returns of lists.
 
 diagramevaluation.cpp evaluateDiagramNodeLine needs to work with an
   executor so it can handle returns.
+
+Currently, the output is going to the Executor, but I don't think that
+is right.  evaluateLineText() probably needs to return the output value
+which will be type-erased.
