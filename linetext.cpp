@@ -236,7 +236,7 @@ static bool
 }
 
 
-void
+float
   evaluateLineText(
     const string &line_text_arg,
     const vector<float> &input_values,
@@ -248,8 +248,7 @@ void
 
   if (isNumber(line_text)) {
     float result = std::stoi(line_text);
-    executor.output(result);
-    return;
+    return result;
   }
 
   int character_index = 0;
@@ -259,7 +258,7 @@ void
   if (parser.getIdentifier(identifier)) {
     if (identifier=="show") {
       if (parser.peek()!='(') {
-        return;
+        return 0;
       }
 
       ++character_index;
@@ -273,20 +272,20 @@ void
         );
 
       if (!was_evaluated) {
-        return;
+        return 0;
       }
 
       if (parser.peek()!=')') {
-        return;
+        return 0;
       }
 
       ++character_index;
 
       if (!parser.atEnd()) {
-        return;
+        return 0;
       }
 
-      return;
+      return 0;
     }
 
     if (identifier=="return") {
@@ -297,23 +296,23 @@ void
           input_values,
           input_index
         );
-      return;
+      return 0;
     }
 
-    return;
+    return 0;
   }
 
   if (line_text=="$+$") {
     float input1 = input_values[input_index++];
     float input2 = input_values[input_index++];
-    executor.output(input1 + input2);
-    return;
+    return input1 + input2;
   }
 
   if (line_text=="$") {
     auto value = input_values[input_index];
     ++input_index;
-    executor.output(value);
-    return;
+    return value;
   }
+
+  return 0;
 }

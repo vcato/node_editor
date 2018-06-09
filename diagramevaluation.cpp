@@ -34,8 +34,7 @@ static void
   Node::Line &line = node.lines[line_index];
   Node::Output &output = node.outputs[output_index];
 
-  evaluateLineText(line.text,vector<float>{input_value},executor);
-  output.value = executor.output_value;
+  output.value = evaluateLineText(line.text,vector<float>{input_value},executor);
 }
 
 

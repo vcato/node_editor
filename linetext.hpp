@@ -15,9 +15,6 @@ extern int lineTextInputCount(const std::string &text);
 struct Executor {
   virtual void executeShow(float) = 0;
   virtual void executeReturn(float) = 0;
-  virtual void output(float arg) { output_value = arg; }
-
-  float output_value = 0;
 };
 
 
@@ -41,7 +38,7 @@ struct StreamExecutor : Executor {
 };
 
 
-extern void
+extern float
   evaluateLineText(
     const std::string &line_text,
     const std::vector<float> &input_values,
