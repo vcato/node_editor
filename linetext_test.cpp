@@ -94,4 +94,12 @@ int main()
     string execution = executor.stream.str();
     assert(execution=="return(3)\n");
   }
+#if 0
+  {
+    FakeExecutor executor;
+    evaluateLineText("return [1,2]",{},executor);
+    string execution = executor.stream.str();
+    assert(execution=="return([1,2])\n");
+  }
+#endif
 }

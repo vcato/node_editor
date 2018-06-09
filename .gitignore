@@ -22,4 +22,5 @@ qtscenewindow_manualtest
 qtdiagrameditorwindow_manualtest
 mainwindow_test
 treeeditor_test
+optional_test
 diagramevaluation_test

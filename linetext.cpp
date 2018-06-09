@@ -48,6 +48,27 @@ static bool isWhitespace(char c)
 
 
 namespace {
+struct Any {
+  enum Type {
+    void_type,
+    float_type
+  };
+
+  union {
+    float float_value;
+  };
+
+  Any()
+  : type(void_type)
+  {
+  }
+
+  Type type;
+};
+}
+
+
+namespace {
 struct Parser {
   const std::string &text;
   int &index;
@@ -80,6 +101,13 @@ struct Parser {
       ++index;
     }
 
+    return true;
+  }
+
+  bool skipChar()
+  {
+    assert(!atEnd());
+    ++index;
     return true;
   }
 
@@ -209,10 +237,16 @@ bool lineTextHasOutput(const std::string &text_arg)
 }
 
 
+namespace {
+struct ValueFunction {
+  virtual void operator()(float) const = 0;
+};
+}
+
 static bool
   evaluateExpression(
     Parser &parser,
-    const std::function<void(float)> &handler,
+    const ValueFunction &handler,
     const vector<float> &input_values,
     int &input_index
   )
@@ -230,6 +264,16 @@ static bool
     ++parser.index;
     handler(value);
     return true;
+  }
+
+  if (parser.peek()=='[') {
+    parser.skipChar();
+
+    if (parser.peek()==']') {
+      assert(false);
+    }
+
+    assert(false);
   }
 
   return false;
@@ -263,10 +307,24 @@ float
 
       ++character_index;
 
+      struct ShowFunction : ValueFunction {
+        Executor &executor;
+
+        ShowFunction(Executor &executor_arg)
+        : executor(executor_arg)
+        {
+        }
+
+        void operator()(float arg) const
+        {
+          executor.executeShow(arg);
+        }
+      };
+
       bool was_evaluated =
         evaluateExpression(
           parser,
-          [&](float result){ executor.executeShow(result); },
+          ShowFunction{executor},
           input_values,
           input_index
         );
@@ -289,10 +347,24 @@ float
     }
 
     if (identifier=="return") {
+      struct ReturnFunction : ValueFunction {
+        Executor &executor;
+
+        ReturnFunction(Executor &executor_arg)
+        : executor(executor_arg)
+        {
+        }
+
+        void operator()(float arg) const
+        {
+          executor.executeReturn(arg);
+        }
+      };
+
       // bool was_evaluated =
         evaluateExpression(
           parser,
-          [&](float result){ executor.executeReturn(result); },
+          ReturnFunction{executor},
           input_values,
           input_index
         );
