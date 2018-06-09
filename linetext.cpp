@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <sstream>
 #include <functional>
+#include "any.hpp"
+
+
 
 using std::cerr;
 using std::string;
@@ -44,27 +47,6 @@ static bool isWhitespace(char c)
 {
   if (c==' ') return true;
   return false;
-}
-
-
-namespace {
-struct Any {
-  enum Type {
-    void_type,
-    float_type
-  };
-
-  union {
-    float float_value;
-  };
-
-  Any()
-  : type(void_type)
-  {
-  }
-
-  Type type;
-};
 }
 
 
@@ -239,7 +221,7 @@ bool lineTextHasOutput(const std::string &text_arg)
 
 namespace {
 struct ValueFunction {
-  virtual void operator()(float) const = 0;
+  virtual void operator()(const Any &) const = 0;
 };
 }
 
@@ -315,9 +297,16 @@ float
         {
         }
 
-        void operator()(float arg) const
+        void operator()(const Any &arg) const
         {
-          executor.executeShow(arg);
+          switch (arg.type) {
+            case Any::float_type:
+              executor.executeShow(arg.as<float>());
+              break;
+            case Any::void_type:
+              assert(false);
+              break;
+          }
         }
       };
 
@@ -355,9 +344,16 @@ float
         {
         }
 
-        void operator()(float arg) const
+        void operator()(const Any& arg) const
         {
-          executor.executeReturn(arg);
+          switch (arg.type) {
+            case Any::void_type:
+              assert(false);
+              break;
+            case Any::float_type:
+              executor.executeReturn(arg.as<float>());
+              break;
+          }
         }
       };
 
