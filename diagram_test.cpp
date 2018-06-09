@@ -3,12 +3,23 @@
 #include <cassert>
 #include <sstream>
 #include "diagramevaluation.hpp"
+#include "streamexecutor.hpp"
 
 
 using std::ostringstream;
 using std::ostream;
 using std::string;
 using std::cerr;
+
+
+
+
+static void evaluateDiagram(Diagram &diagram)
+{
+  ostringstream dummy_stream;
+  StreamExecutor executor(dummy_stream);
+  evaluateDiagram(diagram,executor);
+}
 
 
 static void testEvaluation1()
@@ -31,7 +42,8 @@ static void testEvaluation2()
 
 static void evaluate(Diagram &diagram,ostream &stream)
 {
-  evaluateDiagram(diagram,stream);
+  StreamExecutor executor(stream);
+  evaluateDiagram(diagram,executor);
 }
 
 

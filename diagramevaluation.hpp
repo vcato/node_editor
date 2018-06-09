@@ -1,6 +1,6 @@
 #include <iostream>
 #include "diagram.hpp"
+#include "executor.hpp"
 
 
-extern void evaluateDiagram(Diagram &diagram);
-extern void evaluateDiagram(Diagram &diagram,std::ostream &stream);
+extern void evaluateDiagram(Diagram &,Executor &);

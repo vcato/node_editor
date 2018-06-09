@@ -264,14 +264,7 @@ May want to consider creating an abstract tree widget class.
 Charmapper::apply() has an evaluateDiagram(), but it needs to use one that
 takes a visitor which handles various types of returns.
 
-We need an evaluateDiagram that takes a visitor which handles
-returns.  This way, we can have returns of various types.
-
 The Executor in lineText needs to handle returns of lists.
 
 diagramevaluation.cpp evaluateDiagramNodeLine needs to work with an
   executor so it can handle returns.
-
-Currently, the output is going to the Executor, but I don't think that
-is right.  evaluateLineText() probably needs to return the output value
-which will be type-erased.

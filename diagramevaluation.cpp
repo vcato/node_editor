@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sstream>
 #include "linetext.hpp"
+#include "streamexecutor.hpp"
 
 using std::ostream;
 using std::vector;
@@ -43,7 +44,7 @@ static void
     Diagram &diagram,
     int node_index,
     vector<bool> &evaluated_flags,
-    ostream &stream
+    Executor &executor
   )
 {
   assert(node_index>=0);
@@ -59,7 +60,9 @@ static void
     int source_node_index = node.inputs[i].source_node_index;
 
     if (source_node_index>=0) {
-      updateNodeEvaluation(diagram,source_node_index,evaluated_flags,stream);
+      updateNodeEvaluation(
+        diagram,source_node_index,evaluated_flags,executor
+      );
     }
   }
 
@@ -83,8 +86,6 @@ static void
       next_input_index += node.lines[i].n_inputs;
     }
 
-    StreamExecutor executor = {stream};
-
     evaluateDiagramNodeLine(
       diagram,
       node,
@@ -100,19 +101,12 @@ static void
 }
 
 
-void evaluateDiagram(Diagram &diagram,ostream &stream)
+void evaluateDiagram(Diagram &diagram,Executor &executor)
 {
   int n_nodes = diagram.nNodes();
   vector<bool> evaluated_flags(n_nodes,false);
 
   for (auto i : diagram.existingNodeIndices()) {
-    updateNodeEvaluation(diagram,i,evaluated_flags,stream);
+    updateNodeEvaluation(diagram,i,evaluated_flags,executor);
   }
-}
-
-
-void evaluateDiagram(Diagram &diagram)
-{
-  ostringstream dummy_stream;
-  evaluateDiagram(diagram,dummy_stream);
 }

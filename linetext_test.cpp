@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "streamexecutor.hpp"
 
 
 using std::ostringstream;

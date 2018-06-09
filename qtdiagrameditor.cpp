@@ -9,6 +9,7 @@
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
 #include "draw.hpp"
+#include "streamexecutor.hpp"
 
 
 using std::cerr;
@@ -600,5 +601,6 @@ void QtDiagramEditor::paintGL()
     );
   }
 
-  evaluateDiagram(diagram(),cerr);
+  StreamExecutor executor(cerr);
+  evaluateDiagram(diagram(),executor);
 }
