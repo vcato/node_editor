@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sstream>
 #include "statementtext.hpp"
+#include "linetext.hpp"
 
 
 using std::vector;

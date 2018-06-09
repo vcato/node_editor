@@ -12,6 +12,8 @@ using Label = CharmapperWrapper::Label;
 
 namespace {
 struct MotionPassWrapper : VoidWrapper {
+  private: using Self = MotionPassWrapper;
+  public:
   using MotionPass = Charmapper::MotionPass;
   using Position = Charmapper::Position;
   using PosExpr = MotionPass::PosExpr;
@@ -231,7 +233,7 @@ struct MotionPassWrapper : VoidWrapper {
       setValue(
         const TreePath &path,
         int index,
-        OperationHandler &operation_handler
+        TreeObserver &tree_observer
       ) const
     {
       switch (index) {
@@ -239,14 +241,14 @@ struct MotionPassWrapper : VoidWrapper {
           // Components
           {
             global_position.switchToComponents();
-            operation_handler.replaceTreeItems(path);
+            tree_observer.itemReplaced(path);
           }
           break;
         case 1:
           // From Body
           {
             global_position.switchToFromBody();
-            operation_handler.replaceTreeItems(path);
+            tree_observer.itemReplaced(path);
           }
           break;
         default:
@@ -285,11 +287,11 @@ struct MotionPassWrapper : VoidWrapper {
 
     void
       handleSceneChange(
-        const Wrapper::OperationHandler &operation_handler,
+        const Wrapper::TreeObserver &tree_observer,
         const TreePath &path_of_this
       ) const
     {
-      operation_handler.changeEnumerationValues(path_of_this);
+      tree_observer.enumarationValuesChanged(path_of_this);
     }
 
     vector<string> enumerationNames() const override
@@ -305,7 +307,7 @@ struct MotionPassWrapper : VoidWrapper {
       setValue(
         const TreePath &,
         int index,
-        OperationHandler &
+        TreeObserver &
       ) const override
     {
       assert(index>=0);
@@ -321,38 +323,78 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct PosExprWrapper : NoOperationWrapper<VoidWrapper> {
-    PosExpr &pos_expr;
+  struct PosExprWrapper : VoidWrapper {
+    MotionPass &motion_pass;
+    int index;
     const Callbacks &callbacks;
 
     PosExprWrapper(
-      PosExpr &pos_expr_arg,
+      MotionPass &motion_pass_arg,
+      int index_arg,
       const Callbacks &callbacks_arg
     )
-    : pos_expr(pos_expr_arg),
+    : motion_pass(motion_pass_arg),
+      index(index_arg),
       callbacks(callbacks_arg)
     {
     }
 
+    PosExpr &posExpr() const
+    {
+      return motion_pass.expr(index);
+    }
+
     Diagram *diagramPtr() const override
     {
-      return &pos_expr.diagram;
+      return &posExpr().diagram;
+    }
+
+    void
+      executeRemoveOperation(
+        const TreePath &path,
+        TreeObserver &tree_observer
+      ) const
+    {
+      tree_observer.itemRemoved(path);
+      motion_pass.removePosExpr(index);
+    }
+
+    virtual std::vector<OperationName> operationNames() const
+    {
+      return {"Remove"};
+    }
+
+    virtual void
+      executeOperation(
+        int operation_index,
+        const TreePath &path,
+        TreeObserver &tree_observer
+      ) const
+    {
+      if (operation_index==0) {
+        executeRemoveOperation(path,tree_observer);
+        return;
+      }
+
+      assert(false);
     }
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
     {
       if (child_index==0) {
         // Target body
-        visitor(BodyWrapper("Target Body",pos_expr.target_body_link,callbacks));
+        visitor(
+          BodyWrapper("Target Body",posExpr().target_body_link,callbacks)
+        );
       }
       else if (child_index==1) {
         visitor(
-          PositionWrapper(pos_expr.local_position,"Local Position",callbacks)
+          PositionWrapper(posExpr().local_position,"Local Position",callbacks)
         );
       }
       else if (child_index==2) {
         visitor(
-          GlobalPositionWrapper(pos_expr.global_position,callbacks)
+          GlobalPositionWrapper(posExpr().global_position,callbacks)
         );
       }
       else {
@@ -384,41 +426,74 @@ struct MotionPassWrapper : VoidWrapper {
   {
   }
 
-  virtual std::vector<std::string> operationNames() const
+  void
+    addPosExprOperation(
+      const TreePath &path,
+      TreeObserver &tree_observer
+    ) const
   {
-    return { "Add Pos Expr", "Remove" };
+    int index = motion_pass.nExprs();
+    motion_pass.addPosExpr();
+    tree_observer.itemAdded(join(path,index));
+  }
+
+  void
+    removeOperation(
+      const TreePath &path,
+      TreeObserver &tree_observer
+    ) const
+  {
+    charmapper.removePass(pass_index);
+    tree_observer.itemRemoved(path);
+  }
+
+  struct OperationTableEntry {
+    const char *name;
+    void (Self::*method)(const TreePath &,TreeObserver &) const;
+  };
+
+  using OperationTable = std::vector<OperationTableEntry>;
+
+  static OperationTable operationTable()
+  {
+    return {
+      {"Add Pos Expr",&Self::addPosExprOperation},
+      {"Remove",      &Self::removeOperation}
+    };
+  }
+
+  static std::vector<std::string>
+    operationNamesOf(const OperationTable &table)
+  {
+    std::vector<std::string> names;
+    names.reserve(table.size());
+
+    for (auto &entry : table) {
+      names.push_back(entry.name);
+    }
+
+    return names;
+  }
+
+  std::vector<std::string> operationNames() const override
+  {
+    return operationNamesOf(operationTable());
   }
 
   void
     executeOperation(
       int operation_index,
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &tree_observer
     ) const override
   {
-    switch (operation_index) {
-      case 0:
-        {
-          int index = motion_pass.nExprs();
-          motion_pass.addPosExpr();
-          handler.addItem(join(path,index));
-        }
-        return;
-      case 1:
-        {
-          charmapper.removePass(pass_index);
-          handler.removeItem(path);
-        }
-        return;
-    }
-
-    assert(false);
+    auto method = operationTable()[operation_index].method;
+    return (this ->* method)(path,tree_observer);
   }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
-    PosExpr &pos_expr = motion_pass.expr(child_index);
-    visitor(PosExprWrapper(pos_expr,callbacks));
+    visitor(PosExprWrapper(motion_pass,child_index,callbacks));
   }
 
   virtual Label label() const
@@ -436,7 +511,7 @@ struct MotionPassWrapper : VoidWrapper {
 
 std::vector<std::string> CharmapperWrapper::operationNames() const
 {
-  return { "Add Motion Pass" };
+  return { "Add Motion Pass", "Remove" };
 }
 
 
@@ -444,7 +519,7 @@ void
   CharmapperWrapper::executeOperation(
     int operation_index,
     const TreePath &path,
-    OperationHandler &handler
+    TreeObserver &tree_observer
   ) const
 {
   switch (operation_index) {
@@ -452,7 +527,13 @@ void
       {
         int index = charmapper.nPasses();
         charmapper.addMotionPass();
-        handler.addItem(join(path,index));
+        tree_observer.itemAdded(join(path,index));
+      }
+      return;
+    case 1:
+      {
+        tree_observer.itemRemoved(path);
+        callbacks.removeCharmapper();
       }
       return;
   }
@@ -499,7 +580,7 @@ static void
 
 void
   CharmapperWrapper::handleSceneChange(
-    const OperationHandler &operation_handler,
+    const TreeObserver &tree_observer,
     const TreePath &path_of_this
   )
 {
@@ -515,7 +596,7 @@ void
 
       if (body_wrapper_ptr) {
         body_wrapper_ptr->handleSceneChange(
-          operation_handler,path_of_sub_wrapper
+          tree_observer,path_of_sub_wrapper
         );
       }
     }

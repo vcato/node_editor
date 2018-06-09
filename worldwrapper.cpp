@@ -145,16 +145,16 @@ namespace {
 struct NotifyCharmapperVisitor : World::MemberVisitor {
   using SceneList = CharmapperWrapper::SceneList;
   const int member_index;
-  const Wrapper::OperationHandler &operation_handler;
+  const Wrapper::TreeObserver &tree_observer;
   const SceneList &scene_list;
 
   NotifyCharmapperVisitor(
     int member_index_arg,
-    const Wrapper::OperationHandler &operation_handler_arg,
+    const Wrapper::TreeObserver &operation_handler_arg,
     const SceneList &scene_list_arg
   )
   : member_index(member_index_arg),
-    operation_handler(operation_handler_arg),
+    tree_observer(operation_handler_arg),
     scene_list(scene_list_arg)
   {
   }
@@ -174,6 +174,11 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
         // to cause an inifinite loop, so we don't notify the scene
         // of the charmap change.
       }
+
+      virtual void removeCharmapper() const
+      {
+        assert(false);
+      }
     };
 
     Callbacks callbacks{scene_list};
@@ -182,7 +187,7 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
       charmapper_member.charmapper,
       callbacks,
       charmapper_member.name
-    ).handleSceneChange(operation_handler,{member_index});
+    ).handleSceneChange(tree_observer,{member_index});
 
     // This may not be sufficient.  It would probably be better to
     // call world.applyCharmaps().  Need an example of where this doesn't
@@ -201,14 +206,14 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
 static void
   notifyCharmappersOfSceneChange(
     World &world,
-    const Wrapper::OperationHandler &operation_handler
+    const Wrapper::TreeObserver &tree_observer
   )
 {
   int n_members = world.nMembers();
   WorldSceneList scene_list(world);
 
   for (int member_index=0; member_index!=n_members; ++member_index) {
-    NotifyCharmapperVisitor visitor(member_index,operation_handler,scene_list);
+    NotifyCharmapperVisitor visitor(member_index,tree_observer,scene_list);
     world.visitMember(member_index,visitor);
   }
 }
@@ -218,13 +223,16 @@ namespace {
 struct ChildWrapperVisitor : World::MemberVisitor {
   World &world;
   const WrapperVisitor &visitor;
+  const int member_index;
 
   ChildWrapperVisitor(
     World &world_arg,
-    const std::function<void(const Wrapper&)> &visitor_arg
+    const std::function<void(const Wrapper&)> &visitor_arg,
+    int member_index_arg
   )
   : world(world_arg),
-    visitor(visitor_arg)
+    visitor(visitor_arg),
+    member_index(member_index_arg)
   {
   }
 
@@ -234,15 +242,18 @@ struct ChildWrapperVisitor : World::MemberVisitor {
     struct Callbacks : CharmapperWrapper::Callbacks {
       Charmapper &charmapper;
       World &world;
+      const int member_index;
 
       Callbacks(
         const CharmapperWrapper::SceneList &scene_list,
         Charmapper &charmapper_arg,
-        World &world_arg
+        World &world_arg,
+        int member_index_arg
       )
       : CharmapperWrapper::Callbacks(scene_list),
         charmapper(charmapper_arg),
-        world(world_arg)
+        world(world_arg),
+        member_index(member_index_arg)
       {
       }
 
@@ -250,9 +261,15 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       {
         world.applyCharmaps();
       }
+
+      virtual void removeCharmapper() const
+      {
+        world.removeMember(member_index);
+      }
     };
 
-    Callbacks callbacks{scene_list,member.charmapper,world};
+    Callbacks callbacks{scene_list,member.charmapper,world,member_index};
+
     visitor(
       CharmapperWrapper{
         member.charmapper,
@@ -266,7 +283,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   {
     auto changed_func =
       [&,&world=world]
-      (const Wrapper::OperationHandler &operation_handler)
+      (const Wrapper::TreeObserver &tree_observer)
       {
 	// Update the body comboboxes in the charmappers.
 	// This doesn't work because the wrappers don't necessarily exist
@@ -274,7 +291,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
 	member.scene.displayFrame() = member.scene.backgroundFrame();
 
-	notifyCharmappersOfSceneChange(world,operation_handler);
+	notifyCharmappersOfSceneChange(world,tree_observer);
 
 	// Notify the scene window after notifying charmapper
 	if (member.scene_window_ptr) {
@@ -282,14 +299,14 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 	}
       };
 
-    // We also need to get an operation handler
+    // We also need to get an tree observer
     auto body_added_func =
       [&](
         const Scene::Body &body,
-        const Wrapper::OperationHandler &operation_handler
+        const Wrapper::TreeObserver &tree_observer
       )
       {
-        notifyCharmappersOfSceneChange(world,operation_handler);
+        notifyCharmappersOfSceneChange(world,tree_observer);
 
         if (member.scene_window_ptr) {
           member.scene_window_ptr->notifyBodyAdded(body);
@@ -304,9 +321,9 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       };
 
     auto removed_body_func =
-      [&](const Wrapper::OperationHandler &operation_handler)
+      [&](const Wrapper::TreeObserver &tree_observer)
       {
-        notifyCharmappersOfSceneChange(world,operation_handler);
+        notifyCharmappersOfSceneChange(world,tree_observer);
 
         if (member.scene_window_ptr) {
           member.scene_window_ptr->notifySceneChanged();
@@ -333,7 +350,7 @@ void
   WorldWrapper::executeOperation(
     int operation_index,
     const TreePath &path,
-    OperationHandler &handler
+    TreeObserver &tree_observer
   ) const
 {
   switch (operation_index) {
@@ -341,14 +358,14 @@ void
       {
         int index = world.nMembers();
         world.addCharmapper();
-        handler.addItem(join(path,index));
+        tree_observer.itemAdded(join(path,index));
       }
       return;
     case 1:
       {
         int index = world.nMembers();
         world.addScene();
-        handler.addItem(join(path,index));
+        tree_observer.itemAdded(join(path,index));
       }
       return;
   }
@@ -362,7 +379,8 @@ void
     int child_index,const WrapperVisitor &visitor
   ) const
 {
-  ChildWrapperVisitor wrapper_visitor(world,visitor);
+  int member_index = child_index;
+  ChildWrapperVisitor wrapper_visitor(world,visitor,member_index);
 
-  world.visitMember(child_index,wrapper_visitor);
+  world.visitMember(member_index,wrapper_visitor);
 }

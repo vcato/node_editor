@@ -22,11 +22,11 @@ struct Wrapper {
   using OperationName = std::string;
   using Label = std::string;
 
-  struct OperationHandler {
-    virtual void addItem(const TreePath &) = 0;
-    virtual void replaceTreeItems(const TreePath &) = 0;
-    virtual void removeItem(const TreePath &) = 0;
-    virtual void changeEnumerationValues(const TreePath &) const = 0;
+  struct TreeObserver {
+    virtual void itemAdded(const TreePath &) = 0;
+    virtual void itemReplaced(const TreePath &) = 0;
+    virtual void itemRemoved(const TreePath &) = 0;
+    virtual void enumarationValuesChanged(const TreePath &) const = 0;
   };
 
   struct Visitor {
@@ -42,7 +42,7 @@ struct Wrapper {
     executeOperation(
       int operation_index,
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &
     ) const = 0;
 
   virtual int nChildren() const = 0;
@@ -90,7 +90,7 @@ struct NoOperationWrapper : T {
     executeOperation(
       int /*operation_index*/,
       const TreePath &,
-      Wrapper::OperationHandler &
+      Wrapper::TreeObserver &
     ) const override
   {
     assert(false);
@@ -189,12 +189,12 @@ struct EnumerationWrapper : Wrapper {
     setValue(
       const TreePath &path,
       int index,
-      OperationHandler &operation_handler
+      TreeObserver &
     ) const = 0;
 };
 
 
-using TreeOperationHandler = Wrapper::OperationHandler;
+using TreeObserver = Wrapper::TreeObserver;
 
 
 inline TreePath join(TreePath path,TreeItemIndex child_index)
@@ -202,9 +202,5 @@ inline TreePath join(TreePath path,TreeItemIndex child_index)
   path.push_back(child_index);
   return path;
 }
-
-
-extern TreePath
-  makePath(const Wrapper &wrapper,const std::string &path_string);
 
 #endif /* WRAPPER_HPP_ */

@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include "linetext.hpp"
 
 using std::ostream;
 using std::vector;
@@ -12,8 +13,12 @@ using Node = DiagramNode;
 static void
   evaluateDiagramNodeLine(
     Diagram &diagram,
-    Node &node,int line_index,int output_index,ostream &stream,
-    int source_output_index,int source_node
+    Node &node,
+    int line_index,
+    int output_index,
+    Executor &executor,
+    int source_output_index,
+    int source_node
   )
 {
   if (output_index<0) {
@@ -29,7 +34,8 @@ static void
   Node::Line &line = node.lines[line_index];
   Node::Output &output = node.outputs[output_index];
 
-  output.value = lineTextValue(line.text,stream,input_value);
+  evaluateLineText(line.text,vector<float>{input_value},executor);
+  output.value = executor.output_value;
 }
 
 
@@ -43,12 +49,16 @@ static void
 {
   assert(node_index>=0);
 
-  if (evaluated_flags[node_index]) return;
+  if (evaluated_flags[node_index]) {
+    return;
+  }
+
   Node &node = diagram.node(node_index);
   int n_inputs = node.inputs.size();
 
   for (int i=0; i!=n_inputs; ++i) {
     int source_node_index = node.inputs[i].source_node_index;
+
     if (source_node_index>=0) {
       updateNodeEvaluation(diagram,source_node_index,evaluated_flags,stream);
     }
@@ -74,8 +84,16 @@ static void
       next_input_index += node.lines[i].n_inputs;
     }
 
+    StreamExecutor executor = {stream};
+
     evaluateDiagramNodeLine(
-      diagram,node,i,output_index,stream,source_output_index,source_node
+      diagram,
+      node,
+      i,
+      output_index,
+      executor,
+      source_output_index,
+      source_node
     );
   }
 

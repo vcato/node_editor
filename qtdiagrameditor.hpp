@@ -72,9 +72,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     static constexpr float node_input_radius = 5;
 
     Circle connectorCircle(NodeConnectorIndex) const;
-    Point2D nodeOutputPosition(int node_index);
-    void drawNodeInput(int node_index,int input_index);
-    void drawNodeInputs(int node_index);
     TextObject
       outputTextObject(const std::string &s,float right_x,float y) const;
     void drawNode(NodeIndex);

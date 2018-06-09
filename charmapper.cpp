@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include "defaultdiagrams.hpp"
+#include "removefrom.hpp"
+#include "diagramevaluation.hpp"
 
 
 using std::make_unique;
@@ -71,6 +73,12 @@ Charmapper::MotionPass::PosExpr::PosExpr()
 }
 
 
+void Charmapper::MotionPass::removePosExpr(int index)
+{
+  removeFrom(pos_exprs,pos_exprs[index]);
+}
+
+
 static void
   setDisplayedBodyPosition(
     Charmapper::BodyLink &target_body_link,
@@ -120,6 +128,8 @@ void Charmapper::apply()
         Point2D new_position(0,0);
 
         if (expr.global_position.isComponents()) {
+          Diagram &diagram = expr.global_position.diagram;
+          evaluateDiagram(diagram);
           new_position = makePoint2D(expr.global_position.components());
         }
         else if (expr.global_position.isFromBody()) {

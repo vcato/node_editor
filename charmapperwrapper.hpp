@@ -16,6 +16,7 @@ class CharmapperWrapper : public VoidWrapper {
     struct Callbacks {
       const SceneList &scene_list;
       virtual void notifyCharmapChanged() const = 0;
+      virtual void removeCharmapper() const = 0;
 
       Callbacks(const SceneList &scene_list_arg)
       : scene_list(scene_list_arg)
@@ -43,8 +44,8 @@ class CharmapperWrapper : public VoidWrapper {
     void
       executeOperation(
         int operation_index,
-        const TreePath &path,
-        OperationHandler &handler
+        const TreePath &,
+        TreeObserver &
       ) const override;
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
@@ -58,7 +59,7 @@ class CharmapperWrapper : public VoidWrapper {
 
     void
       handleSceneChange(
-        const OperationHandler &,
+        const TreeObserver &,
         const TreePath &charmapper_path
       );
 };

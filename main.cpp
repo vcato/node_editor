@@ -15,6 +15,7 @@ int main(int argc,char** argv)
   QtWorld world(main_window);
   WorldWrapper world_wrapper(world);
   main_window.setWorldPtr(&world_wrapper);
+  main_window.resize(640,480);
   main_window.show();
   return app.exec();
 }

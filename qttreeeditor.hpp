@@ -6,6 +6,7 @@
 #include <QTreeWidgetItem>
 #include "qtwidget.hpp"
 #include "qtdiagrameditor.hpp"
+#include "qtdiagrameditorwindow.hpp"
 #include "treeeditor.hpp"
 
 
@@ -16,7 +17,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
   public:
     QtTreeEditor();
 
-    void setDiagramEditorPtr(QtDiagramEditor *arg) { diagram_editor_ptr = arg; }
     void selectItem(const TreePath &path);
 
   private slots:
@@ -26,15 +26,13 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
   private:
     struct CreateChildItemVisitor;
 
-    QtDiagramEditor *diagram_editor_ptr = 0;
-
-    QtDiagramEditor &diagramEditor();
     QtTreeEditor &treeEditor() { return *this; }
     Diagram *maybeSelectedDiagram();
     QTreeWidgetItem &itemFromPath(const TreePath &path) const;
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);
     void prepareMenu(const QPoint &pos);
+    QtDiagramEditorWindow& createDiagramEditor() override;
 
     template <typename T>
     T &createItemWidget(QTreeWidgetItem &item,const std::string &label)

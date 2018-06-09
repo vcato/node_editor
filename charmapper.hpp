@@ -205,6 +205,8 @@ class Charmapper {
 
       PosExpr& addPosExpr();
 
+      void removePosExpr(int index);
+
       private:
         std::vector<std::unique_ptr<PosExpr>> pos_exprs;
 

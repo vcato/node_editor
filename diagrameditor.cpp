@@ -24,6 +24,12 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 }
 
 
+Diagram* DiagramEditor::diagramPtr() const
+{
+  return diagram_ptr;
+}
+
+
 void DiagramEditor::deleteNode(int index)
 {
   diagram().deleteNode(index);

@@ -9,10 +9,11 @@
 #include "qtslot.hpp"
 #include "qtspinbox.hpp"
 #include "streamvector.hpp"
+#include "wrapperutil.hpp"
 #include "qtcombobox.hpp"
 #include "qtlineedit.hpp"
 #include "qttreewidgetitem.hpp"
-
+#include "qtdiagrameditorwindow.hpp"
 
 using std::cerr;
 using std::vector;
@@ -251,10 +252,9 @@ void QtTreeEditor::addMainTreeItem(const TreePath &new_item_path)
 
 void QtTreeEditor::removeTreeItem(const TreePath &path)
 {
-  TreePath parent_path = parentPath(path);
-  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  TreeItemIndex child_index = path.back();
-  ::removeChildItem(parent_item,child_index);
+  auto parent_path = parentPath(path);
+  auto child_index = path.back();
+  ::removeChildItem(itemFromPath(parent_path),child_index);
 }
 
 
@@ -294,8 +294,6 @@ void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
 {
   removeChildItems(parent_path);
   addChildTreeItems(parent_path);
-  diagramEditor().setDiagramPtr(maybeSelectedDiagram());
-  diagramEditor().redraw();
 }
 
 
@@ -361,16 +359,7 @@ void
   )
 {
   assert(item_ptr);
-
-  TreePath path = itemPath(*item_ptr);
-
-  visitNumericSubWrapper(
-    world(),
-    path,
-    [&](const NumericWrapper &numeric_wrapper){
-      numeric_wrapper.setValue(value);
-    }
-  );
+  numberItemValueChanged(itemPath(*item_ptr),value);
 }
 
 
@@ -382,32 +371,6 @@ void
 {
   assert(item_ptr);
   stringItemValueChanged(itemPath(*item_ptr),value);
-}
-
-
-QtDiagramEditor &QtTreeEditor::diagramEditor()
-{
-  assert(diagram_editor_ptr);
-  return *diagram_editor_ptr;
-}
-
-
-static Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path)
-{
-  Diagram *result_ptr = 0;
-
-  visitSubWrapper(
-    wrapper,
-    path,
-    [&result_ptr](const Wrapper &wrapper){ result_ptr = wrapper.diagramPtr(); }
-  );
-
-  if (!result_ptr) {
-    cerr << "No diagram found for " << path << "\n";
-    return nullptr;
-  }
-
-  return result_ptr;
 }
 
 
@@ -426,7 +389,14 @@ Diagram *QtTreeEditor::maybeSelectedDiagram()
 
 void QtTreeEditor::itemSelectionChangedSlot()
 {
-  diagramEditor().setDiagramPtr(maybeSelectedDiagram());
+}
+
+
+QtDiagramEditorWindow& QtTreeEditor::createDiagramEditor()
+{
+  auto window_ptr = new QtDiagramEditorWindow;
+  window_ptr->show();
+  return *window_ptr;
 }
 
 
@@ -441,18 +411,17 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
   }
 
   QMenu menu;
-  list<QtSlot> item_slots;
+
+  if (diagramPtr(world(),path)) {
+    createAction(menu,"Edit Diagram...",[&]{ openDiagramEditor(path); });
+  }
 
   std::vector<std::string> operation_names = operationNames(path);
 
   int n_operations = operation_names.size();
 
   for (int i=0; i!=n_operations; ++i) {
-    QAction &action = createAction(menu,operation_names[i]);
-    auto perform_operation_function =
-      [this,i,path]{ executeOperation(path,i); };
-    item_slots.emplace_back(perform_operation_function);
-    item_slots.back().connectSignal(action,SIGNAL(triggered()));
+    createAction(menu,operation_names[i],[&,i]{ executeOperation(path,i); });
   }
 
   menu.exec(tree_editor.mapToGlobal(pos));

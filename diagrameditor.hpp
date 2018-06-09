@@ -7,7 +7,6 @@
 #include <map>
 #include "point2d.hpp"
 #include "stringutil.hpp"
-#include "linetext.hpp"
 #include "textobject.hpp"
 #include "diagramnode.hpp"
 #include "nodetexteditor.hpp"
@@ -141,6 +140,7 @@ class DiagramEditor {
   public:
     DiagramEditor();
     void setDiagramPtr(Diagram *);
+    Diagram *diagramPtr() const;
 
   protected:
     static NodeIndex noNodeIndex() { return -1; }

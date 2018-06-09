@@ -16,30 +16,30 @@ using std::cerr;
 
 
 namespace {
-struct FakeOperationHandler : Wrapper::OperationHandler {
+struct FakeTreeObserver : Wrapper::TreeObserver {
   ostream &command_stream;
 
-  FakeOperationHandler(ostream &command_stream_arg)
+  FakeTreeObserver(ostream &command_stream_arg)
   : command_stream(command_stream_arg)
   {
   }
 
-  virtual void addItem(const TreePath &path)
+  virtual void itemAdded(const TreePath &path)
   {
     command_stream << "addItem(" << path << ")\n";
   }
 
-  virtual void replaceTreeItems(const TreePath &)
+  virtual void itemReplaced(const TreePath &)
   {
     assert(false);
   }
 
-  virtual void changeEnumerationValues(const TreePath &path) const
+  virtual void enumarationValuesChanged(const TreePath &path) const
   {
     command_stream << "changeEnumerationValues(" << path << ")\n";
   }
 
-  virtual void removeItem(const TreePath &path)
+  virtual void itemRemoved(const TreePath &path)
   {
     command_stream << "removeItem(" << path << ")\n";
   }
@@ -122,7 +122,7 @@ static void testAddingABodyToTheScene()
   // Create a world with a charmapper and a scene.
   //  Charmapper should have a motion pass with a position expression.
   // Add a body to the scene.
-  // Check that the operation handler is called to handle changing the
+  // Check that the tree observer is called to handle changing the
   // enumeration values in the source body.
 
   FakeWorld world;
@@ -136,9 +136,9 @@ static void testAddingABodyToTheScene()
   TreePath scene_path = {1};
 
   ostringstream command_stream;
-  FakeOperationHandler handler(command_stream);
+  FakeTreeObserver tree_observer(command_stream);
 
-  executeAddBodyFunction2(world_wrapper,scene_path,handler);
+  executeAddBodyFunction2(world_wrapper,scene_path,tree_observer);
 
   string command_string = command_stream.str();
   string expected_command_string =
@@ -218,7 +218,7 @@ static void
     const Wrapper &world_wrapper,
     const TreePath &path,
     const string &enumeration_label,
-    Wrapper::OperationHandler &operation_handler
+    Wrapper::TreeObserver &tree_observer
   )
 {
   visitEnumerationSubWrapper(
@@ -227,7 +227,7 @@ static void
     [&](const EnumerationWrapper &enumeration_wrapper){
       int index =
         enumerationLabelIndex(enumeration_wrapper,enumeration_label);
-      enumeration_wrapper.setValue(path,index,operation_handler);
+      enumeration_wrapper.setValue(path,index,tree_observer);
     }
   );
 }
@@ -245,12 +245,12 @@ static void testChangingTheTargetBody()
   charmapper.addMotionPass();
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
-  FakeOperationHandler operation_handler(command_stream);
+  FakeTreeObserver tree_observer(command_stream);
   string motion_pass_path = "Charmapper1|Motion Pass";
 
   {
     TreePath path = makePath(world_wrapper,motion_pass_path);
-    executeOperation2(world_wrapper,path,"Add Pos Expr",operation_handler);
+    executeOperation2(world_wrapper,path,"Add Pos Expr",tree_observer);
   }
 
   Charmapper::MotionPass::PosExpr &pos_expr = charmapper.pass(0).expr(0);
@@ -273,7 +273,7 @@ static void testChangingTheTargetBody()
     world_wrapper,
     target_body_path,
     "Scene1:Body1",
-    operation_handler
+    tree_observer
   );
 
   assert(pos_expr.target_body_link.bodyPtr()==&body);
@@ -283,7 +283,7 @@ static void testChangingTheTargetBody()
     world_wrapper,
     target_body_path,
     "None",
-    operation_handler
+    tree_observer
   );
 
   assert(!pos_expr.target_body_link.hasValue());
@@ -377,7 +377,7 @@ static void testRemovingABodyFromTheScene()
   // Create a world with a charmapper and a scene with one body.
   // Charmapper should have a motion pass with a position expression.
   // Remove the body from the scene.
-  // Check that the operation handler is called to handle changing the
+  // Check that the tree observer is called to handle changing the
   // enumeration values in the target body.
 
   FakeWorld world;
@@ -392,9 +392,9 @@ static void testRemovingABodyFromTheScene()
   TreePath body_path = join(scene_path,0);
 
   ostringstream command_stream;
-  FakeOperationHandler handler(command_stream);
+  FakeTreeObserver tree_observer(command_stream);
 
-  executeOperation2(world_wrapper,body_path,"Remove",handler);
+  executeOperation2(world_wrapper,body_path,"Remove",tree_observer);
 
   string command_string = command_stream.str();
   string expected_command_string =
@@ -409,6 +409,45 @@ static void testRemovingABodyFromTheScene()
 
   assert(command_string==expected_command_string);
 }
+
+
+static void testRemovingAPosExprFromAMotionPass()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  motion_pass.addPosExpr();
+  WorldWrapper world_wrapper(world);
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+
+  executeOperation(
+    world_wrapper,
+    "Charmapper1|Motion Pass|Pos Expr","Remove",
+    tree_observer
+  );
+
+  assert(motion_pass.nExprs()==0);
+  string command_string = command_stream.str();
+  string expected_command_string = "removeItem([0,0,0])\n";
+  assert(command_string==expected_command_string);
+}
+
+
+static void testRemovingACharmapper()
+{
+  FakeWorld world;
+  world.addCharmapper();
+  WorldWrapper world_wrapper(world);
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+  executeOperation(world_wrapper,"Charmapper1","Remove",tree_observer);
+  assert(world.nMembers()==0);
+  string expected_command_string = "removeItem([0])\n";
+  string command_string = command_stream.str();
+  assert(command_string==expected_command_string);
+}
+
 }
 
 
@@ -423,5 +462,7 @@ int main()
     tests::testUsingCharmapperToMoveABody();
     tests::testWithTwoCharmappers();
     tests::testRemovingABodyFromTheScene();
+    tests::testRemovingAPosExprFromAMotionPass();
+    tests::testRemovingACharmapper();
   }
 }

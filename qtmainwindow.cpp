@@ -22,8 +22,7 @@ static Widget& createCentralWidget(QMainWindow &parent)
 
 
 QtMainWindow::QtMainWindow()
-: tree_editor_ptr(0),
-  diagram_editor_ptr(0)
+: tree_editor_ptr(0)
 {
   QMenuBar *menu_bar_ptr = menuBar();
   assert(menu_bar_ptr);
@@ -33,9 +32,6 @@ QtMainWindow::QtMainWindow()
 
   QtTreeEditor &tree_editor = createWidget<QtTreeEditor>(splitter);
   tree_editor_ptr = &tree_editor;
-
-  diagram_editor_ptr = &createWidget<QtDiagramEditor>(splitter,/*stretch*/1);
-  tree_editor.setDiagramEditorPtr(diagram_editor_ptr);
 }
 
 

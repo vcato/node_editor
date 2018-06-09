@@ -4,13 +4,13 @@
 
 struct SceneWrapper : VoidWrapper {
   struct SceneObserver {
-    using ChangedFunc = std::function<void(const Wrapper::OperationHandler &)>;
+    using ChangedFunc = std::function<void(const Wrapper::TreeObserver &)>;
     using BodyAddedFunc =
-      std::function<void(const Scene::Body&,const Wrapper::OperationHandler &)>;
+      std::function<void(const Scene::Body&,const Wrapper::TreeObserver &)>;
     using RemovingBodyFunc =
       std::function<void(const Scene::Body&)>;
     using RemovedBodyFunc =
-      std::function<void(const Wrapper::OperationHandler &)>;
+      std::function<void(const Wrapper::TreeObserver &)>;
 
     ChangedFunc changed_func;
     BodyAddedFunc body_added_func;
@@ -36,7 +36,7 @@ struct SceneWrapper : VoidWrapper {
     executeOperation(
       int operation_index,
       const TreePath &path,
-      OperationHandler &handler
+      TreeObserver &
     ) const override;
 
   void withChildWrapper(int child_index,const WrapperVisitor &) const;

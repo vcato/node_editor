@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include "linetext.hpp"
 
 
 using std::vector;
