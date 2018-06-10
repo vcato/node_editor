@@ -340,17 +340,7 @@ float
 
       ++character_index;
 
-      switch (maybe_value->_type) {
-        case Any::float_type:
-          executor.executeShow(maybe_value->as<float>());
-          break;
-        case Any::vector_type:
-          executor.executeShow(maybe_value->as<vector<Any>>());
-          break;
-        case Any::void_type:
-          // Not sure what we should do for showing a void value.
-          break;
-      }
+      executor.executeShow(*maybe_value);
 
       if (!parser.atEnd()) {
         return 0;
@@ -368,18 +358,9 @@ float
         );
 
       if (maybe_value) {
-        switch (maybe_value->type()) {
-          case Any::float_type:
-            executor.executeReturn(maybe_value->as<float>());
-            break;
-          case Any::vector_type:
-            executor.executeReturn(maybe_value->as<vector<Any>>());
-            break;
-          case Any::void_type:
-            // Not sure that a return is meaningful here without a value.
-            break;
-        }
+        executor.executeReturn(*maybe_value);
       }
+
       return 0;
     }
 

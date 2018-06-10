@@ -59,7 +59,7 @@ struct StreamExecutor : Executor {
     stream << value;
   }
 
-  void executeShow(float value)
+  void executeShow(const Any& value) override
   {
     print(value);
     stream << "\n";
@@ -75,18 +75,7 @@ struct StreamExecutor : Executor {
     printOn(stream,value);
   }
 
-  void executeShow(const std::vector<Any> &value)
-  {
-    print(value);
-    stream << "\n";
-  }
-
-  virtual void executeReturn(float)
-  {
-    assert(false);
-  }
-
-  virtual void executeReturn(const std::vector<Any> &)
+  void executeReturn(const Any&) override
   {
     assert(false);
   }

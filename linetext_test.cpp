@@ -45,30 +45,16 @@ namespace {
 struct FakeExecutor : Executor {
   ostringstream stream;
 
-  virtual void executeShow(float)
+  void executeShow(const Any&) override
   {
     assert(false);
   }
 
-  virtual void executeShow(const std::vector<Any> &)
-  {
-    assert(false);
-  }
-
-  virtual void executeReturn(float arg)
-  {
-    stream << "return(" << arg << ")\n";
-  }
-
-  virtual void executeReturn(const std::vector<Any> &arg)
+  void executeReturn(const Any& arg) override
   {
     stream << "return(";
     printOn(stream,arg);
     stream << ")\n";
-  }
-
-  virtual void output(float)
-  {
   }
 };
 }
