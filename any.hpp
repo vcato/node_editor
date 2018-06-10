@@ -1,22 +1,66 @@
+#ifndef ANY_HPP_
+#define ANY_HPP_
+
+#include <cassert>
+
+
 struct Any {
   enum Type {
     void_type,
-    float_type
+    float_type,
+    vector_type
   };
 
-  union {
+  union Value {
     float float_value;
-  };
+    std::vector<Any> vector_value;
+
+    Value() {}
+    ~Value() {}
+  } _value;
 
   Any()
-  : type(void_type)
+  : _type(void_type)
   {
   }
 
-  Any(float arg)
-  : type(float_type)
+  Any(const Any&) = delete;
+
+  Any(Any&& arg)
   {
-    new (&float_value)float(arg);
+    _create(std::move(arg));
+  }
+
+  Any& operator=(Any&& arg)
+  {
+    if (_type!=arg._type) {
+      _destroy();
+      _create(std::move(arg));
+    }
+    else {
+      switch (_type) {
+        case void_type:
+          break;
+        case float_type:
+          _value.float_value = std::move(arg._value.float_value);
+          break;
+        case vector_type:
+          _value.vector_value = std::move(arg._value.vector_value);
+          break;
+      }
+    }
+
+    return *this;
+  }
+
+  Any(float arg)
+  {
+    _create(arg);
+  }
+
+  Any(std::vector<Any> &&arg)
+  {
+    _create(std::move(arg));
   }
 
   template <typename T> friend const T& any_cast(const Any &);
@@ -27,25 +71,89 @@ struct Any {
     return any_cast<T>(*this);
   }
 
+  Type type() const { return _type; }
+
   ~Any()
   {
-    switch (type) {
+    _destroy();
+  }
+
+  void _create(Any&& arg)
+  {
+    switch (arg._type) {
+      case void_type:
+        _create();
+        break;
       case float_type:
-        using T = float;
-        float_value.~T();
+        _create(std::move(arg._value.float_value));
+        break;
+      case vector_type:
+        _create(std::move(arg._value.vector_value));
+        break;
+    }
+  }
+  
+  void _create()
+  {
+    _type = void_type;
+  }
+
+  void _create(float arg)
+  {
+    _type = float_type;
+    new (&_value.float_value)float(arg);
+  }
+
+#if 0
+  void _create(const std::vector<Any> &arg)
+  {
+    _type = vector_type;
+    new (&_value.vector_value)std::vector<Any>(arg);
+  }
+#endif
+
+  void _create(std::vector<Any> &&arg)
+  {
+    _type = vector_type;
+    new (&_value.vector_value)std::vector<Any>(std::move(arg));
+  }
+
+  void _destroy()
+  {
+    switch (_type) {
+      case float_type:
+        {
+          using T = float;
+          _value.float_value.~T();
+        }
+        break;
+      case vector_type:
+        {
+          using T = std::vector<Any>;
+          _value.vector_value.~T();
+        }
         break;
       case void_type:
         break;
     }
   }
 
-  Type type;
+  Type _type;
 };
 
 
 template<>
 inline const float& any_cast<float>(const Any &arg)
 {
-  assert(arg.type==Any::float_type);
-  return arg.float_value;
+  assert(arg._type==Any::float_type);
+  return arg._value.float_value;
 }
+
+template<>
+inline const std::vector<Any>& any_cast<std::vector<Any>>(const Any &arg)
+{
+  assert(arg._type==Any::vector_type);
+  return arg._value.vector_value;
+}
+
+#endif /* ANY_HPP_ */

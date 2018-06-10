@@ -1,4 +1,5 @@
 #include <cassert>
+#include <utility>
 
 
 template <typename T>
@@ -15,6 +16,12 @@ class Optional {
       return _value;
     }
 
+    T *operator->()
+    {
+      assert(_has_value);
+      return &_value;
+    }
+
     Optional()
     : _has_value(false)
     {
@@ -26,12 +33,42 @@ class Optional {
     {
     }
 
+    Optional(T&& arg)
+    : _value(std::move(arg)),
+      _has_value(true)
+    {
+    }
+
+    Optional(Optional&& arg)
+    : _has_value(arg._has_value)
+    {
+      if (_has_value) {
+        _value = std::move(arg._value);
+        arg._has_value = false;
+      }
+    }
+
     ~Optional()
     {
       if (_has_value) {
         _value.~T();
       }
     }
+
+    Optional &operator=(const T &arg)
+    {
+      if (_has_value) {
+        _value = arg;
+      }
+      else {
+        new (&_value)T(arg);
+        _has_value = true;
+      }
+
+      return *this;
+    }
+
+    bool hasValue() const { return _has_value; }
 
   private:
     union {

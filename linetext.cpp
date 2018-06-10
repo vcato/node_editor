@@ -5,6 +5,7 @@
 #include <sstream>
 #include <functional>
 #include "any.hpp"
+#include "optional.hpp"
 
 
 
@@ -225,10 +226,10 @@ struct ValueFunction {
 };
 }
 
-static bool
+
+static Optional<Any>
   evaluateExpression(
     Parser &parser,
-    const ValueFunction &handler,
     const vector<float> &input_values,
     int &input_index
   )
@@ -236,29 +237,60 @@ static bool
   float value = 0;
 
   if (parser.getNumber(value)) {
-    handler(value);
-    return true;
+    return Optional<Any>(Any(value));
   }
 
   if (parser.peek()=='$') {
     float value = input_values[input_index];
     ++input_index;
     ++parser.index;
-    handler(value);
-    return true;
+    return Optional<Any>(value);
   }
 
   if (parser.peek()=='[') {
     parser.skipChar();
 
+    vector<Any> vector_value;
+
     if (parser.peek()==']') {
       assert(false);
     }
 
+    for (;;) {
+      Optional<Any> maybe_value =
+        evaluateExpression(parser,input_values,input_index);
+
+      if (!maybe_value) {
+        assert(false);
+      }
+
+      vector_value.push_back(std::move(*maybe_value));
+
+      if (parser.peek()==']') {
+        parser.skipChar();
+        break;
+      }
+
+      if (parser.peek()==',') {
+        parser.skipChar();
+      }
+    }
+
+    return Optional<Any>(std::move(vector_value));
+
     assert(false);
   }
 
-  return false;
+  return Optional<Any>();
+}
+
+
+namespace {
+struct DummyFunction : ValueFunction {
+  void operator()(const Any &) const
+  {
+  }
+};
 }
 
 
@@ -289,34 +321,14 @@ float
 
       ++character_index;
 
-      struct ShowFunction : ValueFunction {
-        Executor &executor;
-
-        ShowFunction(Executor &executor_arg)
-        : executor(executor_arg)
-        {
-        }
-
-        void operator()(const Any &arg) const
-        {
-          switch (arg.type) {
-            case Any::float_type:
-              executor.executeShow(arg.as<float>());
-              break;
-            case Any::void_type:
-              assert(false);
-              break;
-          }
-        }
-      };
-
-      bool was_evaluated =
+      Optional<Any> maybe_value =
         evaluateExpression(
           parser,
-          ShowFunction{executor},
           input_values,
           input_index
         );
+
+      bool was_evaluated = maybe_value.hasValue();
 
       if (!was_evaluated) {
         return 0;
@@ -328,6 +340,18 @@ float
 
       ++character_index;
 
+      switch (maybe_value->_type) {
+        case Any::float_type:
+          executor.executeShow(maybe_value->as<float>());
+          break;
+        case Any::vector_type:
+          executor.executeShow(maybe_value->as<vector<Any>>());
+          break;
+        case Any::void_type:
+          // Not sure what we should do for showing a void value.
+          break;
+      }
+
       if (!parser.atEnd()) {
         return 0;
       }
@@ -336,34 +360,26 @@ float
     }
 
     if (identifier=="return") {
-      struct ReturnFunction : ValueFunction {
-        Executor &executor;
-
-        ReturnFunction(Executor &executor_arg)
-        : executor(executor_arg)
-        {
-        }
-
-        void operator()(const Any& arg) const
-        {
-          switch (arg.type) {
-            case Any::void_type:
-              assert(false);
-              break;
-            case Any::float_type:
-              executor.executeReturn(arg.as<float>());
-              break;
-          }
-        }
-      };
-
-      // bool was_evaluated =
+      Optional<Any> maybe_value =
         evaluateExpression(
           parser,
-          ReturnFunction{executor},
           input_values,
           input_index
         );
+
+      if (maybe_value) {
+        switch (maybe_value->type()) {
+          case Any::float_type:
+            executor.executeReturn(maybe_value->as<float>());
+            break;
+          case Any::vector_type:
+            executor.executeReturn(maybe_value->as<vector<Any>>());
+            break;
+          case Any::void_type:
+            // Not sure that a return is meaningful here without a value.
+            break;
+        }
+      }
       return 0;
     }
 

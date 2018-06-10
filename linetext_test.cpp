@@ -10,6 +10,7 @@
 using std::ostringstream;
 using std::string;
 using std::vector;
+using std::cerr;
 
 
 static float lineTextValue(const char *text,float input_value)
@@ -49,9 +50,21 @@ struct FakeExecutor : Executor {
     assert(false);
   }
 
+  virtual void executeShow(const std::vector<Any> &)
+  {
+    assert(false);
+  }
+
   virtual void executeReturn(float arg)
   {
     stream << "return(" << arg << ")\n";
+  }
+
+  virtual void executeReturn(const std::vector<Any> &arg)
+  {
+    stream << "return(";
+    printOn(stream,arg);
+    stream << ")\n";
   }
 
   virtual void output(float)
@@ -94,12 +107,10 @@ int main()
     string execution = executor.stream.str();
     assert(execution=="return(3)\n");
   }
-#if 0
   {
     FakeExecutor executor;
     evaluateLineText("return [1,2]",{},executor);
     string execution = executor.stream.str();
     assert(execution=="return([1,2])\n");
   }
-#endif
 }
