@@ -1,3 +1,7 @@
+#ifndef OPTIONAL_HPP
+#define OPTIONAL_HPP
+
+
 #include <cassert>
 #include <utility>
 
@@ -77,3 +81,6 @@ class Optional {
 
     bool _has_value;
 };
+
+
+#endif /* OPTIONAL_HPP */
