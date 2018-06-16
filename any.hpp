@@ -74,6 +74,8 @@ class Any {
         return any_cast<T>(*this);
       }
 
+    const std::vector<Any> &asVector() const { return as<std::vector<Any>>(); }
+
     Type type() const { return _type; }
 
     ~Any()

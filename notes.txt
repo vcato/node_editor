@@ -265,6 +265,3 @@ Charmapper::apply() has an evaluateDiagram(), but it needs to use one that
 takes a visitor which handles various types of returns.
 
 The Executor in lineText needs to handle returns of lists.
-
-diagramevaluation.cpp evaluateDiagramNodeLine needs to work with an
-  executor so it can handle returns.

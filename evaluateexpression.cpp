@@ -17,7 +17,7 @@ Optional<Any>
   if (parser.peek()=='$') {
     float value = input_values[input_index];
     ++input_index;
-    ++parser.index;
+    parser.skipChar();
     return Optional<Any>(value);
   }
 
@@ -27,7 +27,7 @@ Optional<Any>
     std::vector<Any> vector_value;
 
     if (parser.peek()==']') {
-      assert(false);
+      return Optional<Any>(Any(std::move(vector_value)));
     }
 
     for (;;) {
@@ -35,7 +35,7 @@ Optional<Any>
         evaluateExpression(parser,input_values,input_index);
 
       if (!maybe_value) {
-        assert(false);
+        return {};
       }
 
       vector_value.push_back(std::move(*maybe_value));
@@ -51,8 +51,6 @@ Optional<Any>
     }
 
     return Optional<Any>(std::move(vector_value));
-
-    assert(false);
   }
 
   return Optional<Any>();

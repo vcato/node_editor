@@ -8,6 +8,7 @@ all: run_unit_tests build_manual_tests main
 
 run_unit_tests: \
   optional_test.pass \
+  evaluateexpression_test.pass \
   diagramevaluation_test.pass \
   diagrameditor_test.pass \
   nodetexteditor_test.pass \
@@ -59,6 +60,9 @@ moc_%.cpp: %.hpp
 	touch $@
 
 optional_test: optional_test.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
