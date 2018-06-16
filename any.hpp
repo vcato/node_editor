@@ -3,6 +3,8 @@
 
 #include <cassert>
 #include <vector>
+#include <iostream>
+#include "printonany.hpp"
 
 
 class Any {
@@ -56,6 +58,22 @@ class Any {
       return *this;
     }
 
+    bool operator==(const Any &arg) const
+    {
+      if (_type!=arg._type) return false;
+
+      switch (_type) {
+        case void_type:
+          assert(false);
+        case float_type:
+          return asFloat()==arg.asFloat();
+        case vector_type:
+          assert(false);
+      }
+
+      assert(false);
+    }
+
     Any(float arg)
     {
       _create(arg);
@@ -74,7 +92,10 @@ class Any {
         return any_cast<T>(*this);
       }
 
+    bool isVector() const { return _type==vector_type; }
+    bool isFloat() const { return _type==float_type; }
     const std::vector<Any> &asVector() const { return as<std::vector<Any>>(); }
+    float asFloat() const { return as<float>(); }
 
     Type type() const { return _type; }
 
@@ -154,5 +175,58 @@ inline const std::vector<Any>& any_cast<std::vector<Any>>(const Any &arg)
   assert(arg._type==Any::vector_type);
   return arg._value.vector_value;
 }
+
+
+inline void printOn(std::ostream &stream,const Any &arg);
+
+
+inline void printOn(std::ostream &stream,float arg)
+{
+  stream << arg;
+}
+
+inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
+{
+  stream << "[";
+
+  auto iter = arg.begin();
+
+  if (iter!=arg.end()) {
+    printOn(stream,*iter);
+    ++iter;
+  }
+
+  while (iter!=arg.end()) {
+    stream << ",";
+    printOn(stream,*iter);
+    ++iter;
+  }
+
+  stream << "]";
+}
+
+
+inline void printOn(std::ostream &stream,const Any &arg)
+{
+  switch (arg.type()) {
+    case Any::float_type:
+      printOn(stream,arg.as<float>());
+      break;
+    case Any::vector_type:
+      printOn(stream,arg.as<std::vector<Any>>());
+      break;
+    case Any::void_type:
+      assert(false);
+      break;
+  }
+}
+
+
+inline std::ostream& operator<<(std::ostream &stream,const Any &arg)
+{
+  printOn(stream,arg);
+  return stream;
+}
+
 
 #endif /* ANY_HPP_ */

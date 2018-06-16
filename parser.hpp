@@ -8,7 +8,7 @@
 class Parser {
   public:
     inline Parser(const std::string &text_arg,int &index_arg);
-    inline char peek() const;
+    inline char peekChar() const;
     inline bool atEnd() const;
     inline bool skipIdentifier() const;
     inline bool skipChar() const;
@@ -16,10 +16,11 @@ class Parser {
     inline void skipWhitespace() const;
     inline bool getIdentifier(std::string &identifier) const;
     inline bool getNumber(float &number) const;
+    int index() const { return _index; }
 
   private:
     const std::string &text;
-    int &index;
+    int &_index;
 
     static bool isWhitespace(char c)
     {
@@ -51,39 +52,39 @@ class Parser {
 
 
 Parser::Parser(const std::string &text_arg,int &index_arg)
-: text(text_arg), index(index_arg)
+: text(text_arg), _index(index_arg)
 {
 }
 
 
-char Parser::peek() const
+char Parser::peekChar() const
 {
   int text_length = text.length();
 
-  if (index==text_length) {
+  if (_index==text_length) {
     return '\0';
   }
 
-  return text[index];
+  return text[_index];
 }
 
 
 bool Parser::atEnd() const
 {
-  return peek()=='\0';
+  return peekChar()=='\0';
 }
 
 
 bool Parser::skipIdentifier() const
 {
-  if (!isBeginIdentifierChar(peek())) {
+  if (!isBeginIdentifierChar(peekChar())) {
     return false;
   }
 
-  ++index;
+  ++_index;
 
-  while (isIdentifierChar(peek())) {
-    ++index;
+  while (isIdentifierChar(peekChar())) {
+    ++_index;
   }
 
   return true;
@@ -93,17 +94,17 @@ bool Parser::skipIdentifier() const
 bool Parser::skipChar() const
 {
   assert(!atEnd());
-  ++index;
+  ++_index;
   return true;
 }
 
 
 bool Parser::skipNumber() const
 {
-  if (!isDigit(peek())) return false;
+  if (!isDigit(peekChar())) return false;
 
-  while (isDigit(peek())) {
-    ++index;
+  while (isDigit(peekChar())) {
+    ++_index;
   }
 
   return true;
@@ -112,21 +113,21 @@ bool Parser::skipNumber() const
 
 void Parser::skipWhitespace() const
 {
-  while (isWhitespace(peek())) {
-    ++index;
+  while (isWhitespace(peekChar())) {
+    ++_index;
   }
 }
 
 
 bool Parser::getIdentifier(std::string &identifier) const
 {
-  if (!isIdentifierChar(peek())) {
+  if (!isIdentifierChar(peekChar())) {
     return false;
   }
 
-  int start = index;
+  int start = _index;
   skipIdentifier();
-  int end = index;
+  int end = _index;
   identifier = text.substr(start,end-start);
   return true;
 }
@@ -136,13 +137,13 @@ bool Parser::getNumber(float &number) const
 {
   skipWhitespace();
 
-  int start = index;
+  int start = _index;
 
   if (!skipNumber()) {
     return false;
   }
 
-  int end = index;
+  int end = _index;
 
   number = stoi(text.substr(start,end-start));
   return true;

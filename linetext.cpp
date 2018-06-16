@@ -41,7 +41,7 @@ static bool isAssignment(const std::string &text)
 
   parser.skipWhitespace();
 
-  if (parser.peek()!='=') {
+  if (parser.peekChar()!='=') {
     return false;
   }
 
@@ -118,7 +118,7 @@ float
 
   if (parser.getIdentifier(identifier)) {
     if (identifier=="show") {
-      if (parser.peek()!='(') {
+      if (parser.peekChar()!='(') {
         return 0;
       }
 
@@ -137,7 +137,7 @@ float
         return 0;
       }
 
-      if (parser.peek()!=')') {
+      if (parser.peekChar()!=')') {
         return 0;
       }
 

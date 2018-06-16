@@ -46,8 +46,8 @@ class Optional {
     Optional(Optional&& arg)
     : _has_value(arg._has_value)
     {
-      if (_has_value) {
-        _value = std::move(arg._value);
+      if (arg._has_value) {
+        new (&_value)T(std::move(arg._value));
         arg._has_value = false;
       }
     }

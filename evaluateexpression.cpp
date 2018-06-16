@@ -1,8 +1,12 @@
 #include "evaluateexpression.hpp"
 
 
-Optional<Any>
-  evaluateExpression(
+using std::vector;
+using std::cerr;
+
+
+static Optional<Any>
+  evaluatePrimaryExpression(
     Parser &parser,
     const std::vector<float> &input_values,
     int &input_index
@@ -14,19 +18,20 @@ Optional<Any>
     return Optional<Any>(Any(value));
   }
 
-  if (parser.peek()=='$') {
+  if (parser.peekChar()=='$') {
     float value = input_values[input_index];
     ++input_index;
     parser.skipChar();
     return Optional<Any>(value);
   }
 
-  if (parser.peek()=='[') {
+  if (parser.peekChar()=='[') {
     parser.skipChar();
 
     std::vector<Any> vector_value;
 
-    if (parser.peek()==']') {
+    if (parser.peekChar()==']') {
+      parser.skipChar();
       return Optional<Any>(Any(std::move(vector_value)));
     }
 
@@ -40,12 +45,12 @@ Optional<Any>
 
       vector_value.push_back(std::move(*maybe_value));
 
-      if (parser.peek()==']') {
+      if (parser.peekChar()==']') {
         parser.skipChar();
         break;
       }
 
-      if (parser.peek()==',') {
+      if (parser.peekChar()==',') {
         parser.skipChar();
       }
     }
@@ -54,4 +59,70 @@ Optional<Any>
   }
 
   return Optional<Any>();
+}
+
+
+Optional<Any>
+  evaluateExpression(
+    Parser &parser,
+    const std::vector<float> &input_values,
+    int &input_index
+  )
+{
+  Optional<Any> maybe_first_term =
+    evaluatePrimaryExpression(parser,input_values,input_index);
+
+  if (!maybe_first_term) {
+    return maybe_first_term;
+  }
+
+  const Any &first_term = *maybe_first_term;
+
+  parser.skipWhitespace();
+
+  if (parser.peekChar()=='+') {
+    parser.skipChar();
+
+    Optional<Any> maybe_second_term =
+      evaluatePrimaryExpression(parser,input_values,input_index);
+
+    if (!maybe_second_term) {
+      return {};
+    }
+
+    const Any &second_term = *maybe_second_term;
+
+    if (!first_term.isVector() || !second_term.isVector()) {
+      return {};
+    }
+
+    const vector<Any> &first_vector = first_term.asVector();
+    const vector<Any> &second_vector = second_term.asVector();
+
+    if (first_vector.size()!=second_vector.size()) {
+      return {};
+    }
+
+    auto n = first_vector.size();
+    vector<Any> result;
+
+    for (decltype(n) i=0; i!=n; ++i) {
+      if (!first_vector[i].isFloat()) {
+        return {};
+      }
+
+      if (!second_vector[i].isFloat()) {
+        return {};
+      }
+
+      float first_value = first_vector[i].asFloat();
+      float second_value = second_vector[i].asFloat();
+
+      result.push_back(first_value + second_value);
+    }
+
+    return Any(std::move(result));
+  }
+
+  return maybe_first_term;
 }

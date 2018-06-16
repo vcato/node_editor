@@ -1,49 +1,5 @@
 #include "executor.hpp"
-
-
-inline void printOn(std::ostream &stream,const Any &arg);
-
-
-inline void printOn(std::ostream &stream,float arg)
-{
-  stream << arg;
-}
-
-inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
-{
-  stream << "[";
-
-  auto iter = arg.begin();
-
-  if (iter!=arg.end()) {
-    printOn(stream,*iter);
-    ++iter;
-  }
-
-  while (iter!=arg.end()) {
-    stream << ",";
-    printOn(stream,*iter);
-    ++iter;
-  }
-
-  stream << "]";
-}
-
-
-inline void printOn(std::ostream &stream,const Any &arg)
-{
-  switch (arg.type()) {
-    case Any::float_type:
-      printOn(stream,arg.as<float>());
-      break;
-    case Any::vector_type:
-      printOn(stream,arg.as<std::vector<Any>>());
-      break;
-    case Any::void_type:
-      assert(false);
-      break;
-  }
-}
+#include "printonany.hpp"
 
 
 struct StreamExecutor : Executor {
@@ -75,8 +31,10 @@ struct StreamExecutor : Executor {
     printOn(stream,value);
   }
 
-  void executeReturn(const Any&) override
+  void executeReturn(const Any& arg) override
   {
-    assert(false);
+    std::cerr << "return ";
+    printOn(std::cerr,arg);
+    std::cerr << "\n";
   }
 };
