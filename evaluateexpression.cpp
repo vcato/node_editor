@@ -14,6 +14,23 @@ static Optional<Any>
 {
   float value = 0;
 
+  if (parser.peekChar()=='(') {
+    parser.skipChar();
+    Optional<Any> result =
+      evaluateExpression(parser,input_values,input_index);
+
+    if (!result) {
+      return {};
+    }
+
+    if (parser.peekChar()!=')') {
+      return {};
+    }
+
+    parser.skipChar();
+    return result;
+  }
+
   if (parser.getNumber(value)) {
     return Optional<Any>(Any(value));
   }
@@ -122,6 +139,37 @@ Optional<Any>
     }
 
     return Any(std::move(result));
+  }
+
+  if (parser.peekChar()=='/') {
+    parser.skipChar();
+
+    Optional<Any> maybe_second_term =
+      evaluatePrimaryExpression(parser,input_values,input_index);
+
+    if (!maybe_second_term) {
+      return {};
+    }
+
+    const Any &second_term = *maybe_second_term;
+
+    if (first_term.isVector() && second_term.isFloat()) {
+      const vector<Any> &first_vector = first_term.asVector();
+      float second_float = second_term.asFloat();
+      vector<Any> result;
+
+      for (auto &x : first_vector) {
+        if (!x.isFloat()) {
+          return {};
+        }
+
+        result.push_back(x.asFloat() / second_float);
+      }
+
+      return Any(std::move(result));
+    }
+
+    return {};
   }
 
   return maybe_first_term;
