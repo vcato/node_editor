@@ -10,10 +10,20 @@ using std::ostringstream;
 using Node = DiagramNode;
 
 
+namespace {
+struct DiagramState {
+  vector<vector<float>> node_output_values;
+};
+}
+
+
+#if 1
 static void
   evaluateDiagramNodeLine(
     const Diagram &diagram,
+    const DiagramState &/*diagram_state*/,
     Node &node,
+    // need to have the node output values as a parameter.
     int line_index,
     int output_index,
     Executor &executor,
@@ -36,11 +46,42 @@ static void
 
   output.value = evaluateLineText(line.text,vector<float>{input_value},executor);
 }
+#else
+static void
+  evaluateDiagramNodeLine(
+    const Diagram &,
+    const DiagramState &diagram_state,
+    Node &node,
+    int line_index,
+    int output_index,
+    Executor &executor,
+    int source_output_index,
+    int source_node
+  )
+{
+  if (output_index<0) {
+    return;
+  }
+
+  float input_value = 0;
+
+  if (source_node>=0) {
+    input_value =
+      diagram_state.node_output_values[source_node][source_output_index];
+  }
+
+  const Node::Line &line = node.lines[line_index];
+  Node::Output &output = node.outputs[output_index];
+
+  output.value = evaluateLineText(line.text,vector<float>{input_value},executor);
+}
+#endif
 
 
 static void
   updateNodeEvaluation(
     Diagram &diagram,
+    DiagramState &diagram_state,
     int node_index,
     vector<bool> &evaluated_flags,
     Executor &executor
@@ -60,7 +101,11 @@ static void
 
     if (source_node_index>=0) {
       updateNodeEvaluation(
-        diagram,source_node_index,evaluated_flags,executor
+        diagram,
+        diagram_state,
+        source_node_index,
+        evaluated_flags,
+        executor
       );
     }
   }
@@ -87,6 +132,7 @@ static void
 
     evaluateDiagramNodeLine(
       diagram,
+      diagram_state,
       node,
       i,
       output_index,
@@ -104,8 +150,9 @@ void evaluateDiagram(Diagram &diagram,Executor &executor)
 {
   int n_nodes = diagram.nNodes();
   vector<bool> evaluated_flags(n_nodes,false);
+  DiagramState diagram_state;
 
   for (auto i : diagram.existingNodeIndices()) {
-    updateNodeEvaluation(diagram,i,evaluated_flags,executor);
+    updateNodeEvaluation(diagram,diagram_state,i,evaluated_flags,executor);
   }
 }

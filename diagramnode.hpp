@@ -12,9 +12,10 @@ class DiagramNode {
     struct Output;
     struct Line;
     struct Statement;
+    using Outputs = std::vector<Output>;
 
     std::vector<Input> inputs;
-    std::vector<Output> outputs;
+    Outputs outputs;
     std::vector<Line> lines;
     std::vector<Statement> statements;
     TextObject header_text_object;
