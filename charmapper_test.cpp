@@ -5,6 +5,7 @@
 using BodyLink = Charmapper::BodyLink;
 using std::cerr;
 
+
 static void testWithTargetBody()
 {
   Charmapper charmapper;
@@ -135,6 +136,34 @@ static void testTargetLocalOffset()
 }
 
 
+#if 0
+static void clearDiagram(Diagram &diagram)
+{
+  for (auto index : diagram.existingNodeIndices()) {
+    diagram.deleteNode(index);
+  }
+}
+
+
+static void testDiagram()
+{
+  Scene scene;
+  auto &body1 = scene.addBody();
+  Charmapper charmapper;
+
+  auto &motion_pass = charmapper.addMotionPass();
+  auto &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link = BodyLink(&scene,&body1);
+  pos_expr.global_position.switchToComponents();
+  Diagram &diagram = pos_expr.global_position.components().diagram;
+  clearDiagram(diagram);
+  diagram.addNode("return [1,2]");
+  charmapper.apply();
+  assert(body1.position.x(scene.displayFrame())==1);
+}
+#endif
+
+
 int main()
 {
   testWithTargetBody();
@@ -144,4 +173,5 @@ int main()
   testFromSourceBodyWithLocalOffset();
   testFromSourceBodyWithLocalOffsetAndNoSourceBody();
   testTargetLocalOffset();
+  // testDiagram();
 }

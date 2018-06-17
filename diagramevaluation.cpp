@@ -3,7 +3,6 @@
 #include <cassert>
 #include <sstream>
 #include "linetext.hpp"
-#include "streamexecutor.hpp"
 
 using std::ostream;
 using std::vector;
@@ -13,7 +12,7 @@ using Node = DiagramNode;
 
 static void
   evaluateDiagramNodeLine(
-    Diagram &diagram,
+    const Diagram &diagram,
     Node &node,
     int line_index,
     int output_index,
@@ -32,7 +31,7 @@ static void
     input_value = diagram.node(source_node).outputs[source_output_index].value;
   }
 
-  Node::Line &line = node.lines[line_index];
+  const Node::Line &line = node.lines[line_index];
   Node::Output &output = node.outputs[output_index];
 
   output.value = evaluateLineText(line.text,vector<float>{input_value},executor);

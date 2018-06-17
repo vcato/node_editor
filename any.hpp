@@ -29,7 +29,10 @@ class Any {
     {
     }
 
-    Any(const Any&) = delete;
+    explicit Any(const Any& arg)
+    {
+      _create(arg);
+    }
 
     Any(Any&& arg)
     {
@@ -51,6 +54,28 @@ class Any {
             break;
           case vector_type:
             _value.vector_value = std::move(arg._value.vector_value);
+            break;
+        }
+      }
+
+      return *this;
+    }
+
+    Any& operator=(const Any &arg)
+    {
+      if (_type != arg._type) {
+        _destroy();
+        _create(arg);
+      }
+      else {
+        switch (_type) {
+          case void_type:
+            break;
+          case float_type:
+            _value.float_value = arg._value.float_value;
+            break;
+          case vector_type:
+            _value.vector_value = arg._value.vector_value;
             break;
         }
       }
@@ -120,6 +145,21 @@ class Any {
       }
     }
 
+    void _create(const Any& arg)
+    {
+      switch (arg._type) {
+        case void_type:
+          _create();
+          break;
+        case float_type:
+          _create(arg._value.float_value);
+          break;
+        case vector_type:
+          _create(arg._value.vector_value);
+          break;
+      }
+    }
+
     void _create()
     {
       _type = void_type;
@@ -135,6 +175,12 @@ class Any {
     {
       _type = vector_type;
       new (&_value.vector_value)std::vector<Any>(std::move(arg));
+    }
+
+    void _create(const std::vector<Any> &arg)
+    {
+      _type = vector_type;
+      new (&_value.vector_value)std::vector<Any>(arg);
     }
 
     void _destroy()
@@ -216,7 +262,7 @@ inline void printOn(std::ostream &stream,const Any &arg)
       printOn(stream,arg.as<std::vector<Any>>());
       break;
     case Any::void_type:
-      assert(false);
+      stream << "void()";
       break;
   }
 }

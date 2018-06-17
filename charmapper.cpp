@@ -5,6 +5,7 @@
 #include "removefrom.hpp"
 #include "diagramevaluation.hpp"
 #include "streamexecutor.hpp"
+#include "diagramexecutor.hpp"
 
 
 using std::make_unique;
@@ -12,6 +13,7 @@ using std::cerr;
 using std::vector;
 using std::unique_ptr;
 using MotionPass = Charmapper::MotionPass;
+
 
 
 Charmapper::MotionPass::MotionPass()
@@ -130,9 +132,37 @@ void Charmapper::apply()
 
         if (expr.global_position.isComponents()) {
           Diagram &diagram = expr.global_position.diagram;
-          StreamExecutor executor(cerr);
+          DiagramExecutor executor(/*show_stream*/cerr);
+          // We need to be using an Executor which can give us the return
+          // value.  The StreamExecutor just prints the return value.
           evaluateDiagram(diagram,executor);
+#if 1
           new_position = makePoint2D(expr.global_position.components());
+#else
+          cerr << "return value: " << executor.return_value << "\n";
+          if (!executor.return_value.isVector()) {
+            assert(false);
+          }
+
+          const vector<Any> &return_vector = executor.return_value.asVector();
+
+          if (return_vector.size()!=2) {
+            assert(false);
+          }
+
+          const Any &any_x = return_vector[0];
+          const Any &any_y = return_vector[1];
+
+          if (!any_x.isFloat()) {
+            assert(false);
+          }
+
+          if (!any_y.isFloat()) {
+            assert(false);
+          }
+
+          new_position = Point2D(any_x.asFloat(),any_y.asFloat());
+#endif
         }
         else if (expr.global_position.isFromBody()) {
           auto &from_body_data = expr.global_position.fromBody();
