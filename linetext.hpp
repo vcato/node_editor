@@ -7,15 +7,16 @@
 #include <cassert>
 #include "stringutil.hpp"
 #include "executor.hpp"
+#include "optional.hpp"
 
 
 extern bool lineTextHasOutput(const std::string &text);
 extern int lineTextInputCount(const std::string &text);
 
 
-extern float
+extern Optional<Any>
   evaluateLineText(
-    const std::string &line_text,
+    const std::string &line_text_arg,
     const std::vector<Any> &input_values,
     Executor &executor
   );

@@ -97,7 +97,7 @@ bool lineTextHasOutput(const std::string &text_arg)
 }
 
 
-float
+Optional<Any>
   evaluateLineText(
     const string &line_text_arg,
     const vector<Any> &input_values,
@@ -109,7 +109,7 @@ float
 
   if (isNumber(line_text)) {
     float result = std::stoi(line_text);
-    return result;
+    return Any(result);
   }
 
   int character_index = 0;
@@ -119,7 +119,7 @@ float
   if (parser.getIdentifier(identifier)) {
     if (identifier=="show") {
       if (parser.peekChar()!='(') {
-        return 0;
+        return {};
       }
 
       ++character_index;
@@ -134,11 +134,11 @@ float
       bool was_evaluated = maybe_value.hasValue();
 
       if (!was_evaluated) {
-        return 0;
+        return {};
       }
 
       if (parser.peekChar()!=')') {
-        return 0;
+        return {};
       }
 
       ++character_index;
@@ -146,10 +146,10 @@ float
       executor.executeShow(*maybe_value);
 
       if (!parser.atEnd()) {
-        return 0;
+        return {};
       }
 
-      return 0;
+      return Any();
     }
 
     if (identifier=="return") {
@@ -164,24 +164,12 @@ float
         executor.executeReturn(*maybe_value);
       }
 
-      return 0;
+      return Any();
     }
 
-    return 0;
+    // For now we'll treat anything else as an unknown identifier.
+    return {};
   }
 
-  Optional<Any> maybe_result =
-    evaluateExpression(parser,input_values,input_index);
-
-  if (!maybe_result) {
-    return 0;
-  }
-
-  const Any &result = *maybe_result;
-
-  if (result.isFloat()) {
-    return result.asFloat();
-  }
-
-  return 0;
+  return evaluateExpression(parser,input_values,input_index);
 }

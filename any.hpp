@@ -89,11 +89,11 @@ class Any {
 
       switch (_type) {
         case void_type:
-          assert(false);
+          return true;
         case float_type:
           return asFloat()==arg.asFloat();
         case vector_type:
-          assert(false);
+          return asVector()==arg.asVector();
       }
 
       assert(false);
@@ -117,6 +117,7 @@ class Any {
         return any_cast<T>(*this);
       }
 
+    bool isVoid() const { return _type==void_type; }
     bool isVector() const { return _type==vector_type; }
     bool isFloat() const { return _type==float_type; }
     const std::vector<Any> &asVector() const { return as<std::vector<Any>>(); }

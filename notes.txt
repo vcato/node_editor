@@ -263,4 +263,4 @@ May want to consider creating an abstract tree widget class.
 ---
 Get charmapper_test.cpp:testDiagram() working.
 
-DiagramState node_output_values should be Anys instead of floats.
+evaluateLineText() returns a float, but should return an Any.

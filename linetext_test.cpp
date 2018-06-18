@@ -13,25 +13,21 @@ using std::vector;
 using std::cerr;
 
 
-static float lineTextValue(const char *text,float input_value)
+static Any lineTextValue(const char *text,const vector<Any> &input_values)
 {
   ostringstream stream;
   StreamExecutor executor = {stream};
-  float result = evaluateLineText(text,vector<Any>{input_value},executor);
+  Optional<Any> maybe_result = evaluateLineText(text,input_values,executor);
+  assert(maybe_result);
   string output = stream.str();
   assert(output=="");
-  return result;
+  return std::move(*maybe_result);
 }
 
 
-static float lineTextValue(const char *text,const vector<Any> &input_values)
+static Any lineTextValue(const char *text,const Any& input_value)
 {
-  ostringstream stream;
-  StreamExecutor executor = {stream};
-  float result = evaluateLineText(text,input_values,executor);
-  string output = stream.str();
-  assert(output=="");
-  return result;
+  return lineTextValue(text,vector<Any>{Any(input_value)});
 }
 
 
@@ -47,7 +43,6 @@ struct FakeExecutor : Executor {
 
   void executeShow(const Any&) override
   {
-    assert(false);
   }
 
   void executeReturn(const Any& arg) override
@@ -60,12 +55,34 @@ struct FakeExecutor : Executor {
 }
 
 
-static float lineTextValue(const string &line_text)
+static Any lineTextValue(const string &line_text)
 {
   ostringstream dummy_stream;
-  float input_value = 0;
   StreamExecutor executor = {dummy_stream};
-  return evaluateLineText(line_text,vector<Any>{input_value},executor);
+  Optional<Any> maybe_result = evaluateLineText(line_text,{},executor);
+
+  if (!maybe_result) {
+    return Any();
+  }
+
+  return std::move(*maybe_result);
+}
+
+
+static vector<Any> makeVector(float a,float b)
+{
+  vector<Any> result;
+  result.push_back(a);
+  result.push_back(b);
+  return result;
+}
+
+
+static void testInvalid(const string &line_text)
+{
+  FakeExecutor executor;
+  Optional<Any> maybe_result = evaluateLineText(line_text,{},executor);
+  assert(!maybe_result);
 }
 
 
@@ -82,10 +99,11 @@ int main()
   assert(!lineTextHasOutput(")"));
   assert(!lineTextHasOutput("return $"));
   assert(lineTextValue("5")==5);
-  assert(lineTextValue("t")==0);
+  assert(lineTextValue("t")==Any());
   assert(lineTextValue("$",5)==5);
-  assert(lineTextValue("")==0);
+  assert(lineTextValue("")==Any());
   assert(lineTextValue("$+$",{1,2})==3);
+  assert(lineTextValue("[1,2]")==makeVector(1,2));
 
   {
     FakeExecutor executor;
@@ -99,4 +117,9 @@ int main()
     string execution = executor.stream.str();
     assert(execution=="return([1,2])\n");
   }
+
+  testInvalid("show");
+  testInvalid("show(5");
+  testInvalid("show()");
+  testInvalid("show(5)x");
 }

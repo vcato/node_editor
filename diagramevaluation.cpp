@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sstream>
 #include "linetext.hpp"
+#include "diagramio.hpp"
 
 using std::ostream;
 using std::vector;
@@ -25,10 +26,14 @@ static void
 {
   const Node::Line &line = node.lines[line_index];
 
-  float output_value = evaluateLineText(line.text,input_values,executor);
+  Optional<Any> maybe_output_value =
+    evaluateLineText(line.text,input_values,executor);
 
   if (output_index>=0) {
-    diagram_state.node_output_values[node_index][output_index] = output_value;
+    if (maybe_output_value) {
+      diagram_state.node_output_values[node_index][output_index] =
+        *maybe_output_value;
+    }
   }
 }
 

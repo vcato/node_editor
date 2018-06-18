@@ -6,6 +6,7 @@
 #include "diagramevaluation.hpp"
 #include "streamexecutor.hpp"
 #include "diagramexecutor.hpp"
+#include "diagramio.hpp"
 
 
 using std::make_unique;
