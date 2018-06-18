@@ -10,48 +10,12 @@ using std::ostringstream;
 using Node = DiagramNode;
 
 
-namespace {
-struct DiagramState {
-  vector<vector<float>> node_output_values;
-};
-}
-
-
-#if 1
-static void
-  evaluateDiagramNodeLine(
-    const Diagram &diagram,
-    const DiagramState &/*diagram_state*/,
-    Node &node,
-    // need to have the node output values as a parameter.
-    int line_index,
-    int output_index,
-    Executor &executor,
-    int source_output_index,
-    int source_node
-  )
-{
-  if (output_index<0) {
-    return;
-  }
-
-  float input_value = 0;
-
-  if (source_node>=0) {
-    input_value = diagram.node(source_node).outputs[source_output_index].value;
-  }
-
-  const Node::Line &line = node.lines[line_index];
-  Node::Output &output = node.outputs[output_index];
-
-  output.value = evaluateLineText(line.text,vector<float>{input_value},executor);
-}
-#else
 static void
   evaluateDiagramNodeLine(
     const Diagram &,
-    const DiagramState &diagram_state,
-    Node &node,
+    DiagramState &diagram_state,
+    const Node &node,
+    NodeIndex node_index,
     int line_index,
     int output_index,
     Executor &executor,
@@ -71,16 +35,15 @@ static void
   }
 
   const Node::Line &line = node.lines[line_index];
-  Node::Output &output = node.outputs[output_index];
 
-  output.value = evaluateLineText(line.text,vector<float>{input_value},executor);
+  diagram_state.node_output_values[node_index][output_index] =
+    evaluateLineText(line.text,vector<float>{input_value},executor);
 }
-#endif
 
 
 static void
   updateNodeEvaluation(
-    Diagram &diagram,
+    const Diagram &diagram,
     DiagramState &diagram_state,
     int node_index,
     vector<bool> &evaluated_flags,
@@ -93,7 +56,7 @@ static void
     return;
   }
 
-  Node &node = diagram.node(node_index);
+  const Node &node = diagram.node(node_index);
   int n_inputs = node.inputs.size();
 
   for (int i=0; i!=n_inputs; ++i) {
@@ -113,6 +76,8 @@ static void
   int n_expressions = node.statements.size();
   int next_output_index = 0;
   int next_input_index = 0;
+  int n_outputs = node.nOutputs();
+  diagram_state.node_output_values[node_index].resize(n_outputs);
 
   for (int i=0; i!=n_expressions; ++i) {
     int source_output_index = -1;
@@ -134,6 +99,7 @@ static void
       diagram,
       diagram_state,
       node,
+      node_index,
       i,
       output_index,
       executor,
@@ -146,13 +112,25 @@ static void
 }
 
 
-void evaluateDiagram(Diagram &diagram,Executor &executor)
+void
+  evaluateDiagram(
+    const Diagram &diagram,
+    Executor &executor,
+    DiagramState &diagram_state
+  )
 {
   int n_nodes = diagram.nNodes();
   vector<bool> evaluated_flags(n_nodes,false);
-  DiagramState diagram_state;
+  diagram_state.node_output_values.resize(n_nodes);
 
   for (auto i : diagram.existingNodeIndices()) {
     updateNodeEvaluation(diagram,diagram_state,i,evaluated_flags,executor);
   }
+}
+
+
+void evaluateDiagram(const Diagram &diagram,Executor &executor)
+{
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,executor,diagram_state);
 }

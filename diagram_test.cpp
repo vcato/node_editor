@@ -14,11 +14,11 @@ using std::cerr;
 
 
 
-static void evaluateDiagram(Diagram &diagram)
+static void evaluateDiagram(Diagram &diagram,DiagramState &diagram_state)
 {
   ostringstream dummy_stream;
   StreamExecutor executor(dummy_stream);
-  evaluateDiagram(diagram,executor);
+  evaluateDiagram(diagram,executor,diagram_state);
 }
 
 
@@ -26,8 +26,9 @@ static void testEvaluation1()
 {
   Diagram diagram;
   int node_index =  diagram.addNode("5");
-  evaluateDiagram(diagram);
-  assert(diagram.node(node_index).outputs[0].value==5);
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,diagram_state);
+  assert(diagram_state.node_output_values[node_index][0]==5);
 }
 
 
@@ -35,15 +36,17 @@ static void testEvaluation2()
 {
   Diagram diagram;
   int node_index =  diagram.addNode("6");
-  evaluateDiagram(diagram);
-  assert(diagram.node(node_index).outputs[0].value==6);
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,diagram_state);
+  assert(diagram_state.node_output_values[node_index][0]==6);
 }
 
 
 static void evaluate(Diagram &diagram,ostream &stream)
 {
   StreamExecutor executor(stream);
-  evaluateDiagram(diagram,executor);
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,executor,diagram_state);
 }
 
 

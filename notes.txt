@@ -264,11 +264,3 @@ May want to consider creating an abstract tree widget class.
 Get diagramevaluation_test.cpp:testSimpleReturn() working.
 
 Get charmapper_test.cpp:testDiagram() working.
-
-Currently evaluateDiagram can't take const diagrams because the output
-values of the diagram nodes are stored in the nodes themselves.  I'm thinking
-that these output values should be stored in a separate data structure.
-This will represent something like a stack frame for the diagram evaluation.
-An example of where this is important is if we are using the diagram like
-a function, where the diagram nodes could have different output values
-for different calls to the same function.

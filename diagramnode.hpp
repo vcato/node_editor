@@ -40,7 +40,6 @@ class DiagramNode {
     };
 
     struct Output {
-      float value = 0;
     };
 
     struct Line {

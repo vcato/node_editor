@@ -3,4 +3,10 @@
 #include "executor.hpp"
 
 
-extern void evaluateDiagram(Diagram &,Executor &);
+struct DiagramState {
+  std::vector<std::vector<float>> node_output_values;
+};
+
+
+extern void evaluateDiagram(const Diagram &,Executor &);
+extern void evaluateDiagram(const Diagram &,Executor &,DiagramState &);

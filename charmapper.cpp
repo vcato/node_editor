@@ -135,7 +135,8 @@ void Charmapper::apply()
           DiagramExecutor executor(/*show_stream*/cerr);
           // We need to be using an Executor which can give us the return
           // value.  The StreamExecutor just prints the return value.
-          evaluateDiagram(diagram,executor);
+          DiagramState diagram_state;
+          evaluateDiagram(diagram,executor,diagram_state);
 #if 1
           new_position = makePoint2D(expr.global_position.components());
 #else
