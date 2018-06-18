@@ -264,3 +264,7 @@ May want to consider creating an abstract tree widget class.
 Get charmapper_test.cpp:testDiagram() working.
 
 DiagramState node_output_values should be Anys instead of floats.
+
+evaluateDiagramNodeLine assumes that there is only one input for a line.  This
+is the way it used to work, but now we can access multiple inputs on
+a single line.

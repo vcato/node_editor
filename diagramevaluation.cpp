@@ -20,37 +20,12 @@ static void
     int line_index,
     int output_index,
     Executor &executor,
-    int source_output_index,
-    int source_node
+    const vector<float> &input_values
   )
 {
-#if 1
-  float input_value = 0;
-
-  if (source_node>=0) {
-    input_value =
-      diagram_state.node_output_values[source_node][source_output_index];
-  }
-#else
-  Any input_value;
-
-  if (source_node>=0) {
-    input_value =
-      diagram_state.node_output_values[source_node][source_output_index];
-  }
-#endif
-
   const Node::Line &line = node.lines[line_index];
 
-#if 1
-  // This isn't right, since a single line could use more than one
-  // input.
-  float output_value =
-    evaluateLineText(line.text,vector<float>{input_value},executor);
-#else
-  Any output_value =
-    evaluateLineText(line.text,vector<Any>{std::move(input_value)},executor);
-#endif
+  float output_value = evaluateLineText(line.text,input_values,executor);
 
   if (output_index>=0) {
     diagram_state.node_output_values[node_index][output_index] = output_value;
@@ -95,10 +70,20 @@ static void
   int next_input_index = 0;
   int n_outputs = node.nOutputs();
   diagram_state.node_output_values[node_index].resize(n_outputs);
+  vector<float> input_values;
+
+  for (int i=0; i!=n_inputs; ++i) {
+    int source_node = node.inputs[i].source_node_index;
+    int source_output_index = node.inputs[i].source_output_index;
+    float source_value = 0;
+    if (source_node>=0 && source_output_index>=0) {
+      source_value =
+        diagram_state.node_output_values[source_node][source_output_index];
+    }
+    input_values.push_back(source_value);
+  }
 
   for (int i=0; i!=n_expressions; ++i) {
-    int source_output_index = -1;
-    int source_node = -1;
     int output_index = -1;
 
     if (node.statements[i].has_output) {
@@ -107,8 +92,6 @@ static void
     }
 
     if (node.lines[i].n_inputs==1) {
-      source_node = node.inputs[next_input_index].source_node_index;
-      source_output_index = node.inputs[next_input_index].source_output_index;
       next_input_index += node.lines[i].n_inputs;
     }
 
@@ -120,8 +103,7 @@ static void
       i,
       output_index,
       executor,
-      source_output_index,
-      source_node
+      input_values
     );
   }
 
