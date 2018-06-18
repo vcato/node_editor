@@ -174,27 +174,6 @@ float
     return 0;
   }
 
-#if 1
-  if (line_text=="$+$" || line_text=="$") {
-    Optional<Any> maybe_result =
-      evaluateExpression(parser,input_values,input_index);
-    assert(maybe_result);
-    assert(maybe_result->isFloat());
-    return maybe_result->asFloat();
-  }
-
-#if 0
-  cerr << "line_text: " << line_text << "\n";
-  cerr << "input_values.size(): " << input_values.size() << "\n";
-
-  Optional<Any> maybe_result =
-    evaluateExpression(parser,input_values,input_index);
-
-  assert(!maybe_result || !maybe_result->isFloat());
-#endif
-
-  return 0;
-#else
   Optional<Any> maybe_result =
     evaluateExpression(parser,input_values,input_index);
 
@@ -209,5 +188,4 @@ float
   }
 
   return 0;
-#endif
 }
