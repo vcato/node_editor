@@ -8,11 +8,7 @@ using std::cerr;
 static Optional<Any>
   evaluatePrimaryExpression(
     Parser &parser,
-#if 1
-    const std::vector<float> &input_values,
-#else
     const std::vector<Any> &input_values,
-#endif
     int &input_index
   )
 {
@@ -86,11 +82,7 @@ static Optional<Any>
 Optional<Any>
   evaluateExpression(
     Parser &parser,
-#if 1
-    const std::vector<float> &input_values,
-#else
     const std::vector<Any> &input_values,
-#endif
     int &input_index
   )
 {

@@ -13,11 +13,7 @@ static Optional<Any> evaluateString(const string &arg)
 {
   int index = 0;
   Parser parser{arg,index};
-#if 1
-  vector<float> input_values;
-#else
   vector<Any> input_values;
-#endif
   int input_index = 0;
   return evaluateExpression(parser,input_values,input_index);
 }
@@ -106,7 +102,7 @@ static void testAddingInputs()
   string text = "$+$";
   int index = 0;
   Parser parser(text,index);
-  vector<float> input_values = {1,2};
+  vector<Any> input_values = {1,2};
   int input_index = 0;
   Optional<Any> maybe_result =
     evaluateExpression(

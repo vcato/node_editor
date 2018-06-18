@@ -17,28 +17,13 @@ static float lineTextValue(const char *text,float input_value)
 {
   ostringstream stream;
   StreamExecutor executor = {stream};
-#if 1
-  float result = evaluateLineText(text,vector<float>{input_value},executor);
-#else
   float result = evaluateLineText(text,vector<Any>{input_value},executor);
-#endif
   string output = stream.str();
   assert(output=="");
   return result;
 }
 
 
-#if 1
-static float lineTextValue(const char *text,vector<float> input_values)
-{
-  ostringstream stream;
-  StreamExecutor executor = {stream};
-  float result = evaluateLineText(text,input_values,executor);
-  string output = stream.str();
-  assert(output=="");
-  return result;
-}
-#else
 static float lineTextValue(const char *text,const vector<Any> &input_values)
 {
   ostringstream stream;
@@ -48,7 +33,6 @@ static float lineTextValue(const char *text,const vector<Any> &input_values)
   assert(output=="");
   return result;
 }
-#endif
 
 
 static bool lineTextHasInput(const string &text)
@@ -81,11 +65,7 @@ static float lineTextValue(const string &line_text)
   ostringstream dummy_stream;
   float input_value = 0;
   StreamExecutor executor = {dummy_stream};
-#if 1
-  return evaluateLineText(line_text,vector<float>{input_value},executor);
-#else
   return evaluateLineText(line_text,vector<Any>{input_value},executor);
-#endif
 }
 
 

@@ -20,7 +20,7 @@ static void
     int line_index,
     int output_index,
     Executor &executor,
-    const vector<float> &input_values
+    const vector<Any> &input_values
   )
 {
   const Node::Line &line = node.lines[line_index];
@@ -70,12 +70,12 @@ static void
   int next_input_index = 0;
   int n_outputs = node.nOutputs();
   diagram_state.node_output_values[node_index].resize(n_outputs);
-  vector<float> input_values;
+  vector<Any> input_values;
 
   for (int i=0; i!=n_inputs; ++i) {
     int source_node = node.inputs[i].source_node_index;
     int source_output_index = node.inputs[i].source_output_index;
-    float source_value = 0;
+    Any source_value;
     if (source_node>=0 && source_output_index>=0) {
       source_value =
         diagram_state.node_output_values[source_node][source_output_index];

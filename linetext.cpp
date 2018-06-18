@@ -100,11 +100,7 @@ bool lineTextHasOutput(const std::string &text_arg)
 float
   evaluateLineText(
     const string &line_text_arg,
-#if 1
-    const vector<float> &input_values,
-#else
     const vector<Any> &input_values,
-#endif
     Executor &executor
   )
 {
