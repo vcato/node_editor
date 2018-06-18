@@ -263,4 +263,5 @@ May want to consider creating an abstract tree widget class.
 ---
 Get charmapper_test.cpp:testDiagram() working.
 
-evaluateLineText() returns a float, but should return an Any.
+Need to be able to handle a line text where we pull variables from the
+environment.
