@@ -1,17 +1,20 @@
 #include "optionalpoint2d.hpp"
 
 #include <sstream>
+#include <iostream>
 #include "diagramevaluation.hpp"
 #include "diagramexecutor.hpp"
 
 
-#if 0
+using std::vector;
+using std::cerr;
+
+
 static Point2D evaluateDiagramReturningPoint2D(const Diagram &diagram)
 {
   std::ostringstream show_stream;
   DiagramExecutor executor(show_stream);
-  // evaluateDiagram can't take a const diagram..  Not sure why.
-  evaluateDiagram(diagram,executor)
+  evaluateDiagram(diagram,executor);
   assert(executor.return_value.isVector());
   const vector<Any> &return_vector = executor.return_value.asVector();
   assert(return_vector.size()==2);
@@ -21,10 +24,8 @@ static Point2D evaluateDiagramReturningPoint2D(const Diagram &diagram)
   assert(any_y.isFloat());
   return Point2D(any_x.asFloat(),any_y.asFloat());
 }
-#endif
 
 
-#if 0
 static void testSimpleReturn()
 {
   Diagram diagram;
@@ -32,10 +33,9 @@ static void testSimpleReturn()
   Point2D result = evaluateDiagramReturningPoint2D(diagram);
   assert(result==Point2D(1,2));
 }
-#endif
 
 
 int main()
 {
-  // testSimpleReturn();
+  testSimpleReturn();
 }

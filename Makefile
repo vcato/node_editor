@@ -66,7 +66,8 @@ evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
-  linetext.o statementtext.o stringutil.o evaluateexpression.o
+  linetext.o statementtext.o stringutil.o evaluateexpression.o \
+  diagramevaluation.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \

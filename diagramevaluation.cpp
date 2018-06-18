@@ -7,6 +7,7 @@
 using std::ostream;
 using std::vector;
 using std::ostringstream;
+using std::cerr;
 using Node = DiagramNode;
 
 
@@ -23,10 +24,6 @@ static void
     int source_node
   )
 {
-  if (output_index<0) {
-    return;
-  }
-
   float input_value = 0;
 
   if (source_node>=0) {
@@ -36,8 +33,12 @@ static void
 
   const Node::Line &line = node.lines[line_index];
 
-  diagram_state.node_output_values[node_index][output_index] =
+  float output_value =
     evaluateLineText(line.text,vector<float>{input_value},executor);
+
+  if (output_index>=0) {
+    diagram_state.node_output_values[node_index][output_index] = output_value;
+  }
 }
 
 
