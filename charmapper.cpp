@@ -140,7 +140,9 @@ void Charmapper::apply()
 #if 1
           new_position = makePoint2D(expr.global_position.components());
 #else
+          printDiagramOn(cerr,diagram);
           cerr << "return value: " << executor.return_value << "\n";
+
           if (!executor.return_value.isVector()) {
             assert(false);
           }

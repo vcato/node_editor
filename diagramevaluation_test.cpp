@@ -35,7 +35,21 @@ static void testSimpleReturn()
 }
 
 
+#if 0
+static void testConnectedReturn()
+{
+  Diagram diagram;
+  NodeIndex node1 = diagram.addNode("[1,2]");
+  NodeIndex node2 = diagram.addNode("return $");
+  diagram.connectNodes(node1,0,node2,0);
+  Point2D result = evaluateDiagramReturningPoint2D(diagram);
+  assert(result==Point2D(1,2));
+}
+#endif
+
+
 int main()
 {
   testSimpleReturn();
+  // testConnectedReturn();
 }

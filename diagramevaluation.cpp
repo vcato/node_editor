@@ -24,17 +24,33 @@ static void
     int source_node
   )
 {
+#if 1
   float input_value = 0;
 
   if (source_node>=0) {
     input_value =
       diagram_state.node_output_values[source_node][source_output_index];
   }
+#else
+  Any input_value;
+
+  if (source_node>=0) {
+    input_value =
+      diagram_state.node_output_values[source_node][source_output_index];
+  }
+#endif
 
   const Node::Line &line = node.lines[line_index];
 
+#if 1
+  // This isn't right, since a single line could use more than one
+  // input.
   float output_value =
     evaluateLineText(line.text,vector<float>{input_value},executor);
+#else
+  Any output_value =
+    evaluateLineText(line.text,vector<Any>{std::move(input_value)},executor);
+#endif
 
   if (output_index>=0) {
     diagram_state.node_output_values[node_index][output_index] = output_value;

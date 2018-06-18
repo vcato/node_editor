@@ -16,7 +16,11 @@ extern int lineTextInputCount(const std::string &text);
 extern float
   evaluateLineText(
     const std::string &line_text,
+#if 1
     const std::vector<float> &input_values,
+#else
+    const std::vector<Any> &input_values,
+#endif
     Executor &executor
   );
 

@@ -100,7 +100,11 @@ bool lineTextHasOutput(const std::string &text_arg)
 float
   evaluateLineText(
     const string &line_text_arg,
+#if 1
     const vector<float> &input_values,
+#else
+    const vector<Any> &input_values,
+#endif
     Executor &executor
   )
 {
@@ -170,17 +174,40 @@ float
     return 0;
   }
 
-  if (line_text=="$+$") {
-    float input1 = input_values[input_index++];
-    float input2 = input_values[input_index++];
-    return input1 + input2;
+#if 1
+  if (line_text=="$+$" || line_text=="$") {
+    Optional<Any> maybe_result =
+      evaluateExpression(parser,input_values,input_index);
+    assert(maybe_result);
+    assert(maybe_result->isFloat());
+    return maybe_result->asFloat();
   }
 
-  if (line_text=="$") {
-    auto value = input_values[input_index];
-    ++input_index;
-    return value;
+#if 0
+  cerr << "line_text: " << line_text << "\n";
+  cerr << "input_values.size(): " << input_values.size() << "\n";
+
+  Optional<Any> maybe_result =
+    evaluateExpression(parser,input_values,input_index);
+
+  assert(!maybe_result || !maybe_result->isFloat());
+#endif
+
+  return 0;
+#else
+  Optional<Any> maybe_result =
+    evaluateExpression(parser,input_values,input_index);
+
+  if (!maybe_result) {
+    return 0;
+  }
+
+  const Any &result = *maybe_result;
+
+  if (result.isFloat()) {
+    return result.asFloat();
   }
 
   return 0;
+#endif
 }

@@ -13,7 +13,11 @@ static Optional<Any> evaluateString(const string &arg)
 {
   int index = 0;
   Parser parser{arg,index};
+#if 1
   vector<float> input_values;
+#else
+  vector<Any> input_values;
+#endif
   int input_index = 0;
   return evaluateExpression(parser,input_values,input_index);
 }
@@ -97,6 +101,26 @@ static void testVectorAverage()
 }
 
 
+static void testAddingInputs()
+{
+  string text = "$+$";
+  int index = 0;
+  Parser parser(text,index);
+  vector<float> input_values = {1,2};
+  int input_index = 0;
+  Optional<Any> maybe_result =
+    evaluateExpression(
+      parser,
+      input_values,
+      input_index
+    );
+  assert(maybe_result);
+  const Any& result = *maybe_result;
+  assert(result.isFloat());
+  assert(result==3);
+}
+
+
 int main()
 {
   testListWithInvalidElement();
@@ -104,4 +128,5 @@ int main()
   testNestedVectors();
   testAddingVectors();
   testVectorAverage();
+  testAddingInputs();
 }

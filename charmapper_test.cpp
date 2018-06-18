@@ -158,6 +158,7 @@ static void testDiagram()
   Diagram &diagram = pos_expr.global_position.components().diagram;
   clearDiagram(diagram);
   diagram.addNode("return [1,2]");
+  cerr << "--- applying charmapper\n";
   charmapper.apply();
   assert(body1.position.x(scene.displayFrame())==1);
 }

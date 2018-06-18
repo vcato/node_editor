@@ -8,7 +8,11 @@ using std::cerr;
 static Optional<Any>
   evaluatePrimaryExpression(
     Parser &parser,
+#if 1
     const std::vector<float> &input_values,
+#else
+    const std::vector<Any> &input_values,
+#endif
     int &input_index
   )
 {
@@ -36,7 +40,7 @@ static Optional<Any>
   }
 
   if (parser.peekChar()=='$') {
-    float value = input_values[input_index];
+    const Any& value = input_values[input_index];
     ++input_index;
     parser.skipChar();
     return Optional<Any>(value);
@@ -82,7 +86,11 @@ static Optional<Any>
 Optional<Any>
   evaluateExpression(
     Parser &parser,
+#if 1
     const std::vector<float> &input_values,
+#else
+    const std::vector<Any> &input_values,
+#endif
     int &input_index
   )
 {
@@ -108,6 +116,12 @@ Optional<Any>
     }
 
     const Any &second_term = *maybe_second_term;
+
+    if (first_term.isFloat() && second_term.isFloat()) {
+      float first_float = first_term.asFloat();
+      float second_float = second_term.asFloat();
+      return Any(first_float + second_float);
+    }
 
     if (!first_term.isVector() || !second_term.isVector()) {
       return {};
