@@ -118,6 +118,20 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
 }
 
 
+#if 0
+void TreeEditor::itemDiagramChanged(const TreePath &path)
+{
+  visitSubWrapper(
+    world(),
+    path,
+    [&](const Wrapper &wrapper){
+      wrapper.diagramChanged();
+    }
+  );
+}
+#endif
+
+
 void TreeEditor::addTreeItem(const TreePath &new_item_path)
 {
   addMainTreeItem(new_item_path);
@@ -150,6 +164,35 @@ void TreeEditor::diagramEditorClosed(DiagramEditorWindow &window)
 {
   removeFrom(diagram_editor_window_ptrs,&window);
 }
+
+
+#if 0
+void TreeEditor::notifyItemsOfDiagramChange(Diagram &diagram_that_changed)
+{
+  forEachDescendant(
+    world(),
+    [&](const Wrapper &wrapper){
+      Diagram *diagram_ptr = wrapper.diagramPtr();
+
+      if (diagram_ptr) {
+        if (diagram_ptr==&diagram_that_changed) {
+          wrapper.diagramChanged();
+        }
+      }
+    }
+  );
+}
+#endif
+
+
+#if 0
+void TreeEditor::diagramChanged(DiagramEditorWindow &window)
+{
+  Diagram *diagram_ptr = window.diagramPtr();
+  assert(diagram_ptr);
+  notifyItemsOfDiagramChange(*diagram_ptr);
+}
+#endif
 
 
 static void
@@ -219,9 +262,10 @@ void TreeEditor::openDiagramEditor(const TreePath &path)
   window.setDiagramPtr(diagramPtr(world(),path));
   diagram_editor_window_ptrs.push_back(&window);
 
-  window.close_callback = [&]{
-    diagramEditorClosed(window);
-  };
+  window.close_callback = [&]{ diagramEditorClosed(window); };
+#if 0
+  window.diagram_changed_callback = [&]{ diagramChanged(window.diagramPtr()); }
+#endif
 }
 
 

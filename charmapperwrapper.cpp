@@ -270,6 +270,13 @@ struct MotionPassWrapper : VoidWrapper {
       return &global_position.diagram;
     }
 
+#if 0
+    void diagramChanged() const override
+    {
+      callbacks.notifyCharmapChanged();
+    }
+#endif
+
     virtual void
       setValue(
         const TreePath &path,

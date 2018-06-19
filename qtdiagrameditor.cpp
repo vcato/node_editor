@@ -600,7 +600,4 @@ void QtDiagramEditor::paintGL()
       temp_source_pos
     );
   }
-
-  StreamExecutor executor(cerr);
-  evaluateDiagram(diagram(),executor);
 }

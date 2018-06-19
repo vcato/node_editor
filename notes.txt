@@ -263,3 +263,26 @@ May want to consider creating an abstract tree widget class.
 
 Need tests for cases where the global position diagram doesn't return
 a 2-element vector.
+
+If we change a diagram, we should somehow know that the charmap should
+be applied again.  I think TreeEditor::openDiagramEditor should be
+registering a callback so it can know when the diagram is modified.
+When the callback is called, how do we know which charmapper to apply?
+Seems like it should be similar to how it works when we modify something
+like a spinbox value.
+  We have TreeEditor::numberItemValueChanged()
+  We can have TreeEditor::itemDiagramChanged()
+  GlobalPositionWrapper::diagramChanged()
+
+We have a bit of an issue if we open the diagram editor and then we insert
+a new item above that item.  The path to the item that has the diagram
+changes, so how do we know which item to notify?
+
+When a diagram changes, go through every item and get its diagram pointer. If
+it matches then notify the item that the diagram changed.
+
+I started implementing these:
+  TreeEditor::notifyItemsOfDiagramChange()
+  TreeEditor::diagramChanged()
+  TreeEditor::openDiagramEditor()
+  TreeEditor::itemDiagramChanged()
