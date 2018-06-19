@@ -159,6 +159,47 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
+  struct ComponentsGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
+    ComponentsGlobalPositionData &components_global_position;
+    const Callbacks &callbacks;
+
+    ComponentsGlobalPositionWrapper(
+      ComponentsGlobalPositionData &arg,
+      const Callbacks &callbacks_arg
+    )
+    : components_global_position(arg),
+      callbacks(callbacks_arg)
+    {
+    }
+
+    void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
+    {
+      switch (child_index) {
+        case 0:
+          visitor(ChannelWrapper(components_global_position.x,"X",callbacks));
+          return;
+        case 1:
+          visitor(ChannelWrapper(components_global_position.y,"Y",callbacks));
+          return;
+      }
+    }
+
+    virtual Diagram *diagramPtr() const
+    {
+      assert(false);
+    }
+
+    virtual Label label() const
+    {
+      assert(false);
+    }
+
+    virtual int nChildren() const
+    {
+      return 2;
+    }
+  };
+
   struct GlobalPositionWrapper : NoOperationWrapper<EnumerationWrapper> {
     GlobalPosition &global_position;
     const Callbacks &callbacks;
@@ -192,7 +233,7 @@ struct MotionPassWrapper : VoidWrapper {
 
       virtual void visit(ComponentsGlobalPositionData &data) const
       {
-        visitor(PositionWrapper(data,"blah",callbacks));
+        visitor(ComponentsGlobalPositionWrapper(data,callbacks));
       }
     };
 

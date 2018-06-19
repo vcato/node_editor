@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 #include "streamexecutor.hpp"
 
 
@@ -11,6 +12,7 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 using std::cerr;
+using std::map;
 
 
 static Any lineTextValue(const char *text,const vector<Any> &input_values)
@@ -40,6 +42,7 @@ static bool lineTextHasInput(const string &text)
 namespace {
 struct FakeExecutor : Executor {
   ostringstream stream;
+  map<string,Any> environment;
 
   void executeShow(const Any&) override
   {
@@ -50,6 +53,17 @@ struct FakeExecutor : Executor {
     stream << "return(";
     printOn(stream,arg);
     stream << ")\n";
+  }
+
+  Optional<Any> variableValue(const std::string &name) const override
+  {
+    auto iter = environment.find(name);
+
+    if (iter==environment.end()) {
+      return {};
+    }
+
+    return iter->second;
   }
 };
 }
@@ -105,12 +119,18 @@ int main()
   assert(lineTextValue("$+$",{1,2})==3);
   assert(lineTextValue("[1,2]")==makeVector(1,2));
 
+  testInvalid("show");
+  testInvalid("show(5");
+  testInvalid("show()");
+  testInvalid("show(5)x");
+
   {
     FakeExecutor executor;
     evaluateLineText("return 3",{},executor);
     string execution = executor.stream.str();
     assert(execution=="return(3)\n");
   }
+
   {
     FakeExecutor executor;
     evaluateLineText("return [1,2]",{},executor);
@@ -118,8 +138,17 @@ int main()
     assert(execution=="return([1,2])\n");
   }
 
-  testInvalid("show");
-  testInvalid("show(5");
-  testInvalid("show()");
-  testInvalid("show(5)x");
+  {
+    FakeExecutor executor;
+    Optional<Any> maybe_result = evaluateLineText("return [",{},executor);
+    assert(!maybe_result);
+  }
+
+  {
+    FakeExecutor executor;
+    executor.environment["x"] = 5;
+    Optional<Any> maybe_result = evaluateLineText("x",{},executor);
+    assert(maybe_result);
+    assert(*maybe_result==5);
+  }
 }

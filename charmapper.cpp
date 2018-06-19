@@ -105,7 +105,7 @@ static Point2D displayedBodyPosition(Charmapper::BodyLink &source_body_link)
 }
 
 
-static Point2D makePoint2D(const Charmapper::Position &p)
+static Point2D makePoint2D(const Charmapper::GlobalPosition::ComponentsData &p)
 {
   return Point2D(p.x.value,p.y.value);
 }
@@ -134,15 +134,11 @@ void Charmapper::apply()
         if (expr.global_position.isComponents()) {
           Diagram &diagram = expr.global_position.diagram;
           DiagramExecutor executor(/*show_stream*/cerr);
-          // We need to be using an Executor which can give us the return
-          // value.  The StreamExecutor just prints the return value.
           DiagramState diagram_state;
+          Point2D parameters = makePoint2D(expr.global_position.components());
+          executor.environment["x"] = parameters.x;
+          executor.environment["y"] = parameters.y;
           evaluateDiagram(diagram,executor,diagram_state);
-#if 1
-          new_position = makePoint2D(expr.global_position.components());
-#else
-          printDiagramOn(cerr,diagram);
-          cerr << "return value: " << executor.return_value << "\n";
 
           if (!executor.return_value.isVector()) {
             assert(false);
@@ -166,7 +162,6 @@ void Charmapper::apply()
           }
 
           new_position = Point2D(any_x.asFloat(),any_y.asFloat());
-#endif
         }
         else if (expr.global_position.isFromBody()) {
           auto &from_body_data = expr.global_position.fromBody();

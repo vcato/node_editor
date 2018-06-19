@@ -163,12 +163,14 @@ Optional<Any>
       if (maybe_value) {
         executor.executeReturn(*maybe_value);
       }
+      else {
+        return {};
+      }
 
       return Any();
     }
 
-    // For now we'll treat anything else as an unknown identifier.
-    return {};
+    return executor.variableValue(identifier);
   }
 
   return evaluateExpression(parser,input_values,input_index);

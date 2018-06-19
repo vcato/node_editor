@@ -126,11 +126,8 @@ class Charmapper {
         }
       };
 
-      struct ComponentsData : Data, Position {
-        ComponentsData()
-        : Position(Diagram())
-        {
-        }
+      struct ComponentsData : Data {
+        Channel x,y;
 
         virtual void accept(const Visitor &visitor)
         {

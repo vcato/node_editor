@@ -3,6 +3,7 @@
 
 using std::vector;
 using std::cerr;
+using std::string;
 
 
 static Optional<Any>

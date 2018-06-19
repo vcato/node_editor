@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <utility>
+#include <iostream>
 
 
 template <typename T>
@@ -15,6 +16,12 @@ class Optional {
     }
 
     T &operator*()
+    {
+      assert(_has_value);
+      return _value;
+    }
+
+    const T &operator*() const
     {
       assert(_has_value);
       return _value;
@@ -81,6 +88,20 @@ class Optional {
 
     bool _has_value;
 };
+
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream &stream,const Optional<T> &arg)
+{
+  if (!arg) {
+    stream << "nullopt";
+  }
+  else {
+    stream << *arg;
+  }
+
+  return stream;
+}
 
 
 #endif /* OPTIONAL_HPP */

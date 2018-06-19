@@ -21,6 +21,11 @@ struct StreamExecutor : Executor {
     stream << "\n";
   }
 
+  Optional<Any> variableValue(const std::string &/*name*/) const override
+  {
+    return {};
+  }
+
   void print(const std::vector<Any> &value)
   {
     printOn(stream,value);

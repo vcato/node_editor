@@ -136,7 +136,6 @@ static void testTargetLocalOffset()
 }
 
 
-#if 0
 static void clearDiagram(Diagram &diagram)
 {
   for (auto index : diagram.existingNodeIndices()) {
@@ -155,14 +154,12 @@ static void testDiagram()
   auto &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link = BodyLink(&scene,&body1);
   pos_expr.global_position.switchToComponents();
-  Diagram &diagram = pos_expr.global_position.components().diagram;
+  Diagram &diagram = pos_expr.global_position.diagram;
   clearDiagram(diagram);
   diagram.addNode("return [1,2]");
-  cerr << "--- applying charmapper\n";
   charmapper.apply();
   assert(body1.position.x(scene.displayFrame())==1);
 }
-#endif
 
 
 int main()
@@ -174,5 +171,5 @@ int main()
   testFromSourceBodyWithLocalOffset();
   testFromSourceBodyWithLocalOffsetAndNoSourceBody();
   testTargetLocalOffset();
-  // testDiagram();
+  testDiagram();
 }
