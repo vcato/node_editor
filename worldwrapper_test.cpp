@@ -7,12 +7,46 @@
 #include "world.hpp"
 #include "wrapperutil.hpp"
 #include "streamvector.hpp"
+#include "diagramio.hpp"
 
 
 using std::string;
 using std::ostringstream;
 using std::ostream;
 using std::cerr;
+
+
+static NodeIndex nodeIndexWithText(const Diagram &diagram,const string &text)
+{
+  for (NodeIndex node_index : diagram.existingNodeIndices()) {
+    if (diagram.node(node_index).text()==text) {
+      return node_index;
+    }
+  }
+
+  assert(false);
+}
+
+
+static void
+  replaceNodeText(
+    Diagram &diagram,
+    const string &old_text,
+    const string &new_text
+  )
+{
+  NodeIndex node_index = nodeIndexWithText(diagram,old_text);
+  diagram.node(node_index).setText(new_text);
+}
+
+
+static void notifyDiagramChanged(Wrapper &wrapper,const string &path_string)
+{
+  TreePath path = makePath(wrapper,path_string);
+  WrapperVisitor visitor =
+    [](const Wrapper &sub_wrapper){ sub_wrapper.diagramChanged(); };
+  visitSubWrapper(wrapper,path,visitor);
+}
 
 
 namespace {
@@ -448,6 +482,31 @@ static void testRemovingACharmapper()
   assert(command_string==expected_command_string);
 }
 
+
+static void testChangingGlobalPositionDiagram()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Scene &scene = world.addScene();
+  Scene::Body &body = scene.addBody();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link.set(&scene,&body);
+  Diagram &diagram = pos_expr.global_position.diagram;
+  replaceNodeText(diagram,"return $\n","return [1,2]");
+  WorldWrapper world_wrapper(world);
+  {
+    float x = body.position.x(scene.displayFrame());
+    assert(x==0);
+  }
+  string path_string = "Charmapper1|Motion Pass|Pos Expr|Global Position";
+  notifyDiagramChanged(world_wrapper,path_string);
+  {
+    float x = body.position.x(scene.displayFrame());
+    assert(x==1);
+  }
+}
+
 }
 
 
@@ -464,5 +523,6 @@ int main()
     tests::testRemovingABodyFromTheScene();
     tests::testRemovingAPosExprFromAMotionPass();
     tests::testRemovingACharmapper();
+    tests::testChangingGlobalPositionDiagram();
   }
 }

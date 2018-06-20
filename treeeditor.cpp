@@ -12,6 +12,21 @@ using std::cerr;
 using std::function;
 
 
+static void
+  forEachDescendant(const Wrapper &wrapper,function<void(const Wrapper &)> f)
+{
+  int n_children = wrapper.nChildren();
+
+  for (int i=0; i!=n_children; ++i) {
+    wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){
+      forEachDescendant(child_wrapper,f);
+    });
+  }
+
+  f(wrapper);
+}
+
+
 Wrapper &TreeEditor::world()
 {
   assert(world_ptr);
@@ -166,7 +181,6 @@ void TreeEditor::diagramEditorClosed(DiagramEditorWindow &window)
 }
 
 
-#if 0
 void TreeEditor::notifyItemsOfDiagramChange(Diagram &diagram_that_changed)
 {
   forEachDescendant(
@@ -182,31 +196,13 @@ void TreeEditor::notifyItemsOfDiagramChange(Diagram &diagram_that_changed)
     }
   );
 }
-#endif
 
 
-#if 0
 void TreeEditor::diagramChanged(DiagramEditorWindow &window)
 {
   Diagram *diagram_ptr = window.diagramPtr();
   assert(diagram_ptr);
   notifyItemsOfDiagramChange(*diagram_ptr);
-}
-#endif
-
-
-static void
-  forEachDescendant(const Wrapper &wrapper,function<void(const Wrapper &)> f)
-{
-  int n_children = wrapper.nChildren();
-
-  for (int i=0; i!=n_children; ++i) {
-    wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){
-      forEachDescendant(child_wrapper,f);
-    });
-  }
-
-  f(wrapper);
 }
 
 
@@ -263,9 +259,7 @@ void TreeEditor::openDiagramEditor(const TreePath &path)
   diagram_editor_window_ptrs.push_back(&window);
 
   window.close_callback = [&]{ diagramEditorClosed(window); };
-#if 0
-  window.diagram_changed_callback = [&]{ diagramChanged(window.diagramPtr()); }
-#endif
+  window.diagramChangedCallback() = [&]{ diagramChanged(window); };
 }
 
 

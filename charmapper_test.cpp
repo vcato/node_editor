@@ -4,6 +4,7 @@
 
 using BodyLink = Charmapper::BodyLink;
 using std::cerr;
+using std::string;
 
 
 static void testWithTargetBody()
@@ -144,7 +145,7 @@ static void clearDiagram(Diagram &diagram)
 }
 
 
-static void testDiagram()
+static void testGlobalPositionDiagram(const string &node_text,float expected_x)
 {
   Scene scene;
   auto &body1 = scene.addBody();
@@ -156,9 +157,9 @@ static void testDiagram()
   pos_expr.global_position.switchToComponents();
   Diagram &diagram = pos_expr.global_position.diagram;
   clearDiagram(diagram);
-  diagram.addNode("return [1,2]");
+  diagram.addNode(node_text);
   charmapper.apply();
-  assert(body1.position.x(scene.displayFrame())==1);
+  assert(body1.position.x(scene.displayFrame())==expected_x);
 }
 
 
@@ -171,5 +172,9 @@ int main()
   testFromSourceBodyWithLocalOffset();
   testFromSourceBodyWithLocalOffsetAndNoSourceBody();
   testTargetLocalOffset();
-  testDiagram();
+  testGlobalPositionDiagram("return [1,2]",/*expected_x*/1);
+  testGlobalPositionDiagram("return [1,2",/*expected_x*/0);
+  testGlobalPositionDiagram("return [1,2,3]",/*expected_x*/0);
+  testGlobalPositionDiagram("return [[],2]",/*expected_x*/0);
+  testGlobalPositionDiagram("return [1,[]]",/*expected_x*/0);
 }

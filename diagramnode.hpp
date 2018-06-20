@@ -21,6 +21,7 @@ class DiagramNode {
     TextObject header_text_object;
 
     void setText(const std::string &text);
+    std::string text() const;
     void setPosition(const Point2D &);
     const Point2D &position() const { return header_text_object.position; }
     int nLines() const { return lines.size(); }

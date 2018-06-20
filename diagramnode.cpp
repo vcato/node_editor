@@ -123,6 +123,18 @@ std::vector<std::string> Node::strings() const
 }
 
 
+string Node::text() const
+{
+  string result;
+
+  for (auto &line_text : strings()) {
+    result += line_text + '\n';
+  }
+
+  return result;
+}
+
+
 void Node::setNInputs(size_t arg)
 {
   inputs.resize(arg);
@@ -194,8 +206,10 @@ void Node::setPosition(const Point2D &arg)
 void Node::setText(const std::string &text)
 {
   Node &node = *this;
+
+  node.lines.clear();
+
   if (text=="") {
-    node.lines.clear();
     node.lines.resize(1,Node::Line(""));
     node.updateInputsAndOutputs();
     assert(node.nLines()==1);

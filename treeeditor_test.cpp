@@ -61,6 +61,9 @@ struct FakeTreeEditor : TreeEditor {
 
 namespace {
 struct TestWrapper : VoidWrapper {
+  TestWrapper() = default;
+  TestWrapper(const TestWrapper &) = delete;
+
   virtual Label label() const
   {
     return label_member;
@@ -110,9 +113,17 @@ struct TestWrapper : VoidWrapper {
 
   Diagram *diagramPtr() const override { return diagram_ptr; }
 
+  void diagramChanged() const override
+  {
+    if (diagram_changed_count_ptr) {
+      ++*diagram_changed_count_ptr;
+    }
+  }
+
   TestWrapper *parent_ptr = nullptr;
   vector<unique_ptr<TestWrapper>> children;
   Diagram *diagram_ptr = nullptr;
+  int *diagram_changed_count_ptr = nullptr;
   string label_member;
 };
 }
@@ -163,9 +174,26 @@ static void testEditingChildDiagramThenRemovingItem()
 }
 
 
+static void testEditingDiagramNotifiesWrapper()
+{
+  Diagram diagram;
+  TestWrapper world;
+  TestWrapper &member = world.createChild("member");
+  int diagram_changed_count = 0;
+  member.diagram_ptr = &diagram;
+  member.diagram_changed_count_ptr = &diagram_changed_count;
+  FakeTreeEditor editor;
+  editor.setWorldPtr(&world);
+  editor.userSelectsContextMenuItem("member","Edit Diagram...");
+  editor.diagram_editor_windows[0]->diagramChangedCallback()();
+  assert(diagram_changed_count==1);
+}
+
+
 int main()
 {
   testEditingDiagramThenClosingTheDiagramEditorWindow();
   testEditingDiagramThenRemovingItem();
   testEditingChildDiagramThenRemovingItem();
+  testEditingDiagramNotifiesWrapper();
 }

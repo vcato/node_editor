@@ -141,6 +141,7 @@ class DiagramEditor {
     DiagramEditor();
     void setDiagramPtr(Diagram *);
     Diagram *diagramPtr() const;
+    std::function<void()> &diagramChangedCallback();
 
   protected:
     static NodeIndex noNodeIndex() { return -1; }
@@ -175,11 +176,13 @@ class DiagramEditor {
       NodeConnectorIndex::null();
     Point2D temp_source_pos;
     Diagram *diagram_ptr;
+    std::function<void()> diagram_changed_callback;
 
     Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
 
     virtual void redraw() = 0;
     virtual Rect rectAroundText(const TextObject &text_object) const = 0;
+
     void deleteNode(int index);
     std::string &focusedText();
     void enterPressed();
@@ -242,6 +245,9 @@ class DiagramEditor {
 
     void alsoSelectNode(NodeIndex node_index);
     bool aNodeIsSelected() const;
+
+  private:
+    void notifyDiagramChanged();
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */

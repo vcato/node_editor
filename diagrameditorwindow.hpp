@@ -17,6 +17,11 @@ class DiagramEditorWindow {
 
     std::function<void()> close_callback;
 
+    std::function<void()> &diagramChangedCallback()
+    {
+      return diagramEditor().diagramChangedCallback();
+    }
+
   protected:
     void notifyWindowClosing()
     {

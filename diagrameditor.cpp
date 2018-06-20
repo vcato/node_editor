@@ -30,6 +30,12 @@ Diagram* DiagramEditor::diagramPtr() const
 }
 
 
+std::function<void()> &DiagramEditor::diagramChangedCallback()
+{
+  return diagram_changed_callback;
+}
+
+
 void DiagramEditor::deleteNode(int index)
 {
   diagram().deleteNode(index);
@@ -55,6 +61,14 @@ void DiagramEditor::enterPressed()
 }
 
 
+void DiagramEditor::notifyDiagramChanged()
+{
+  if (diagram_changed_callback) {
+    diagram_changed_callback();
+  }
+}
+
+
 void DiagramEditor::backspacePressed()
 {
   if (aNodeIsSelected()) {
@@ -69,6 +83,7 @@ void DiagramEditor::backspacePressed()
   if (aNodeIsFocused()) {
     text_editor.backspace();
     diagram().removeInvalidInputs();
+    notifyDiagramChanged();
     redraw();
     return;
   }
@@ -114,6 +129,7 @@ void DiagramEditor::textTyped(const string &new_text)
 {
   if (aNodeIsFocused()) {
     text_editor.textTyped(new_text);
+    notifyDiagramChanged();
     redraw();
     return;
   }

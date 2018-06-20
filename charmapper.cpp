@@ -117,6 +117,41 @@ static Vector2D makeVector2D(const Charmapper::Position &p)
 }
 
 
+static void
+  evaluatePoint2DDiagram(
+    Diagram &diagram,
+    DiagramExecutor &executor,
+    Point2D &new_position
+  )
+{
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,executor,diagram_state);
+
+  if (!executor.return_value.isVector()) {
+    return;
+  }
+
+  const vector<Any> &return_vector = executor.return_value.asVector();
+
+  if (return_vector.size()!=2) {
+    return;
+  }
+
+  const Any &any_x = return_vector[0];
+  const Any &any_y = return_vector[1];
+
+  if (!any_x.isFloat()) {
+    return;
+  }
+
+  if (!any_y.isFloat()) {
+    return;
+  }
+
+  new_position = Point2D(any_x.asFloat(),any_y.asFloat());
+}
+
+
 void Charmapper::apply()
 {
   int n_passes = nPasses();
@@ -134,34 +169,10 @@ void Charmapper::apply()
         if (expr.global_position.isComponents()) {
           Diagram &diagram = expr.global_position.diagram;
           DiagramExecutor executor(/*show_stream*/cerr);
-          DiagramState diagram_state;
           Point2D parameters = makePoint2D(expr.global_position.components());
           executor.environment["x"] = parameters.x;
           executor.environment["y"] = parameters.y;
-          evaluateDiagram(diagram,executor,diagram_state);
-
-          if (!executor.return_value.isVector()) {
-            assert(false);
-          }
-
-          const vector<Any> &return_vector = executor.return_value.asVector();
-
-          if (return_vector.size()!=2) {
-            assert(false);
-          }
-
-          const Any &any_x = return_vector[0];
-          const Any &any_y = return_vector[1];
-
-          if (!any_x.isFloat()) {
-            assert(false);
-          }
-
-          if (!any_y.isFloat()) {
-            assert(false);
-          }
-
-          new_position = Point2D(any_x.asFloat(),any_y.asFloat());
+          evaluatePoint2DDiagram(diagram,executor,new_position);
         }
         else if (expr.global_position.isFromBody()) {
           auto &from_body_data = expr.global_position.fromBody();

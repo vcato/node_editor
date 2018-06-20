@@ -55,6 +55,8 @@ struct Wrapper {
 
   virtual Diagram *diagramPtr() const { return nullptr; }
 
+  virtual void diagramChanged() const {}
+
   virtual void accept(const Visitor &) const = 0;
 
   virtual Label label() const = 0;
