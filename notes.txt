@@ -250,39 +250,12 @@ Maybe a good thing to work on is being able to draw a spline.
 We'll need a way to create a window, create a drawing area within the
 window, and then provide a diagram that generates what we will draw.
 ---
-We may end up wanting to create handles for items in the tree of a specific
-type, so that when we visit the wrapper, we automatically get the wrapper
-of the appropriate type.  Not clear if it is worth it yet.
-
 Be able to make a diagram that makes a body have a position between two
   other bodies.
+
 Need to be able to copy diagram nodes by ctrl-dragging.
-
-May want to consider creating an abstract tree widget class.
-  Could be used as a tree observer.
-
-Need tests for cases where the global position diagram doesn't return
-a 2-element vector.
-
-If we change a diagram, we should somehow know that the charmap should
-be applied again.  I think TreeEditor::openDiagramEditor should be
-registering a callback so it can know when the diagram is modified.
-When the callback is called, how do we know which charmapper to apply?
-Seems like it should be similar to how it works when we modify something
-like a spinbox value.
-  We have TreeEditor::numberItemValueChanged()
-  We can have TreeEditor::itemDiagramChanged()
-  GlobalPositionWrapper::diagramChanged()
-
-We have a bit of an issue if we open the diagram editor and then we insert
-a new item above that item.  The path to the item that has the diagram
-changes, so how do we know which item to notify?
-
-When a diagram changes, go through every item and get its diagram pointer. If
-it matches then notify the item that the diagram changed.
-
-I started implementing these:
-  TreeEditor::notifyItemsOfDiagramChange()
-  TreeEditor::diagramChanged()
-  TreeEditor::openDiagramEditor()
-  TreeEditor::itemDiagramChanged()
+---
+Need to implement multiplication in the expression language.
+---
+If a node in a diagram gets wider, it should push nodes that are connected
+to it to the right.
