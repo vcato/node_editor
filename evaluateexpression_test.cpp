@@ -9,6 +9,19 @@ using std::cerr;
 using std::string;
 
 
+static vector<Any> makeVector()
+{
+  vector<Any> result;
+  return result;
+}
+
+
+static vector<Any> makeVector(Any a,Any b)
+{
+  return vector<Any>{std::move(a),std::move(b)};
+}
+
+
 static Optional<Any> evaluateString(const string &arg)
 {
   int index = 0;
@@ -25,35 +38,11 @@ static void testInvalidExpression(const string &expression)
   assert(!maybe_result);
 }
 
-
-static vector<Any> make_vector(float a,float b)
+static void test(const string &expression,const Any &expected_result)
 {
-  vector<Any> result;
-  result.push_back(a);
-  result.push_back(b);
-  return result;
-}
-
-
-static void testListWithInvalidElement()
-{
-  Optional<Any> maybe_result = evaluateString("[,2]");
-  assert(!maybe_result);
-}
-
-
-static void testEmptyList()
-{
-  Optional<Any> maybe_result = evaluateString("[]");
+  Optional<Any> maybe_result = evaluateString(expression);
   assert(maybe_result);
-  assert(maybe_result->asVector().empty());
-}
-
-
-static void testNestedVectors()
-{
-  Optional<Any> maybe_result = evaluateString("[[],2]");
-  assert(maybe_result);
+  assert(*maybe_result==expected_result);
 }
 
 
@@ -63,37 +52,6 @@ static void show(const string &name,const T &value)
   cerr << name << ": ";
   printOn(cerr,value);
   cerr << "\n";
-}
-
-
-static void testAddingVectors()
-{
-  {
-    Optional<Any> maybe_result = evaluateString("[1,2] + [3,4]");
-    assert(maybe_result);
-    assert(maybe_result->asVector()==make_vector(4,6));
-  }
-
-  testInvalidExpression("[[],2] + [3,4]");
-  testInvalidExpression("[1,2] + [[],4]");
-  testInvalidExpression("[1,2] + [3,4,5]");
-  testInvalidExpression("[1,2] + 5");
-  testInvalidExpression("[1,2] +");
-}
-
-
-static void testVectorAverage()
-{
-  {
-    Optional<Any> maybe_result = evaluateString("([1,2] + [2,3])/2");
-    assert(maybe_result);
-    assert(maybe_result->asVector()==make_vector(1.5,2.5));
-  }
-  testInvalidExpression("([1,2] + [2,3])/[]");
-  testInvalidExpression("([1,2] + [2,3])/");
-  testInvalidExpression("([[],2] + [2,3])/2");
-  testInvalidExpression("([1,2] + [2,3]");
-  testInvalidExpression("[[],2]/2");
 }
 
 
@@ -119,10 +77,20 @@ static void testAddingInputs()
 
 int main()
 {
-  testListWithInvalidElement();
-  testEmptyList();
-  testNestedVectors();
-  testAddingVectors();
-  testVectorAverage();
+  testInvalidExpression("[,2]");
+  test("[]",makeVector());
+  test("[[],2]",makeVector(makeVector(),2));
+  test("[1,2] + [3,4]",makeVector(4,6));
+  testInvalidExpression("[[],2] + [3,4]");
+  testInvalidExpression("[1,2] + [[],4]");
+  testInvalidExpression("[1,2] + [3,4,5]");
+  testInvalidExpression("[1,2] + 5");
+  testInvalidExpression("[1,2] +");
+  test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
+  testInvalidExpression("([1,2] + [2,3])/[]");
+  testInvalidExpression("([1,2] + [2,3])/");
+  testInvalidExpression("([[],2] + [2,3])/2");
+  testInvalidExpression("([1,2] + [2,3]");
+  testInvalidExpression("[[],2]/2");
   testAddingInputs();
 }
