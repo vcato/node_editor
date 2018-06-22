@@ -80,6 +80,23 @@ static Optional<Any>
 }
 
 
+static Optional<Any>
+  maybeScaleVector(float first_float,const vector<Any> &second_vector)
+{
+  vector<Any> result;
+
+  for (auto &x : second_vector) {
+    if (!x.isFloat()) {
+      return {};
+    }
+
+    result.push_back(first_float*x.asFloat());
+  }
+
+  return {std::move(result)};
+}
+
+
 Optional<Any>
   evaluateExpression(
     Parser &parser,
@@ -111,9 +128,7 @@ Optional<Any>
     const Any &second_term = *maybe_second_term;
 
     if (first_term.isFloat() && second_term.isFloat()) {
-      float first_float = first_term.asFloat();
-      float second_float = second_term.asFloat();
-      return Any(first_float + second_float);
+      return {first_term.asFloat() + second_term.asFloat()};
     }
 
     if (!first_term.isVector() || !second_term.isVector()) {
@@ -145,7 +160,41 @@ Optional<Any>
       result.push_back(first_value + second_value);
     }
 
-    return Any(std::move(result));
+    return {std::move(result)};
+  }
+
+  if (parser.peekChar()=='*') {
+    parser.skipChar();
+
+    Optional<Any> maybe_second_term =
+      evaluatePrimaryExpression(parser,input_values,input_index);
+
+    if (!maybe_second_term) {
+      return {};
+    }
+
+    const Any &second_term = *maybe_second_term;
+
+    if (first_term.isFloat() && second_term.isFloat()) {
+      float first_float = first_term.asFloat();
+      float second_float = second_term.asFloat();
+      return {first_float * second_float};
+    }
+
+    if (first_term.isVector() && second_term.isVector()) {
+      return {};
+    }
+
+    if (first_term.isFloat() && second_term.isVector()) {
+      return maybeScaleVector(first_term.asFloat(),second_term.asVector());
+    }
+
+    if (first_term.isVector() && second_term.isFloat()) {
+      return maybeScaleVector(second_term.asFloat(),first_term.asVector());
+    }
+
+    assert(false);
+    return {};
   }
 
   if (parser.peekChar()=='/') {
@@ -173,7 +222,7 @@ Optional<Any>
         result.push_back(x.asFloat() / second_float);
       }
 
-      return Any(std::move(result));
+      return {std::move(result)};
     }
 
     return {};

@@ -99,6 +99,11 @@ class Any {
       assert(false);
     }
 
+    bool operator!=(const Any &arg) const
+    {
+      return !operator==(arg);
+    }
+
     Any(float arg)
     {
       _create(arg);

@@ -42,6 +42,12 @@ static void test(const string &expression,const Any &expected_result)
 {
   Optional<Any> maybe_result = evaluateString(expression);
   assert(maybe_result);
+
+  if (*maybe_result!=expected_result) {
+    cerr << "*maybe_result: " << *maybe_result << "\n";
+    cerr << "expected_result: " << expected_result << "\n";
+  }
+
   assert(*maybe_result==expected_result);
 }
 
@@ -81,6 +87,12 @@ int main()
   test("[]",makeVector());
   test("[[],2]",makeVector(makeVector(),2));
   test("[1,2] + [3,4]",makeVector(4,6));
+  test("2*3",6);
+  test("2*[1,2]",makeVector(2,4));
+  test("[1,2]*2",makeVector(2,4));
+  testInvalidExpression("2*[[],2]");
+  testInvalidExpression("[]*[]");
+  testInvalidExpression("2*");
   testInvalidExpression("[[],2] + [3,4]");
   testInvalidExpression("[1,2] + [[],4]");
   testInvalidExpression("[1,2] + [3,4,5]");
