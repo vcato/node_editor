@@ -44,14 +44,17 @@ void QtDiagramEditor::exportDiagramSlot()
   QString result =
     file_dialog.getSaveFileName(this,"Export Diagram","diagram.dat");
   string path = result.toStdString();
+
   {
     ofstream stream(path);
+
     if (!stream) {
       QMessageBox box;
       box.setText(QString::fromStdString("Unable to create "+path));
       box.exec();
       return;
     }
+
     printDiagramOn(stream,diagram());
   }
 }

@@ -255,7 +255,14 @@ Be able to make a diagram that makes a body have a position between two
 
 Need to be able to copy diagram nodes by ctrl-dragging.
 ---
-Need to implement multiplication in the expression language.
----
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
+---
+Need to be able to save and load projects.
+---
+I don't see anything in the Export Diagram code to handle the case where
+the user cancels the save.
+
+Need a way to save and restore wrappers.
+I think this involves being able to extract a data structure from a wrapper
+and build a data structure from a wrapper.

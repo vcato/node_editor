@@ -8,6 +8,7 @@
 struct TreeEditor {
   public:
     void setWorldPtr(Wrapper *arg) { world_ptr = arg; }
+    Wrapper *worldPtr() const { return world_ptr; }
     int nDiagramEditorWindows() const;
 
   protected:

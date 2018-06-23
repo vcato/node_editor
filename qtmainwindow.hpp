@@ -15,10 +15,10 @@ class QtMainWindow : public QMainWindow, public MainWindow {
     QtMainWindow();
 
   private:
-    QMenu menu{"Tools"};
     QtTreeEditor *tree_editor_ptr;
 
-    QtTreeEditor &treeEditor();
+    QtTreeEditor &treeEditor() override;
+    std::string _askForSavePath() override;
 };
 
 #endif /* QTMAINWINDOW_HPP_ */
