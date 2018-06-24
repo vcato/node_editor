@@ -8,36 +8,125 @@ using std::ostringstream;
 using std::ostream;
 using std::string;
 using std::cerr;
+using std::vector;
 
 
-static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
+namespace {
+struct WrapperState {
+  string label;
+  vector<WrapperState> children;
+};
+}
+
+
+namespace {
+struct WrapperValue {
+  void setVoid()
+  {
+  }
+};
+}
+
+
+#if 0
+static WrapperValue valueOf(const Wrapper &)
+{
+  WrapperValue value;
+
+  struct Visitor : Wrapper::Visitor {
+    WrapperValue &value;
+
+    Visitor(WrapperValue &value_arg)
+    : value(value_arg)
+    {
+    }
+
+    void operator()(const VoidWrapper &) const override
+    {
+      value.setVoid();
+    }
+
+    void operator()(const NumericWrapper &) const override
+    {
+      value.setNumeric(numeric_wrapper.value());
+    }
+
+    void operator()(const EnumerationWrapper &) const override
+    {
+      value.setEnumeration(enumeration_wrapper.value());
+    }
+
+    void operator()(const StringWrapper &) const override
+    {
+      value.setString(string_wrapper.value());
+    }
+  };
+
+  wrapper.accept(visitor);
+
+  return value;
+}
+#endif
+
+
+static WrapperState stateOf(const Wrapper &wrapper)
+{
+  WrapperState result;
+  result.label = wrapper.label();
+  // result.value = wrapper.value();
+
+  for (int i=0, n=wrapper.nChildren(); i!=n; ++i) {
+    wrapper.withChildWrapper(
+      i,
+      [&](const Wrapper &child){
+        result.children.push_back(stateOf(child));
+      }
+    );
+  }
+
+  return result;
+}
+
+
+static void
+  printState(ostream &stream,const WrapperState &state,int indent = 0)
 {
   for (int i=0; i!=indent; ++i) {
     stream << "  ";
   }
 
-  string label = wrapper.label();
-  stream << label << "\n";
-  int n_children = wrapper.nChildren();
+  stream << state.label << "\n";
+  int n_children = state.children.size();
 
   for (int i=0; i!=n_children; ++i) {
-    wrapper.withChildWrapper(
-      i,
-      [&](const Wrapper &child){printTree(stream,child,indent+1);}
-    );
+    printState(stream,state.children[i],indent+1);
   }
+}
+
+
+static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
+{
+  printState(stream,stateOf(wrapper),indent);
+}
+
+
+static SceneWrapper::SceneObserver unusedObserver()
+{
+  return
+    SceneWrapper::SceneObserver(
+      [](const Wrapper::TreeObserver &){
+        assert(false);
+      }
+    );
 }
 
 
 static void testHierarchy()
 {
   Scene scene;
-  SceneWrapper::SceneObserver notify(
-    [](const Wrapper::TreeObserver &){ assert(false); }
-  );
   Scene::Body &body = scene.addBody();
   scene.addChildBodyTo(body);
-  SceneWrapper wrapper(scene,notify,"Scene");
+  SceneWrapper wrapper(scene,unusedObserver(),"Scene");
   ostringstream stream;
   printTree(stream,wrapper);
   string output = stream.str();
@@ -150,8 +239,59 @@ static void testAddingBodies()
 }
 
 
+static void testGettingState()
+{
+  Scene scene;
+  SceneWrapper::SceneObserver notify(
+    [](const Wrapper::TreeObserver &){ assert(false); }
+  );
+  Scene::Body &body = scene.addBody();
+  scene.addChildBodyTo(body);
+  SceneWrapper wrapper(scene,notify,"Scene");
+  WrapperState state = stateOf(wrapper);
+  ostringstream stream;
+  printState(stream,state);
+  string output = stream.str();
+
+  auto expected_output =
+    "Scene\n"
+    "  Body\n"
+    "    name\n"
+    "    position\n"
+    "      x\n"
+    "      y\n"
+    "    Body\n"
+    "      name\n"
+    "      position\n"
+    "        x\n"
+    "        y\n";
+
+  if (output!=expected_output) {
+    cerr << "output:\n";
+    cerr << output << "\n";
+  }
+
+  assert(output==expected_output);
+}
+
+
+#if 0
+static void testBuildingFromState()
+{
+  Scene scene;
+  SceneWrapper wrapper(scene,unusedObserver(),"Scene");
+  WrapperState state;
+  state.label = "Scene";
+  wrapper.setState(state);
+  assert(stateOf(wrapper)==state);
+}
+#endif
+
+
 int main()
 {
   testHierarchy();
   testAddingBodies();
+  testGettingState();
+  // testBuildingFromState();
 }

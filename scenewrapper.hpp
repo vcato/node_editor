@@ -17,7 +17,7 @@ struct SceneWrapper : VoidWrapper {
     RemovingBodyFunc removing_body_func;
     RemovedBodyFunc removed_body_func;
 
-    SceneObserver(const ChangedFunc &func_arg) : changed_func(func_arg) { }
+    SceneObserver(ChangedFunc func_arg) : changed_func(std::move(func_arg)) { }
   };
 
   Scene &scene;

@@ -266,3 +266,37 @@ the user cancels the save.
 Need a way to save and restore wrappers.
 I think this involves being able to extract a data structure from a wrapper
 and build a data structure from a wrapper.
+
+Implement printWrapperOn
+Implement Wrapper::state()
+
+It may be possible to extract a wrapper memento pretty automatically.  We're
+basically doing this when we show a tree for a wrapper.  Building a wrapper
+from a memento is more complex.  Some children of a wrapper may exist
+automatically.  A reasonable default behavior may be to create the main
+wrapper, then walk through the children looking for matches and changing their
+state, and finally adding any children that weren't matched.  We'll need
+to be able to override this behavior though.  For example, if we have a wrapper
+for a window, we don't really want to create the window then go through and
+change properties of the window and then create children and change their
+properties, etc. as separate operations.  We would like the window to be
+shown fully formed the first time.
+
+I think starting with state() and setState methods is probably best.  We
+can then figure out how to generalize this to avoid duplicating logic.
+It may not be reasonable to create the
+wrapper, then walk through the children and add them one at a time, although
+
+There's already a printTree method, which probably does a lot of what we need
+for getting the state.
+
+Work on scenewrapper_test, testBuildingFromState()
+Add Wrapper::setState()
+
+Be able to get the values out of a wrapper and put them in the WrapperState
+
+I'd like to be able to reuse the logic in Any to implement WrapperValue.
+I've made it where the switch(type) for Any is centralized.  I think
+I can use this to create a more generic Any which is templated based on
+an enumeration for the type and a visit function which maps the type
+to a member pointer.
