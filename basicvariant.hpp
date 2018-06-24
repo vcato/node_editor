@@ -1,3 +1,7 @@
+#ifndef BASICVARIANT_HPP
+#define BASICVARIANT_HPP
+
+
 template <typename T,typename U>
 void createObject(T& object,U &&value)
 {
@@ -201,3 +205,6 @@ inline void printOn(std::ostream &stream,const BasicVariant<Policy> &arg)
 {
   arg.visit([&](auto &arg){ printOn(stream,arg); });
 }
+
+
+#endif /* BASICVARIANT_HPP */

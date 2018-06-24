@@ -112,7 +112,7 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
-  generatename.o
+  generatename.o wrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
