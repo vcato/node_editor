@@ -308,3 +308,6 @@ We may want to have it such that a wrapper either has a value or it has
 children, but not both.  We may want to consider the wrapper to either
 have a primitive value or a composite value.  If it has a composite value,
 then the value has children.
+
+Seems like we need to differentiate between human-readable labels for wrappers
+and wrapper names that are used for saving and loading.

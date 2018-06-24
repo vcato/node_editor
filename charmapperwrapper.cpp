@@ -15,6 +15,7 @@ template <typename T>
 static int indexOf(const T &item,const std::vector<T> &container)
 {
   auto iter = std::find(container.begin(),container.end(),item);
+
   assert(iter!=container.end());
   return iter-container.begin();
 }
@@ -398,7 +399,11 @@ struct MotionPassWrapper : VoidWrapper {
 
     Index value() const override
     {
-      return indexOf(body_link,callbacks.scene_list.allBodyLinks());
+      if (!body_link.hasValue()) {
+        return 0;
+      }
+
+      return indexOf(body_link,callbacks.scene_list.allBodyLinks()) + 1;
     }
   };
 

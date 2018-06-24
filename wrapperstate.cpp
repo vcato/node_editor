@@ -3,6 +3,7 @@
 
 using std::string;
 using std::ostream;
+using std::cerr;
 
 
 static WrapperValue valueOf(const Wrapper &wrapper)
@@ -100,18 +101,33 @@ struct WrapperValuePrinter {
 }
 
 
-void printStateOn(ostream &stream,const WrapperState &state,int indent)
+static void printIndent(ostream &stream,int indent)
 {
   for (int i=0; i!=indent; ++i) {
     stream << "  ";
   }
+}
+
+
+void printStateOn(ostream &stream,const WrapperState &state,int indent)
+{
+  printIndent(stream,indent);
 
   stream << state.label;
   state.value.visit(WrapperValuePrinter{stream});
-  stream << "\n";
-  int n_children = state.children.size();
 
-  for (int i=0; i!=n_children; ++i) {
-    printStateOn(stream,state.children[i],indent+1);
+  if (state.children.empty()) {
+    stream << "\n";
+  }
+  else {
+    stream << " {\n";
+    int n_children = state.children.size();
+
+    for (int i=0; i!=n_children; ++i) {
+      printStateOn(stream,state.children[i],indent+1);
+    }
+
+    printIndent(stream,indent);
+    stream << "}\n";
   }
 }

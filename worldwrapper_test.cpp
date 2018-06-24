@@ -162,6 +162,42 @@ static void testPrintingState()
 }
 
 
+static void testPrintingCharmapperState()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  /*Charmapper::MotionPass::PosExpr &pos_expr =*/ motion_pass.addPosExpr();
+  WorldWrapper wrapper(world);
+  ostringstream stream;
+  WrapperState state = stateOf(wrapper);
+  assert(state.children.size()==1);
+  printStateOn(stream,state);
+  string text = stream.str();
+  const char *expected_text =
+    "world {\n"
+    "  Charmapper1 {\n"
+    "    Motion Pass {\n"
+    "      Pos Expr {\n"
+    "        Target Body: None\n"
+    "        Local Position {\n"
+    "          X: 0\n"
+    "          Y: 0\n"
+    "        }\n"
+    "        Global Position: Components {\n"
+    "          X: 0\n"
+    "          Y: 0\n"
+    "        }\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+
+  assert(text==expected_text);
+}
+
+
 namespace scene_and_charmapper_tests {
 static void testAddingABodyToTheScene()
 {
@@ -526,6 +562,7 @@ int main()
 {
   testAddingACharmapper();
   testPrintingState();
+  testPrintingCharmapperState();
   {
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();
