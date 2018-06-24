@@ -5,7 +5,7 @@
 struct WrapperValuePolicy {
   struct NoInitTag {};
   struct Void {};
-  struct Enumeration { EnumerationWrapper::Value index; };
+  struct Enumeration { std::string name; };
 
   WrapperValuePolicy()
   : WrapperValuePolicy(Void{})
@@ -54,7 +54,7 @@ struct WrapperValuePolicy {
 
       Void void_value;
       NumericWrapper::Value numeric_value;
-      EnumerationWrapper::Value enumeration_value;
+      Enumeration enumeration_value;
       std::string string_value;
     };
 
@@ -87,3 +87,6 @@ struct WrapperState {
 
 
 extern WrapperState stateOf(const Wrapper &wrapper);
+
+extern void
+  printStateOn(std::ostream &stream,const WrapperState &state,int indent = 0);

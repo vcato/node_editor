@@ -20,6 +20,7 @@ run_unit_tests: \
   wrapper_test.pass \
   scene_test.pass \
   world_test.pass \
+  wrapperstate_test.pass \
   scenewrapper_test.pass \
   worldwrapper_test.pass \
   charmapper_test.pass \
@@ -109,6 +110,9 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
   generatename.o charmapper.o defaultdiagrams.o diagram.o diagramio.o \
   diagramnode.o linetext.o statementtext.o stringutil.o sceneviewer.o \
   diagramevaluation.o evaluateexpression.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+wrapperstate_test: wrapperstate_test.o wrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \

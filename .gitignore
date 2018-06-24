@@ -25,3 +25,4 @@ treeeditor_test
 optional_test
 diagramevaluation_test
 evaluateexpression_test
+wrapperstate_test

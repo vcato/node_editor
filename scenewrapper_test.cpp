@@ -6,7 +6,6 @@
 #include "basicvariant.hpp"
 #include "wrapperstate.hpp"
 
-
 using std::ostringstream;
 using std::ostream;
 using std::string;
@@ -14,54 +13,9 @@ using std::cerr;
 using std::vector;
 
 
-static string quoted(const string &s)
-{
-  return '"' + s + '"';
-}
-
-
-namespace {
-struct WrapperValuePrinter {
-  ostream &stream;
-
-  void operator()(WrapperValue::Void) const
-  {
-  }
-
-  void operator()(int arg) const
-  {
-    stream << " " << arg;
-  }
-
-  void operator()(const string &arg) const
-  {
-    stream << " " << quoted(arg);
-  }
-};
-}
-
-
-static void
-  printState(ostream &stream,const WrapperState &state,int indent = 0)
-{
-  for (int i=0; i!=indent; ++i) {
-    stream << "  ";
-  }
-
-  stream << state.label << ":";
-  state.value.visit(WrapperValuePrinter{stream});
-  stream << "\n";
-  int n_children = state.children.size();
-
-  for (int i=0; i!=n_children; ++i) {
-    printState(stream,state.children[i],indent+1);
-  }
-}
-
-
 static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
 {
-  printState(stream,stateOf(wrapper),indent);
+  printStateOn(stream,stateOf(wrapper),indent);
 }
 
 
@@ -205,7 +159,7 @@ static void testGettingState()
   SceneWrapper wrapper(scene,notify,"Scene");
   WrapperState state = stateOf(wrapper);
   ostringstream stream;
-  printState(stream,state);
+  printStateOn(stream,state);
   string output = stream.str();
 
   auto expected_output =
