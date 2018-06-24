@@ -373,6 +373,7 @@ static void testRemovingABody()
   FakeMainWindow &main_window = tester.main_window;
   FakeTreeEditor &tree_editor = main_window.tree_editor;
   FakeSceneWindow &scene_window = world.scene_window;
+  size_t n_scene_properties = 1;
 
   // User executes Add Scene in the tree editor.
   tree_editor.userSelectsContextMenuItem("Add Scene");
@@ -391,7 +392,7 @@ static void testRemovingABody()
   assert(world.sceneMember(0).scene.bodies().size()==0);
 
   // Assert the body was removed from the tree editor.
-  assert(tree_editor.root.children[0].children.size()==0);
+  assert(tree_editor.root.children[0].children.size()==n_scene_properties);
 
   // Assert the body was removed from the scene window tree.
   assert(scene_window.tree_member.root.children.size()==0);

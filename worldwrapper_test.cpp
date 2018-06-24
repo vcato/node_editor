@@ -9,6 +9,7 @@
 #include "streamvector.hpp"
 #include "diagramio.hpp"
 #include "wrapperstate.hpp"
+#include "scenewrapper.hpp"
 
 
 using std::string;
@@ -227,9 +228,41 @@ static void testAddingABodyToTheScene()
 
   string command_string = command_stream.str();
   string expected_command_string =
-    "addItem([1,0])\n"
+    "addItem([1,0,0])\n"
+    "addItem([1,0,1])\n"
+    "addItem([1,1])\n"
     "changeEnumerationValues([0,0,0,0])\n"
     "changeEnumerationValues([0,0,0,2,0])\n";
+
+  if (command_string!=expected_command_string) {
+    cerr << "command_string:\n";
+    cerr << command_string << "\n";
+  }
+
+  assert(command_string==expected_command_string);
+}
+}
+
+
+namespace scene_and_charmapper_tests {
+static void testAddingABodyToABody()
+{
+  FakeWorld world;
+  Scene &scene = world.addScene();
+  scene.addBody();
+  WorldWrapper world_wrapper(world);
+  TreePath scene_path = {0};
+
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+
+  executeOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
+
+  string command_string = command_stream.str();
+  string expected_command_string =
+    "addItem([0,0,2])\n"
+    "addItem([0,0,3])\n"
+    "addItem([0,1,2])\n";
 
   if (command_string!=expected_command_string) {
     cerr << "command_string:\n";
@@ -474,7 +507,7 @@ static void testRemovingABodyFromTheScene()
   scene.addBody();
   WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
-  TreePath body_path = join(scene_path,0);
+  TreePath body_path = join(scene_path,SceneWrapper::firstBodyIndex());
 
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
@@ -483,7 +516,7 @@ static void testRemovingABodyFromTheScene()
 
   string command_string = command_stream.str();
   string expected_command_string =
-    "removeItem([1,0])\n"
+    "removeItem([1,1])\n"
     "changeEnumerationValues([0,0,0,0])\n"
     ;
 
@@ -613,6 +646,7 @@ int main()
   {
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();
+    tests::testAddingABodyToABody();
     tests::testChangingABodyPositionInTheScene();
     tests::testChangingTheTargetBody();
     tests::testUsingCharmapperToMoveABody();

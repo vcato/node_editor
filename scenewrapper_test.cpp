@@ -42,6 +42,12 @@ static void testHierarchy()
 
   auto expected_output =
     "scene {\n"
+    "  background_frame {\n"
+    "    0: 0\n"
+    "    1: 0\n"
+    "    2: 0\n"
+    "    3: 0\n"
+    "  }\n"
     "  body {\n"
     "    name: \"Body1\"\n"
     "    position {\n"
@@ -127,8 +133,8 @@ static void testAddingBodies()
 
   int body_index = 2;
   addBodyTo(wrapper,{},stream);
-  addBodyTo(wrapper,{0},stream);
-  addBodyTo(wrapper,{0,body_index},stream);
+  addBodyTo(wrapper,{1},stream);
+  addBodyTo(wrapper,{1,body_index},stream);
 
   assert(scene.nBodies()==1);
   assert(scene.bodies()[0].nChildren()==1);
@@ -137,10 +143,15 @@ static void testAddingBodies()
   string body_index_str = std::to_string(body_index);
   string commands = stream.str();
   string expected_commands =
-    "addItem: path=[0]\n"
-    "addItem: path=[0," + body_index_str + "]\n"
-    "addItem: path=[0," + body_index_str + "," + body_index_str + "]\n";
-
+    "addItem: path=[0,0]\n"
+    "addItem: path=[0,1]\n"
+    "addItem: path=[1]\n"
+    "addItem: path=[0,2]\n"
+    "addItem: path=[0,3]\n"
+    "addItem: path=[1," + body_index_str + "]\n"
+    "addItem: path=[0,4]\n"
+    "addItem: path=[0,5]\n"
+    "addItem: path=[1," + body_index_str + "," + body_index_str + "]\n";
 
   if (commands!=expected_commands) {
     cerr << "commands:\n";
@@ -169,6 +180,12 @@ static void testGettingState()
 
   auto expected_output =
     "scene {\n"
+    "  background_frame {\n"
+    "    0: 0\n"
+    "    1: 0\n"
+    "    2: 0\n"
+    "    3: 0\n"
+    "  }\n"
     "  body {\n"
     "    name: \"Body1\"\n"
     "    position {\n"

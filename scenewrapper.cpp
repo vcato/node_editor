@@ -1,12 +1,15 @@
 #include "scenewrapper.hpp"
 
 #include <functional>
+#include <sstream>
 #include "float.hpp"
 
 
 using std::cerr;
 using std::vector;
 using std::string;
+using std::ostringstream;
+using std::ostream;
 using Callbacks = SceneWrapper::SceneObserver;
 using Point2DMap = Scene::Point2DMap;
 using Frame = Scene::Frame;
@@ -24,26 +27,26 @@ struct WrapperData {
 
 
 namespace {
-  struct StubTreeObserver : Wrapper::TreeObserver {
-    virtual void itemAdded(const TreePath &)
-    {
-      assert(false);
-    }
+struct StubTreeObserver : Wrapper::TreeObserver {
+  virtual void itemAdded(const TreePath &)
+  {
+    assert(false);
+  }
 
-    virtual void itemReplaced(const TreePath &)
-    {
-      assert(false);
-    }
+  virtual void itemReplaced(const TreePath &)
+  {
+    assert(false);
+  }
 
-    virtual void enumarationValuesChanged(const TreePath &) const
-    {
-    }
+  virtual void enumarationValuesChanged(const TreePath &) const
+  {
+  }
 
-    virtual void itemRemoved(const TreePath &)
-    {
-      assert(false);
-    }
-  };
+  virtual void itemRemoved(const TreePath &)
+  {
+    assert(false);
+  }
+};
 }
 
 
@@ -87,16 +90,16 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 namespace {
 struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   const char *label_member;
-  float &value;
+  float &value_ref;
   WrapperData wrapper_data;
 
   FloatWrapper(
     const char *label,
     float &value_arg,
-    WrapperData wrapper_data_arg
+    WrapperData &wrapper_data_arg
   )
   : label_member(label),
-    value(value_arg),
+    value_ref(value_arg),
     wrapper_data(wrapper_data_arg)
   {
   }
@@ -108,10 +111,12 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
   void setValue(int arg) const override
   {
-    value = arg;
+    value_ref = arg;
     StubTreeObserver tree_observer;
     wrapper_data.callbacks.changed_func(tree_observer);
   }
+
+  virtual Value value() const { return value_ref; }
 };
 }
 
@@ -212,6 +217,7 @@ struct BodyWrapper : VoidWrapper {
   Scene &scene;
   Scene::Body &parent_body;
   int body_index;
+  int depth;
   Scene::Body &body;
   WrapperData wrapper_data;
   static int nBodyAttributes() { return 2; }
@@ -220,34 +226,16 @@ struct BodyWrapper : VoidWrapper {
     Scene &scene_arg,
     Scene::Body &parent_body_arg,
     int body_index_arg,
-    WrapperData wrapper_data_arg
+    WrapperData wrapper_data_arg,
+    int depth_arg
   )
   : scene(scene_arg),
     parent_body(parent_body_arg),
     body_index(body_index_arg),
+    depth(depth_arg),
     body(parent_body_arg.children[body_index_arg]),
     wrapper_data(wrapper_data_arg)
   {
-  }
-
-  void
-    executeOperation(
-      int operation_index,
-      const TreePath &path,
-      TreeObserver &tree_observer
-    )
-  {
-    switch (operation_index) {
-      case 0:
-        {
-          int index = body.nChildren();
-          scene.addChildBodyTo(body);
-          wrapper_data.callbacks.changed_func(tree_observer);
-          tree_observer.itemAdded(join(path,index+nBodyAttributes()));
-        }
-        return;
-    }
-    assert(false);
   }
 
   vector<string> operationNames() const
@@ -266,7 +254,22 @@ struct BodyWrapper : VoidWrapper {
       case 0:
         {
           int index = body.nChildren();
+          Frame &frame = scene.backgroundFrame();
+          int old_n_vars = frame.nVariables();
           Scene::Body &new_body = scene.addChildBodyTo(body);
+          int new_n_vars = frame.nVariables();
+
+          if (new_n_vars!=old_n_vars) {
+            TreePath scene_path = path;
+
+            scene_path.erase(scene_path.end()-depth,scene_path.end());
+            TreePath background_frame_path = join(scene_path,0);
+
+            for (int i=old_n_vars; i!=new_n_vars; ++i) {
+              TreePath var_path = join(background_frame_path,i);
+              tree_observer.itemAdded(var_path);
+            }
+          }
 
           if (wrapper_data.callbacks.body_added_func) {
             wrapper_data.callbacks.body_added_func(new_body,tree_observer);
@@ -308,7 +311,7 @@ struct BodyWrapper : VoidWrapper {
     }
 
     int body_index = child_index-nBodyAttributes();
-    visitor(BodyWrapper(scene,body,body_index,wrapper_data));
+    visitor(BodyWrapper(scene,body,body_index,wrapper_data,depth + 1));
   }
 
   virtual Label label() const
@@ -339,8 +342,6 @@ struct BodyWrapper : VoidWrapper {
         assert(false);
       }
     }
-
-    assert(false);
   }
 };
 }
@@ -367,7 +368,7 @@ std::vector<std::string> SceneWrapper::operationNames() const
 void
   SceneWrapper::executeOperation(
     int operation_index,
-    const TreePath &path,
+    const TreePath &scene_path,
     TreeObserver &tree_observer
   ) const
 {
@@ -375,9 +376,22 @@ void
     case 0:
       {
         int index = scene.nBodies();
+        Frame &frame = scene.backgroundFrame();
+        int old_n_vars = frame.nVariables();
         Scene::Body &new_body = scene.addBody();
+        int new_n_vars = frame.nVariables();
 
-        tree_observer.itemAdded(join(path,index));
+        if (new_n_vars!=old_n_vars) {
+          assert(new_n_vars>old_n_vars);
+          TreePath background_frame_path = join(scene_path,0);
+
+          for (int i=old_n_vars; i!=new_n_vars; ++i) {
+            TreePath var_path = join(background_frame_path,i);
+            tree_observer.itemAdded(var_path);
+          }
+        }
+
+        tree_observer.itemAdded(join(scene_path,index+firstBodyIndex()));
 
         if (callbacks.body_added_func) {
           callbacks.body_added_func(new_body,tree_observer);
@@ -391,6 +405,44 @@ void
 }
 
 
+namespace {
+struct FrameWrapper : NoOperationWrapper<VoidWrapper> {
+  string label_member;
+  Frame &frame;
+  WrapperData &wrapper_data;
+
+  FrameWrapper(
+    const char *label,
+    Frame &frame_arg,
+    WrapperData &wrapper_data_arg
+  )
+  : label_member(label),
+    frame(frame_arg),
+    wrapper_data(wrapper_data_arg)
+  {
+  }
+
+  int nChildren() const override
+  {
+    return frame.nVariables();
+  }
+
+  virtual Label label() const { return label_member; }
+
+  void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const override
+  {
+    ostringstream stream;
+    stream << child_index;
+    visitor(FloatWrapper(stream.str().c_str(),frame.var_values[child_index],wrapper_data));
+  }
+};
+}
+
+
 void
   SceneWrapper::withChildWrapper(
     int child_index,
@@ -398,9 +450,27 @@ void
   ) const
 {
   WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
+
+  if (child_index==0) {
+    visitor(FrameWrapper("background_frame",scene.backgroundFrame(),wrapper_data));
+    return;
+  }
+
   visitor(
-    BodyWrapper{scene,scene.rootBody(),child_index,wrapper_data}
+    BodyWrapper{
+      scene,
+      scene.rootBody(),
+      child_index - firstBodyIndex(),
+      wrapper_data,
+      /*depth*/1
+    }
   );
+}
+
+
+int SceneWrapper::nChildren() const
+{
+  return 1 + scene.nBodies();
 }
 
 
@@ -426,7 +496,9 @@ void SceneWrapper::setState(const WrapperState &state)
   for (const WrapperState &child_state : state.children) {
     scene.addBody();
     Scene::Body &parent_body = scene.rootBody();
-    BodyWrapper(scene,parent_body,child_index,wrapper_data).setState(child_state);
+    BodyWrapper(
+      scene,parent_body,child_index,wrapper_data,/*depth*/1
+    ).setState(child_state);
     ++child_index;
   }
 }

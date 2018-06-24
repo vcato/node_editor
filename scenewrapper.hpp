@@ -43,5 +43,6 @@ struct SceneWrapper : VoidWrapper {
   void setState(const WrapperState &);
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
   Label label() const override;
-  int nChildren() const override { return scene.nBodies(); }
+  int nChildren() const override;
+  static int firstBodyIndex() { return 1; }
 };
