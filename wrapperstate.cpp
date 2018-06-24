@@ -8,6 +8,14 @@ using std::ostream;
 using std::cerr;
 
 
+static string makeTag(string label)
+{
+  std::transform(label.begin(),label.end(),label.begin(),::tolower);
+  std::replace(label.begin(),label.end(),' ','_');
+  return label;
+}
+
+
 static WrapperValue valueOf(const Wrapper &wrapper)
 {
   WrapperValue value;
@@ -55,7 +63,7 @@ static WrapperValue valueOf(const Wrapper &wrapper)
 WrapperState stateOf(const Wrapper &wrapper)
 {
   WrapperState result;
-  result.label = wrapper.label();
+  result.tag = makeTag(wrapper.label());
   result.value = valueOf(wrapper);
 
   for (int i=0, n=wrapper.nChildren(); i!=n; ++i) {
@@ -74,14 +82,6 @@ WrapperState stateOf(const Wrapper &wrapper)
 static string quoted(const string &s)
 {
   return '"' + s + '"';
-}
-
-
-static string makeTag(string label)
-{
-  std::transform(label.begin(),label.end(),label.begin(),::tolower);
-  std::replace(label.begin(),label.end(),' ','_');
-  return label;
 }
 
 
@@ -123,7 +123,7 @@ void printStateOn(ostream &stream,const WrapperState &state,int indent)
 {
   printIndent(stream,indent);
 
-  stream << makeTag(state.label);
+  stream << state.tag;
   state.value.visit(WrapperValuePrinter{stream});
 
   if (state.children.empty()) {

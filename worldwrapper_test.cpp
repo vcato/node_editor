@@ -561,11 +561,55 @@ static void testChangingGlobalPositionDiagram()
 }
 
 
+static void testSettingEmptyState()
+{
+  FakeWorld world;
+  WorldWrapper wrapper(world);
+  WrapperState state = stateOf(wrapper);
+  wrapper.setState(state);
+  assert(world.nMembers()==0);
+}
+
+
+static void testSettingStateWithScene()
+{
+  FakeWorld world;
+  world.addScene();
+  WorldWrapper wrapper(world);
+  WrapperState state = stateOf(wrapper);
+
+  FakeWorld world2;
+  WorldWrapper(world2).setState(state);
+  assert(world2.nMembers()==1);
+  world2.sceneMember(0);
+}
+
+
+#if 0
+static void testSettingStateWithSceneWithBody()
+{
+  FakeWorld world;
+  Scene &scene = world.addScene();
+  scene.addBody();
+  WorldWrapper wrapper(world);
+  WrapperState state = stateOf(wrapper);
+
+  FakeWorld world2;
+  WorldWrapper(world2).setState(state);
+  assert(world2.nMembers()==1);
+  world2.sceneMember(0);
+}
+#endif
+
+
 int main()
 {
   testAddingACharmapper();
   testPrintingState();
   testPrintingCharmapperState();
+  testSettingEmptyState();
+  testSettingStateWithScene();
+  // testSettingStateWithSceneWithBody();
   {
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();

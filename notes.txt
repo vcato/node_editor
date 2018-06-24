@@ -304,10 +304,25 @@ state.  i.e. changing a wrapper value never changes the state of another
 wrapper.  If you do something that could affect other wrappers, then that
 is an operation.
 
-We may want to have it such that a wrapper either has a value or it has
-children, but not both.  We may want to consider the wrapper to either
-have a primitive value or a composite value.  If it has a composite value,
-then the value has children.
+Right now, adding children to a wrapper is done by operations.  To be able
+to set the state of a widget, we'll need to either by able to add children
+in some generic way or pass the state directly to the wrappers.
 
-Seems like we need to differentiate between human-readable labels for wrappers
-and wrapper names that are used for saving and loading.
+We need to convert the labels to tags when creating the state, since we'll
+want to be able to load the state as well and have the labels match.
+
+The numbers on the labels are a bit awkward.  They are handy when shown
+in the tree because they provide a reference point, but we don't really
+want to save the numbers in a file.
+
+WrapperValue needs isString() and asString()
+
+For the scene, we have bodies with positions, but those positions are just
+maps.  The actual position data is stored in the frame.  If we're going
+to save a scene, then we have to save the frames, but the frame isn't
+currently part of the state that is exposed in the wrapper.
+
+So I think that has to change.  When we add a body to a scene, we'll get
+the position x and y shown as frame variable indices.  We'll also have
+a background_frame member that shows the actual values.  Doing an Add Body
+operation will automatically add new values into the background frame.

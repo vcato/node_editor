@@ -1,5 +1,6 @@
 #include "scene.hpp"
 #include "wrapper.hpp"
+#include "wrapperstate.hpp"
 
 
 struct SceneWrapper : VoidWrapper {
@@ -39,6 +40,7 @@ struct SceneWrapper : VoidWrapper {
       TreeObserver &
     ) const override;
 
+  void setState(const WrapperState &);
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
   Label label() const override;
   int nChildren() const override { return scene.nBodies(); }

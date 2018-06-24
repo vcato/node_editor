@@ -5,6 +5,7 @@
 #include <map>
 #include "charmapperwrapper.hpp"
 #include "scenewrapper.hpp"
+#include "stringutil.hpp"
 
 using std::cerr;
 using std::vector;
@@ -383,4 +384,41 @@ void
   ChildWrapperVisitor wrapper_visitor(world,visitor,member_index);
 
   world.visitMember(member_index,wrapper_visitor);
+}
+
+
+void WorldWrapper::setState(const WrapperState &state)
+{
+  if (world.nMembers()==0 && state.children.empty()) {
+    return;
+  }
+
+  if (world.nMembers()!=0) {
+    assert(false);
+  }
+
+  for (const WrapperState &child_state : state.children) {
+    const string &tag = child_state.tag;
+    if (startsWith(tag,"scene")) {
+      Scene &scene = world.addScene(); // we need to pass the label here
+      if (!child_state.children.empty()) {
+        auto changed_func = [](const Wrapper::TreeObserver &){};
+        SceneWrapper::SceneObserver callbacks(changed_func);
+        string label;
+
+        if (tag=="scene1") {
+          label = "Scene1";
+        }
+
+        SceneWrapper(scene,callbacks,label).setState(child_state);
+      }
+    }
+    else {
+      if (startsWith(child_state.tag,"charmapper")) {
+        assert(false);
+      }
+      cerr << "child_state.tag: " << child_state.tag << "\n";
+      assert(false);
+    }
+  }
 }

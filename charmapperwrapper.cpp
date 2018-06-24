@@ -589,6 +589,14 @@ struct MotionPassWrapper : VoidWrapper {
   {
     return motion_pass.nExprs();
   }
+
+#if 0
+  void setState(const WrapperState &state)
+  {
+    assert(false);
+  }
+#endif
+
 };
 }
 
@@ -597,6 +605,21 @@ std::vector<std::string> CharmapperWrapper::operationNames() const
 {
   return { "Add Motion Pass", "Remove" };
 }
+
+
+#if 0
+void CharmapperWrapper::setState(const WrapperState &state)
+{
+  int n = state.children.size();
+
+  for (int i=0; i!=n; ++i) {
+    if (state.children[i].tag=="motion_pass") {
+      Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+      MotionPassWrapper(motion_pass).setState(state.children[i]);
+    }
+  }
+}
+#endif
 
 
 void

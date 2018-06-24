@@ -3,6 +3,7 @@
 
 #include "wrapper.hpp"
 #include "world.hpp"
+#include "wrapperstate.hpp"
 
 struct WorldWrapper : VoidWrapper
 {
@@ -33,6 +34,8 @@ struct WorldWrapper : VoidWrapper
   {
     return world.nMembers();
   }
+
+  void setState(const WrapperState&);
 };
 
 #endif /* WORLDWRAPPER_HPP_ */

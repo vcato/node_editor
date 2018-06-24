@@ -1,5 +1,6 @@
 #include "charmapper.hpp"
 #include "wrapper.hpp"
+#include "wrapperstate.hpp"
 
 
 class CharmapperWrapper : public VoidWrapper {
@@ -47,6 +48,10 @@ class CharmapperWrapper : public VoidWrapper {
         const TreePath &,
         TreeObserver &
       ) const override;
+
+#if 0
+    void setState(const WrapperState &);
+#endif
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 

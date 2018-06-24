@@ -157,6 +157,18 @@ struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
   {
     return label_member;
   }
+
+  void setState(const WrapperState &state)
+  {
+    for (const WrapperState &child_state : state.children) {
+      if (child_state.tag=="x") {
+        assert(false);
+      }
+      else {
+        assert(false);
+      }
+    }
+  }
 };
 }
 
@@ -308,6 +320,28 @@ struct BodyWrapper : VoidWrapper {
   {
     return nBodyAttributes() + body.nChildren();
   }
+
+  void setState(const WrapperState &state)
+  {
+    if (body.nChildren()!=0) {
+      assert(false);
+    }
+
+    for (const WrapperState &child_state : state.children) {
+      if (child_state.tag=="name") {
+        body.name = child_state.value.asString();
+      }
+      else if (child_state.tag=="position") {
+        Point2DWrapper("position",body.position,wrapper_data).setState(child_state);
+      }
+      else {
+        cerr << "child_state.tag: " << child_state.tag << "\n";
+        assert(false);
+      }
+    }
+
+    assert(false);
+  }
 };
 }
 
@@ -373,4 +407,26 @@ void
 Label SceneWrapper::label() const
 {
   return label_member;
+}
+
+
+void SceneWrapper::setState(const WrapperState &state)
+{
+  if (state.children.empty()) {
+    return;
+  }
+
+  if (scene.nBodies()!=0) {
+    assert(false);
+  }
+
+  WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
+  int child_index = 0;
+
+  for (const WrapperState &child_state : state.children) {
+    scene.addBody();
+    Scene::Body &parent_body = scene.rootBody();
+    BodyWrapper(scene,parent_body,child_index,wrapper_data).setState(child_state);
+    ++child_index;
+  }
 }

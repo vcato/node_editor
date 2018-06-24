@@ -1,3 +1,7 @@
+#ifndef WRAPPERSTATE_HPP
+#define WRAPPERSTATE_HPP
+
+
 #include "wrapper.hpp"
 #include "basicvariant.hpp"
 
@@ -34,6 +38,14 @@ struct WrapperValuePolicy {
   : _type(enumeration_type)
   {
     new (&_value.enumeration_value)auto(arg);
+  }
+
+  bool isString() const { return _type==string_type; }
+
+  const std::string& asString() const
+  {
+    assert(_type==string_type);
+    return _value.string_value;
   }
 
   enum Type {
@@ -80,7 +92,7 @@ using WrapperValue = BasicVariant<WrapperValuePolicy>;
 
 
 struct WrapperState {
-  std::string label;
+  std::string tag;
   WrapperValue value;
   std::vector<WrapperState> children;
 };
@@ -90,3 +102,6 @@ extern WrapperState stateOf(const Wrapper &wrapper);
 
 extern void
   printStateOn(std::ostream &stream,const WrapperState &state,int indent = 0);
+
+
+#endif /* WRAPPERSTATE_HPP */
