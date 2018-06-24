@@ -3,6 +3,7 @@
 #include <sstream>
 #include "streamvector.hpp"
 #include "wrapperutil.hpp"
+#include "basicvariant.hpp"
 
 using std::ostringstream;
 using std::ostream;
@@ -20,13 +21,32 @@ struct WrapperState {
 
 
 namespace {
-struct WrapperValue {
-  void setVoid()
+struct WrapperValuePolicy {
+  struct NoInitTag {};
+  struct Void {};
+
+  WrapperValuePolicy(Void)
+  : _type(void_type)
   {
+    new (&_value.void_value)Void{};
   }
+
+  enum Type {
+    void_type
+  };
+
+  protected:
+    union Value {
+      Void void_value;
+    };
+
+    Type _type;
+    Value _value;
 };
 }
 
+
+using WrapperValue = BasicVariant<WrapperValuePolicy>;
 
 #if 0
 static WrapperValue valueOf(const Wrapper &)
@@ -43,12 +63,12 @@ static WrapperValue valueOf(const Wrapper &)
 
     void operator()(const VoidWrapper &) const override
     {
-      value.setVoid();
+      value = WrapperValue::Void{};
     }
 
-    void operator()(const NumericWrapper &) const override
+    void operator()(const NumericWrapper &numeric_wrapper) const override
     {
-      value.setNumeric(numeric_wrapper.value());
+      value = numeric_wrapper.value();
     }
 
     void operator()(const EnumerationWrapper &) const override

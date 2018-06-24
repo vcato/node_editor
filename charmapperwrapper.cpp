@@ -55,10 +55,15 @@ struct MotionPassWrapper : VoidWrapper {
       return label_member;
     }
 
-    virtual void setValue(int arg) const
+    virtual void setValue(Value arg) const
     {
       channel.value = arg;
       callbacks.notifyCharmapChanged();
+    }
+
+    virtual Value value() const
+    {
+      return channel.value;
     }
   };
 

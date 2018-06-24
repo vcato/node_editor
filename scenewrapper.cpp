@@ -75,6 +75,11 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     StubTreeObserver tree_observer;
     wrapper_data.callbacks.changed_func(tree_observer);
   }
+
+  virtual Value value() const
+  {
+    return map(wrapper_data.frame);
+  }
 };
 }
 

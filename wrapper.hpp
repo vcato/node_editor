@@ -143,12 +143,15 @@ struct VoidWrapper : Wrapper {
 
 
 struct NumericWrapper : Wrapper {
+  using Value = int;
+
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
   }
 
-  virtual void setValue(int) const = 0;
+  virtual void setValue(Value) const = 0;
+  virtual Value value() const = 0;
 };
 
 
