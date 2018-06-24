@@ -300,3 +300,24 @@ I've made it where the switch(type) for Any is centralized.  I think
 I can use this to create a more generic Any which is templated based on
 an enumeration for the type and a visit function which maps the type
 to a member pointer.
+
+It seems like our basic functionality is having a class and having a
+function which maps an enumeration value to a member pointer for
+that class by calling a templated member function of another class.
+
+struct MemberMap {
+  static auto visit(Type t,Function f)
+  {
+    switch (t) {
+      case member1: return f(&Container::value1);
+      case member2: return f(&Container::value2);
+      .
+      .
+      .
+    }
+
+    assert(false);
+  }
+};
+
+Any needs to be renamed to ExpressionValue

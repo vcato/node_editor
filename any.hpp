@@ -5,10 +5,16 @@
 #include <vector>
 #include <iostream>
 #include "printonany.hpp"
+#include "basicvariant.hpp"
 
+struct AnyPolicy;
 
+using Any = BasicVariant<AnyPolicy>;
 
-class Any {
+struct AnyPolicy {
+  protected:
+    struct NoInitTag {};
+
   public:
     enum Type {
       void_type,
@@ -16,89 +22,30 @@ class Any {
       vector_type
     };
 
-    Any()
+    struct Void {
+      bool operator==(const Void &) const { return true; }
+    };
+
+    AnyPolicy(NoInitTag)
+    {
+    }
+
+    AnyPolicy()
     : _type(void_type)
     {
       new (&_value.void_value)Void();
     }
 
-    Any(float arg)
+    AnyPolicy(float arg)
     : _type(float_type)
     {
       new (&_value.float_value)float(arg);
     }
 
-    Any(std::vector<Any> &&arg)
+    AnyPolicy(std::vector<Any> &&arg)
     : _type(vector_type)
     {
       new (&_value.vector_value)std::vector<Any>(std::move(arg));
-    }
-
-    explicit Any(const Any& arg)
-    {
-      _create(arg);
-    }
-
-    Any(Any&& arg)
-    {
-      _create(std::move(arg));
-    }
-
-    ~Any()
-    {
-      _destroy();
-    }
-
-  private:
-    template <typename V>
-    static auto visit(Type t,const V& v)
-    {
-      switch (t) {
-        case float_type:  return v(&Value::float_value);
-        case void_type:   return v(&Value::void_value);
-        case vector_type: return v(&Value::vector_value);
-      }
-
-      assert(false);
-    }
-
-  public:
-    Any& operator=(Any&& arg)
-    {
-      if (_type!=arg._type) {
-        _destroy();
-        _create(std::move(arg));
-      }
-      else {
-        visit(_type,MemberMoveAssignment{_value,std::move(arg._value)});
-      }
-
-      return *this;
-    }
-
-    Any& operator=(const Any &arg)
-    {
-      if (_type != arg._type) {
-        _destroy();
-        _create(arg);
-      }
-      else {
-        visit(_type,MemberCopyAssignment{_value,arg._value});
-      }
-
-      return *this;
-    }
-
-    bool operator==(const Any &arg) const
-    {
-      if (_type!=arg._type) return false;
-
-      return visit(_type,MemberEquality{_value,arg._value});
-    }
-
-    bool operator!=(const Any &arg) const
-    {
-      return !operator==(arg);
     }
 
     bool isVoid() const { return _type==void_type; }
@@ -117,13 +64,13 @@ class Any {
       return _value.float_value;
     }
 
-    Type type() const { return _type; }
+    Void asVoid() const
+    {
+      assert(_type==void_type);
+      return _value.void_value;
+    }
 
-  private:
-    struct Void {
-      bool operator==(const Void &) const { return true; }
-    };
-
+  protected:
     union Value {
       Void void_value;
       float float_value;
@@ -133,86 +80,16 @@ class Any {
       ~Value() {}
     };
 
-    struct MemberCopyAssignment {
-      Value &a;
-      const Value &b;
-
-      template <typename T>
-      void operator()(T Value::*p) const
-      {
-        (a.*p) = (b.*p);
-      }
-    };
-
-    struct MemberMoveAssignment {
-      Value &a;
-      Value &&b;
-
-      template <typename T>
-      void operator()(T Value::*p) const
-      {
-        (a.*p) = std::move(b.*p);
-      }
-    };
-
-    struct MemberCopy {
-      Value &a;
-      const Value &b;
-
-      template <typename T>
-      void operator()(T Value::*p) const
-      {
-        new (&(a.*p))T(b.*p);
-      }
-    };
-
-    struct MemberMove {
-      Value &a;
-      Value &&b;
-
-      template <typename T>
-      void operator()(T Value::*p) const
-      {
-        new (&(a.*p))T(std::move(b.*p));
-      }
-    };
-
-    struct MemberEquality {
-      const Value &a,&b;
-
-      template <typename T>
-      bool operator()(T Value::*p) const
-      {
-        return (a.*p) == (b.*p);
-      }
-    };
-
-    struct MemberDestroy {
-      Value &_value;
-
-      template <typename T>
-      void operator()(T Value::*p) const
-      {
-        (_value.*p).~T();
-      }
-    };
-
-    void _create(Any&& arg)
+    template <typename V>
+    static auto withMemberPtrFor(Type t,const V& v)
     {
-      _type = arg._type;
-      visit(_type,MemberMove{_value,std::move(arg._value)});
-    }
+      switch (t) {
+        case float_type:  return v(&Value::float_value);
+        case void_type:   return v(&Value::void_value);
+        case vector_type: return v(&Value::vector_value);
+      }
 
-    void _create(const Any& arg)
-    {
-      _type = arg._type;
-      visit(_type,MemberCopy{_value,arg._value});
-    }
-
-  private:
-    void _destroy()
-    {
-      visit(_type,MemberDestroy{_value});
+      assert(false);
     }
 
     Type _type;
@@ -220,14 +97,20 @@ class Any {
 };
 
 
-inline void printOn(std::ostream &stream,const Any &arg);
-
-
-inline void printOn(std::ostream &stream,float arg)
+template <>
+inline void printOn(std::ostream &stream,const float &arg)
 {
   stream << arg;
 }
 
+template <>
+inline void printOn(std::ostream &stream,const Any::Void &)
+{
+  stream << "void()";
+}
+
+
+template <>
 inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
 {
   stream << "[";
@@ -246,22 +129,6 @@ inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
   }
 
   stream << "]";
-}
-
-
-inline void printOn(std::ostream &stream,const Any &arg)
-{
-  switch (arg.type()) {
-    case Any::float_type:
-      printOn(stream,arg.asFloat());
-      break;
-    case Any::vector_type:
-      printOn(stream,arg.asVector());
-      break;
-    case Any::void_type:
-      stream << "void()";
-      break;
-  }
 }
 
 
