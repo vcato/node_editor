@@ -303,3 +303,8 @@ We might want to make it such that any wrapper values represent independent
 state.  i.e. changing a wrapper value never changes the state of another
 wrapper.  If you do something that could affect other wrappers, then that
 is an operation.
+
+We may want to have it such that a wrapper either has a value or it has
+children, but not both.  We may want to consider the wrapper to either
+have a primitive value or a composite value.  If it has a composite value,
+then the value has children.

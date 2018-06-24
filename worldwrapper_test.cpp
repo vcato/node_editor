@@ -8,6 +8,7 @@
 #include "wrapperutil.hpp"
 #include "streamvector.hpp"
 #include "diagramio.hpp"
+#include "wrapperstate.hpp"
 
 
 using std::string;
@@ -147,6 +148,17 @@ static void testAddingACharmapper()
   wrapper.withChildWrapper(0,[](const Wrapper &child_wrapper){
     assert(child_wrapper.label()=="Charmapper1");
   });
+}
+
+
+static void testPrintingState()
+{
+  FakeWorld world;
+  WorldWrapper wrapper(world);
+  ostringstream stream;
+  printStateOn(stream,stateOf(wrapper));
+  string text = stream.str();
+  assert(text=="world\n");
 }
 
 
@@ -513,6 +525,7 @@ static void testChangingGlobalPositionDiagram()
 int main()
 {
   testAddingACharmapper();
+  testPrintingState();
   {
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();

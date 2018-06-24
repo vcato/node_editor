@@ -26,7 +26,7 @@ struct WorldWrapper : VoidWrapper
 
   virtual Label label() const
   {
-    assert(false);
+    return "world";
   }
 
   virtual int nChildren() const

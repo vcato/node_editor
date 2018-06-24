@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "wrapperstate.hpp"
 
 using std::cerr;
 using std::string;
@@ -26,6 +27,5 @@ void MainWindow::_saveProjectPressed()
 
   Wrapper *world_ptr = treeEditor().worldPtr();
   assert(world_ptr);
-  cerr << "printWrapperOn() not implemented\n";
-  // printWrapperOn(*world_ptr,stream);
+  printStateOn(stream,stateOf(*world_ptr));
 }
