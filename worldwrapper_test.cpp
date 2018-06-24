@@ -176,23 +176,26 @@ static void testPrintingCharmapperState()
   string text = stream.str();
   const char *expected_text =
     "world {\n"
-    "  Charmapper1 {\n"
-    "    Motion Pass {\n"
-    "      Pos Expr {\n"
-    "        Target Body: None\n"
-    "        Local Position {\n"
-    "          X: 0\n"
-    "          Y: 0\n"
+    "  charmapper1 {\n"
+    "    motion_pass {\n"
+    "      pos_expr {\n"
+    "        target_body: none\n"
+    "        local_position {\n"
+    "          x: 0\n"
+    "          y: 0\n"
     "        }\n"
-    "        Global Position: Components {\n"
-    "          X: 0\n"
-    "          Y: 0\n"
+    "        global_position: components {\n"
+    "          x: 0\n"
+    "          y: 0\n"
     "        }\n"
     "      }\n"
     "    }\n"
     "  }\n"
     "}\n";
 
+  if (text!=expected_text) {
+    cerr << "text: " << text << "\n";
+  }
 
   assert(text==expected_text);
 }

@@ -41,14 +41,14 @@ static void testHierarchy()
   string output = stream.str();
 
   auto expected_output =
-    "Scene {\n"
-    "  Body {\n"
+    "scene {\n"
+    "  body {\n"
     "    name: \"Body1\"\n"
     "    position {\n"
     "      x: 0\n"
     "      y: 0\n"
     "    }\n"
-    "    Body {\n"
+    "    body {\n"
     "      name: \"Body2\"\n"
     "      position {\n"
     "        x: 0\n"
@@ -168,14 +168,14 @@ static void testGettingState()
   string output = stream.str();
 
   auto expected_output =
-    "Scene {\n"
-    "  Body {\n"
+    "scene {\n"
+    "  body {\n"
     "    name: \"Body1\"\n"
     "    position {\n"
     "      x: 0\n"
     "      y: 0\n"
     "    }\n"
-    "    Body {\n"
+    "    body {\n"
     "      name: \"Body2\"\n"
     "      position {\n"
     "        x: 0\n"

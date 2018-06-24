@@ -1,5 +1,7 @@
 #include "wrapperstate.hpp"
 
+#include <algorithm>
+
 
 using std::string;
 using std::ostream;
@@ -75,6 +77,14 @@ static string quoted(const string &s)
 }
 
 
+static string makeTag(string label)
+{
+  std::transform(label.begin(),label.end(),label.begin(),::tolower);
+  std::replace(label.begin(),label.end(),' ','_');
+  return label;
+}
+
+
 namespace {
 struct WrapperValuePrinter {
   ostream &stream;
@@ -95,7 +105,7 @@ struct WrapperValuePrinter {
 
   void operator()(const WrapperValue::Enumeration &arg) const
   {
-    stream << ": " << arg.name;
+    stream << ": " << makeTag(arg.name);
   }
 };
 }
@@ -113,7 +123,7 @@ void printStateOn(ostream &stream,const WrapperState &state,int indent)
 {
   printIndent(stream,indent);
 
-  stream << state.label;
+  stream << makeTag(state.label);
   state.value.visit(WrapperValuePrinter{stream});
 
   if (state.children.empty()) {

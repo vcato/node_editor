@@ -162,6 +162,7 @@ extern void
     const std::function<void(const NumericWrapper &)> &f
   );
 
+
 struct StringWrapper : Wrapper {
   using Value = std::string;
 
