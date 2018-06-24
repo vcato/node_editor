@@ -13,17 +13,15 @@ using std::vector;
 
 
 namespace {
-struct WrapperState {
-  string label;
-  vector<WrapperState> children;
-};
-}
-
-
-namespace {
 struct WrapperValuePolicy {
   struct NoInitTag {};
   struct Void {};
+  struct Enumeration { EnumerationWrapper::Value index; };
+
+  WrapperValuePolicy()
+  : WrapperValuePolicy(Void{})
+  {
+  }
 
   WrapperValuePolicy(Void)
   : _type(void_type)
@@ -32,19 +30,57 @@ struct WrapperValuePolicy {
   }
 
   WrapperValuePolicy(NumericWrapper::Value arg)
+  : _type(numeric_type)
   {
     new (&_value.numeric_value)auto(arg);
   }
 
+  WrapperValuePolicy(StringWrapper::Value arg)
+  : _type(string_type)
+  {
+    new (&_value.string_value)auto(arg);
+  }
+
+  WrapperValuePolicy(Enumeration arg)
+  : _type(enumeration_type)
+  {
+    new (&_value.enumeration_value)auto(arg);
+  }
+
   enum Type {
-    void_type
+    void_type,
+    numeric_type,
+    enumeration_type,
+    string_type
   };
 
   protected:
+    WrapperValuePolicy(NoInitTag)
+    {
+    }
+
     union Value {
+      Value() {}
+      ~Value() {}
+
       Void void_value;
       NumericWrapper::Value numeric_value;
+      EnumerationWrapper::Value enumeration_value;
+      std::string string_value;
     };
+
+    template <typename V>
+    static auto withMemberPtrFor(Type t,const V& v)
+    {
+      switch (t) {
+        case void_type:  return v(&Value::void_value);
+        case numeric_type: return v(&Value::numeric_value);
+        case enumeration_type: return v(&Value::enumeration_value);
+        case string_type: return v(&Value::string_value);
+      }
+
+      assert(false);
+    }
 
     Type _type;
     Value _value;
@@ -54,8 +90,7 @@ struct WrapperValuePolicy {
 
 using WrapperValue = BasicVariant<WrapperValuePolicy>;
 
-#if 0
-static WrapperValue valueOf(const Wrapper &)
+static WrapperValue valueOf(const Wrapper &wrapper)
 {
   WrapperValue value;
 
@@ -77,29 +112,40 @@ static WrapperValue valueOf(const Wrapper &)
       value = numeric_wrapper.value();
     }
 
-    void operator()(const EnumerationWrapper &) const override
+    void
+      operator()(const EnumerationWrapper &enumeration_wrapper) const override
     {
-      value.setEnumeration(enumeration_wrapper.value());
+      value = WrapperValue::Enumeration{enumeration_wrapper.value()};
     }
 
-    void operator()(const StringWrapper &) const override
+    void operator()(const StringWrapper &string_wrapper) const override
     {
-      value.setString(string_wrapper.value());
+      value = string_wrapper.value();
     }
   };
+
+  Visitor visitor(value);
 
   wrapper.accept(visitor);
 
   return value;
 }
-#endif
+
+
+namespace {
+struct WrapperState {
+  string label;
+  WrapperValue value;
+  vector<WrapperState> children;
+};
+}
 
 
 static WrapperState stateOf(const Wrapper &wrapper)
 {
   WrapperState result;
   result.label = wrapper.label();
-  // result.value = wrapper.value();
+  result.value = valueOf(wrapper);
 
   for (int i=0, n=wrapper.nChildren(); i!=n; ++i) {
     wrapper.withChildWrapper(
@@ -114,6 +160,33 @@ static WrapperState stateOf(const Wrapper &wrapper)
 }
 
 
+static string quoted(const string &s)
+{
+  return '"' + s + '"';
+}
+
+
+namespace {
+struct WrapperValuePrinter {
+  ostream &stream;
+
+  void operator()(WrapperValue::Void) const
+  {
+  }
+
+  void operator()(int arg) const
+  {
+    stream << " " << arg;
+  }
+
+  void operator()(const string &arg) const
+  {
+    stream << " " << quoted(arg);
+  }
+};
+}
+
+
 static void
   printState(ostream &stream,const WrapperState &state,int indent = 0)
 {
@@ -121,7 +194,9 @@ static void
     stream << "  ";
   }
 
-  stream << state.label << "\n";
+  stream << state.label << ":";
+  state.value.visit(WrapperValuePrinter{stream});
+  stream << "\n";
   int n_children = state.children.size();
 
   for (int i=0; i!=n_children; ++i) {
@@ -158,17 +233,17 @@ static void testHierarchy()
   string output = stream.str();
 
   auto expected_output =
-    "Scene\n"
-    "  Body\n"
-    "    name\n"
-    "    position\n"
-    "      x\n"
-    "      y\n"
-    "    Body\n"
-    "      name\n"
-    "      position\n"
-    "        x\n"
-    "        y\n";
+    "Scene:\n"
+    "  Body:\n"
+    "    name: \"Body1\"\n"
+    "    position:\n"
+    "      x: 0\n"
+    "      y: 0\n"
+    "    Body:\n"
+    "      name: \"Body2\"\n"
+    "      position:\n"
+    "        x: 0\n"
+    "        y: 0\n";
 
   if (output!=expected_output) {
     cerr << "output:\n";
@@ -280,17 +355,17 @@ static void testGettingState()
   string output = stream.str();
 
   auto expected_output =
-    "Scene\n"
-    "  Body\n"
-    "    name\n"
-    "    position\n"
-    "      x\n"
-    "      y\n"
-    "    Body\n"
-    "      name\n"
-    "      position\n"
-    "        x\n"
-    "        y\n";
+    "Scene:\n"
+    "  Body:\n"
+    "    name: \"Body1\"\n"
+    "    position:\n"
+    "      x: 0\n"
+    "      y: 0\n"
+    "    Body:\n"
+    "      name: \"Body2\"\n"
+    "      position:\n"
+    "        x: 0\n"
+    "        y: 0\n";
 
   if (output!=expected_output) {
     cerr << "output:\n";

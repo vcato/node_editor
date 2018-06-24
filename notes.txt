@@ -321,3 +321,6 @@ struct MemberMap {
 };
 
 Any needs to be renamed to ExpressionValue
+
+Need to handle enumeration values in WrapperState better so that we keep the
+enumeration name and not the index.

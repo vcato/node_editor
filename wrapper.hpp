@@ -163,14 +163,16 @@ extern void
   );
 
 struct StringWrapper : Wrapper {
+  using Value = std::string;
+
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
   }
 
-  virtual std::string value() const = 0;
+  virtual Value value() const = 0;
 
-  virtual void setValue(const std::string &) const = 0;
+  virtual void setValue(const Value &) const = 0;
 };
 
 
@@ -184,6 +186,7 @@ extern void
 
 struct EnumerationWrapper : Wrapper {
   using Index = int;
+  using Value = Index;
 
   void accept(const Visitor &visitor) const override
   {

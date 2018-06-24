@@ -1,3 +1,10 @@
+template <typename T,typename U>
+void createObject(T& object,U &&value)
+{
+  new (&object) T(value);
+}
+
+
 template <typename Policy>
 class BasicVariant : public Policy {
   private:
@@ -33,7 +40,7 @@ class BasicVariant : public Policy {
 
     BasicVariant& operator=(BasicVariant&& arg)
     {
-      if (this->_type!=arg._type) {
+      if (this->_type != arg._type) {
         _destroy();
         _create(std::move(arg));
       }
@@ -120,7 +127,7 @@ class BasicVariant : public Policy {
       template <typename T>
       void operator()(T Value::*p) const
       {
-        new (&(a.*p))T(b.*p);
+        createObject(a.*p,b.*p);
       }
     };
 
@@ -131,7 +138,7 @@ class BasicVariant : public Policy {
       template <typename T>
       void operator()(T Value::*p) const
       {
-        new (&(a.*p))T(std::move(b.*p));
+        createObject(a.*p,std::move(b.*p));
       }
     };
 
