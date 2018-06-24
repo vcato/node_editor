@@ -247,8 +247,10 @@ void scanDiagramFrom(std::istream &stream,Diagram &diagram)
   Parser parser(stream);
   parser.scanWord();
   string &word = parser.word;
+
   if (word=="diagram") {
     parser.scanWord();
+
     if (word=="{") {
       parser.scanEndOfLine();
       parser.scanDiagramBody(diagram);

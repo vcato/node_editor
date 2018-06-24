@@ -84,17 +84,17 @@ struct WrapperValuePrinter {
 
   void operator()(int arg) const
   {
-    stream << " " << arg;
+    stream << ": " << arg;
   }
 
   void operator()(const string &arg) const
   {
-    stream << " " << quoted(arg);
+    stream << ": " << quoted(arg);
   }
 
   void operator()(const WrapperValue::Enumeration &arg) const
   {
-    stream << " " << arg.name;
+    stream << ": " << arg.name;
   }
 };
 }
@@ -106,7 +106,7 @@ void printStateOn(ostream &stream,const WrapperState &state,int indent)
     stream << "  ";
   }
 
-  stream << state.label << ":";
+  stream << state.label;
   state.value.visit(WrapperValuePrinter{stream});
   stream << "\n";
   int n_children = state.children.size();
