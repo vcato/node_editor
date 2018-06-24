@@ -31,6 +31,11 @@ struct WrapperValuePolicy {
     new (&_value.void_value)Void{};
   }
 
+  WrapperValuePolicy(NumericWrapper::Value arg)
+  {
+    new (&_value.numeric_value)auto(arg);
+  }
+
   enum Type {
     void_type
   };
@@ -38,6 +43,7 @@ struct WrapperValuePolicy {
   protected:
     union Value {
       Void void_value;
+      NumericWrapper::Value numeric_value;
     };
 
     Type _type;

@@ -1,6 +1,7 @@
 #include "charmapperwrapper.hpp"
 
 #include <iostream>
+#include <algorithm>
 #include "streamvector.hpp"
 
 using std::cerr;
@@ -8,6 +9,15 @@ using std::vector;
 using std::string;
 using Callbacks = CharmapperWrapper::Callbacks;
 using Label = CharmapperWrapper::Label;
+
+
+template <typename T>
+static int indexOf(const T &item,const std::vector<T> &container)
+{
+  auto iter = std::find(container.begin(),container.end(),item);
+  assert(iter!=container.end());
+  return iter-container.begin();
+}
 
 
 namespace {
@@ -307,6 +317,19 @@ struct MotionPassWrapper : VoidWrapper {
       }
     }
 
+    Index value() const override
+    {
+      if (global_position.isComponents()) {
+        return 0;
+      }
+
+      if (global_position.isFromBody()) {
+        return 1;
+      }
+
+      assert(false);
+    }
+
     vector<string> enumerationNames() const override
     {
       return {"Components","From Body"};
@@ -371,6 +394,11 @@ struct MotionPassWrapper : VoidWrapper {
       }
 
       callbacks.notifyCharmapChanged();
+    }
+
+    Index value() const override
+    {
+      return indexOf(body_link,callbacks.scene_list.allBodyLinks());
     }
   };
 

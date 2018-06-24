@@ -183,6 +183,8 @@ extern void
 
 
 struct EnumerationWrapper : Wrapper {
+  using Index = int;
+
   void accept(const Visitor &visitor) const override
   {
     visitor(*this);
@@ -193,9 +195,11 @@ struct EnumerationWrapper : Wrapper {
   virtual void
     setValue(
       const TreePath &path,
-      int index,
+      Index,
       TreeObserver &
     ) const = 0;
+
+  virtual Index value() const = 0;
 };
 
 

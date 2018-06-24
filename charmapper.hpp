@@ -75,6 +75,11 @@ class Charmapper {
           *this = BodyLink();
         }
 
+        bool operator==(const BodyLink &arg) const
+        {
+          return scene_ptr==arg.scene_ptr && body_ptr==arg.body_ptr;
+        }
+
       private:
         Scene *scene_ptr = nullptr;
         Scene::Body *body_ptr = nullptr;
