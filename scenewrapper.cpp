@@ -238,65 +238,17 @@ struct BodyWrapper : VoidWrapper {
   {
   }
 
-  vector<string> operationNames() const
-  {
-    return {"Add Body","Remove"};
-  }
+  vector<string> operationNames() const override;
+
+  void executeAddBody(const TreePath &, TreeObserver &) const;
+  void executeRemove(const TreePath &, TreeObserver &) const;
 
   virtual void
     executeOperation(
       int operation_index,
       const TreePath &path,
       TreeObserver &tree_observer
-    ) const
-  {
-    switch (operation_index) {
-      case 0:
-        {
-          int index = body.nChildren();
-          Frame &frame = scene.backgroundFrame();
-          int old_n_vars = frame.nVariables();
-          Scene::Body &new_body = scene.addChildBodyTo(body);
-          int new_n_vars = frame.nVariables();
-
-          if (new_n_vars!=old_n_vars) {
-            TreePath scene_path = path;
-
-            scene_path.erase(scene_path.end()-depth,scene_path.end());
-            TreePath background_frame_path = join(scene_path,0);
-
-            for (int i=old_n_vars; i!=new_n_vars; ++i) {
-              TreePath var_path = join(background_frame_path,i);
-              tree_observer.itemAdded(var_path);
-            }
-          }
-
-          if (wrapper_data.callbacks.body_added_func) {
-            wrapper_data.callbacks.body_added_func(new_body,tree_observer);
-          }
-
-          tree_observer.itemAdded(join(path,index+nBodyAttributes()));
-        }
-        return;
-      case 1:
-        {
-          if (wrapper_data.callbacks.removing_body_func) {
-            wrapper_data.callbacks.removing_body_func(body);
-          }
-
-          scene.removeChildBodyFrom(parent_body,body_index);
-          tree_observer.itemRemoved(path);
-
-          if (wrapper_data.callbacks.removed_body_func) {
-            wrapper_data.callbacks.removed_body_func(tree_observer);
-          }
-        }
-
-        return;
-    }
-
-    assert(false);
-  }
+    ) const;
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
@@ -347,6 +299,93 @@ struct BodyWrapper : VoidWrapper {
 }
 
 
+vector<string> BodyWrapper::operationNames() const
+{
+  return {"Add Body","Remove"};
+}
+
+
+void
+  BodyWrapper::executeAddBody(
+    const TreePath &path,
+    TreeObserver &tree_observer
+  ) const
+{
+  int index = body.nChildren();
+  Frame &frame = scene.backgroundFrame();
+  int old_n_vars = frame.nVariables();
+  Scene::Body &new_body = scene.addChildBodyTo(body);
+  int new_n_vars = frame.nVariables();
+
+  if (new_n_vars!=old_n_vars) {
+    TreePath scene_path = path;
+
+    scene_path.erase(scene_path.end()-depth,scene_path.end());
+    TreePath background_frame_path = join(scene_path,0);
+
+    for (int i=old_n_vars; i!=new_n_vars; ++i) {
+      TreePath var_path = join(background_frame_path,i);
+      tree_observer.itemAdded(var_path);
+    }
+  }
+
+  if (wrapper_data.callbacks.body_added_func) {
+    wrapper_data.callbacks.body_added_func(new_body,tree_observer);
+  }
+
+  tree_observer.itemAdded(join(path,index+nBodyAttributes()));
+}
+
+
+void
+  BodyWrapper::executeRemove(
+    const TreePath &path,
+    TreeObserver &tree_observer
+  ) const
+{
+  Frame &frame = scene.backgroundFrame();
+
+  if (wrapper_data.callbacks.removing_body_func) {
+    wrapper_data.callbacks.removing_body_func(body);
+  }
+
+  int old_n_vars = frame.nVariables();
+
+  scene.removeChildBodyFrom(parent_body,body_index);
+
+  int new_n_vars = frame.nVariables();
+
+  // Extra variables should probably be removed, but they aren't currently.
+  assert(old_n_vars==new_n_vars);
+
+  tree_observer.itemRemoved(path);
+
+  if (wrapper_data.callbacks.removed_body_func) {
+    wrapper_data.callbacks.removed_body_func(tree_observer);
+  }
+}
+
+
+void
+  BodyWrapper::executeOperation(
+    int operation_index,
+    const TreePath &path,
+    TreeObserver &tree_observer
+  ) const
+{
+  switch (operation_index) {
+    case 0:
+      executeAddBody(path,tree_observer);
+      return;
+    case 1:
+      executeRemove(path,tree_observer);
+      return;
+  }
+
+  assert(false);
+}
+
+
 SceneWrapper::SceneWrapper(
   Scene &scene_arg,
   const Callbacks &notify_arg,
@@ -366,6 +405,36 @@ std::vector<std::string> SceneWrapper::operationNames() const
 
 
 void
+  SceneWrapper::executeAddBody(
+    const TreePath &scene_path,
+    TreeObserver &tree_observer
+  ) const
+{
+  int index = scene.nBodies();
+  Frame &frame = scene.backgroundFrame();
+  int old_n_vars = frame.nVariables();
+  Scene::Body &new_body = scene.addBody();
+  int new_n_vars = frame.nVariables();
+
+  if (new_n_vars!=old_n_vars) {
+    assert(new_n_vars>old_n_vars);
+    TreePath background_frame_path = join(scene_path,0);
+
+    for (int i=old_n_vars; i!=new_n_vars; ++i) {
+      TreePath var_path = join(background_frame_path,i);
+      tree_observer.itemAdded(var_path);
+    }
+  }
+
+  tree_observer.itemAdded(join(scene_path,index+firstBodyIndex()));
+
+  if (callbacks.body_added_func) {
+    callbacks.body_added_func(new_body,tree_observer);
+  }
+}
+
+
+void
   SceneWrapper::executeOperation(
     int operation_index,
     const TreePath &scene_path,
@@ -374,30 +443,7 @@ void
 {
   switch (operation_index) {
     case 0:
-      {
-        int index = scene.nBodies();
-        Frame &frame = scene.backgroundFrame();
-        int old_n_vars = frame.nVariables();
-        Scene::Body &new_body = scene.addBody();
-        int new_n_vars = frame.nVariables();
-
-        if (new_n_vars!=old_n_vars) {
-          assert(new_n_vars>old_n_vars);
-          TreePath background_frame_path = join(scene_path,0);
-
-          for (int i=old_n_vars; i!=new_n_vars; ++i) {
-            TreePath var_path = join(background_frame_path,i);
-            tree_observer.itemAdded(var_path);
-          }
-        }
-
-        tree_observer.itemAdded(join(scene_path,index+firstBodyIndex()));
-
-        if (callbacks.body_added_func) {
-          callbacks.body_added_func(new_body,tree_observer);
-        }
-      }
-
+      executeAddBody(scene_path,tree_observer);
       return;
   }
 

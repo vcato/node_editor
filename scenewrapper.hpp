@@ -45,4 +45,11 @@ struct SceneWrapper : VoidWrapper {
   Label label() const override;
   int nChildren() const override;
   static int firstBodyIndex() { return 1; }
+
+  private:
+    void
+      executeAddBody(
+        const TreePath &scene_path,
+        TreeObserver &tree_observer
+      ) const;
 };

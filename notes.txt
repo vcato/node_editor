@@ -327,5 +327,4 @@ the position x and y shown as frame variable indices.  We'll also have
 a background_frame member that shows the actual values.  Doing an Add Body
 operation will automatically add new values into the background frame.
 
-Need to handle updating the background frame tree items when a body
-is removed.
+Need to update the body position when we update variable values.
