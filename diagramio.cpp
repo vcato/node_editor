@@ -80,7 +80,7 @@ static int nextIntFrom(istream &stream)
   stream >> value;
 
   if (!stream) {
-    assert(false);
+    assert(false); // not implemented
   }
 
   return value;
@@ -91,6 +91,11 @@ static string nextStringFrom(istream &stream)
 {
   string position_string;
   stream >> position_string;
+
+  if (!stream) {
+    assert(false); // not implemented
+  }
+
   return position_string;
 }
 
