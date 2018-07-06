@@ -52,13 +52,9 @@ void printDiagramOn(ostream &stream,const Diagram &diagram)
 {
   stream << "diagram {\n";
 
-  if (diagram.nExistingNodes()==0) {
-  }
-  else {
-    for (auto i : diagram.existingNodeIndices()) {
-      const Node &node = diagram.node(i);
-      printNodeOn(stream,node,i);
-    }
+  for (auto i : diagram.existingNodeIndices()) {
+    const Node &node = diagram.node(i);
+    printNodeOn(stream,node,i);
   }
 
   stream << "}\n";
