@@ -22,7 +22,7 @@ void MainWindow::_saveProjectPressed()
   std::ofstream stream(path);
 
   if (!stream) {
-    assert(false);
+    return;
   }
 
   Wrapper *world_ptr = treeEditor().worldPtr();

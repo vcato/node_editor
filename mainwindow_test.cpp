@@ -7,6 +7,7 @@
 #include "streamvector.hpp"
 #include "wrapperutil.hpp"
 #include "fakediagrameditorwindows.hpp"
+#include "optional.hpp"
 
 
 using std::string;
@@ -152,9 +153,17 @@ struct FakeTreeEditor : TreeEditor {
 namespace {
 struct FakeMainWindow : MainWindow {
   FakeTreeEditor &treeEditor() override { return tree_editor; }
-  std::string _askForSavePath() override { assert(false); }
+  std::string _askForSavePath() override { return *maybe_chosen_path; }
 
   FakeTreeEditor tree_editor;
+  Optional<string> maybe_chosen_path;
+
+  void userPressesSaveProject(const string &chosen_path)
+  {
+    maybe_chosen_path = chosen_path;
+    _saveProjectPressed();
+    maybe_chosen_path.reset();
+  }
 };
 }
 
@@ -425,6 +434,13 @@ static void testRemovingAPosExpr()
 }
 
 
+static void testCancellingSaveProject()
+{
+  FakeMainWindow main_window;
+  main_window.userPressesSaveProject(/*chosen_path*/"");
+}
+
+
 #if 0
 static void testCreatingABodyWithAnAveragePosition()
 {
@@ -479,5 +495,6 @@ int main()
   testChangingABodyName();
   testRemovingABody();
   testRemovingAPosExpr();
+  testCancellingSaveProject();
   // testCreatingABodyWithAnAveragePosition();
 }

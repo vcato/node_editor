@@ -61,9 +61,7 @@ class Optional {
 
     ~Optional()
     {
-      if (_has_value) {
-        _value.~T();
-      }
+      reset();
     }
 
     Optional &operator=(const T &arg)
@@ -80,6 +78,14 @@ class Optional {
     }
 
     bool hasValue() const { return _has_value; }
+
+    void reset()
+    {
+      if (_has_value) {
+        _value.~T();
+        _has_value = false;
+      }
+    }
 
   private:
     union {
