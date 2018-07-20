@@ -53,7 +53,7 @@ struct QtTreeEditor::CreateChildItemVisitor : Wrapper::Visitor {
 
   void operator()(const NumericWrapper &wrapper) const override
   {
-    tree_editor.createSpinBoxItem(parent_item,wrapper.label());
+    tree_editor.createSpinBoxItem(parent_item,wrapper.label(),wrapper.value());
     created = true;
   }
 
@@ -177,12 +177,14 @@ void
 void
   QtTreeEditor::createSpinBoxItem(
     QTreeWidgetItem &parent_item,
-    const std::string &label
+    const std::string &label,
+    int value
   )
 {
   QtTreeEditor &tree_widget = *this;
   QTreeWidgetItem &item = ::createChildItem(parent_item);
   QtSpinBox &spin_box = tree_widget.createItemWidget<QtSpinBox>(item,label);
+  spin_box.setValue(value);
   spin_box.value_changed_function =
     [this,&item](int value){
       handleSpinBoxItemValueChanged(&item,value);
@@ -219,7 +221,11 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 }
 
 
-void QtTreeEditor::addMainTreeItem(const TreePath &new_item_path)
+void
+  QtTreeEditor::addWrapperItem(
+    const TreePath &new_item_path,
+    const Wrapper &wrapper
+  )
 {
   TreePath parent_path = parentPath(new_item_path);
   TreeItemIndex child_index = new_item_path.back();
@@ -232,16 +238,10 @@ void QtTreeEditor::addMainTreeItem(const TreePath &new_item_path)
 
   bool created = false;
 
-  visitSubWrapper(
-    world(),
-    new_item_path,
-    [&](const Wrapper &w){
-      CreateChildItemVisitor
-	create_child_item_visitor(*this,parent_item,created);
+  CreateChildItemVisitor
+    create_child_item_visitor(*this,parent_item,created);
 
-      w.accept(create_child_item_visitor);
-    }
-  );
+  wrapper.accept(create_child_item_visitor);
 
   if (!created) {
     cerr << "No item created for parent " << parent_path << "\n";

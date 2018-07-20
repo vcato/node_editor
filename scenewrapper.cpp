@@ -74,14 +74,14 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
   void setValue(int arg) const override
   {
-    map.set(wrapper_data.frame,arg);
+    map.var_index = arg;
     StubTreeObserver tree_observer;
     wrapper_data.callbacks.changed_func(tree_observer);
   }
 
   virtual Value value() const
   {
-    return map(wrapper_data.frame);
+    return map.var_index;
   }
 };
 }
@@ -122,12 +122,12 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
 
 namespace {
-struct Point2DWrapper : NoOperationWrapper<VoidWrapper> {
+struct Point2DMapWrapper : NoOperationWrapper<VoidWrapper> {
   const char *label_member;
   Point2DMap &point;
   WrapperData wrapper_data;
 
-  Point2DWrapper(
+  Point2DMapWrapper(
     const char *label_arg,
     Point2DMap &point_arg,
     WrapperData wrapper_data_arg
@@ -258,7 +258,7 @@ struct BodyWrapper : VoidWrapper {
     }
 
     if (child_index==1) {
-      visitor(Point2DWrapper("position",body.position,wrapper_data));
+      visitor(Point2DMapWrapper("position",body.position,wrapper_data));
       return;
     }
 
@@ -287,7 +287,11 @@ struct BodyWrapper : VoidWrapper {
         body.name = child_state.value.asString();
       }
       else if (child_state.tag=="position") {
-        Point2DWrapper("position",body.position,wrapper_data).setState(child_state);
+        Point2DMapWrapper(
+          "position",
+          body.position,
+          wrapper_data
+        ).setState(child_state);
       }
       else {
         cerr << "child_state.tag: " << child_state.tag << "\n";

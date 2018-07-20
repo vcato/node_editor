@@ -13,5 +13,9 @@ QtSpinBox::QtSpinBox()
 
 void QtSpinBox::valueChangedSlot(int value)
 {
+  if (!value_changed_function) {
+    return;
+  }
+
   value_changed_function(value);
 }

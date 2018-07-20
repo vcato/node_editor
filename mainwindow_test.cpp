@@ -120,7 +120,8 @@ struct FakeTreeEditor : TreeEditor {
     userChangesNumberValue(makePath(world(),path_string),new_value);
   }
 
-  void addMainTreeItem(const TreePath &new_item_path) override
+  void
+    addWrapperItem(const TreePath &new_item_path,const Wrapper &) override
   {
     Item &parent_item = itemFromPath(root,parentPath(new_item_path));
     insertChildItem(parent_item,new_item_path.back());

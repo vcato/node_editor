@@ -33,8 +33,10 @@ struct TreeEditor {
 
   private:
     std::vector<DiagramEditorWindow *> diagram_editor_window_ptrs;
+    using NumericValue = NumericWrapper::Value;
 
-    virtual void addMainTreeItem(const TreePath &new_item_path) = 0;
+    virtual void
+      addWrapperItem(const TreePath &new_item_path,const Wrapper &) = 0;
     virtual void replaceTreeItems(const TreePath &parent_path) = 0;
     virtual void changeEnumerationValues(const TreePath &) = 0;
     virtual DiagramEditorWindow& createDiagramEditor() = 0;
@@ -42,6 +44,7 @@ struct TreeEditor {
   private:
     void diagramChanged(DiagramEditorWindow &window);
     void notifyItemsOfDiagramChange(Diagram &diagram_that_changed);
+    void addMainTreeItem(const TreePath &new_item_path);
 };
 
 #endif /* TREEEDITOR_HPP_ */

@@ -68,11 +68,15 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       );
 
     void
-      createSpinBoxItem(QTreeWidgetItem &parent_item,const std::string &label);
+      createSpinBoxItem(
+        QTreeWidgetItem &parent_item,
+        const std::string &label,
+        int value
+      );
 
     QTreeWidgetItem* findSelectedItem();
 
-    void addMainTreeItem(const TreePath &new_item_path) override;
+    void addWrapperItem(const TreePath &new_item_path,const Wrapper &) override;
     void removeTreeItem(const TreePath &path) override;
 
     void

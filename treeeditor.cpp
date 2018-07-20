@@ -147,6 +147,18 @@ void TreeEditor::itemDiagramChanged(const TreePath &path)
 #endif
 
 
+void TreeEditor::addMainTreeItem(const TreePath &new_item_path)
+{
+  visitSubWrapper(
+    world(),
+    new_item_path,
+    [&](const Wrapper &w){
+      addWrapperItem(new_item_path,w);
+    }
+  );
+}
+
+
 void TreeEditor::addTreeItem(const TreePath &new_item_path)
 {
   addMainTreeItem(new_item_path);

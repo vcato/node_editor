@@ -326,5 +326,3 @@ So I think that has to change.  When we add a body to a scene, we'll get
 the position x and y shown as frame variable indices.  We'll also have
 a background_frame member that shows the actual values.  Doing an Add Body
 operation will automatically add new values into the background frame.
-
-Need to update the body position when we update variable values.
