@@ -74,6 +74,10 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
   void setValue(int arg) const override
   {
+    if (arg<0 || arg>=wrapper_data.frame.nVariables()) {
+      return;
+    }
+
     map.var_index = arg;
     StubTreeObserver tree_observer;
     wrapper_data.callbacks.changed_func(tree_observer);
