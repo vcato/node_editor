@@ -211,17 +211,17 @@ static void testGettingState()
 }
 
 
-#if 0
 static void testBuildingFromState()
 {
   Scene scene;
   SceneWrapper wrapper(scene,unusedObserver(),"Scene");
-  WrapperState state;
-  state.label = "Scene";
+  WrapperState state("scene");
+  state.children.push_back(WrapperState("background_frame"));
+
   wrapper.setState(state);
+
   assert(stateOf(wrapper)==state);
 }
-#endif
 
 
 int main()
@@ -229,5 +229,5 @@ int main()
   testHierarchy();
   testAddingBodies();
   testGettingState();
-  // testBuildingFromState();
+  testBuildingFromState();
 }

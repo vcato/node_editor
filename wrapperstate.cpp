@@ -62,8 +62,7 @@ static WrapperValue valueOf(const Wrapper &wrapper)
 
 WrapperState stateOf(const Wrapper &wrapper)
 {
-  WrapperState result;
-  result.tag = makeTag(wrapper.label());
+  WrapperState result(makeTag(wrapper.label()));
   result.value = valueOf(wrapper);
 
   for (int i=0, n=wrapper.nChildren(); i!=n; ++i) {

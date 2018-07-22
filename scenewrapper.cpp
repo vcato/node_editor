@@ -459,8 +459,7 @@ void
 }
 
 
-namespace {
-struct FrameWrapper : NoOperationWrapper<VoidWrapper> {
+struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
   string label_member;
   Frame &frame;
   WrapperData &wrapper_data;
@@ -491,9 +490,40 @@ struct FrameWrapper : NoOperationWrapper<VoidWrapper> {
   {
     ostringstream stream;
     stream << child_index;
-    visitor(FloatWrapper(stream.str().c_str(),frame.var_values[child_index],wrapper_data));
+    visitor(
+      FloatWrapper(
+        stream.str().c_str(),
+        frame.var_values[child_index],
+        wrapper_data
+      )
+    );
+  }
+
+  void setState(const WrapperState &new_state) const
+  {
+    if (frame.nVariables()==0 && new_state.children.size()==0) {
+      return;
+    }
+
+    assert(false);
   }
 };
+
+
+void
+  SceneWrapper::withBackgroundFrameWrapper(
+    const std::function<void(const FrameWrapper &)> &visitor
+  ) const
+{
+  WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
+
+  visitor(
+    FrameWrapper(
+      "background_frame",
+      scene.backgroundFrame(),
+      wrapper_data
+    )
+  );
 }
 
 
@@ -506,7 +536,7 @@ void
   WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
 
   if (child_index==0) {
-    visitor(FrameWrapper("background_frame",scene.backgroundFrame(),wrapper_data));
+    withBackgroundFrameWrapper(visitor);
     return;
   }
 
@@ -548,11 +578,24 @@ void SceneWrapper::setState(const WrapperState &state)
   int child_index = 0;
 
   for (const WrapperState &child_state : state.children) {
-    scene.addBody();
-    Scene::Body &parent_body = scene.rootBody();
-    BodyWrapper(
-      scene,parent_body,child_index,wrapper_data,/*depth*/1
-    ).setState(child_state);
+    if (child_state.tag=="background_frame") {
+      withBackgroundFrameWrapper(
+        [&](const FrameWrapper &frame_wrapper){
+          frame_wrapper.setState(child_state);
+        }
+      );
+    }
+    else if (child_state.tag=="Body") {
+      scene.addBody();
+      Scene::Body &parent_body = scene.rootBody();
+      BodyWrapper(
+        scene,parent_body,child_index,wrapper_data,/*depth*/1
+      ).setState(child_state);
+    }
+    else {
+      assert(false);
+    }
+
     ++child_index;
   }
 }

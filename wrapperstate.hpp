@@ -8,8 +8,20 @@
 
 struct WrapperValuePolicy {
   struct NoInitTag {};
-  struct Void {};
-  struct Enumeration { std::string name; };
+
+  struct Void {
+    bool operator==(const Void &) const { return true; }
+  };
+
+  struct Enumeration
+  {
+    std::string name;
+
+    bool operator==(const Enumeration &arg) const
+    {
+      return name==arg.name;
+    }
+  };
 
   WrapperValuePolicy()
   : WrapperValuePolicy(Void{})
@@ -92,9 +104,23 @@ using WrapperValue = BasicVariant<WrapperValuePolicy>;
 
 
 struct WrapperState {
-  std::string tag;
+  using Tag = std::string;
+  Tag tag;
   WrapperValue value;
   std::vector<WrapperState> children;
+
+  WrapperState(const Tag &tag_arg)
+  : tag(tag_arg)
+  {
+  }
+
+  bool operator==(const WrapperState &arg) const
+  {
+    if (tag!=arg.tag) return false;
+    if (value!=arg.value) return false;
+    if (children!=arg.children) return false;
+    return true;
+  }
 };
 
 

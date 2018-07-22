@@ -47,6 +47,13 @@ struct SceneWrapper : VoidWrapper {
   static int firstBodyIndex() { return 1; }
 
   private:
+    struct FrameWrapper;
+
+    void
+      withBackgroundFrameWrapper(
+        const std::function<void(const FrameWrapper &)> &
+      ) const;
+
     void
       executeAddBody(
         const TreePath &scene_path,
