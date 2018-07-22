@@ -1,10 +1,10 @@
 #ifndef OPTIONAL_HPP
 #define OPTIONAL_HPP
 
-
 #include <cassert>
 #include <utility>
 #include <iostream>
+#include "createobject.hpp"
 
 
 template <typename T>
@@ -54,7 +54,7 @@ class Optional {
     : _has_value(arg._has_value)
     {
       if (arg._has_value) {
-        new (&_value)T(std::move(arg._value));
+        createObject(_value,std::move(arg._value));
         arg._has_value = false;
       }
     }
@@ -70,7 +70,7 @@ class Optional {
         _value = arg;
       }
       else {
-        new (&_value)T(arg);
+        createObject(_value,arg);
         _has_value = true;
       }
 

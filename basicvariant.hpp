@@ -2,11 +2,7 @@
 #define BASICVARIANT_HPP
 
 
-template <typename T,typename U>
-void createObject(T& object,U &&value)
-{
-  new (&object) T(value);
-}
+#include "createobject.hpp"
 
 
 struct VariantPolicyNoInitTag {

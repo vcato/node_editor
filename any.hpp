@@ -30,19 +30,19 @@ struct AnyPolicy {
     AnyPolicy()
     : _type(void_type)
     {
-      new (&_value.void_value)Void();
+      createObject(_value.void_value,Void());
     }
 
     AnyPolicy(float arg)
     : _type(float_type)
     {
-      new (&_value.float_value)float(arg);
+      createObject(_value.float_value,arg);
     }
 
     AnyPolicy(std::vector<Any> &&arg)
     : _type(vector_type)
     {
-      new (&_value.vector_value)std::vector<Any>(std::move(arg));
+      createObject(_value.vector_value,std::move(arg));
     }
 
     bool isVoid() const { return _type==void_type; }

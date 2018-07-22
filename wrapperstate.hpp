@@ -4,6 +4,7 @@
 
 #include "wrapper.hpp"
 #include "basicvariant.hpp"
+#include "createobject.hpp"
 
 
 struct WrapperValuePolicy {
@@ -29,25 +30,25 @@ struct WrapperValuePolicy {
   WrapperValuePolicy(Void)
   : _type(void_type)
   {
-    new (&_value.void_value)Void{};
+    createObject(_value.void_value,Void{});
   }
 
   WrapperValuePolicy(NumericWrapper::Value arg)
   : _type(numeric_type)
   {
-    new (&_value.numeric_value)auto(arg);
+    createObject(_value.numeric_value,arg);
   }
 
   WrapperValuePolicy(StringWrapper::Value arg)
   : _type(string_type)
   {
-    new (&_value.string_value)auto(arg);
+    createObject(_value.string_value,arg);
   }
 
   WrapperValuePolicy(Enumeration arg)
   : _type(enumeration_type)
   {
-    new (&_value.enumeration_value)auto(arg);
+    createObject(_value.enumeration_value,arg);
   }
 
   bool isString() const { return _type==string_type; }
@@ -156,13 +157,13 @@ struct ScanStateResultPolicy {
   ScanStateResultPolicy(const Error &error)
   : _type(Type::error)
   {
-    new (&_value.error)auto(error);
+    createObject(_value.error,error);
   }
 
   ScanStateResultPolicy(const WrapperState &state)
   : _type(Type::state)
   {
-    new (&_value.state)auto(state);
+    createObject(_value.state,state);
   }
 
   template <typename Function>
