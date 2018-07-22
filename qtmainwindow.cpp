@@ -34,6 +34,7 @@ QtMainWindow::QtMainWindow()
   QMenuBar *menu_bar_ptr = menuBar();
   assert(menu_bar_ptr);
   QMenu &tools_menu = createWidget<QMenu>(*menu_bar_ptr,"Tools");
+  createAction(tools_menu,"Open Project...",[this](){_openProjectPressed();});
   createAction(tools_menu,"Save Project...",[this](){_saveProjectPressed();});
 
   QSplitter &splitter = createCentralWidget<QSplitter>(*this);
@@ -55,5 +56,14 @@ string QtMainWindow::_askForSavePath()
   QFileDialog file_dialog;
   QString result =
     file_dialog.getSaveFileName(this,"Save Project","project.dat");
+  return result.toStdString();
+}
+
+
+string QtMainWindow::_askForOpenPath()
+{
+  QFileDialog file_dialog;
+  QString result =
+    file_dialog.getOpenFileName(this,"Open Project","project.dat");
   return result.toStdString();
 }

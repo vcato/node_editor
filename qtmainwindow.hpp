@@ -19,6 +19,7 @@ class QtMainWindow : public QMainWindow, public MainWindow {
 
     QtTreeEditor &treeEditor() override;
     std::string _askForSavePath() override;
+    std::string _askForOpenPath() override;
 };
 
 #endif /* QTMAINWINDOW_HPP_ */

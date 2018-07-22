@@ -154,7 +154,16 @@ struct FakeTreeEditor : TreeEditor {
 namespace {
 struct FakeMainWindow : MainWindow {
   FakeTreeEditor &treeEditor() override { return tree_editor; }
-  std::string _askForSavePath() override { return *maybe_chosen_path; }
+
+  std::string _askForSavePath() override
+  {
+    return *maybe_chosen_path;
+  }
+
+  std::string _askForOpenPath() override
+  {
+    assert(false);
+  }
 
   FakeTreeEditor tree_editor;
   Optional<string> maybe_chosen_path;

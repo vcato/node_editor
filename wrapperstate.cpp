@@ -1,6 +1,7 @@
 #include "wrapperstate.hpp"
 
 #include <algorithm>
+#include "optional.hpp"
 
 
 using std::string;
@@ -140,3 +141,60 @@ void printStateOn(ostream &stream,const WrapperState &state,int indent)
     stream << "}\n";
   }
 }
+
+
+#if 0
+static Optional<WrapperState> scanState(Parser &parser)
+{
+  WrapperState state;
+
+  parser.scanWord();
+
+  if (endsWith(parser.word(),":")) {
+    state.tag = notRight(parser.word(),1);
+    state.value = scanValue(parser);
+    return;
+  }
+
+  tag = parser.word();
+  parser.scanWord();
+
+  if (parser.word()!="{") {
+    assert(false);
+  }
+
+  for (;;) {
+    parser.scanWord();
+
+    if (parser.word()=="}") {
+      assert(false);
+      break;
+    }
+
+    ScanStateResult child_result = scanState(parser);
+
+    if (child_result) {
+      state.children.push_back(child_result);
+    }
+  }
+}
+#endif
+
+
+#if 1
+ScanStateResult scanStateFrom(std::istream & /*stream*/)
+{
+#if 0
+  TagValueParser parser(stream);
+
+  Optional<WrapperState> maybe_state = scanState(parser);
+
+  if (!maybe_state) {
+    return parser.error();
+  }
+
+  return *maybe_state;
+#endif
+  assert(false);
+}
+#endif

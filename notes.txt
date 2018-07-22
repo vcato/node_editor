@@ -267,9 +267,6 @@ Need a way to save and restore wrappers.
 I think this involves being able to extract a data structure from a wrapper
 and build a data structure from a wrapper.
 
-Implement printWrapperOn
-Implement Wrapper::state()
-
 It may be possible to extract a wrapper memento pretty automatically.  We're
 basically doing this when we show a tree for a wrapper.  Building a wrapper
 from a memento is more complex.  Some children of a wrapper may exist
@@ -285,32 +282,12 @@ shown fully formed the first time.
 I think starting with state() and setState methods is probably best.  We
 can then figure out how to generalize this to avoid duplicating logic.
 It may not be reasonable to create the
-wrapper, then walk through the children and add them one at a time, although
+wrapper, then walk through the children and add them one at a time.
 
-There's already a printTree method, which probably does a lot of what we need
-for getting the state.
+Need MainWindow Open Project...
 
-Work on scenewrapper_test, testBuildingFromState()
-Add Wrapper::setState()
+To implement scanStateFrom(), I need a good parser.  There's a parser in
+diagramio.cpp that I should be able to reuse.
 
-  We have the possibility of changing the state of a wrapper causing a change
-  to the state of another wrapper in a different branch.
-  * Example: changing a charmap and having it change the state of a body.
-  * Seems like we should differentiate these kinds of state, but I'm not
-    sure how.
-
-  We might want to make it such that any wrapper values represent independent
-  state.  i.e. changing a wrapper value never changes the state of another
-  wrapper.  If you do something that could affect other wrappers, then that
-  is an operation.
-
-  Right now, adding children to a wrapper is done by operations.  To be able
-  to set the state of a widget, we'll need to either by able to add children
-  in some generic way or pass the state directly to the wrappers.
-
-  We need to convert the labels to tags when creating the state, since we'll
-  want to be able to load the state as well and have the labels match.
-
-  The numbers on the labels are a bit awkward.  They are handy when shown
-  in the tree because they provide a reference point, but we don't really
-  want to save the numbers in a file.
+I already have parser.hpp what is it used for?  Looks like it is used in
+expressions.  Maybe a better name is StringParser?

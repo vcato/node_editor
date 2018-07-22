@@ -173,6 +173,13 @@ struct Parser {
       stream.get();
     }
   }
+};
+}
+
+
+namespace {
+struct DiagramParser : Parser {
+  DiagramParser(istream &stream_arg) : Parser(stream_arg) { }
 
   void scanNodeConnection(Node &node)
   {
@@ -348,6 +355,6 @@ struct Parser {
 
 void scanDiagramFrom(std::istream &stream,Diagram &diagram)
 {
-  Parser parser(stream);
+  DiagramParser parser(stream);
   parser.scanDiagram(diagram);
 }

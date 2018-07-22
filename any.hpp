@@ -12,9 +12,6 @@ struct AnyPolicy;
 using Any = BasicVariant<AnyPolicy>;
 
 struct AnyPolicy {
-  protected:
-    struct NoInitTag {};
-
   public:
     enum Type {
       void_type,
@@ -26,7 +23,7 @@ struct AnyPolicy {
       bool operator==(const Void &) const { return true; }
     };
 
-    AnyPolicy(NoInitTag)
+    AnyPolicy(VariantPolicyNoInitTag)
     {
     }
 

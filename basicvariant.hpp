@@ -9,12 +9,16 @@ void createObject(T& object,U &&value)
 }
 
 
+struct VariantPolicyNoInitTag {
+};
+
+
 template <typename Policy>
 class BasicVariant : public Policy {
   private:
     using Self = BasicVariant;
     using Value = typename Policy::Value;
-    using NoInitTag = typename Policy::NoInitTag;
+    using NoInitTag = VariantPolicyNoInitTag;
 
   public:
     using Type = typename Policy::Type;

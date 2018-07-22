@@ -7,8 +7,6 @@
 
 
 struct WrapperValuePolicy {
-  struct NoInitTag {};
-
   struct Void {
     bool operator==(const Void &) const { return true; }
   };
@@ -68,7 +66,7 @@ struct WrapperValuePolicy {
   };
 
   protected:
-    WrapperValuePolicy(NoInitTag)
+    WrapperValuePolicy(VariantPolicyNoInitTag)
     {
     }
 
@@ -124,10 +122,68 @@ struct WrapperState {
 };
 
 
+struct ScanStateResultPolicy {
+  using ErrorMessage = std::string;
+
+  union Value {
+    WrapperState state;
+    ErrorMessage error_message;
+
+    Value()
+    {
+    }
+
+    ~Value()
+    {
+      // This value should have been destructed at this point
+    }
+  };
+
+  enum class Type {
+    state
+  };
+
+  template <typename Function>
+  void withMemberPtrFor(Type type,const Function &f)
+  {
+    switch (type) {
+      case Type::state: return f(&Value::state);
+    }
+
+    assert(false);
+  }
+
+  ScanStateResultPolicy(VariantPolicyNoInitTag)
+  {
+  }
+
+  bool isState() const
+  {
+    return _type==Type::state;
+  }
+
+  const WrapperState &state() const
+  {
+    assert(_type==Type::state);
+    return _value.state;
+  }
+
+  Type _type;
+  Value _value;
+};
+
+
+using ScanStateResult = BasicVariant<ScanStateResultPolicy>;
+
 extern WrapperState stateOf(const Wrapper &wrapper);
 
 extern void
   printStateOn(std::ostream &stream,const WrapperState &state,int indent = 0);
+
+#if 1
+extern ScanStateResult scanStateFrom(std::istream &stream);
+#endif
+
 
 
 #endif /* WRAPPERSTATE_HPP */
