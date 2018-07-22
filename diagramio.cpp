@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include "streamparser.hpp"
 
 
 using Node = DiagramNode;
@@ -148,38 +149,8 @@ static string nextDoubleQuotedStringFrom(istream &stream)
 
 
 namespace {
-struct Parser {
-  istream &stream;
-  string word;
-
-  Parser(istream &stream_arg) : stream(stream_arg) { }
-
-  void scanWord()
-  {
-    stream >> word;
-  }
-
-  void scanEndOfLine()
-  {
-    for (;;) {
-      int c = stream.get();
-      if (c==EOF || c=='\n') break;
-    }
-  }
-
-  void skipWhitespace()
-  {
-    while (stream.peek()==' ') {
-      stream.get();
-    }
-  }
-};
-}
-
-
-namespace {
-struct DiagramParser : Parser {
-  DiagramParser(istream &stream_arg) : Parser(stream_arg) { }
+struct DiagramParser : StreamParser {
+  DiagramParser(istream &stream_arg) : StreamParser(stream_arg) { }
 
   void scanNodeConnection(Node &node)
   {
