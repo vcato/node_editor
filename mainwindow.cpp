@@ -40,11 +40,7 @@ void MainWindow::_openProjectPressed()
 
   assert(world_ptr);
 
-#if 0
   world_ptr->setState(scan_result.state());
-#else
-  assert(false);
-#endif
 }
 
 

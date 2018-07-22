@@ -618,7 +618,6 @@ static void testSettingStateWithScene()
 }
 
 
-#if 0
 static void testSettingStateWithSceneWithBody()
 {
   FakeWorld world;
@@ -632,7 +631,6 @@ static void testSettingStateWithSceneWithBody()
   assert(world2.nMembers()==1);
   world2.sceneMember(0);
 }
-#endif
 
 
 int main()
@@ -642,7 +640,7 @@ int main()
   testPrintingCharmapperState();
   testSettingEmptyState();
   testSettingStateWithScene();
-  // testSettingStateWithSceneWithBody();
+  testSettingStateWithSceneWithBody();
   {
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();

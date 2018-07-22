@@ -61,20 +61,25 @@ struct MotionPassWrapper : VoidWrapper {
       return &channel.diagram;
     }
 
-    virtual Label label() const
+    Label label() const override
     {
       return label_member;
     }
 
-    virtual void setValue(Value arg) const
+    void setValue(Value arg) const override
     {
       channel.value = arg;
       callbacks.notifyCharmapChanged();
     }
 
-    virtual Value value() const
+    Value value() const override
     {
       return channel.value;
+    }
+
+    void setState(const WrapperState &) const override
+    {
+      assert(false);
     }
   };
 
@@ -119,6 +124,11 @@ struct MotionPassWrapper : VoidWrapper {
     virtual Label label() const
     {
       return label_member;
+    }
+
+    void setState(const WrapperState &) const override
+    {
+      assert(false);
     }
   };
 
@@ -173,6 +183,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
       return 2;
     }
+
+    void setState(const WrapperState &) const override
+    {
+      assert(false);
+    }
   };
 
   struct ComponentsGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
@@ -213,6 +228,11 @@ struct MotionPassWrapper : VoidWrapper {
     virtual int nChildren() const
     {
       return 2;
+    }
+
+    void setState(const WrapperState &) const override
+    {
+      assert(false);
     }
   };
 
@@ -340,6 +360,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
       return "Global Position";
     }
+
+    void setState(const WrapperState &) const override
+    {
+      assert(false);
+    }
   };
 
   struct BodyWrapper : NoOperationWrapper<LeafWrapper<EnumerationWrapper>> {
@@ -404,6 +429,11 @@ struct MotionPassWrapper : VoidWrapper {
       }
 
       return indexOf(body_link,callbacks.scene_list.allBodyLinks()) + 1;
+    }
+
+    void setState(const WrapperState &) const override
+    {
+      assert(false);
     }
   };
 
@@ -494,6 +524,11 @@ struct MotionPassWrapper : VoidWrapper {
     virtual int nChildren() const
     {
       return 3;
+    }
+
+    void setState(const WrapperState &) const override
+    {
+      assert(false);
     }
   };
 
@@ -590,13 +625,10 @@ struct MotionPassWrapper : VoidWrapper {
     return motion_pass.nExprs();
   }
 
-#if 0
-  void setState(const WrapperState &state)
+  void setState(const WrapperState &) const override
   {
     assert(false);
   }
-#endif
-
 };
 }
 
@@ -607,19 +639,22 @@ std::vector<std::string> CharmapperWrapper::operationNames() const
 }
 
 
-#if 0
-void CharmapperWrapper::setState(const WrapperState &state)
+void CharmapperWrapper::setState(const WrapperState &state) const
 {
   int n = state.children.size();
 
   for (int i=0; i!=n; ++i) {
     if (state.children[i].tag=="motion_pass") {
-      Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-      MotionPassWrapper(motion_pass).setState(state.children[i]);
+      charmapper.addMotionPass();
+      withChildWrapper(
+        i,
+        [&](const Wrapper &child_wrapper){
+          child_wrapper.setState(state.children[i]);
+        }
+      );
     }
   }
 }
-#endif
 
 
 void

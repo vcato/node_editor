@@ -121,6 +121,11 @@ struct TestWrapper : VoidWrapper {
     }
   }
 
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
+  }
+
   TestWrapper *parent_ptr = nullptr;
   vector<unique_ptr<TestWrapper>> children;
   Diagram *diagram_ptr = nullptr;

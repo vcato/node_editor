@@ -83,9 +83,18 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     wrapper_data.callbacks.changed_func(tree_observer);
   }
 
-  virtual Value value() const
+  Value value() const override
   {
     return map.var_index;
+  }
+
+  void setState(const WrapperState &new_state) const override
+  {
+    if (!new_state.value.isNumeric()) {
+      assert(false);
+    }
+
+    setValue(new_state.value.asNumeric());
   }
 };
 }
@@ -121,6 +130,15 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   }
 
   virtual Value value() const { return value_ref; }
+
+  void setState(const WrapperState &arg) const override
+  {
+    if (!arg.value.isNumeric()) {
+      assert(false);
+    }
+
+    setValue(arg.value.asNumeric());
+  }
 };
 }
 
@@ -167,13 +185,17 @@ struct Point2DMapWrapper : NoOperationWrapper<VoidWrapper> {
     return label_member;
   }
 
-  void setState(const WrapperState &state)
+  void setState(const WrapperState &state) const override
   {
     for (const WrapperState &child_state : state.children) {
-      if (child_state.tag=="x") {
-        assert(false);
+      if (child_state.tag=="x_variable") {
+        FloatMapWrapper("x",point.x,wrapper_data).setState(child_state);
+      }
+      else if (child_state.tag=="y_variable") {
+        FloatMapWrapper("y",point.y,wrapper_data).setState(child_state);
       }
       else {
+        cerr << "child_state.tag: " << child_state.tag << "\n";
         assert(false);
       }
     }
@@ -211,6 +233,11 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
     name = arg;
     StubTreeObserver tree_observer;
     wrapper_data.callbacks.changed_func(tree_observer);
+  }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
   }
 };
 }
@@ -280,7 +307,7 @@ struct BodyWrapper : VoidWrapper {
     return nBodyAttributes() + body.nChildren();
   }
 
-  void setState(const WrapperState &state)
+  void setState(const WrapperState &state) const override
   {
     if (body.nChildren()!=0) {
       assert(false);
@@ -290,9 +317,9 @@ struct BodyWrapper : VoidWrapper {
       if (child_state.tag=="name") {
         body.name = child_state.value.asString();
       }
-      else if (child_state.tag=="position") {
+      else if (child_state.tag=="position_map") {
         Point2DMapWrapper(
-          "position",
+          "position_map",
           body.position,
           wrapper_data
         ).setState(child_state);
@@ -499,13 +526,22 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
     );
   }
 
-  void setState(const WrapperState &new_state) const
+  void setState(const WrapperState &new_state) const override
   {
-    if (frame.nVariables()==0 && new_state.children.size()==0) {
+    int n_state_children = new_state.children.size();
+
+    if (frame.nVariables()==0 && n_state_children==0) {
+      // This should be able to be removed now
       return;
     }
 
-    assert(false);
+    frame.setNVariables(new_state.children.size());
+
+    for (int i=0; i!=n_state_children; ++i) {
+      withChildWrapper(i,[&](const Wrapper &child_wrapper){
+        child_wrapper.setState(new_state.children[i]);
+      });
+    }
   }
 };
 
@@ -564,7 +600,7 @@ Label SceneWrapper::label() const
 }
 
 
-void SceneWrapper::setState(const WrapperState &state)
+void SceneWrapper::setState(const WrapperState &state) const
 {
   if (state.children.empty()) {
     return;
@@ -585,17 +621,18 @@ void SceneWrapper::setState(const WrapperState &state)
         }
       );
     }
-    else if (child_state.tag=="Body") {
+    else if (child_state.tag=="body") {
       scene.addBody();
       Scene::Body &parent_body = scene.rootBody();
       BodyWrapper(
         scene,parent_body,child_index,wrapper_data,/*depth*/1
       ).setState(child_state);
+
+      ++child_index;
     }
     else {
+      cerr << "child_state.tag: " << child_state.tag << "\n";
       assert(false);
     }
-
-    ++child_index;
   }
 }

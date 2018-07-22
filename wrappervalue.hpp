@@ -47,6 +47,7 @@ struct WrapperValuePolicy {
   }
 
   bool isString() const { return _type==string_type; }
+  bool isNumeric() const { return _type==numeric_type; }
   bool isEnumeration() const { return _type==enumeration_type; }
 
   const std::string& asString() const
@@ -59,6 +60,12 @@ struct WrapperValuePolicy {
   {
     assert(_type==enumeration_type);
     return _value.enumeration_value;
+  }
+
+  NumericValue asNumeric() const
+  {
+    assert(_type==numeric_type);
+    return _value.numeric_value;
   }
 
   enum Type {

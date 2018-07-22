@@ -55,14 +55,10 @@ struct Wrapper {
     ) const = 0;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
-
   virtual void diagramChanged() const {}
-
   virtual void accept(const SubclassVisitor &) const = 0;
-
   virtual Label label() const = 0;
-
-  // virtual void setState(const WrapperState &) = 0;
+  virtual void setState(const WrapperState &) const = 0;
 };
 
 
@@ -141,6 +137,29 @@ struct VoidWrapper : Wrapper {
   void accept(const SubclassVisitor &visitor) const override
   {
     visitor(*this);
+  }
+};
+
+
+template <>
+struct LeafWrapper<VoidWrapper> : VoidWrapper {
+  void
+    withChildWrapper(
+      int /*child_index*/,
+      const WrapperVisitor &
+    ) const override
+  {
+    assert(false);
+  }
+
+  int nChildren() const override
+  {
+    return 0;
+  }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
   }
 };
 

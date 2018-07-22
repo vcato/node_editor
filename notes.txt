@@ -288,5 +288,5 @@ testSettingStateWithSceneWithBody() is not implemented
 
 Need MainWindow Open Project...
 
-To implement scanStateFrom(), I need a good parser.  There's a parser in
-diagramio.cpp that I should be able to reuse.
+When we set the state of the world, the tree editor doesn't update.
+Looks like setState() will need to be passed a TreeObserver.

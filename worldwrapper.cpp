@@ -387,7 +387,7 @@ void
 }
 
 
-void WorldWrapper::setState(const WrapperState &state)
+void WorldWrapper::setState(const WrapperState &state) const
 {
   if (world.nMembers()==0 && state.children.empty()) {
     return;

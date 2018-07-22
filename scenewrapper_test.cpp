@@ -6,6 +6,7 @@
 #include "basicvariant.hpp"
 #include "wrapperstate.hpp"
 
+using std::istringstream;
 using std::ostringstream;
 using std::ostream;
 using std::string;
@@ -27,6 +28,12 @@ static SceneWrapper::SceneObserver unusedObserver()
         assert(false);
       }
     );
+}
+
+
+static SceneWrapper::SceneObserver ignoringObserver()
+{
+  return SceneWrapper::SceneObserver( [](const Wrapper::TreeObserver &){} );
 }
 
 
@@ -211,6 +218,32 @@ static void testGettingState()
 }
 
 
+static void testBuildingFrameFromState()
+{
+  Scene scene;
+  SceneWrapper wrapper(scene,ignoringObserver(),"Scene");
+
+  const char *text =
+    "scene {\n"
+    "  background_frame {\n"
+    "    0: 1\n"
+    "    1: 3\n"
+    "  }\n"
+    "}\n";
+
+  istringstream stream(text);
+  ScanStateResult result = scanStateFrom(stream);
+  assert(!result.isError());
+  const WrapperState &state = result.state();
+
+  wrapper.setState(state);
+
+  assert(scene.backgroundFrame().nVariables()==2);
+  assert(scene.backgroundFrame().var_values[0]==1);
+  assert(scene.backgroundFrame().var_values[1]==3);
+}
+
+
 static void testBuildingFromState()
 {
   Scene scene;
@@ -229,5 +262,6 @@ int main()
   testHierarchy();
   testAddingBodies();
   testGettingState();
+  testBuildingFrameFromState();
   testBuildingFromState();
 }

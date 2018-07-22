@@ -40,7 +40,7 @@ struct SceneWrapper : VoidWrapper {
       TreeObserver &
     ) const override;
 
-  void setState(const WrapperState &);
+  void setState(const WrapperState &) const override;
   void withChildWrapper(int child_index,const WrapperVisitor &) const;
   Label label() const override;
   int nChildren() const override;

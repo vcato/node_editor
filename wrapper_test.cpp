@@ -56,6 +56,11 @@ struct XWrapper : NoOperationWrapper<VoidWrapper> {
 
     assert(false);
   }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
+  }
 };
 }
 
@@ -80,6 +85,11 @@ struct TestWrapper : NoOperationWrapper<VoidWrapper> {
       return;
     }
 
+    assert(false);
+  }
+
+  void setState(const WrapperState &) const override
+  {
     assert(false);
   }
 };

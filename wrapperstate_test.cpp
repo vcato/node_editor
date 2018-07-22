@@ -30,6 +30,11 @@ struct TestWrapper : LeafWrapper<NoOperationWrapper<EnumerationWrapper> > {
   }
 
   virtual Index value() const { return 1; }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
+  }
 };
 }
 
@@ -46,7 +51,7 @@ static void testPrintStateOn()
 }
 
 
-static void testScanStateFrom()
+static void testScanStateFromWithEnumerationValue()
 {
   istringstream stream("test: b\n");
   ScanStateResult result = scanStateFrom(stream);
@@ -60,8 +65,45 @@ static void testScanStateFrom()
 }
 
 
+static void testScanStateFromWithStringValue()
+{
+  istringstream stream("test: \"quoted\"\n");
+  ScanStateResult result = scanStateFrom(stream);
+
+  assert(result.isState());
+  const WrapperState &state = result.state();
+
+  assert(state.tag=="test");
+  assert(state.value==WrapperValue("quoted"));
+  assert(state.children.empty());
+}
+
+
+static void testScanStateFromWithChildValues()
+{
+  const char *text =
+    "test {\n"
+    "  a: 5\n"
+    "}\n";
+  istringstream stream(text);
+  ScanStateResult result = scanStateFrom(stream);
+
+  assert(result.isState());
+  const WrapperState &state = result.state();
+
+  assert(state.tag=="test");
+  assert(state.value==WrapperValue(WrapperValue::Void{}));
+  assert(state.children.size()==1);
+  assert(state.children[0].tag=="a");
+  assert(state.children[0].value.isNumeric());
+  assert(state.children[0].value==WrapperValue(5));
+}
+
+
 int main()
 {
   testPrintStateOn();
-  testScanStateFrom();
+  testScanStateFromWithEnumerationValue();
+  testScanStateFromWithStringValue();
+  testScanStateFromWithChildValues();
 }
