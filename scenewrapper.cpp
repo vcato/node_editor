@@ -69,7 +69,7 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
   Label label() const override
   {
-    return label_member;
+    return Label(label_member)+" variable";
   }
 
   void setValue(int arg) const override

@@ -306,7 +306,7 @@ static void testChangingABodyPositionInTheScene()
 
   pos_expr.target_body_link = Charmapper::BodyLink(&scene,&body);
   assert(pos_expr.target_body_link.hasValue());
-  TreePath path = makePath(world_wrapper,"Scene1|Body|position map|x");
+  TreePath path = makePath(world_wrapper,"Scene1|Body|position map|x variable");
   setNumericValue(world_wrapper,path,1);
 
   // The charmap should override this value
