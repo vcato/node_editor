@@ -186,6 +186,11 @@ struct ScanStateResultPolicy {
     return _type==Type::state;
   }
 
+  bool isError() const
+  {
+    return _type==Type::error;
+  }
+
   const WrapperState &state() const
   {
     assert(_type==Type::state);

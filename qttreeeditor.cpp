@@ -29,7 +29,7 @@ static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
 }
 
 
-struct QtTreeEditor::CreateChildItemVisitor : Wrapper::Visitor {
+struct QtTreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   QtTreeEditor &tree_editor;
   QTreeWidgetItem &parent_item;
   bool &created;

@@ -290,10 +290,3 @@ Need MainWindow Open Project...
 
 To implement scanStateFrom(), I need a good parser.  There's a parser in
 diagramio.cpp that I should be able to reuse.
-
-I already have parser.hpp what is it used for?  Looks like it is used in
-expressions.  Maybe a better name is StringParser?
-
-Need to have a generic way to create union members.  Probably already have
-this, but I don't know where.  We're using new (&_value.blah) Type(blah)
-a lot.

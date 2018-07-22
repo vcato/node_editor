@@ -14,7 +14,7 @@ void
     std::function<void(const EnumerationWrapper &)> f
   )
 {
-  struct EnumerationVisitor : Wrapper::Visitor {
+  struct EnumerationVisitor : Wrapper::SubclassVisitor {
     using Function = std::function<void(const EnumerationWrapper &)>;
     Function function;
 
@@ -61,7 +61,7 @@ void
     const std::function<void(const StringWrapper &)> &f
   )
 {
-  struct StringVisitor : Wrapper::Visitor {
+  struct StringVisitor : Wrapper::SubclassVisitor {
     using Function = std::function<void(const StringWrapper &)>;
     Function function;
 
@@ -107,7 +107,7 @@ void
     const std::function<void(const NumericWrapper &)> &f
   )
 {
-  struct NumericVisitor : Wrapper::Visitor {
+  struct NumericVisitor : Wrapper::SubclassVisitor {
     using Function = std::function<void(const NumericWrapper &)>;
     Function function;
 

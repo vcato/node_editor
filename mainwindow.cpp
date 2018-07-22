@@ -30,10 +30,9 @@ void MainWindow::_openProjectPressed()
     assert(false);
   }
 
-#if 0
-  Optional<WrapperState> maybe_state = scanStateFrom(stream);
+  ScanStateResult scan_result = scanStateFrom(stream);
 
-  if (!maybe_state) {
+  if (scan_result.isError()) {
     assert(false);
   }
 
@@ -41,7 +40,10 @@ void MainWindow::_openProjectPressed()
 
   assert(world_ptr);
 
-  world_ptr->setState(*maybe_state);
+#if 0
+  world_ptr->setState(scan_result.state());
+#else
+  assert(false);
 #endif
 }
 

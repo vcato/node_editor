@@ -29,7 +29,7 @@ struct Wrapper {
     virtual void enumarationValuesChanged(const TreePath &) const = 0;
   };
 
-  struct Visitor {
+  struct SubclassVisitor {
     virtual void operator()(const VoidWrapper &) const = 0;
     virtual void operator()(const NumericWrapper &) const = 0;
     virtual void operator()(const EnumerationWrapper &) const = 0;
@@ -57,7 +57,7 @@ struct Wrapper {
 
   virtual void diagramChanged() const {}
 
-  virtual void accept(const Visitor &) const = 0;
+  virtual void accept(const SubclassVisitor &) const = 0;
 
   virtual Label label() const = 0;
 };
@@ -135,7 +135,7 @@ extern void
 
 
 struct VoidWrapper : Wrapper {
-  void accept(const Visitor &visitor) const override
+  void accept(const SubclassVisitor &visitor) const override
   {
     visitor(*this);
   }
@@ -145,7 +145,7 @@ struct VoidWrapper : Wrapper {
 struct NumericWrapper : Wrapper {
   using Value = int;
 
-  void accept(const Visitor &visitor) const override
+  void accept(const SubclassVisitor &visitor) const override
   {
     visitor(*this);
   }
@@ -166,7 +166,7 @@ extern void
 struct StringWrapper : Wrapper {
   using Value = std::string;
 
-  void accept(const Visitor &visitor) const override
+  void accept(const SubclassVisitor &visitor) const override
   {
     visitor(*this);
   }
@@ -189,7 +189,7 @@ struct EnumerationWrapper : Wrapper {
   using Index = int;
   using Value = Index;
 
-  void accept(const Visitor &visitor) const override
+  void accept(const SubclassVisitor &visitor) const override
   {
     visitor(*this);
   }

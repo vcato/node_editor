@@ -23,7 +23,7 @@ static WrapperValue valueOf(const Wrapper &wrapper)
 {
   WrapperValue value;
 
-  struct Visitor : Wrapper::Visitor {
+  struct Visitor : Wrapper::SubclassVisitor {
     WrapperValue &value;
 
     Visitor(WrapperValue &value_arg)
@@ -161,7 +161,6 @@ static Optional<WrapperValue> scanValue(StreamParser &parser)
 }
 
 
-#if 1
 static Optional<WrapperState> scanState(StreamParser &parser)
 {
   parser.scanWord();
@@ -212,10 +211,8 @@ static Optional<WrapperState> scanState(StreamParser &parser)
     state.children.push_back(*maybe_child_result);
   }
 }
-#endif
 
 
-#if 1
 ScanStateResult scanStateFrom(std::istream & stream)
 {
   StreamParser parser(stream);
@@ -228,4 +225,3 @@ ScanStateResult scanStateFrom(std::istream & stream)
 
   return *maybe_state;
 }
-#endif
