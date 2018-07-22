@@ -6,7 +6,7 @@
 #include <functional>
 #include "any.hpp"
 #include "optional.hpp"
-#include "parser.hpp"
+#include "stringparser.hpp"
 #include "evaluateexpression.hpp"
 
 
@@ -25,7 +25,7 @@ static bool isAssignment(const std::string &text)
 {
   int index = 0;
 
-  Parser parser{text,index};
+  StringParser parser{text,index};
 
   {
     string identifier;
@@ -58,7 +58,7 @@ static bool isReturnStatement(const std::string &text)
 static bool isNumber(const std::string &text)
 {
   int index = 0;
-  Parser parser{text,index};
+  StringParser parser{text,index};
 
   parser.skipWhitespace();
 
@@ -113,7 +113,7 @@ Optional<Any>
   }
 
   int character_index = 0;
-  Parser parser{line_text,character_index};
+  StringParser parser{line_text,character_index};
   string identifier;
 
   if (parser.getIdentifier(identifier)) {

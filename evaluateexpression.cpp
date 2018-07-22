@@ -8,7 +8,7 @@ using std::string;
 
 static Optional<Any>
   evaluatePrimaryExpression(
-    Parser &parser,
+    StringParser &parser,
     const std::vector<Any> &input_values,
     int &input_index
   )
@@ -99,7 +99,7 @@ static Optional<Any>
 
 Optional<Any>
   evaluateExpression(
-    Parser &parser,
+    StringParser &parser,
     const std::vector<Any> &input_values,
     int &input_index
   )

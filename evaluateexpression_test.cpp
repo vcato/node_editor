@@ -25,7 +25,7 @@ static vector<Any> makeVector(Any a,Any b)
 static Optional<Any> evaluateString(const string &arg)
 {
   int index = 0;
-  Parser parser{arg,index};
+  StringParser parser{arg,index};
   vector<Any> input_values;
   int input_index = 0;
   return evaluateExpression(parser,input_values,input_index);
@@ -65,7 +65,7 @@ static void testAddingInputs()
 {
   string text = "$+$";
   int index = 0;
-  Parser parser(text,index);
+  StringParser parser(text,index);
   vector<Any> input_values = {1,2};
   int input_index = 0;
   Optional<Any> maybe_result =

@@ -1,11 +1,11 @@
 #include "optional.hpp"
 #include "any.hpp"
-#include "parser.hpp"
+#include "stringparser.hpp"
 
 
 extern Optional<Any>
   evaluateExpression(
-    Parser &parser,
+    StringParser &parser,
     const std::vector<Any> &input_values,
     int &input_index
   );

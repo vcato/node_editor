@@ -1,13 +1,13 @@
-#ifndef PARSER_HPP_
-#define PARSER_HPP_
+#ifndef STRINGPARSER_HPP_
+#define STRINGPARSER_HPP_
 
 
 #include <string>
 
 
-class Parser {
+class StringParser {
   public:
-    inline Parser(const std::string &text_arg,int &index_arg);
+    inline StringParser(const std::string &text_arg,int &index_arg);
     inline char peekChar() const;
     inline bool atEnd() const;
     inline bool skipIdentifier() const;
@@ -51,13 +51,13 @@ class Parser {
 };
 
 
-Parser::Parser(const std::string &text_arg,int &index_arg)
+StringParser::StringParser(const std::string &text_arg,int &index_arg)
 : text(text_arg), _index(index_arg)
 {
 }
 
 
-char Parser::peekChar() const
+char StringParser::peekChar() const
 {
   int text_length = text.length();
 
@@ -69,13 +69,13 @@ char Parser::peekChar() const
 }
 
 
-bool Parser::atEnd() const
+bool StringParser::atEnd() const
 {
   return peekChar()=='\0';
 }
 
 
-bool Parser::skipIdentifier() const
+bool StringParser::skipIdentifier() const
 {
   if (!isBeginIdentifierChar(peekChar())) {
     return false;
@@ -91,7 +91,7 @@ bool Parser::skipIdentifier() const
 }
 
 
-bool Parser::skipChar() const
+bool StringParser::skipChar() const
 {
   assert(!atEnd());
   ++_index;
@@ -99,7 +99,7 @@ bool Parser::skipChar() const
 }
 
 
-bool Parser::skipNumber() const
+bool StringParser::skipNumber() const
 {
   if (!isDigit(peekChar())) return false;
 
@@ -111,7 +111,7 @@ bool Parser::skipNumber() const
 }
 
 
-void Parser::skipWhitespace() const
+void StringParser::skipWhitespace() const
 {
   while (isWhitespace(peekChar())) {
     ++_index;
@@ -119,7 +119,7 @@ void Parser::skipWhitespace() const
 }
 
 
-bool Parser::getIdentifier(std::string &identifier) const
+bool StringParser::getIdentifier(std::string &identifier) const
 {
   if (!isIdentifierChar(peekChar())) {
     return false;
@@ -133,7 +133,7 @@ bool Parser::getIdentifier(std::string &identifier) const
 }
 
 
-bool Parser::getNumber(float &number) const
+bool StringParser::getNumber(float &number) const
 {
   skipWhitespace();
 
@@ -150,4 +150,4 @@ bool Parser::getNumber(float &number) const
 }
 
 
-#endif /* PARSER_HPP_ */
+#endif /* STRINGPARSER_HPP_ */
