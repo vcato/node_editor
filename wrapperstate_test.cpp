@@ -1,6 +1,7 @@
 #include "wrapperstate.hpp"
 
 #include <sstream>
+#include "wrapper.hpp"
 
 
 using std::istringstream;

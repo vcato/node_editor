@@ -1,5 +1,7 @@
 #include "wrapper.hpp"
 
+#include <algorithm>
+
 
 using std::vector;
 using std::string;
@@ -142,4 +144,74 @@ void
     path,
     [&](const Wrapper &wrapper){ wrapper.accept(NumericVisitor(f)); }
   );
+}
+
+
+static string makeTag(string label)
+{
+  std::transform(label.begin(),label.end(),label.begin(),::tolower);
+  std::replace(label.begin(),label.end(),' ','_');
+  return label;
+}
+
+
+static WrapperValue valueOf(const Wrapper &wrapper)
+{
+  WrapperValue value;
+
+  struct Visitor : Wrapper::SubclassVisitor {
+    WrapperValue &value;
+
+    Visitor(WrapperValue &value_arg)
+    : value(value_arg)
+    {
+    }
+
+    void operator()(const VoidWrapper &) const override
+    {
+      value = WrapperValue::Void{};
+    }
+
+    void operator()(const NumericWrapper &numeric_wrapper) const override
+    {
+      value = numeric_wrapper.value();
+    }
+
+    void
+      operator()(const EnumerationWrapper &enumeration_wrapper) const override
+    {
+      const auto &names = enumeration_wrapper.enumerationNames();
+      const auto index = enumeration_wrapper.value();
+      value = WrapperValue::Enumeration{makeTag(names[index])};
+    }
+
+    void operator()(const StringWrapper &string_wrapper) const override
+    {
+      value = string_wrapper.value();
+    }
+  };
+
+  Visitor visitor(value);
+
+  wrapper.accept(visitor);
+
+  return value;
+}
+
+
+WrapperState stateOf(const Wrapper &wrapper)
+{
+  WrapperState result(makeTag(wrapper.label()));
+  result.value = valueOf(wrapper);
+
+  for (int i=0, n=wrapper.nChildren(); i!=n; ++i) {
+    wrapper.withChildWrapper(
+      i,
+      [&](const Wrapper &child){
+        result.children.push_back(stateOf(child));
+      }
+    );
+  }
+
+  return result;
 }

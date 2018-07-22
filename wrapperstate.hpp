@@ -2,9 +2,11 @@
 #define WRAPPERSTATE_HPP
 
 
-#include "wrapper.hpp"
+#include <cassert>
+#include <vector>
 #include "basicvariant.hpp"
 #include "createobject.hpp"
+#include "wrappervalue.hpp"
 
 
 struct WrapperValuePolicy {
@@ -33,13 +35,13 @@ struct WrapperValuePolicy {
     createObject(_value.void_value,Void{});
   }
 
-  WrapperValuePolicy(NumericWrapper::Value arg)
+  WrapperValuePolicy(NumericValue arg)
   : _type(numeric_type)
   {
     createObject(_value.numeric_value,arg);
   }
 
-  WrapperValuePolicy(StringWrapper::Value arg)
+  WrapperValuePolicy(StringValue arg)
   : _type(string_type)
   {
     createObject(_value.string_value,arg);
@@ -83,9 +85,9 @@ struct WrapperValuePolicy {
       ~Value() {}
 
       Void void_value;
-      NumericWrapper::Value numeric_value;
+      NumericValue numeric_value;
       Enumeration enumeration_value;
-      std::string string_value;
+      StringValue string_value;
     };
 
     template <typename V>
@@ -212,14 +214,10 @@ struct ScanStateResult : BasicVariant<ScanStateResultPolicy> {
 };
 
 
-extern WrapperState stateOf(const Wrapper &wrapper);
-
 extern void
   printStateOn(std::ostream &stream,const WrapperState &state,int indent = 0);
 
-#if 1
 extern ScanStateResult scanStateFrom(std::istream &stream);
-#endif
 
 
 

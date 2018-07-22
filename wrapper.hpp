@@ -7,6 +7,7 @@
 #include <cassert>
 #include "diagram.hpp"
 #include "treepath.hpp"
+#include "wrapperstate.hpp"
 
 
 struct Wrapper;
@@ -60,6 +61,8 @@ struct Wrapper {
   virtual void accept(const SubclassVisitor &) const = 0;
 
   virtual Label label() const = 0;
+
+  // virtual void setState(const WrapperState &) = 0;
 };
 
 
@@ -143,7 +146,7 @@ struct VoidWrapper : Wrapper {
 
 
 struct NumericWrapper : Wrapper {
-  using Value = int;
+  using Value = NumericValue;
 
   void accept(const SubclassVisitor &visitor) const override
   {
@@ -164,7 +167,7 @@ extern void
 
 
 struct StringWrapper : Wrapper {
-  using Value = std::string;
+  using Value = StringValue;
 
   void accept(const SubclassVisitor &visitor) const override
   {
@@ -215,5 +218,8 @@ inline TreePath join(TreePath path,TreeItemIndex child_index)
   path.push_back(child_index);
   return path;
 }
+
+extern WrapperState stateOf(const Wrapper &wrapper);
+
 
 #endif /* WRAPPER_HPP_ */
