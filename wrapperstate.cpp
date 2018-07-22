@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include "optional.hpp"
+#include "streamparser.hpp"
+#include "stringutil.hpp"
 
 
 using std::string;
@@ -143,58 +145,87 @@ void printStateOn(ostream &stream,const WrapperState &state,int indent)
 }
 
 
-#if 0
-static Optional<WrapperState> scanState(Parser &parser)
+static Optional<WrapperValue> scanValue(StreamParser &parser)
 {
-  WrapperState state;
-
   parser.scanWord();
 
-  if (endsWith(parser.word(),":")) {
-    state.tag = notRight(parser.word(),1);
-    state.value = scanValue(parser);
-    return;
+  if (!parser.stream) {
+    assert(false);
   }
 
-  tag = parser.word();
+  if (startsWith(parser.word,'"')) {
+    assert(false);
+  }
+
+  return WrapperValue(WrapperValue::Enumeration{parser.word});
+}
+
+
+#if 1
+static Optional<WrapperState> scanState(StreamParser &parser)
+{
   parser.scanWord();
 
-  if (parser.word()!="{") {
+  if (!parser.stream) {
+    assert(false);
+  }
+
+  if (endsWith(parser.word,":")) {
+    string tag = withoutRight(parser.word,1);
+    WrapperState state(tag);
+#if 1
+    Optional<WrapperValue> maybe_value = scanValue(parser);
+
+    if (!maybe_value) {
+      assert(false);
+    }
+
+    state.value = *maybe_value;
+#else
+    assert(false);
+#endif
+    return state;
+  }
+
+  string tag = parser.word;
+  WrapperState state(tag);
+  parser.scanWord();
+
+  if (parser.word!="{") {
     assert(false);
   }
 
   for (;;) {
     parser.scanWord();
 
-    if (parser.word()=="}") {
+    if (parser.word=="}") {
       assert(false);
       break;
     }
 
-    ScanStateResult child_result = scanState(parser);
+    Optional<WrapperState> maybe_child_result = scanState(parser);
 
-    if (child_result) {
-      state.children.push_back(child_result);
+    if (!maybe_child_result) {
+      assert(false);
     }
+
+    state.children.push_back(*maybe_child_result);
   }
 }
 #endif
 
 
 #if 1
-ScanStateResult scanStateFrom(std::istream & /*stream*/)
+ScanStateResult scanStateFrom(std::istream & stream)
 {
-#if 0
-  TagValueParser parser(stream);
+  StreamParser parser(stream);
 
   Optional<WrapperState> maybe_state = scanState(parser);
 
   if (!maybe_state) {
-    return parser.error();
+    return ScanStateResult::error(parser.error);
   }
 
   return *maybe_state;
-#endif
-  assert(false);
 }
 #endif

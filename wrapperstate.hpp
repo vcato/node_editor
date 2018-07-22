@@ -51,11 +51,18 @@ struct WrapperValuePolicy {
   }
 
   bool isString() const { return _type==string_type; }
+  bool isEnumeration() const { return _type==enumeration_type; }
 
   const std::string& asString() const
   {
     assert(_type==string_type);
     return _value.string_value;
+  }
+
+  const Enumeration &asEnumeration() const
+  {
+    assert(_type==enumeration_type);
+    return _value.enumeration_value;
   }
 
   enum Type {
@@ -123,11 +130,13 @@ struct WrapperState {
 
 
 struct ScanStateResultPolicy {
-  using ErrorMessage = std::string;
+  struct Error {
+    std::string message;
+  };
 
   union Value {
     WrapperState state;
-    ErrorMessage error_message;
+    Error error;
 
     Value()
     {
@@ -140,14 +149,28 @@ struct ScanStateResultPolicy {
   };
 
   enum class Type {
-    state
+    state,
+    error
   };
+
+  ScanStateResultPolicy(const Error &error)
+  : _type(Type::error)
+  {
+    new (&_value.error)auto(error);
+  }
+
+  ScanStateResultPolicy(const WrapperState &state)
+  : _type(Type::state)
+  {
+    new (&_value.state)auto(state);
+  }
 
   template <typename Function>
   void withMemberPtrFor(Type type,const Function &f)
   {
     switch (type) {
       case Type::state: return f(&Value::state);
+      case Type::error: return f(&Value::error);
     }
 
     assert(false);
@@ -173,7 +196,15 @@ struct ScanStateResultPolicy {
 };
 
 
-using ScanStateResult = BasicVariant<ScanStateResultPolicy>;
+struct ScanStateResult : BasicVariant<ScanStateResultPolicy> {
+  using BasicVariant<ScanStateResultPolicy>::BasicVariant;
+
+  static ScanStateResult error(const std::string &message)
+  {
+    return Error{message};
+  }
+};
+
 
 extern WrapperState stateOf(const Wrapper &wrapper);
 

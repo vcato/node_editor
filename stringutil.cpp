@@ -1,5 +1,7 @@
 #include "stringutil.hpp"
 
+#include <cassert>
+
 
 bool endsWith(const std::string &text,const std::string &suffix)
 {
@@ -17,6 +19,16 @@ bool startsWith(const std::string &text,const std::string &prefix)
 }
 
 
+bool startsWith(const std::string &text,char c)
+{
+  if (text.length()==0) {
+    assert(false);
+  }
+
+  return text[0]==c;
+}
+
+
 bool contains(const std::string &text,const std::string &contents)
 {
   size_t position = text.find(contents);
@@ -24,4 +36,11 @@ bool contains(const std::string &text,const std::string &contents)
     return false;
   }
   return true;
+}
+
+
+std::string withoutRight(const std::string &text,size_t n)
+{
+  assert(text.length()>=n);
+  return text.substr(0,text.length()-n);
 }

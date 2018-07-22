@@ -1,6 +1,7 @@
 struct StreamParser {
   std::istream &stream;
   std::string word;
+  std::string error;
 
   StreamParser(std::istream &stream_arg) : stream(stream_arg) { }
 

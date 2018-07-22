@@ -284,6 +284,8 @@ can then figure out how to generalize this to avoid duplicating logic.
 It may not be reasonable to create the
 wrapper, then walk through the children and add them one at a time.
 
+testSettingStateWithSceneWithBody() is not implemented
+
 Need MainWindow Open Project...
 
 To implement scanStateFrom(), I need a good parser.  There's a parser in
@@ -291,3 +293,7 @@ diagramio.cpp that I should be able to reuse.
 
 I already have parser.hpp what is it used for?  Looks like it is used in
 expressions.  Maybe a better name is StringParser?
+
+Need to have a generic way to create union members.  Probably already have
+this, but I don't know where.  We're using new (&_value.blah) Type(blah)
+a lot.

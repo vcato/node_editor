@@ -113,11 +113,11 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
   diagramevaluation.o evaluateexpression.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-wrapperstate_test: wrapperstate_test.o wrapperstate.o
+wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
-  generatename.o wrapperstate.o
+  generatename.o wrapperstate.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \

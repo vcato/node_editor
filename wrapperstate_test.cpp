@@ -45,7 +45,6 @@ static void testPrintStateOn()
 }
 
 
-#if 0
 static void testScanStateFrom()
 {
   istringstream stream("test: b\n");
@@ -55,14 +54,13 @@ static void testScanStateFrom()
   const WrapperState &state = result.state();
 
   assert(state.tag=="test");
-  assert(state.value==WrapperValue("b"));
+  assert(state.value==WrapperValue(WrapperValue::Enumeration{"b"}));
   assert(state.children.empty());
 }
-#endif
 
 
 int main()
 {
   testPrintStateOn();
-  // testScanStateFrom();
+  testScanStateFrom();
 }
