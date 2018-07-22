@@ -262,7 +262,7 @@ struct BodyWrapper : VoidWrapper {
     }
 
     if (child_index==1) {
-      visitor(Point2DMapWrapper("position",body.position,wrapper_data));
+      visitor(Point2DMapWrapper("position map",body.position,wrapper_data));
       return;
     }
 
