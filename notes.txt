@@ -258,34 +258,15 @@ Need to be able to copy diagram nodes by ctrl-dragging.
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
 ---
-Need to be able to save and load projects.
----
 I don't see anything in the Export Diagram code to handle the case where
 the user cancels the save.
+---
+Need to be able to save and load projects.
 
-Need a way to save and restore wrappers.
-I think this involves being able to extract a data structure from a wrapper
-and build a data structure from a wrapper.
-
-It may be possible to extract a wrapper memento pretty automatically.  We're
-basically doing this when we show a tree for a wrapper.  Building a wrapper
-from a memento is more complex.  Some children of a wrapper may exist
-automatically.  A reasonable default behavior may be to create the main
-wrapper, then walk through the children looking for matches and changing their
-state, and finally adding any children that weren't matched.  We'll need
-to be able to override this behavior though.  For example, if we have a wrapper
-for a window, we don't really want to create the window then go through and
-change properties of the window and then create children and change their
-properties, etc. as separate operations.  We would like the window to be
-shown fully formed the first time.
-
-I think starting with state() and setState methods is probably best.  We
-can then figure out how to generalize this to avoid duplicating logic.
-It may not be reasonable to create the
-wrapper, then walk through the children and add them one at a time.
-
-testSettingStateWithSceneWithBody() is not implemented
-
-saving and loading a project with a charmapper with no motion passes doesn't
-work because the saved project has a charmapper object that doesn't have
-a colon or an open paren after.
+* This is partially working.
+* One interesting thing is that when we set the state, we only need to
+  notify on top-level items, since we automatically walk the children
+  and add the relevant items.
+* We may even be able to avoid passing the tree observer at all, we just
+  assume that the wrapper we are setting the state on has completely changed
+  and replace it in the tree.
