@@ -6,24 +6,13 @@
 #include "removefrom.hpp"
 #include "fakediagrameditor.hpp"
 #include "fakediagrameditorwindows.hpp"
+#include "faketree.hpp"
 
 using std::vector;
 using std::istringstream;
 using std::string;
 using std::unique_ptr;
 using std::make_unique;
-
-
-namespace {
-struct Tree {
-  struct Item {
-    string label;
-    vector<Item> children;
-  };
-
-  vector<Item> children;
-};
-}
 
 
 namespace {
@@ -81,7 +70,7 @@ struct FakeTreeEditor : TreeEditor {
   }
 
   FakeDiagramEditorWindows diagram_editor_windows;
-  Tree tree;
+  FakeTree tree;
 };
 }
 

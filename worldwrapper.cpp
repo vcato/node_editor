@@ -423,6 +423,8 @@ void
           join(tree_path,child_index),
           tree_observer
         );
+
+        tree_observer.itemAdded(join(tree_path,child_index));
       }
     }
     else {
