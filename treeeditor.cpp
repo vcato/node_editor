@@ -93,6 +93,15 @@ void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
 }
 
 
+void TreeEditor::setWorldState(const WrapperState &new_state)
+{
+  TreeObserver tree_observer(*this);
+  Wrapper *world_ptr = worldPtr();
+  assert(world_ptr);
+  world_ptr->setState(new_state,TreePath(),tree_observer);
+}
+
+
 void TreeEditor::executeOperation(const TreePath &path,int operation_index)
 {
   visitSubWrapper(

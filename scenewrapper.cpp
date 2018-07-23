@@ -88,7 +88,12 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     return map.var_index;
   }
 
-  void setState(const WrapperState &new_state) const override
+  void
+    setState(
+      const WrapperState &new_state,
+      const TreePath &,
+      TreeObserver &
+    ) const override
   {
     if (!new_state.value.isNumeric()) {
       assert(false);
@@ -131,7 +136,12 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
   virtual Value value() const { return value_ref; }
 
-  void setState(const WrapperState &arg) const override
+  void
+    setState(
+      const WrapperState &arg,
+      const TreePath &,
+      TreeObserver &
+    ) const override
   {
     if (!arg.value.isNumeric()) {
       assert(false);
@@ -185,14 +195,29 @@ struct Point2DMapWrapper : NoOperationWrapper<VoidWrapper> {
     return label_member;
   }
 
-  void setState(const WrapperState &state) const override
+  void
+    setState(
+      const WrapperState &state,
+      const TreePath &tree_path,
+      TreeObserver &tree_observer
+    ) const override
   {
     for (const WrapperState &child_state : state.children) {
       if (child_state.tag=="x_variable") {
-        FloatMapWrapper("x",point.x,wrapper_data).setState(child_state);
+        FloatMapWrapper("x",point.x,wrapper_data)
+          .setState(
+            child_state,
+            join(tree_path,0),
+            tree_observer
+          );
       }
       else if (child_state.tag=="y_variable") {
-        FloatMapWrapper("y",point.y,wrapper_data).setState(child_state);
+        FloatMapWrapper("y",point.y,wrapper_data)
+          .setState(
+            child_state,
+            join(tree_path,1),
+            tree_observer
+          );
       }
       else {
         cerr << "child_state.tag: " << child_state.tag << "\n";
@@ -235,7 +260,12 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
     wrapper_data.callbacks.changed_func(tree_observer);
   }
 
-  void setState(const WrapperState &) const override
+  void
+    setState(
+      const WrapperState &,
+      const TreePath &,
+      TreeObserver &
+    ) const override
   {
     assert(false);
   }
@@ -252,6 +282,9 @@ struct BodyWrapper : VoidWrapper {
   Scene::Body &body;
   WrapperData wrapper_data;
   static int nBodyAttributes() { return 2; }
+
+  static const int name_index = 0;
+  static const int position_map_index = 1;
 
   BodyWrapper(
     Scene &scene_arg,
@@ -283,12 +316,12 @@ struct BodyWrapper : VoidWrapper {
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
-    if (child_index==0) {
+    if (child_index==name_index) {
       visitor(NameWrapper{"name",body.name,wrapper_data});
       return;
     }
 
-    if (child_index==1) {
+    if (child_index==position_map_index) {
       visitor(Point2DMapWrapper("position map",body.position,wrapper_data));
       return;
     }
@@ -307,7 +340,12 @@ struct BodyWrapper : VoidWrapper {
     return nBodyAttributes() + body.nChildren();
   }
 
-  void setState(const WrapperState &state) const override
+  void
+    setState(
+      const WrapperState &state,
+      const TreePath &tree_path,
+      TreeObserver &tree_observer
+    ) const override
   {
     if (body.nChildren()!=0) {
       assert(false);
@@ -322,7 +360,11 @@ struct BodyWrapper : VoidWrapper {
           "position_map",
           body.position,
           wrapper_data
-        ).setState(child_state);
+        ).setState(
+          child_state,
+          join(tree_path,position_map_index),
+          tree_observer
+        );
       }
       else {
         cerr << "child_state.tag: " << child_state.tag << "\n";
@@ -526,7 +568,12 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
     );
   }
 
-  void setState(const WrapperState &new_state) const override
+  void
+    setState(
+      const WrapperState &new_state,
+      const TreePath &tree_path,
+      TreeObserver &tree_observer
+    ) const override
   {
     int n_state_children = new_state.children.size();
 
@@ -539,7 +586,11 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
 
     for (int i=0; i!=n_state_children; ++i) {
       withChildWrapper(i,[&](const Wrapper &child_wrapper){
-        child_wrapper.setState(new_state.children[i]);
+        child_wrapper.setState(
+          new_state.children[i],
+          join(tree_path,i),
+          tree_observer
+        );
       });
     }
   }
@@ -563,6 +614,9 @@ void
 }
 
 
+static const int background_frame_index = 0;
+
+
 void
   SceneWrapper::withChildWrapper(
     int child_index,
@@ -571,7 +625,7 @@ void
 {
   WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
 
-  if (child_index==0) {
+  if (child_index==background_frame_index) {
     withBackgroundFrameWrapper(visitor);
     return;
   }
@@ -600,7 +654,12 @@ Label SceneWrapper::label() const
 }
 
 
-void SceneWrapper::setState(const WrapperState &state) const
+void
+  SceneWrapper::setState(
+    const WrapperState &state,
+    const TreePath &tree_path,
+    TreeObserver &tree_observer
+  ) const
 {
   if (state.children.empty()) {
     return;
@@ -611,13 +670,17 @@ void SceneWrapper::setState(const WrapperState &state) const
   }
 
   WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
-  int child_index = 0;
+  int body_index = 0;
 
   for (const WrapperState &child_state : state.children) {
     if (child_state.tag=="background_frame") {
       withBackgroundFrameWrapper(
         [&](const FrameWrapper &frame_wrapper){
-          frame_wrapper.setState(child_state);
+          frame_wrapper.setState(
+            child_state,
+            join(tree_path,background_frame_index),
+            tree_observer
+          );
         }
       );
     }
@@ -625,10 +688,14 @@ void SceneWrapper::setState(const WrapperState &state) const
       scene.addBody();
       Scene::Body &parent_body = scene.rootBody();
       BodyWrapper(
-        scene,parent_body,child_index,wrapper_data,/*depth*/1
-      ).setState(child_state);
+        scene,parent_body,body_index,wrapper_data,/*depth*/1
+      ).setState(
+        child_state,
+        join(tree_path,body_index+1),
+        tree_observer
+      );
 
-      ++child_index;
+      ++body_index;
     }
     else {
       cerr << "child_state.tag: " << child_state.tag << "\n";

@@ -141,6 +141,31 @@ struct FakeWorld : World {
 }
 
 
+namespace {
+struct TreeObserverStub : Wrapper::TreeObserver {
+  void itemAdded(const TreePath &) override
+  {
+    assert(false);
+  }
+
+  void itemReplaced(const TreePath &) override
+  {
+    assert(false);
+  }
+
+  void itemRemoved(const TreePath &) override
+  {
+    assert(false);
+  }
+
+  void enumarationValuesChanged(const TreePath &) const override
+  {
+    assert(false);
+  }
+};
+}
+
+
 static void testAddingACharmapper()
 {
   FakeWorld world;
@@ -599,7 +624,8 @@ static void testSettingEmptyState()
   FakeWorld world;
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
-  wrapper.setState(state);
+  TreeObserverStub tree_observer;
+  wrapper.setState(state,TreePath(),tree_observer);
   assert(world.nMembers()==0);
 }
 
@@ -610,9 +636,10 @@ static void testSettingStateWithScene()
   world.addScene();
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
+  TreeObserverStub tree_observer;
 
   FakeWorld world2;
-  WorldWrapper(world2).setState(state);
+  WorldWrapper(world2).setState(state,TreePath(),tree_observer);
   assert(world2.nMembers()==1);
   world2.sceneMember(0);
 }
@@ -625,9 +652,10 @@ static void testSettingStateWithSceneWithBody()
   scene.addBody();
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
+  TreeObserverStub tree_observer;
 
   FakeWorld world2;
-  WorldWrapper(world2).setState(state);
+  WorldWrapper(world2).setState(state,TreePath(),tree_observer);
   assert(world2.nMembers()==1);
   world2.sceneMember(0);
 }

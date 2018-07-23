@@ -387,7 +387,12 @@ void
 }
 
 
-void WorldWrapper::setState(const WrapperState &state) const
+void
+  WorldWrapper::setState(
+    const WrapperState &state,
+    const TreePath &tree_path,
+    TreeObserver &tree_observer
+  ) const
 {
   if (world.nMembers()==0 && state.children.empty()) {
     return;
@@ -397,10 +402,13 @@ void WorldWrapper::setState(const WrapperState &state) const
     assert(false);
   }
 
+  int child_index = 0;
+
   for (const WrapperState &child_state : state.children) {
     const string &tag = child_state.tag;
     if (startsWith(tag,"scene")) {
       Scene &scene = world.addScene(); // we need to pass the label here
+
       if (!child_state.children.empty()) {
         auto changed_func = [](const Wrapper::TreeObserver &){};
         SceneWrapper::SceneObserver callbacks(changed_func);
@@ -410,7 +418,11 @@ void WorldWrapper::setState(const WrapperState &state) const
           label = "Scene1";
         }
 
-        SceneWrapper(scene,callbacks,label).setState(child_state);
+        SceneWrapper(scene,callbacks,label).setState(
+          child_state,
+          join(tree_path,child_index),
+          tree_observer
+        );
       }
     }
     else {
@@ -420,5 +432,7 @@ void WorldWrapper::setState(const WrapperState &state) const
       cerr << "child_state.tag: " << child_state.tag << "\n";
       assert(false);
     }
+
+    ++child_index;
   }
 }

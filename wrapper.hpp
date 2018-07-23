@@ -58,7 +58,12 @@ struct Wrapper {
   virtual void diagramChanged() const {}
   virtual void accept(const SubclassVisitor &) const = 0;
   virtual Label label() const = 0;
-  virtual void setState(const WrapperState &) const = 0;
+  virtual void
+    setState(
+      const WrapperState &,
+      const TreePath &,
+      TreeObserver &
+    ) const = 0;
 };
 
 
@@ -157,7 +162,12 @@ struct LeafWrapper<VoidWrapper> : VoidWrapper {
     return 0;
   }
 
-  void setState(const WrapperState &) const override
+  void
+    setState(
+      const WrapperState &,
+      const TreePath &,
+      TreeObserver &
+    ) const override
   {
     assert(false);
   }

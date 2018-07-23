@@ -36,11 +36,7 @@ void MainWindow::_openProjectPressed()
     assert(false);
   }
 
-  Wrapper *world_ptr = treeEditor().worldPtr();
-
-  assert(world_ptr);
-
-  world_ptr->setState(scan_result.state());
+  treeEditor().setWorldState(scan_result.state());
 }
 
 

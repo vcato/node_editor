@@ -77,7 +77,12 @@ struct MotionPassWrapper : VoidWrapper {
       return channel.value;
     }
 
-    void setState(const WrapperState &) const override
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override
     {
       assert(false);
     }
@@ -126,7 +131,12 @@ struct MotionPassWrapper : VoidWrapper {
       return label_member;
     }
 
-    void setState(const WrapperState &) const override
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override
     {
       assert(false);
     }
@@ -184,7 +194,12 @@ struct MotionPassWrapper : VoidWrapper {
       return 2;
     }
 
-    void setState(const WrapperState &) const override
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override
     {
       assert(false);
     }
@@ -230,7 +245,12 @@ struct MotionPassWrapper : VoidWrapper {
       return 2;
     }
 
-    void setState(const WrapperState &) const override
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override
     {
       assert(false);
     }
@@ -361,7 +381,12 @@ struct MotionPassWrapper : VoidWrapper {
       return "Global Position";
     }
 
-    void setState(const WrapperState &) const override
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override
     {
       assert(false);
     }
@@ -431,7 +456,12 @@ struct MotionPassWrapper : VoidWrapper {
       return indexOf(body_link,callbacks.scene_list.allBodyLinks()) + 1;
     }
 
-    void setState(const WrapperState &) const override
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override
     {
       assert(false);
     }
@@ -526,7 +556,12 @@ struct MotionPassWrapper : VoidWrapper {
       return 3;
     }
 
-    void setState(const WrapperState &) const override
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override
     {
       assert(false);
     }
@@ -625,7 +660,12 @@ struct MotionPassWrapper : VoidWrapper {
     return motion_pass.nExprs();
   }
 
-  void setState(const WrapperState &) const override
+  void
+    setState(
+      const WrapperState &,
+      const TreePath &,
+      TreeObserver &
+    ) const override
   {
     assert(false);
   }
@@ -639,7 +679,12 @@ std::vector<std::string> CharmapperWrapper::operationNames() const
 }
 
 
-void CharmapperWrapper::setState(const WrapperState &state) const
+void
+  CharmapperWrapper::setState(
+    const WrapperState &state,
+    const TreePath &tree_path,
+    TreeObserver &tree_observer
+  ) const
 {
   int n = state.children.size();
 
@@ -649,7 +694,11 @@ void CharmapperWrapper::setState(const WrapperState &state) const
       withChildWrapper(
         i,
         [&](const Wrapper &child_wrapper){
-          child_wrapper.setState(state.children[i]);
+          child_wrapper.setState(
+            state.children[i],
+            join(tree_path,i),
+            tree_observer
+          );
         }
       );
     }

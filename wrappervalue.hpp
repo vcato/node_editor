@@ -46,6 +46,7 @@ struct WrapperValuePolicy {
     createObject(_value.enumeration_value,arg);
   }
 
+  bool isVoid() const { return _type==void_type; }
   bool isString() const { return _type==string_type; }
   bool isNumeric() const { return _type==numeric_type; }
   bool isEnumeration() const { return _type==enumeration_type; }

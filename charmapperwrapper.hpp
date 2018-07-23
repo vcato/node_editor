@@ -49,7 +49,12 @@ class CharmapperWrapper : public VoidWrapper {
         TreeObserver &
       ) const override;
 
-    void setState(const WrapperState &) const override;
+    void
+      setState(
+        const WrapperState &,
+        const TreePath &,
+        TreeObserver &
+      ) const override;
 
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 

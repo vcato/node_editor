@@ -134,7 +134,8 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
 
 treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
-  statementtext.o stringutil.o fakediagrameditorwindows.o evaluateexpression.o
+  statementtext.o stringutil.o fakediagrameditorwindows.o \
+  evaluateexpression.o wrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \

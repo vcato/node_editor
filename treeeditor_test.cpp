@@ -1,15 +1,29 @@
 #include "treeeditor.hpp"
 
 #include <algorithm>
+#include <sstream>
 #include "wrapperutil.hpp"
 #include "removefrom.hpp"
 #include "fakediagrameditor.hpp"
 #include "fakediagrameditorwindows.hpp"
 
 using std::vector;
+using std::istringstream;
 using std::string;
 using std::unique_ptr;
 using std::make_unique;
+
+
+namespace {
+struct Tree {
+  struct Item {
+    string label;
+    vector<Item> children;
+  };
+
+  vector<Item> children;
+};
+}
 
 
 namespace {
@@ -19,8 +33,19 @@ struct FakeTreeEditor : TreeEditor {
   }
 
   void
-    addWrapperItem(const TreePath &/*new_item_path*/,const Wrapper &) override
+    addWrapperItem(const TreePath &new_item_path,const Wrapper &) override
   {
+    if (new_item_path.empty()) {
+      assert(false);
+    }
+
+    int n_children = tree.children.size();
+
+    if (new_item_path.size()==1 && n_children==new_item_path.back()) {
+      tree.children.emplace_back();
+      return;
+    }
+
     assert(false);
   }
 
@@ -56,23 +81,48 @@ struct FakeTreeEditor : TreeEditor {
   }
 
   FakeDiagramEditorWindows diagram_editor_windows;
+  Tree tree;
+};
+}
+
+
+namespace {
+struct TestObject {
+  TestObject *parent_ptr = nullptr;
+  string label_member;
+  vector<unique_ptr<TestObject>> children;
+  Diagram *diagram_ptr = nullptr;
+  int *diagram_changed_count_ptr = nullptr;
+
+  TestObject& createChild(const string &label)
+  {
+    children.push_back(make_unique<TestObject>());
+    TestObject &child = *children.back();
+    child.label_member = label;
+    child.parent_ptr = this;
+    return child;
+  }
 };
 }
 
 
 namespace {
 struct TestWrapper : VoidWrapper {
-  TestWrapper() = default;
+  TestWrapper(TestObject &object_arg)
+  : object(object_arg)
+  {
+  }
+
   TestWrapper(const TestWrapper &) = delete;
 
   virtual Label label() const
   {
-    return label_member;
+    return object.label_member;
   }
 
   virtual int nChildren() const
   {
-    return children.size();
+    return object.children.size();
   }
 
   virtual void
@@ -81,17 +131,13 @@ struct TestWrapper : VoidWrapper {
       const WrapperVisitor &visitor
     ) const
   {
-    assert(children[child_index]);
-    visitor(*children[child_index]);
+    assert(object.children[child_index]);
+    visitor(TestWrapper(*object.children[child_index]));
   }
 
-  TestWrapper& createChild(const string &label)
+  TestObject& createChild(const string &label)
   {
-    children.push_back(make_unique<TestWrapper>());
-    TestWrapper &child = *children.back();
-    child.label_member = label;
-    child.parent_ptr = this;
-    return child;
+    return object.createChild(label);
   }
 
   virtual std::vector<OperationName> operationNames() const
@@ -107,30 +153,38 @@ struct TestWrapper : VoidWrapper {
     ) const
   {
     assert(operation_index==0);
-    assert(parent_ptr);
+    assert(object.parent_ptr);
     handler.itemRemoved(path);
-    removeFrom(parent_ptr->children,this);
+    removeFrom(object.parent_ptr->children,&object);
   }
 
-  Diagram *diagramPtr() const override { return diagram_ptr; }
+  Diagram *diagramPtr() const override { return object.diagram_ptr; }
 
   void diagramChanged() const override
   {
-    if (diagram_changed_count_ptr) {
-      ++*diagram_changed_count_ptr;
+    if (object.diagram_changed_count_ptr) {
+      ++*object.diagram_changed_count_ptr;
     }
   }
 
-  void setState(const WrapperState &) const override
+  void
+    setState(
+      const WrapperState &new_state,
+      const TreePath &tree_path,
+      TreeObserver &tree_observer
+    ) const override
   {
-    assert(false);
+    assert(new_state.value.isVoid());
+
+    int n_new_children = new_state.children.size();
+
+    for (int i=0; i!=n_new_children; ++i) {
+      object.createChild(new_state.children[i].tag);
+      tree_observer.itemAdded(join(tree_path,i));
+    }
   }
 
-  TestWrapper *parent_ptr = nullptr;
-  vector<unique_ptr<TestWrapper>> children;
-  Diagram *diagram_ptr = nullptr;
-  int *diagram_changed_count_ptr = nullptr;
-  string label_member;
+  TestObject &object;
 };
 }
 
@@ -138,8 +192,9 @@ struct TestWrapper : VoidWrapper {
 static void testEditingDiagramThenClosingTheDiagramEditorWindow()
 {
   Diagram diagram;
-  TestWrapper world;
-  world.diagram_ptr = &diagram;
+  TestObject object;
+  TestWrapper world(object);
+  object.diagram_ptr = &diagram;
   FakeTreeEditor editor;
   editor.setWorldPtr(&world);
   editor.userSelectsContextMenuItem("","Edit Diagram...");
@@ -154,8 +209,9 @@ static void testEditingDiagramThenClosingTheDiagramEditorWindow()
 static void testEditingDiagramThenRemovingItem()
 {
   Diagram diagram;
-  TestWrapper world;
-  TestWrapper &child = world.createChild("child");
+  TestObject object;
+  TestWrapper world(object);
+  TestObject &child = world.createChild("child");
   child.diagram_ptr = &diagram;
   FakeTreeEditor editor;
   editor.setWorldPtr(&world);
@@ -168,9 +224,10 @@ static void testEditingDiagramThenRemovingItem()
 static void testEditingChildDiagramThenRemovingItem()
 {
   Diagram diagram;
-  TestWrapper world;
-  TestWrapper &parent = world.createChild("parent");
-  TestWrapper &child = parent.createChild("child");
+  TestObject object;
+  TestWrapper world(object);
+  TestObject &parent = world.createChild("parent");
+  TestObject &child = parent.createChild("child");
   child.diagram_ptr = &diagram;
   FakeTreeEditor editor;
   editor.setWorldPtr(&world);
@@ -183,8 +240,9 @@ static void testEditingChildDiagramThenRemovingItem()
 static void testEditingDiagramNotifiesWrapper()
 {
   Diagram diagram;
-  TestWrapper world;
-  TestWrapper &member = world.createChild("member");
+  TestObject object;
+  TestWrapper world(object);
+  TestObject &member = world.createChild("member");
   int diagram_changed_count = 0;
   member.diagram_ptr = &diagram;
   member.diagram_changed_count_ptr = &diagram_changed_count;
@@ -196,10 +254,32 @@ static void testEditingDiagramNotifiesWrapper()
 }
 
 
+static void testSettingWorldState()
+{
+  TestObject object;
+  TestWrapper world(object);
+  FakeTreeEditor editor;
+  editor.setWorldPtr(&world);
+
+  const char *text =
+    "world {\n"
+    "  member: 5\n"
+    "}\n";
+
+  istringstream stream(text);
+  ScanStateResult scan_result = scanStateFrom(stream);
+  assert(!scan_result.isError());
+  const WrapperState &state = scan_result.state();
+  editor.setWorldState(state);
+  assert(!editor.tree.children.empty());
+}
+
+
 int main()
 {
   testEditingDiagramThenClosingTheDiagramEditorWindow();
   testEditingDiagramThenRemovingItem();
   testEditingChildDiagramThenRemovingItem();
   testEditingDiagramNotifiesWrapper();
+  testSettingWorldState();
 }
