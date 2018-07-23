@@ -653,6 +653,7 @@ static void testSettingStateWithSceneWithBody()
   FakeWorld world;
   Scene &scene = world.addScene();
   scene.addBody();
+
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
   ostringstream command_stream;
@@ -667,6 +668,25 @@ static void testSettingStateWithSceneWithBody()
 }
 
 
+static void testSettingStateWithCharmapper()
+{
+  FakeWorld world;
+  world.addCharmapper();
+
+  WorldWrapper wrapper(world);
+  WrapperState state = stateOf(wrapper);
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+
+  FakeWorld world2;
+  WorldWrapper(world2).setState(state,TreePath(),tree_observer);
+  assert(world2.nMembers()==1);
+  world2.charmapperMember(0);
+  string commands = command_stream.str();
+  assert(commands=="addItem([0])\n");
+}
+
+
 int main()
 {
   testAddingACharmapper();
@@ -675,6 +695,8 @@ int main()
   testSettingEmptyState();
   testSettingStateWithScene();
   testSettingStateWithSceneWithBody();
+  testSettingStateWithCharmapper();
+
   {
     namespace tests = scene_and_charmapper_tests;
     tests::testAddingABodyToTheScene();

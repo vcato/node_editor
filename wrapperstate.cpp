@@ -147,6 +147,11 @@ static Optional<WrapperState> scanState(StreamParser &parser)
 
   string tag = parser.word;
   WrapperState state(tag);
+
+  if (parser.stream.peek()=='\n') {
+    return state;
+  }
+
   parser.scanWord();
 
   if (parser.word!="{") {

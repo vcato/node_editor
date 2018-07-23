@@ -105,10 +105,23 @@ static void testScanStateFromWithChildValues()
 }
 
 
+static void testPrintAndScanStateWithNoChildren()
+{
+  WrapperState state("top");
+  ostringstream stream;
+  printStateOn(stream,state);
+  string text = stream.str();
+  istringstream input_stream(text);
+  ScanStateResult scan_result = scanStateFrom(input_stream);
+  assert(!scan_result.isError());
+}
+
+
 int main()
 {
   testPrintStateOn();
   testScanStateFromWithEnumerationValue();
   testScanStateFromWithStringValue();
   testScanStateFromWithChildValues();
+  testPrintAndScanStateWithNoChildren();
 }

@@ -406,31 +406,34 @@ void
 
   for (const WrapperState &child_state : state.children) {
     const string &tag = child_state.tag;
+
     if (startsWith(tag,"scene")) {
-      Scene &scene = world.addScene(); // we need to pass the label here
+      world.addScene(); // we need to pass the label here
 
-      if (!child_state.children.empty()) {
-        auto changed_func = [](const Wrapper::TreeObserver &){};
-        SceneWrapper::SceneObserver callbacks(changed_func);
-        string label;
-
-        if (tag=="scene1") {
-          label = "Scene1";
-        }
-
-        SceneWrapper(scene,callbacks,label).setState(
+      withChildWrapper(child_index,[&](const Wrapper &child_wrapper){
+        child_wrapper.setState(
           child_state,
           join(tree_path,child_index),
           tree_observer
         );
+      });
 
-        tree_observer.itemAdded(join(tree_path,child_index));
-      }
+      tree_observer.itemAdded(join(tree_path,child_index));
+    }
+    else if (startsWith(tag,"charmapper")) {
+      world.addCharmapper(); // we need to pass the label here
+
+      withChildWrapper(child_index,[&](const Wrapper &child_wrapper){
+        child_wrapper.setState(
+          child_state,
+          join(tree_path,child_index),
+          tree_observer
+        );
+      });
+
+      tree_observer.itemAdded(join(tree_path,child_index));
     }
     else {
-      if (startsWith(child_state.tag,"charmapper")) {
-        assert(false);
-      }
       cerr << "child_state.tag: " << child_state.tag << "\n";
       assert(false);
     }

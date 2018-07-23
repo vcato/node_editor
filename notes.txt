@@ -286,20 +286,6 @@ wrapper, then walk through the children and add them one at a time.
 
 testSettingStateWithSceneWithBody() is not implemented
 
-Need MainWindow Open Project...
-
-When we set the state of the world, the tree editor doesn't update.
-Looks like setState() will need to be passed a TreeObserver.
-
-
-MainWindow::_openProjectPressed() needs to tell the tree editor to set
-the state instead of having the MainWindow set it, so that the tree
-editor can pass the appropriate tree observer.
-
-
-treeeditor_test.cpp: TestWrapper needs to wrap an object instead of having
-  the object internally because it setState method needs to be const.
-
-  First create TestObject, which TestWrapper will derive from, and move
-  the children member to it, then make TestWrapper not derive from
-  TestObject and have a reference to it instead.
+saving and loading a project with a charmapper with no motion passes doesn't
+work because the saved project has a charmapper object that doesn't have
+a colon or an open paren after.
