@@ -93,12 +93,41 @@ void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
 }
 
 
+namespace {
+struct TreeObserverStub : TreeObserver {
+  virtual void itemAdded(const TreePath &)
+  {
+  }
+
+  virtual void itemReplaced(const TreePath &)
+  {
+  }
+
+  virtual void itemRemoved(const TreePath &)
+  {
+  }
+
+  virtual void enumarationValuesChanged(const TreePath &) const
+  {
+  }
+};
+}
+
+
+void TreeEditor::replaceTreeItems(const TreePath &parent_path)
+{
+  removeChildItems(parent_path);
+  addChildTreeItems(parent_path);
+}
+
+
 void TreeEditor::setWorldState(const WrapperState &new_state)
 {
-  TreeObserver tree_observer(*this);
+  TreeObserverStub tree_observer;
   Wrapper *world_ptr = worldPtr();
   assert(world_ptr);
   world_ptr->setState(new_state,TreePath(),tree_observer);
+  replaceTreeItems(TreePath());
 }
 
 

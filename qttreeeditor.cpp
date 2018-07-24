@@ -290,13 +290,6 @@ void QtTreeEditor::removeChildItems(const TreePath &path)
 }
 
 
-void QtTreeEditor::replaceTreeItems(const TreePath &parent_path)
-{
-  removeChildItems(parent_path);
-  addChildTreeItems(parent_path);
-}
-
-
 static vector<string>
   getComboBoxItems(const Wrapper &wrapper,const TreePath &path)
 {

@@ -21,6 +21,10 @@ struct FakeTreeEditor : TreeEditor {
   {
   }
 
+  virtual void removeChildItems(const TreePath &/*path*/)
+  {
+  }
+
   void
     addWrapperItem(const TreePath &new_item_path,const Wrapper &) override
   {

@@ -127,10 +127,6 @@ struct FakeTreeEditor : TreeEditor {
     insertChildItem(parent_item,new_item_path.back());
   }
 
-  void replaceTreeItems(const TreePath &/*parent_path*/) override
-  {
-  }
-
   void changeEnumerationValues(const TreePath &) override
   {
   }
@@ -139,6 +135,11 @@ struct FakeTreeEditor : TreeEditor {
   {
     Item &parent_item = itemFromPath(root,parentPath(path));
     removeChildItem(parent_item,path.back());
+  }
+
+  virtual void removeChildItems(const TreePath &/*path*/)
+  {
+    assert(false);
   }
 
   virtual DiagramEditorWindow& createDiagramEditor()

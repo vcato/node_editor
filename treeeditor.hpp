@@ -27,6 +27,7 @@ struct TreeEditor {
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
     virtual void removeTreeItem(const TreePath &path) = 0;
+    virtual void removeChildItems(const TreePath &path) = 0;
 
   private:
     struct TreeObserver;
@@ -38,7 +39,6 @@ struct TreeEditor {
 
     virtual void
       addWrapperItem(const TreePath &new_item_path,const Wrapper &) = 0;
-    virtual void replaceTreeItems(const TreePath &parent_path) = 0;
     virtual void changeEnumerationValues(const TreePath &) = 0;
     virtual DiagramEditorWindow& createDiagramEditor() = 0;
 
@@ -46,6 +46,7 @@ struct TreeEditor {
     void diagramChanged(DiagramEditorWindow &window);
     void notifyItemsOfDiagramChange(Diagram &diagram_that_changed);
     void addMainTreeItem(const TreePath &new_item_path);
+    void replaceTreeItems(const TreePath &parent_path);
 };
 
 #endif /* TREEEDITOR_HPP_ */
