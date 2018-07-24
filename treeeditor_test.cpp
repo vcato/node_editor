@@ -160,12 +160,7 @@ struct TestWrapper : VoidWrapper {
     }
   }
 
-  void
-    setState(
-      const WrapperState &new_state,
-      const TreePath &tree_path,
-      TreeObserver &tree_observer
-    ) const override
+  void setState(const WrapperState &new_state) const override
   {
     assert(new_state.value.isVoid());
 
@@ -173,7 +168,6 @@ struct TestWrapper : VoidWrapper {
 
     for (int i=0; i!=n_new_children; ++i) {
       object.createChild(new_state.children[i].tag);
-      tree_observer.itemAdded(join(tree_path,i));
     }
   }
 

@@ -123,10 +123,9 @@ void TreeEditor::replaceTreeItems(const TreePath &parent_path)
 
 void TreeEditor::setWorldState(const WrapperState &new_state)
 {
-  TreeObserverStub tree_observer;
   Wrapper *world_ptr = worldPtr();
   assert(world_ptr);
-  world_ptr->setState(new_state,TreePath(),tree_observer);
+  world_ptr->setState(new_state);
   replaceTreeItems(TreePath());
 }
 

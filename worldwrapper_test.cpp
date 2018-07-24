@@ -625,7 +625,7 @@ static void testSettingEmptyState()
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
   TreeObserverStub tree_observer;
-  wrapper.setState(state,TreePath(),tree_observer);
+  wrapper.setState(state);
   assert(world.nMembers()==0);
 }
 
@@ -636,15 +636,11 @@ static void testSettingStateWithScene()
   world.addScene();
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
-  ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
 
   FakeWorld world2;
-  WorldWrapper(world2).setState(state,TreePath(),tree_observer);
+  WorldWrapper(world2).setState(state);
   assert(world2.nMembers()==1);
   world2.sceneMember(0);
-  string commands = command_stream.str();
-  assert(commands=="addItem([0])\n");
 }
 
 
@@ -656,15 +652,11 @@ static void testSettingStateWithSceneWithBody()
 
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
-  ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
 
   FakeWorld world2;
-  WorldWrapper(world2).setState(state,TreePath(),tree_observer);
+  WorldWrapper(world2).setState(state);
   assert(world2.nMembers()==1);
   world2.sceneMember(0);
-  string commands = command_stream.str();
-  assert(commands=="addItem([0])\n");
 }
 
 
@@ -675,15 +667,11 @@ static void testSettingStateWithCharmapper()
 
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
-  ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
 
   FakeWorld world2;
-  WorldWrapper(world2).setState(state,TreePath(),tree_observer);
+  WorldWrapper(world2).setState(state);
   assert(world2.nMembers()==1);
   world2.charmapperMember(0);
-  string commands = command_stream.str();
-  assert(commands=="addItem([0])\n");
 }
 
 

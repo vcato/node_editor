@@ -31,12 +31,7 @@ struct TestWrapper : LeafWrapper<NoOperationWrapper<EnumerationWrapper> > {
 
   virtual Index value() const { return 1; }
 
-  void
-    setState(
-      const WrapperState &,
-      const TreePath &,
-      TreeObserver &
-    ) const override
+  void setState(const WrapperState &) const override
   {
     assert(false);
   }

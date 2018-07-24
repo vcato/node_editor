@@ -262,11 +262,4 @@ I don't see anything in the Export Diagram code to handle the case where
 the user cancels the save.
 ---
 Need to be able to save and load projects.
-
-* This is partially working.
-* One interesting thing is that when we set the state, we only need to
-  notify on top-level items, since we automatically walk the children
-  and add the relevant items.
-* We may even be able to avoid passing the tree observer at all, we just
-  assume that the wrapper we are setting the state on has completely changed
-  and replace it in the tree.
+  * Need a more complete test

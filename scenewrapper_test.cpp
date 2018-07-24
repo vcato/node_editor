@@ -260,9 +260,8 @@ static void testBuildingFrameFromState()
   ScanStateResult result = scanStateFrom(stream);
   assert(!result.isError());
   const WrapperState &state = result.state();
-  TreeObserverStub tree_observer;
 
-  wrapper.setState(state,TreePath(),tree_observer);
+  wrapper.setState(state);
 
   assert(scene.backgroundFrame().nVariables()==2);
   assert(scene.backgroundFrame().var_values[0]==1);
@@ -276,9 +275,8 @@ static void testBuildingFromState()
   SceneWrapper wrapper(scene,unusedObserver(),"Scene");
   WrapperState state("scene");
   state.children.push_back(WrapperState("background_frame"));
-  TreeObserverStub tree_observer;
 
-  wrapper.setState(state,TreePath(),tree_observer);
+  wrapper.setState(state);
 
   assert(stateOf(wrapper)==state);
 }

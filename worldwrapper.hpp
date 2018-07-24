@@ -35,12 +35,7 @@ struct WorldWrapper : VoidWrapper
     return world.nMembers();
   }
 
-  void
-    setState(
-      const WrapperState&,
-      const TreePath &,
-      TreeObserver &
-    ) const override;
+  void setState(const WrapperState&) const override;
 };
 
 #endif /* WORLDWRAPPER_HPP_ */

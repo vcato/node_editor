@@ -387,12 +387,7 @@ void
 }
 
 
-void
-  WorldWrapper::setState(
-    const WrapperState &state,
-    const TreePath &tree_path,
-    TreeObserver &tree_observer
-  ) const
+void WorldWrapper::setState(const WrapperState &state) const
 {
   if (world.nMembers()==0 && state.children.empty()) {
     return;
@@ -411,27 +406,15 @@ void
       world.addScene(); // we need to pass the label here
 
       withChildWrapper(child_index,[&](const Wrapper &child_wrapper){
-        child_wrapper.setState(
-          child_state,
-          join(tree_path,child_index),
-          tree_observer
-        );
+        child_wrapper.setState(child_state);
       });
-
-      tree_observer.itemAdded(join(tree_path,child_index));
     }
     else if (startsWith(tag,"charmapper")) {
       world.addCharmapper(); // we need to pass the label here
 
       withChildWrapper(child_index,[&](const Wrapper &child_wrapper){
-        child_wrapper.setState(
-          child_state,
-          join(tree_path,child_index),
-          tree_observer
-        );
+        child_wrapper.setState(child_state);
       });
-
-      tree_observer.itemAdded(join(tree_path,child_index));
     }
     else {
       cerr << "child_state.tag: " << child_state.tag << "\n";

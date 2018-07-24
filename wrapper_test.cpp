@@ -57,12 +57,7 @@ struct XWrapper : NoOperationWrapper<VoidWrapper> {
     assert(false);
   }
 
-  void
-    setState(
-      const WrapperState &,
-      const TreePath &,
-      TreeObserver &
-    ) const override
+  void setState(const WrapperState &) const override
   {
     assert(false);
   }
@@ -93,12 +88,7 @@ struct TestWrapper : NoOperationWrapper<VoidWrapper> {
     assert(false);
   }
 
-  void
-    setState(
-      const WrapperState &,
-      const TreePath &,
-      TreeObserver &
-    ) const override
+  void setState(const WrapperState &) const override
   {
     assert(false);
   }
