@@ -367,19 +367,6 @@ void
 }
 
 
-Diagram *QtTreeEditor::maybeSelectedDiagram()
-{
-  QTreeWidgetItem *selected_item_ptr = findSelectedItem();
-  Diagram *diagram_ptr = 0;
-
-  if (selected_item_ptr) {
-    diagram_ptr = diagramPtr(world(),itemPath(*selected_item_ptr));
-  }
-
-  return diagram_ptr;
-}
-
-
 void QtTreeEditor::itemSelectionChangedSlot()
 {
 }

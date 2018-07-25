@@ -27,7 +27,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     struct CreateChildItemVisitor;
 
     QtTreeEditor &treeEditor() { return *this; }
-    Diagram *maybeSelectedDiagram();
     QTreeWidgetItem &itemFromPath(const TreePath &path) const;
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);
