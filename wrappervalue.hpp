@@ -69,6 +69,20 @@ struct WrapperValuePolicy {
     return _value.numeric_value;
   }
 
+  std::string typeName() const
+  {
+    switch (_type) {
+      case void_type: return "void";
+      case numeric_type: return "numeric";
+      case enumeration_type: return "enumeration";
+      case string_type: return "string";
+    }
+
+    assert(false);
+
+    return "";
+  }
+
   enum Type {
     void_type,
     numeric_type,

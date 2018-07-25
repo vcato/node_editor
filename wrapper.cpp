@@ -147,7 +147,7 @@ void
 }
 
 
-static string makeTag(string label)
+string makeTag(string label)
 {
   std::transform(label.begin(),label.end(),label.begin(),::tolower);
   std::replace(label.begin(),label.end(),' ','_');

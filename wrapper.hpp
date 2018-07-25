@@ -240,6 +240,7 @@ inline TreePath join(TreePath path,TreeItemIndex child_index)
 }
 
 extern WrapperState stateOf(const Wrapper &wrapper);
+extern std::string makeTag(std::string label);
 
 
 #endif /* WRAPPER_HPP_ */

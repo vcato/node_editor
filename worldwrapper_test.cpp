@@ -13,6 +13,7 @@
 
 
 using std::string;
+using std::istringstream;
 using std::ostringstream;
 using std::ostream;
 using std::cerr;
@@ -675,6 +676,64 @@ static void testSettingStateWithCharmapper()
 }
 
 
+#if 0
+static void testSettingStateWithPosExpr()
+{
+  const char *text =
+    "world {\n"
+    "  scene1 {\n"
+    "    background_frame {\n"
+    "      0: 23\n"
+    "      1: 0\n"
+    "      2: 0\n"
+    "      3: 0\n"
+    "    }\n"
+    "    body {\n"
+    "      name: \"Body1\"\n"
+    "      position_map {\n"
+    "        x_variable: 0\n"
+    "        y_variable: 1\n"
+    "      }\n"
+    "    }\n"
+    "    body {\n"
+    "      name: \"Body2\"\n"
+    "      position_map {\n"
+    "        x_variable: 2\n"
+    "        y_variable: 3\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "  charmapper1 {\n"
+    "    motion_pass {\n"
+    "      pos_expr {\n"
+    "        target_body: scene1:body2\n"
+    "        local_position {\n"
+    "          x: 0\n"
+    "          y: 0\n"
+    "        }\n"
+    "        global_position: from_body {\n"
+    "          source_body: scene1:body1\n"
+    "          local_position {\n"
+    "            x: 25\n"
+    "            y: 0\n"
+    "          }\n"
+    "        }\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+  istringstream stream(text);
+  ScanStateResult scan_result = scanStateFrom(stream);
+  assert(scan_result.isState());
+  const WrapperState &state = scan_result.state();
+  FakeWorld world;
+  WorldWrapper wrapper(world);
+  wrapper.setState(state);
+  assert(stateOf(wrapper)==state);
+}
+#endif
+
+
 int main()
 {
   testAddingACharmapper();
@@ -684,6 +743,7 @@ int main()
   testSettingStateWithScene();
   testSettingStateWithSceneWithBody();
   testSettingStateWithCharmapper();
+  // testSettingStateWithPosExpr();
 
   {
     namespace tests = scene_and_charmapper_tests;

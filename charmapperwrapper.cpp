@@ -21,6 +21,27 @@ static int indexOf(const T &item,const std::vector<T> &container)
 }
 
 
+static int
+  findIndex(
+    const EnumerationWrapper &wrapper,
+    const WrapperValue::Enumeration &value
+  )
+{
+  const string &name = value.name;
+  const auto &enumeration_names = wrapper.enumerationNames();
+  int n_enumeration_names = enumeration_names.size();
+
+  for (int i=0; i!=n_enumeration_names; ++i) {
+    if (makeTag(enumeration_names[i])==name) {
+      return i;
+    }
+  }
+
+  cerr << "Couldn't find " << name << " in " << wrapper.label() << "\n";
+  assert(false);
+}
+
+
 namespace {
 struct MotionPassWrapper : VoidWrapper {
   private: using Self = MotionPassWrapper;
@@ -77,9 +98,14 @@ struct MotionPassWrapper : VoidWrapper {
       return channel.value;
     }
 
-    void setState(const WrapperState &) const override
+    void setState(const WrapperState &state) const override
     {
-      assert(false);
+      if (state.value.isNumeric()) {
+        setValue(state.value.asNumeric());
+      }
+      else {
+        assert(false);
+      }
     }
   };
 
@@ -126,9 +152,24 @@ struct MotionPassWrapper : VoidWrapper {
       return label_member;
     }
 
-    void setState(const WrapperState &) const override
+    void setState(const WrapperState &state) const override
     {
-      assert(false);
+      for (const WrapperState &child_state : state.children) {
+        if (child_state.tag=="x") {
+          withChildWrapper(0,[&](const Wrapper &child_wrapper){
+            child_wrapper.setState(child_state);
+          });
+        }
+        else if (child_state.tag=="y") {
+          withChildWrapper(1,[&](const Wrapper &child_wrapper){
+            child_wrapper.setState(child_state);
+          });
+        }
+        else {
+          cerr << "child_state.tag: " << child_state.tag << "\n";
+          assert(false);
+        }
+      }
     }
   };
 
@@ -311,6 +352,22 @@ struct MotionPassWrapper : VoidWrapper {
       callbacks.notifyCharmapChanged();
     }
 
+    void setIndex(int index) const
+    {
+      switch (index) {
+        case 0:
+          // Components
+          global_position.switchToComponents();
+          break;
+        case 1:
+          // From Body
+          global_position.switchToFromBody();
+          break;
+        default:
+          assert(false);
+      }
+    }
+
     virtual void
       setValue(
         const TreePath &path,
@@ -318,24 +375,8 @@ struct MotionPassWrapper : VoidWrapper {
         TreeObserver &tree_observer
       ) const
     {
-      switch (index) {
-        case 0:
-          // Components
-          {
-            global_position.switchToComponents();
-            tree_observer.itemReplaced(path);
-          }
-          break;
-        case 1:
-          // From Body
-          {
-            global_position.switchToFromBody();
-            tree_observer.itemReplaced(path);
-          }
-          break;
-        default:
-          assert(false);
-      }
+      setIndex(index);
+      tree_observer.itemReplaced(path);
     }
 
     Index value() const override
@@ -361,9 +402,17 @@ struct MotionPassWrapper : VoidWrapper {
       return "Global Position";
     }
 
-    void setState(const WrapperState &) const override
+    void setState(const WrapperState &state) const override
     {
-      assert(false);
+      if (state.value.isEnumeration()) {
+        setIndex(findIndex(*this,state.value.asEnumeration()));
+      }
+      else {
+        assert(false);
+      }
+
+      if (!state.children.empty()) {
+      }
     }
   };
 
@@ -403,12 +452,7 @@ struct MotionPassWrapper : VoidWrapper {
       return result;
     }
 
-    void
-      setValue(
-        const TreePath &,
-        int index,
-        TreeObserver &
-      ) const override
+    void setIndex(int index) const
     {
       assert(index>=0);
 
@@ -418,7 +462,16 @@ struct MotionPassWrapper : VoidWrapper {
       else {
         body_link = callbacks.scene_list.allBodyLinks()[index-1];
       }
+    }
 
+    void
+      setValue(
+        const TreePath &,
+        int index,
+        TreeObserver &
+      ) const override
+    {
+      setIndex(index);
       callbacks.notifyCharmapChanged();
     }
 
@@ -431,9 +484,21 @@ struct MotionPassWrapper : VoidWrapper {
       return indexOf(body_link,callbacks.scene_list.allBodyLinks()) + 1;
     }
 
-    void setState(const WrapperState &) const override
+    void setState(const WrapperState &state) const override
     {
-      assert(false);
+      if (!state.value.isVoid()) {
+        if (state.value.isEnumeration()) {
+          setIndex(findIndex(*this,state.value.asEnumeration()));
+        }
+        else {
+          assert(false);
+        }
+      }
+
+      for (const WrapperState &child_state : state.children) {
+        cerr << "child_state.tag: " << child_state.tag << "\n";
+        assert(false);
+      }
     }
   };
 
@@ -493,20 +558,24 @@ struct MotionPassWrapper : VoidWrapper {
       assert(false);
     }
 
+    static const int target_body_index = 0;
+    static const int local_position_index = 1;
+    static const int global_position_index = 2;
+
     void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
     {
-      if (child_index==0) {
+      if (child_index==target_body_index) {
         // Target body
         visitor(
           BodyWrapper("Target Body",posExpr().target_body_link,callbacks)
         );
       }
-      else if (child_index==1) {
+      else if (child_index==local_position_index) {
         visitor(
           PositionWrapper(posExpr().local_position,"Local Position",callbacks)
         );
       }
-      else if (child_index==2) {
+      else if (child_index==global_position_index) {
         visitor(
           GlobalPositionWrapper(posExpr().global_position,callbacks)
         );
@@ -526,9 +595,25 @@ struct MotionPassWrapper : VoidWrapper {
       return 3;
     }
 
-    void setState(const WrapperState &) const override
+    void setState(const WrapperState &state) const override
     {
-      assert(false);
+      for (const WrapperState &child_state : state.children) {
+        bool found = false;
+
+        for (int i=0; i!=nChildren(); ++i) {
+          withChildWrapper(i,[&](const Wrapper &child_wrapper){
+            if (makeTag(child_wrapper.label())==child_state.tag) {
+              child_wrapper.setState(child_state);
+              found = true;
+            }
+          });
+        }
+
+        if (!found) {
+          cerr << "Couldn't find tag " << child_state.tag << " in " <<
+            label() << "\n";
+        }
+      }
     }
   };
 
@@ -625,9 +710,20 @@ struct MotionPassWrapper : VoidWrapper {
     return motion_pass.nExprs();
   }
 
-  void setState(const WrapperState &) const override
+  void setState(const WrapperState &state) const override
   {
-    assert(false);
+    int child_index = 0;
+
+    for (const WrapperState &child_state : state.children) {
+      if (child_state.tag=="pos_expr") {
+        motion_pass.addPosExpr();
+        PosExprWrapper(motion_pass,child_index,callbacks).setState(child_state);
+      }
+      else {
+        assert(false);
+      }
+      ++child_index;
+    }
   }
 };
 }
