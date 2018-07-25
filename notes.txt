@@ -274,5 +274,3 @@ Need to be able to handle items with a value and children in a file:
 
 Make it where qttreeeditor doesn't need to recompile if we change
 wrapper.
-
-QtTreeEditor::maybeSelectedDiagram() needs to be moved to the base class.

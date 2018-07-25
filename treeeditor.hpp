@@ -13,6 +13,11 @@ struct TreeEditor {
     void setWorldState(const WrapperState &);
 
   protected:
+    struct MenuItem {
+      std::string label;
+      std::function<void()> callback;
+    };
+
     Wrapper *world_ptr = 0;
 
     Wrapper &world();
@@ -26,6 +31,8 @@ struct TreeEditor {
     void addChildTreeItems(const TreePath &parent_path);
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
+    std::vector<MenuItem> contextMenuItems(const TreePath &path);
+
     virtual void removeTreeItem(const TreePath &path) = 0;
     virtual void removeChildItems(const TreePath &path) = 0;
 

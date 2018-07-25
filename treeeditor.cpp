@@ -261,7 +261,7 @@ void TreeEditor::removeDiagramEditors(const TreePath &path)
     return;
   }
 
-  // Find the diagrams 
+  // Find the diagrams
 
   vector<Diagram *> diagrams_being_removed;
 
@@ -315,4 +315,28 @@ void TreeEditor::openDiagramEditor(const TreePath &path)
 int TreeEditor::nDiagramEditorWindows() const
 {
   return diagram_editor_window_ptrs.size();
+}
+
+
+auto TreeEditor::contextMenuItems(const TreePath &path) -> vector<MenuItem>
+{
+  vector<MenuItem> menu_items;
+
+  if (diagramPtr(world(),path)) {
+    menu_items.push_back(
+      {"Edit Diagram...",[this,path]{ openDiagramEditor(path); }}
+    );
+  }
+
+  std::vector<std::string> operation_names = operationNames(path);
+
+  int n_operations = operation_names.size();
+
+  for (int i=0; i!=n_operations; ++i) {
+    menu_items.push_back(
+      {operation_names[i],[this,path,i]{ executeOperation(path,i); }}
+    );
+  }
+
+  return menu_items;
 }

@@ -9,7 +9,6 @@
 #include "qtslot.hpp"
 #include "qtspinbox.hpp"
 #include "streamvector.hpp"
-#include "wrapperutil.hpp"
 #include "qtcombobox.hpp"
 #include "qtlineedit.hpp"
 #include "qttreewidgetitem.hpp"
@@ -390,18 +389,12 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
     path = itemPath(*widget_item_ptr);
   }
 
+  vector<MenuItem> menu_items = contextMenuItems(path);
+
   QMenu menu;
 
-  if (diagramPtr(world(),path)) {
-    createAction(menu,"Edit Diagram...",[&]{ openDiagramEditor(path); });
-  }
-
-  std::vector<std::string> operation_names = operationNames(path);
-
-  int n_operations = operation_names.size();
-
-  for (int i=0; i!=n_operations; ++i) {
-    createAction(menu,operation_names[i],[&,i]{ executeOperation(path,i); });
+  for (auto &item : menu_items) {
+    createAction(menu,item.label,item.callback);
   }
 
   menu.exec(tree_editor.mapToGlobal(pos));
