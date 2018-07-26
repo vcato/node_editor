@@ -22,58 +22,12 @@ using std::function;
 using std::list;
 
 
+// There's another one of these in TreeEditor.  Need to try to remove
+// this so it's all in TreeEditor.
 static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
 {
   return wrapper.enumerationNames();
 }
-
-
-struct QtTreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
-  QtTreeEditor &tree_editor;
-  QTreeWidgetItem &parent_item;
-  bool &created;
-
-  CreateChildItemVisitor(
-    QtTreeEditor &tree_editor_arg,
-    QTreeWidgetItem &parent_item_arg,
-    bool &created_arg
-  )
-  : tree_editor(tree_editor_arg),
-    parent_item(parent_item_arg),
-    created(created_arg)
-  {
-  }
-
-  void operator()(const VoidWrapper &wrapper) const override
-  {
-    tree_editor.createChildItem(parent_item,wrapper.label());
-    created = true;
-  }
-
-  void operator()(const NumericWrapper &wrapper) const override
-  {
-    tree_editor.createSpinBoxItem(parent_item,wrapper.label(),wrapper.value());
-    created = true;
-  }
-
-  void operator()(const EnumerationWrapper &wrapper) const override
-  {
-    tree_editor.createComboBoxItem(
-      parent_item,
-      wrapper.label(),
-      comboBoxItems(wrapper)
-    );
-    created = true;
-  }
-
-  void operator()(const StringWrapper &wrapper) const override
-  {
-    tree_editor.createLineEditItem(
-      parent_item,wrapper.label(),wrapper.value()
-    );
-    created = true;
-  }
-};
 
 
 QtTreeEditor::QtTreeEditor()
@@ -104,6 +58,53 @@ QTreeWidgetItem&
   QTreeWidgetItem &pass_item = ::createChildItem(parent_item);
   setItemText(pass_item,label);
   return pass_item;
+}
+
+
+void
+  QtTreeEditor::createVoidItem(
+    const TreePath &parent_path,
+    const string &label
+  )
+{
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  createChildItem(parent_item,label);
+}
+
+
+void
+  QtTreeEditor::createNumericItem(
+    const TreePath &parent_path,
+    const string &label,
+    const NumericValue value
+  )
+{
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  createSpinBoxItem(parent_item,label,value);
+}
+
+
+void
+  QtTreeEditor::createEnumerationItem(
+    const TreePath &parent_path,
+    const string &label,
+    const vector<string> &options
+  )
+{
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  createComboBoxItem(parent_item,label,options);
+}
+
+
+void
+  QtTreeEditor::createStringItem(
+    const TreePath &parent_path,
+    const string &label,
+    const string &value
+  )
+{
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  createLineEditItem(parent_item,label,value);
 }
 
 
@@ -220,32 +221,10 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 }
 
 
-void
-  QtTreeEditor::addWrapperItem(
-    const TreePath &new_item_path,
-    const Wrapper &wrapper
-  )
+int QtTreeEditor::itemChildCount(const TreePath &parent_path) const
 {
-  TreePath parent_path = parentPath(new_item_path);
-  TreeItemIndex child_index = new_item_path.back();
-
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-
-  if (child_index!=parent_item.childCount()) {
-    assert(false); // not implemented
-  }
-
-  bool created = false;
-
-  CreateChildItemVisitor
-    create_child_item_visitor(*this,parent_item,created);
-
-  wrapper.accept(create_child_item_visitor);
-
-  if (!created) {
-    cerr << "No item created for parent " << parent_path << "\n";
-    assert(created);
-  }
+  return parent_item.childCount();
 }
 
 

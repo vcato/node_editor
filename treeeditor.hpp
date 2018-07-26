@@ -37,17 +37,45 @@ struct TreeEditor {
     virtual void removeChildItems(const TreePath &path) = 0;
 
   private:
+    struct CreateChildItemVisitor;
+
     struct TreeObserver;
     virtual void removeDiagramEditors(const TreePath &);
 
   private:
     std::vector<DiagramEditorWindow *> diagram_editor_window_ptrs;
-    using NumericValue = NumericWrapper::Value;
 
-    virtual void
-      addWrapperItem(const TreePath &new_item_path,const Wrapper &) = 0;
+    void addWrapperItem(const TreePath &new_item_path,const Wrapper &);
+    virtual int itemChildCount(const TreePath &parent_item) const = 0;
     virtual void changeEnumerationValues(const TreePath &) = 0;
     virtual DiagramEditorWindow& createDiagramEditor() = 0;
+
+    virtual void
+      createVoidItem(
+        const TreePath &parent_path,
+        const std::string &label
+      ) = 0;
+
+    virtual void
+      createNumericItem(
+        const TreePath &parent_path,
+        const std::string &label,
+        const NumericValue value
+      ) = 0;
+
+    virtual void
+      createEnumerationItem(
+        const TreePath &parent_path,
+        const std::string &label,
+        const std::vector<std::string> &options
+      ) = 0;
+
+    virtual void
+      createStringItem(
+        const TreePath &parent_path,
+        const std::string &label,
+        const std::string &value
+      ) = 0;
 
   private:
     void diagramChanged(DiagramEditorWindow &window);

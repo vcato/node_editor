@@ -25,18 +25,10 @@ struct FakeTreeEditor : TreeEditor {
   {
   }
 
-  void
-    addWrapperItem(const TreePath &new_item_path,const Wrapper &) override
+  int itemChildCount(const TreePath &parent_item) const override
   {
-    if (new_item_path.empty()) {
-      assert(false);
-    }
-
-    int n_children = tree.children.size();
-
-    if (new_item_path.size()==1 && n_children==new_item_path.back()) {
-      tree.children.emplace_back();
-      return;
+    if (parent_item.size()==0) {
+      return tree.children.size();
     }
 
     assert(false);
@@ -55,6 +47,50 @@ struct FakeTreeEditor : TreeEditor {
   virtual DiagramEditorWindow& createDiagramEditor()
   {
     return diagram_editor_windows.create();
+  }
+
+  void
+    createVoidItem(
+      const TreePath &parent_path,
+      const std::string & /*label*/
+    ) override
+  {
+    if (parent_path.empty()) {
+      tree.children.emplace_back();
+      return;
+    }
+
+    assert(false);
+  }
+
+  void
+    createNumericItem(
+      const TreePath & /*parent_path*/,
+      const std::string & /*label*/,
+      const NumericValue /*value*/
+    ) override
+  {
+    assert(false);
+  }
+
+  void
+    createEnumerationItem(
+      const TreePath &/*parent_path*/,
+      const std::string &/*label*/,
+      const std::vector<std::string> &/*options*/
+    ) override
+  {
+    assert(false);
+  }
+
+  void
+    createStringItem(
+      const TreePath &/*parent_path*/,
+      const std::string &/*label*/,
+      const std::string &/*value*/
+    ) override
+  {
+    assert(false);
   }
 
   void

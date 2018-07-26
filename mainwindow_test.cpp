@@ -43,6 +43,7 @@ struct FakeTreeItem {
 
   int childCount() const { return children.size(); }
   FakeTreeItem *child(int index) { return &children[index]; }
+  const FakeTreeItem *child(int index) const { return &children[index]; }
 
   friend FakeTreeItem& insertChildItem(FakeTreeItem &parent_item,int index)
   {
@@ -120,11 +121,9 @@ struct FakeTreeEditor : TreeEditor {
     userChangesNumberValue(makePath(world(),path_string),new_value);
   }
 
-  void
-    addWrapperItem(const TreePath &new_item_path,const Wrapper &) override
+  int itemChildCount(const TreePath &parent_path) const override
   {
-    Item &parent_item = itemFromPath(root,parentPath(new_item_path));
-    insertChildItem(parent_item,new_item_path.back());
+    return itemFromPath(root,parent_path).children.size();
   }
 
   void changeEnumerationValues(const TreePath &) override
@@ -145,6 +144,49 @@ struct FakeTreeEditor : TreeEditor {
   virtual DiagramEditorWindow& createDiagramEditor()
   {
     return diagram_editor_windows.create();
+  }
+
+  void
+    createVoidItem(
+      const TreePath &parent_path,
+      const std::string & /*label*/
+    ) override
+  {
+    Item &parent_item = itemFromPath(root,parent_path);
+    insertChildItem(parent_item,parent_item.children.size());
+  }
+
+  void
+    createNumericItem(
+      const TreePath & parent_path,
+      const std::string & /*label*/,
+      const NumericValue /*value*/
+    ) override
+  {
+    Item &parent_item = itemFromPath(root,parent_path);
+    insertChildItem(parent_item,parent_item.children.size());
+  }
+
+  void
+    createEnumerationItem(
+      const TreePath &parent_path,
+      const std::string &/*label*/,
+      const std::vector<std::string> &/*options*/
+    ) override
+  {
+    Item &parent_item = itemFromPath(root,parent_path);
+    insertChildItem(parent_item,parent_item.children.size());
+  }
+
+  void
+    createStringItem(
+      const TreePath &parent_path,
+      const std::string &/*label*/,
+      const std::string &/*value*/
+    ) override
+  {
+    Item &parent_item = itemFromPath(root,parent_path);
+    insertChildItem(parent_item,parent_item.children.size());
   }
 
   FakeDiagramEditorWindows diagram_editor_windows;

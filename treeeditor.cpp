@@ -12,6 +12,58 @@ using std::cerr;
 using std::function;
 
 
+static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
+{
+  return wrapper.enumerationNames();
+}
+
+
+struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
+  TreeEditor &tree_editor;
+  const TreePath &parent_path;
+  bool &created;
+
+  CreateChildItemVisitor(
+    TreeEditor &tree_editor_arg,
+    const TreePath &parent_path_arg,
+    bool &created_arg
+  )
+  : tree_editor(tree_editor_arg),
+    parent_path(parent_path_arg),
+    created(created_arg)
+  {
+  }
+
+  void operator()(const VoidWrapper &wrapper) const override
+  {
+    tree_editor.createVoidItem(parent_path,wrapper.label());
+    created = true;
+  }
+
+  void operator()(const NumericWrapper &wrapper) const override
+  {
+    tree_editor.createNumericItem(parent_path,wrapper.label(),wrapper.value());
+    created = true;
+  }
+
+  void operator()(const EnumerationWrapper &wrapper) const override
+  {
+    tree_editor.createEnumerationItem(
+      parent_path,
+      wrapper.label(),
+      comboBoxItems(wrapper)
+    );
+    created = true;
+  }
+
+  void operator()(const StringWrapper &wrapper) const override
+  {
+    tree_editor.createStringItem(parent_path,wrapper.label(),wrapper.value());
+    created = true;
+  }
+};
+
+
 static void
   forEachDescendant(const Wrapper &wrapper,function<void(const Wrapper &)> f)
 {
@@ -339,4 +391,32 @@ auto TreeEditor::contextMenuItems(const TreePath &path) -> vector<MenuItem>
   }
 
   return menu_items;
+}
+
+
+void
+  TreeEditor::addWrapperItem(
+    const TreePath &new_item_path,
+    const Wrapper &wrapper
+  )
+{
+  TreePath parent_path = parentPath(new_item_path);
+  TreeItemIndex child_index = new_item_path.back();
+
+  int parent_item_child_count = itemChildCount(parent_path);
+
+  if (child_index!=parent_item_child_count) {
+    assert(false); // not implemented
+  }
+
+  bool created = false;
+
+  CreateChildItemVisitor create_child_item_visitor(*this,parent_path,created);
+
+  wrapper.accept(create_child_item_visitor);
+
+  if (!created) {
+    cerr << "No item created for parent " << parent_path << "\n";
+    assert(created);
+  }
 }
