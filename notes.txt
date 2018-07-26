@@ -271,6 +271,3 @@ Handle setState() operations more generically when we can.
 
 Need to be able to handle items with a value and children in a file:
   global_position: from_body {
-
-Make it where qttreeeditor doesn't need to recompile if we change
-wrapper.

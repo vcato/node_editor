@@ -1,3 +1,7 @@
+#ifndef TREEPATH_HPP_
+#define TREEPATH_HPP_
+
+
 using TreeItemIndex = int;
 using TreePath = std::vector<TreeItemIndex>;
 
@@ -8,3 +12,6 @@ inline TreePath parentPath(const TreePath &path)
   result.pop_back();
   return result;
 }
+
+
+#endif /* TREEPATH_HPP_ */

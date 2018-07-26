@@ -5,6 +5,7 @@
 #include <string>
 #include "wrapperstate.hpp"
 #include "optional.hpp"
+#include "wrapper.hpp"
 
 using std::cerr;
 using std::string;

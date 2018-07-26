@@ -1,9 +1,11 @@
 #ifndef TREEEDITOR_HPP_
 #define TREEEDITOR_HPP_
 
-#include "wrapper.hpp"
 #include "diagrameditorwindow.hpp"
+#include "wrapperstate.hpp"
+#include "treepath.hpp"
 
+struct Wrapper;
 
 struct TreeEditor {
   public:

@@ -4,7 +4,6 @@
 #include <QMenu>
 #include <QHeaderView>
 #include <QLineEdit>
-#include "diagramio.hpp"
 #include "qtmenu.hpp"
 #include "qtslot.hpp"
 #include "qtspinbox.hpp"
