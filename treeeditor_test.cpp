@@ -39,7 +39,11 @@ struct FakeTreeEditor : TreeEditor {
     assert(false);
   }
 
-  virtual void changeEnumerationValues(const TreePath &)
+  void
+    setEnumerationValues(
+      const TreePath &,
+      const std::vector<std::string> & /*items*/
+    ) override
   {
     assert(false);
   }

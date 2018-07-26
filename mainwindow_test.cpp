@@ -126,8 +126,13 @@ struct FakeTreeEditor : TreeEditor {
     return itemFromPath(root,parent_path).children.size();
   }
 
-  void changeEnumerationValues(const TreePath &) override
+  virtual void
+    setEnumerationValues(
+      const TreePath &,
+      const std::vector<std::string> & /*items*/
+    )
   {
+    assert(false);
   }
 
   void removeTreeItem(const TreePath &path) override

@@ -122,7 +122,11 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
         const std::string &value
       );
 
-    void changeEnumerationValues(const TreePath &) override;
+    void
+      setEnumerationValues(
+        const TreePath &path,
+        const std::vector<std::string> &items
+      ) override;
 };
 
 #endif /* QTTREEEDITOR_HPP_ */

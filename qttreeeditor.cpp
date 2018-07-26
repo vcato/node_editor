@@ -22,14 +22,6 @@ using std::function;
 using std::list;
 
 
-// There's another one of these in TreeEditor.  Need to try to remove
-// this so it's all in TreeEditor.
-static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
-{
-  return wrapper.enumerationNames();
-}
-
-
 QtTreeEditor::QtTreeEditor()
 {
   assert(header());
@@ -268,26 +260,12 @@ void QtTreeEditor::removeChildItems(const TreePath &path)
 }
 
 
-static vector<string>
-  getComboBoxItems(const Wrapper &wrapper,const TreePath &path)
+void
+  QtTreeEditor::setEnumerationValues(
+    const TreePath &path,
+    const vector<string> &items
+  )
 {
-  vector<string> items;
-
-  visitEnumerationSubWrapper(
-    wrapper,
-    path,
-    [&](const EnumerationWrapper &enumeration_wrapper){
-      items = comboBoxItems(enumeration_wrapper);
-    }
-  );
-
-  return items;
-}
-
-
-void QtTreeEditor::changeEnumerationValues(const TreePath &path)
-{
-  vector<string> items = getComboBoxItems(world(),path);
   QTreeWidgetItem &item = itemFromPath(path);
   QWidget *widget_ptr = itemWidget(&item,/*column*/0);
   QtComboBoxTreeItemWidget *combobox_item_widget_ptr =
