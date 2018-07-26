@@ -260,14 +260,3 @@ to it to the right.
 ---
 I don't see anything in the Export Diagram code to handle the case where
 the user cancels the save.
----
-Need to be able to save and load projects.
-  * Need a more complete test
-
-finish testSettingStateWithPosExpr()
-
-Handle setState() operations more generically when we can.
-  Have some code in PosExprWrapper::setState() that could be used.
-
-Need to be able to handle items with a value and children in a file:
-  global_position: from_body {

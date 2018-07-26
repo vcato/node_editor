@@ -65,6 +65,26 @@ static void testScanStateFromWithEnumerationValue()
 }
 
 
+static void testScanStateFromWithEnumerationValueAndChildren()
+{
+  const char *text =
+    "test: b {\n"
+    "  x: 5\n"
+    "}\n";
+  istringstream stream(text);
+  ScanStateResult result = scanStateFrom(stream);
+
+  assert(result.isState());
+  const WrapperState &state = result.state();
+
+  assert(state.tag=="test");
+  assert(state.value==WrapperValue(WrapperValue::Enumeration{"b"}));
+  assert(state.children.size()==1);
+  assert(state.children[0].tag=="x");
+  assert(state.children[0].value==5);
+}
+
+
 static void testScanStateFromWithStringValue()
 {
   istringstream stream("test: \"quoted\"\n");
@@ -116,6 +136,7 @@ int main()
 {
   testPrintStateOn();
   testScanStateFromWithEnumerationValue();
+  testScanStateFromWithEnumerationValueAndChildren();
   testScanStateFromWithStringValue();
   testScanStateFromWithChildValues();
   testPrintAndScanStateWithNoChildren();

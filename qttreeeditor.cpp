@@ -79,11 +79,12 @@ void
   QtTreeEditor::createEnumerationItem(
     const TreePath &parent_path,
     const string &label,
-    const vector<string> &options
+    const vector<string> &options,
+    int value
   )
 {
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  createComboBoxItem(parent_item,label,options);
+  createComboBoxItem(parent_item,label,options,value);
 }
 
 
@@ -132,7 +133,8 @@ QTreeWidgetItem&
   QtTreeEditor::createComboBoxItem(
     QTreeWidgetItem &parent_item,
     const std::string &label,
-    const std::vector<std::string> &enumeration_names
+    const std::vector<std::string> &enumeration_names,
+    int value
   )
 {
   QTreeWidgetItem &item = ::createChildItem(parent_item);
@@ -145,6 +147,7 @@ QTreeWidgetItem&
       handleComboBoxItemIndexChanged(&item,index);
     };
   combo_box.setItems(enumeration_names);
+  combo_box.setIndex(value);
   return item;
 }
 

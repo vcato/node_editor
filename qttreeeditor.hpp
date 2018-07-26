@@ -66,7 +66,8 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       createEnumerationItem(
         const TreePath &parent_path,
         const std::string &label,
-        const std::vector<std::string> &options
+        const std::vector<std::string> &options,
+        int value
       ) override;
 
     void
@@ -82,7 +83,8 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       createComboBoxItem(
         QTreeWidgetItem &parent_item,
         const std::string &label,
-        const std::vector<std::string> &enumeration_names
+        const std::vector<std::string> &enumeration_names,
+        int value
       );
 
     void

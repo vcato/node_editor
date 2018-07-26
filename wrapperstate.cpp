@@ -130,28 +130,11 @@ static Optional<WrapperValue> scanValue(StreamParser &parser)
 }
 
 
-static Optional<WrapperState> scanState(StreamParser &parser)
+static Optional<WrapperState> scanState(StreamParser &parser);
+
+
+static void scanChildren(WrapperState &state,StreamParser &parser)
 {
-  if (endsWith(parser.word,":")) {
-    string tag = withoutRight(parser.word,1);
-    WrapperState state(tag);
-    Optional<WrapperValue> maybe_value = scanValue(parser);
-
-    if (!maybe_value) {
-      assert(false);
-    }
-
-    state.value = *maybe_value;
-    return state;
-  }
-
-  string tag = parser.word;
-  WrapperState state(tag);
-
-  if (parser.stream.peek()=='\n') {
-    return state;
-  }
-
   parser.scanWord();
 
   if (parser.word!="{") {
@@ -174,6 +157,39 @@ static Optional<WrapperState> scanState(StreamParser &parser)
 
     state.children.push_back(*maybe_child_result);
   }
+}
+
+
+static Optional<WrapperState> scanState(StreamParser &parser)
+{
+  if (endsWith(parser.word,":")) {
+    string tag = withoutRight(parser.word,1);
+    WrapperState state(tag);
+    Optional<WrapperValue> maybe_value = scanValue(parser);
+
+    if (!maybe_value) {
+      assert(false);
+    }
+
+    state.value = *maybe_value;
+
+    parser.skipWhitespace();
+
+    if (parser.stream.peek()=='{') {
+      scanChildren(state,parser);
+    }
+
+    return state;
+  }
+
+  string tag = parser.word;
+  WrapperState state(tag);
+
+  if (parser.stream.peek()=='\n') {
+    return state;
+  }
+
+  scanChildren(state,parser);
 
   return state;
 }

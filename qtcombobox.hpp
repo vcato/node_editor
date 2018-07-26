@@ -12,6 +12,7 @@ class QtComboBox : public QComboBox {
     QtComboBox();
 
     void setItems(const std::vector<std::string> &names);
+    void setIndex(int);
 
     std::function<void(int)> current_index_changed_function;
 

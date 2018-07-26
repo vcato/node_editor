@@ -676,7 +676,6 @@ static void testSettingStateWithCharmapper()
 }
 
 
-#if 0
 static void testSettingStateWithPosExpr()
 {
   const char *text =
@@ -731,7 +730,6 @@ static void testSettingStateWithPosExpr()
   wrapper.setState(state);
   assert(stateOf(wrapper)==state);
 }
-#endif
 
 
 int main()
@@ -743,7 +741,7 @@ int main()
   testSettingStateWithScene();
   testSettingStateWithSceneWithBody();
   testSettingStateWithCharmapper();
-  // testSettingStateWithPosExpr();
+  testSettingStateWithPosExpr();
 
   {
     namespace tests = scene_and_charmapper_tests;

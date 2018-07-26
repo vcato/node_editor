@@ -81,7 +81,8 @@ struct FakeTreeEditor : TreeEditor {
     createEnumerationItem(
       const TreePath &/*parent_path*/,
       const std::string &/*label*/,
-      const std::vector<std::string> &/*options*/
+      const std::vector<std::string> &/*options*/,
+      int /*value*/
     ) override
   {
     assert(false);

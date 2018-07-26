@@ -51,7 +51,8 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
     tree_editor.createEnumerationItem(
       parent_path,
       wrapper.label(),
-      comboBoxItems(wrapper)
+      comboBoxItems(wrapper),
+      wrapper.value()
     );
     created = true;
   }

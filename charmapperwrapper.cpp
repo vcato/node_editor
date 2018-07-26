@@ -42,6 +42,30 @@ static int
 }
 
 
+static void setChildren(const Wrapper &wrapper,const WrapperState &state)
+{
+  int n_children = wrapper.nChildren();
+
+  for (const WrapperState &child_state : state.children) {
+    bool found = false;
+
+    for (int i=0; i!=n_children; ++i) {
+      wrapper.withChildWrapper(i,[&](const Wrapper &child_wrapper){
+        if (makeTag(child_wrapper.label())==child_state.tag) {
+          child_wrapper.setState(child_state);
+          found = true;
+        }
+      });
+    }
+
+    if (!found) {
+      cerr << "Couldn't find tag " << child_state.tag << " in " <<
+        wrapper.label() << "\n";
+    }
+  }
+}
+
+
 namespace {
 struct MotionPassWrapper : VoidWrapper {
   private: using Self = MotionPassWrapper;
@@ -154,22 +178,7 @@ struct MotionPassWrapper : VoidWrapper {
 
     void setState(const WrapperState &state) const override
     {
-      for (const WrapperState &child_state : state.children) {
-        if (child_state.tag=="x") {
-          withChildWrapper(0,[&](const Wrapper &child_wrapper){
-            child_wrapper.setState(child_state);
-          });
-        }
-        else if (child_state.tag=="y") {
-          withChildWrapper(1,[&](const Wrapper &child_wrapper){
-            child_wrapper.setState(child_state);
-          });
-        }
-        else {
-          cerr << "child_state.tag: " << child_state.tag << "\n";
-          assert(false);
-        }
-      }
+      setChildren(*this,state);
     }
   };
 
@@ -411,8 +420,7 @@ struct MotionPassWrapper : VoidWrapper {
         assert(false);
       }
 
-      if (!state.children.empty()) {
-      }
+      setChildren(*this,state);
     }
   };
 
@@ -597,23 +605,7 @@ struct MotionPassWrapper : VoidWrapper {
 
     void setState(const WrapperState &state) const override
     {
-      for (const WrapperState &child_state : state.children) {
-        bool found = false;
-
-        for (int i=0; i!=nChildren(); ++i) {
-          withChildWrapper(i,[&](const Wrapper &child_wrapper){
-            if (makeTag(child_wrapper.label())==child_state.tag) {
-              child_wrapper.setState(child_state);
-              found = true;
-            }
-          });
-        }
-
-        if (!found) {
-          cerr << "Couldn't find tag " << child_state.tag << " in " <<
-            label() << "\n";
-        }
-      }
+      setChildren(*this,state);
     }
   };
 
