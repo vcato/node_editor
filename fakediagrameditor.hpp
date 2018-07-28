@@ -2,10 +2,13 @@
 #define FAKEDIAGRAMEDITOR_HPP
 
 #include "diagrameditor.hpp"
+#include "optional.hpp"
 
 
 struct FakeDiagramEditor : DiagramEditor {
   int redraw_count = 0;
+  Optional<std::string> maybe_chosen_path;
+  bool an_error_was_shown = false;
 
   FakeDiagramEditor()
   {
@@ -30,6 +33,13 @@ struct FakeDiagramEditor : DiagramEditor {
   int userAddsANodeWithText(const std::string &text)
   {
     return userAddsANodeWithTextAt(text,Point2D(0,0));
+  }
+
+  void userPressesExportDiagram(const std::string &chosen_path)
+  {
+    maybe_chosen_path = chosen_path;
+    exportDiagramPressed();
+    maybe_chosen_path.reset();
   }
 
   void userPressesMouseAt(const Point2D &p)
@@ -135,12 +145,12 @@ struct FakeDiagramEditor : DiagramEditor {
 
   std::string askForSavePath() override
   {
-    assert(false);
+    return *maybe_chosen_path;
   }
 
   void showError(const std::string &/*message*/) override
   {
-    assert(false);
+    an_error_was_shown = true;
   }
 
   Point2D nodeCenter(NodeIndex node_index)

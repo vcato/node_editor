@@ -262,6 +262,3 @@ It looks like the local position diagram isn't actually evaluated.  If we
 delete the x node, it still uses the x value.
 ---
 use diagram.dat for local position
----
-I don't see anything in the Export Diagram code to handle the case where
-the user cancels the save.

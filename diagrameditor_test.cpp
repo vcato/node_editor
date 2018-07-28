@@ -220,6 +220,15 @@ static void testSelectingMultipleNodes()
 }
 
 
+static void testCancellingExport()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  editor.userPressesExportDiagram(/*chosen_path*/"");
+  assert(!editor.an_error_was_shown);
+}
+
+
 int main()
 {
   test1();
@@ -236,4 +245,5 @@ int main()
   test2();
   testRenderInfo();
   testSelectingMultipleNodes();
+  testCancellingExport();
 }

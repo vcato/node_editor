@@ -708,6 +708,10 @@ void DiagramEditor::exportDiagramPressed()
 {
   string path = askForSavePath();
 
+  if (path=="") {
+    return;
+  }
+
   ofstream stream(path);
 
   if (!stream) {
