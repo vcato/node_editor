@@ -25,7 +25,8 @@ struct FakeDiagramEditor : DiagramEditor {
     return userAddsANodeWithText("");
   }
 
-  int userAddsANodeWithTextAt(const std::string &text,const Point2D &position)
+  NodeIndex
+    userAddsANodeWithTextAt(const std::string &text,const Point2D &position)
   {
     return addNode(text,position);
   }
@@ -156,6 +157,16 @@ struct FakeDiagramEditor : DiagramEditor {
   Point2D nodeCenter(NodeIndex node_index)
   {
     return nodeRenderInfo(diagram().node(node_index)).body_outer_rect.center();
+  }
+
+  Point2D nodeInputPosition(NodeIndex node_index,int output_index)
+  {
+    return nodeInputCircle(node(node_index),output_index).center;
+  }
+
+  Point2D nodeOutputPosition(NodeIndex node_index,int output_index)
+  {
+    return nodeOutputCircle(node(node_index),output_index).center;
   }
 
   using DiagramEditor::aNodeIsFocused;

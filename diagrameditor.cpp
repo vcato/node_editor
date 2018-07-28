@@ -498,7 +498,8 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
 {
   if (!selected_node_connector_index.isNull()) {
     NodeConnectorIndex release_index =
-      indexOfNodeConnectorContaining(temp_source_pos);
+      indexOfNodeConnectorContaining(mouse_release_position);
+
     if (!release_index.isNull()) {
       if (selected_node_connector_index.input_index>=0 &&
           release_index.output_index>=0) {
@@ -533,6 +534,7 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
       }
     }
     selected_node_connector_index.clear();
+    notifyDiagramChanged();
     redraw();
     return;
   }

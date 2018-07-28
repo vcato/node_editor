@@ -38,6 +38,13 @@ class DiagramNode {
     struct Input {
       int source_node_index = nullNodeIndex();
       int source_output_index = -1;
+
+      bool operator==(const Input &arg) const
+      {
+        return
+          source_node_index==arg.source_node_index &&
+          source_output_index==arg.source_output_index;
+      }
     };
 
     struct Output {

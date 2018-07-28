@@ -108,7 +108,6 @@ static void testChangingText4()
   editor.userMovesCursorTo(/*row*/0,/*column*/8);
   diagram_changed_count = 0;
   editor.userPressesBackspace();
-  cerr << "diagram_changed_count: " << diagram_changed_count << "\n";
   assert(diagram_changed_count==1);
   editor.userTypesText("1");
   assert(diagram_changed_count==2);
@@ -233,6 +232,37 @@ static void testCancellingExport()
 }
 
 
+static bool
+  diagramHasConnection(
+    const Diagram &diagram,
+    NodeIndex node1_index,
+    int output_number,
+    const NodeIndex node2_index,
+    int input_number
+  )
+{
+  DiagramNode::Input node2_input =
+    diagram.node(node2_index).inputs[input_number];
+  return node2_input == DiagramNode::Input{node1_index,output_number};
+}
+
+
+static void testConnectingNodes()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex node1 = editor.userAddsANodeWithTextAt("1",Point2D(0,0));
+  NodeIndex node2 = editor.userAddsANodeWithTextAt("return $",Point2D(100,0));
+  editor.userPressesMouseAt(editor.nodeOutputPosition(node1,0));
+
+  int diagram_change_count = 0;
+  editor.diagramChangedCallback() = [&]{ ++diagram_change_count; };
+  editor.userRelasesMouseAt(editor.nodeInputPosition(node2,0));
+  assert(diagramHasConnection(diagram,node1,0,node2,0));
+  assert(diagram_change_count==1);
+}
+
+
 int main()
 {
   test1();
@@ -250,4 +280,5 @@ int main()
   testRenderInfo();
   testSelectingMultipleNodes();
   testCancellingExport();
+  testConnectingNodes();
 }
