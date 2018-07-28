@@ -69,6 +69,12 @@ inline Point2D &operator-=(Point2D &point,const Vector2D &vector)
 }
 
 
+inline Vector2D operator-(const Point2D &a,const Point2D &b)
+{
+  return Vector2D( a.x-b.x, a.y-b.y );
+}
+
+
 inline std::ostream& operator<<(std::ostream &stream,const Point2D &p)
 {
   stream << "Point2D(" << p.x << "," << p.y << ")";

@@ -175,14 +175,31 @@ void Charmapper::apply()
           evaluatePoint2DDiagram(diagram,executor,new_position);
         }
         else if (expr.global_position.isFromBody()) {
-          auto &from_body_data = expr.global_position.fromBody();
+          using FromBodyData = GlobalPosition::FromBodyData;
+          FromBodyData &from_body_data = expr.global_position.fromBody();
           BodyLink &source_body_link = from_body_data.source_body_link;
 
           if (source_body_link.hasValue()) {
             new_position = displayedBodyPosition(source_body_link);
           }
 
+#if 1
           new_position += makeVector2D(from_body_data.local_position);
+#else
+          Diagram &diagram = from_body_data.local_position.diagram;
+          DiagramExecutor executor(/*show_stream*/cerr);
+          float x_param = from_body_data.local_position.x.value;
+          float y_param = from_body_data.local_position.y.value;
+          executor.environment["x"] = x_param;
+          executor.environment["y"] = y_param;
+          cerr << "x_param: " << x_param << "\n";
+          cerr << "y_param: " << y_param << "\n";
+          Point2D local_position(0,0);
+          evaluatePoint2DDiagram(diagram,executor,local_position);
+          printDiagramOn(cerr,diagram);
+          cerr << "local_position: " << local_position << "\n";
+          new_position += local_position - Point2D(0,0);
+#endif
         }
         else {
           assert(false);

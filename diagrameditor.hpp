@@ -47,7 +47,7 @@ struct NodeRenderInfo {
 using Node = DiagramNode;
 
 
-inline Point2D operator-(const Point2D &a,const Point2D &b)
+inline Point2D operator-(const Point2D &a,const Vector2D &b)
 {
   float x = a.x - b.x;
   float y = a.y - b.y;
@@ -55,7 +55,7 @@ inline Point2D operator-(const Point2D &a,const Point2D &b)
 }
 
 
-inline Point2D operator+(const Point2D &a,const Point2D &b)
+inline Point2D operator+(const Point2D &a,const Vector2D &b)
 {
   float x = a.x + b.x;
   float y = a.y + b.y;
@@ -65,7 +65,7 @@ inline Point2D operator+(const Point2D &a,const Point2D &b)
 
 inline Rect withMargin(const Rect &rect,float margin)
 {
-  auto offset = Point2D{margin,margin};
+  auto offset = Vector2D{margin,margin};
   return Rect{rect.start-offset,rect.end+offset};
 }
 

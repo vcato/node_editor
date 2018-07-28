@@ -460,8 +460,8 @@ void QtDiagramEditor::drawCursor(const TextObject &text_object,int column_index)
   float cursor_height = textHeight();
   float text_width = textWidth(text_object.text.substr(0,column_index));
   float descent = fontMetrics().descent();
-  Point2D p = text_object.position + Point2D{text_width,-descent};
-  drawLine(p,p+Point2D{0,cursor_height});
+  Point2D p = text_object.position + Vector2D{text_width,-descent};
+  drawLine(p,p+Vector2D{0,cursor_height});
 }
 
 

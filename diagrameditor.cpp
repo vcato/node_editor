@@ -195,8 +195,8 @@ TextObject
   text_object.text = text;
   text_object.position = Point2D(0,0);
   Rect rect = rectAroundText(text_object);
-  Point2D offset =
-    alignmentPoint(rect,horizontal_alignment,vertical_alignment);
+  Vector2D offset =
+    alignmentPoint(rect,horizontal_alignment,vertical_alignment) - Point2D(0,0);
   text_object.position = position - offset;
   return text_object;
 }

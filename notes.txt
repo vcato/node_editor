@@ -260,3 +260,7 @@ to it to the right.
 ---
 It looks like the local position diagram isn't actually evaluated.  If we
 delete the x node, it still uses the x value.
+---
+Get testLocalPositionDiagram working.
+---
+Evaluating the local position diagram doesn't seem to work.
