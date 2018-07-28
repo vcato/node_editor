@@ -10,6 +10,7 @@
 #include "diagramio.hpp"
 #include "wrapperstate.hpp"
 #include "scenewrapper.hpp"
+#include "stringutil.hpp"
 
 
 using std::string;
@@ -617,6 +618,51 @@ static void testChangingGlobalPositionDiagram()
   }
 }
 
+
+static NodeIndex diagramNodeIndex(const Diagram &diagram,const string &text)
+{
+  for (NodeIndex node_index : diagram.existingNodeIndices()) {
+    const DiagramNode &node = diagram.node(node_index);
+    const string &node_text = node.text();
+
+    if (startsWith(node_text,text)) {
+      return node_index;
+    }
+  }
+
+  assert(false);
+}
+
+
+static void testChangingLocalPositionDiagram()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Scene &scene = world.addScene();
+  Scene::Body &body = scene.addBody();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link.set(&scene,&body);
+  pos_expr.global_position.switchToFromBody();
+  pos_expr.global_position.fromBody().local_position.x.value = 1;
+  pos_expr.global_position.fromBody().local_position.y.value = 2;
+
+  charmapper.apply();
+  assert(body.position.x(scene.displayFrame())==1);
+
+  Diagram &diagram =
+    pos_expr.global_position.fromBody().local_position.diagram;
+  NodeIndex x_node_index = diagramNodeIndex(diagram,"x");
+  diagram.deleteNode(x_node_index);
+  WorldWrapper world_wrapper(world);
+  notifyDiagramChanged(
+    world_wrapper,
+    "Charmapper1|Motion Pass|Pos Expr|Global Position|Local Position"
+  );
+  assert(body.position.x(scene.displayFrame())==0);
+}
+
+
 }
 
 
@@ -755,5 +801,6 @@ int main()
     tests::testRemovingAPosExprFromAMotionPass();
     tests::testRemovingACharmapper();
     tests::testChangingGlobalPositionDiagram();
+    tests::testChangingLocalPositionDiagram();
   }
 }

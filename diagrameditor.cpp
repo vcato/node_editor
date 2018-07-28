@@ -79,6 +79,7 @@ void DiagramEditor::backspacePressed()
       deleteNode(i);
     }
     clearSelection();
+    notifyDiagramChanged();
     redraw();
     return;
   }

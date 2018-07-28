@@ -2,9 +2,11 @@
 
 
 struct DiagramExecutor : Executor {
+  using Environment = std::map<std::string,Any>;
+
   Any return_value;
   std::ostream &show_stream;
-  std::map<std::string,Any> environment;
+  Environment environment;
 
   DiagramExecutor(std::ostream &show_stream_arg)
   : show_stream(show_stream_arg)

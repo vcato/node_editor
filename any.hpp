@@ -49,6 +49,18 @@ struct AnyPolicy {
     bool isVector() const { return _type==vector_type; }
     bool isFloat() const { return _type==float_type; }
 
+    std::string typeName() const
+    {
+      switch (_type) {
+        case void_type: return "void";
+        case vector_type: return "vector";
+        case float_type: return "float";
+      }
+
+      assert(false);
+      return "unknown";
+    }
+
     const std::vector<Any> &asVector() const
     {
       assert(_type==vector_type);

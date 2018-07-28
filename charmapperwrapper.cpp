@@ -180,6 +180,11 @@ struct MotionPassWrapper : VoidWrapper {
     {
       setChildren(*this,state);
     }
+
+    void diagramChanged() const override
+    {
+      callbacks.notifyCharmapChanged();
+    }
   };
 
   struct FromBodyGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {

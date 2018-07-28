@@ -241,7 +241,7 @@ Diagram localPositionDiagram()
     "    id: 4\n"
     "    position: [224,162]\n"
     "    text {\n"
-    "      \"local_position=$\"\n"
+    "      \"return $\"\n"
     "    }\n"
     "    connection {\n"
     "      input_index: 0\n"

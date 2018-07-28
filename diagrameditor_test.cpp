@@ -25,8 +25,12 @@ static void testDeletingANode()
   FakeDiagramEditor editor(diagram);
   int node_index = editor.userAddsANodeWithText("test");
   editor.userSelectsNode(node_index);
+  int diagram_changed_count = 0;
+  editor.diagramChangedCallback() = [&](){ ++diagram_changed_count; };
+
   editor.userPressesBackspace();
   assert(diagram.nExistingNodes()==0);
+  assert(diagram_changed_count==1);
 }
 
 

@@ -4,16 +4,22 @@
 #include <iostream>
 #include "diagramevaluation.hpp"
 #include "diagramexecutor.hpp"
+#include "defaultdiagrams.hpp"
 
 
 using std::vector;
 using std::cerr;
 
 
-static Point2D evaluateDiagramReturningPoint2D(const Diagram &diagram)
+static Point2D
+  evaluateDiagramReturningPoint2D(
+    const Diagram &diagram,
+    const DiagramExecutor::Environment &environment = {}
+  )
 {
   std::ostringstream show_stream;
   DiagramExecutor executor(show_stream);
+  executor.environment = environment;
   evaluateDiagram(diagram,executor);
   assert(executor.return_value.isVector());
   const vector<Any> &return_vector = executor.return_value.asVector();
@@ -35,7 +41,6 @@ static void testSimpleReturn()
 }
 
 
-#if 0
 static void testConnectedReturn()
 {
   Diagram diagram;
@@ -45,11 +50,45 @@ static void testConnectedReturn()
   Point2D result = evaluateDiagramReturningPoint2D(diagram);
   assert(result==Point2D(1,2));
 }
-#endif
+
+
+static void testBuildingVector()
+{
+  Diagram diagram;
+  NodeIndex x_node = diagram.addNode("x");
+  NodeIndex y_node = diagram.addNode("y");
+  NodeIndex build_vector_node = diagram.addNode("[$,$]");
+  NodeIndex return_node = diagram.addNode("return $");
+  diagram.connectNodes(x_node,0,build_vector_node,0);
+  diagram.connectNodes(y_node,0,build_vector_node,1);
+  diagram.connectNodes(build_vector_node,0,return_node,0);
+
+  DiagramExecutor::Environment environment;
+  environment["x"] = 1;
+  environment["y"] = 2;
+
+  Point2D result = evaluateDiagramReturningPoint2D(diagram,environment);
+  assert(result==Point2D(1,2));
+}
+
+
+static void testLocalPositionDiagram()
+{
+  Diagram diagram = localPositionDiagram();
+
+  DiagramExecutor::Environment environment;
+  environment["x"] = 1;
+  environment["y"] = 2;
+
+  Point2D result = evaluateDiagramReturningPoint2D(diagram,environment);
+  assert(result==Point2D(1,2));
+}
 
 
 int main()
 {
   testSimpleReturn();
-  // testConnectedReturn();
+  testConnectedReturn();
+  testBuildingVector();
+  testLocalPositionDiagram();
 }
