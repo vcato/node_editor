@@ -19,4 +19,5 @@ class MainWindow {
       // maybe this should return an
       // optional string to make it more clear that this can fail
       // (i.e. user cancels)
+    virtual void _showError(const std::string &message) = 0;
 };

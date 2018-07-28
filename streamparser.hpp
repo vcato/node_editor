@@ -10,6 +10,11 @@ struct StreamParser {
     stream >> word;
   }
 
+  bool hadError() const
+  {
+    return !error.empty();
+  }
+
   void scanEndOfLine()
   {
     for (;;) {

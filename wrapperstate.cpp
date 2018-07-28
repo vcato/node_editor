@@ -138,8 +138,8 @@ static void scanChildren(WrapperState &state,StreamParser &parser)
   parser.scanWord();
 
   if (parser.word!="{") {
-    cerr << "parser.word: " << parser.word << "\n";
-    assert(false);
+    parser.error = "Unexpected "+parser.word;
+    return;
   }
 
   for (;;) {
@@ -152,7 +152,7 @@ static void scanChildren(WrapperState &state,StreamParser &parser)
     Optional<WrapperState> maybe_child_result = scanState(parser);
 
     if (!maybe_child_result) {
-      assert(false);
+      return;
     }
 
     state.children.push_back(*maybe_child_result);
@@ -177,6 +177,10 @@ static Optional<WrapperState> scanState(StreamParser &parser)
 
     if (parser.stream.peek()=='{') {
       scanChildren(state,parser);
+
+      if (parser.hadError()) {
+        assert(false);
+      }
     }
 
     return state;
@@ -190,6 +194,10 @@ static Optional<WrapperState> scanState(StreamParser &parser)
   }
 
   scanChildren(state,parser);
+
+  if (parser.hadError()) {
+    return {};
+  }
 
   return state;
 }

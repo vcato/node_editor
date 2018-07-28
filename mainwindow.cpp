@@ -22,19 +22,21 @@ void MainWindow::_openProjectPressed()
   string path = _askForOpenPath();
 
   if (path=="") {
-    assert(false);
+    return;
   }
 
   std::ifstream stream(path);
 
   if (!stream) {
-    assert(false);
+    _showError("Unable to open "+path);
+    return;
   }
 
   ScanStateResult scan_result = scanStateFrom(stream);
 
   if (scan_result.isError()) {
-    assert(false);
+    _showError("Unable to read "+path+"\n"+scan_result.asError().message);
+    return;
   }
 
   treeEditor().setWorldState(scan_result.state());

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QMenuBar>
 #include <QFileDialog>
+#include <QErrorMessage>
 #include "qtmenu.hpp"
 
 
@@ -66,4 +67,11 @@ string QtMainWindow::_askForOpenPath()
   QString result =
     file_dialog.getOpenFileName(this,"Open Project","project.dat");
   return result.toStdString();
+}
+
+
+void QtMainWindow::_showError(const std::string &message)
+{
+  QErrorMessage *error_message_ptr = new QErrorMessage(this);
+  error_message_ptr->showMessage(QString::fromStdString(message));
 }

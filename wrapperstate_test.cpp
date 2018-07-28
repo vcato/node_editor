@@ -120,6 +120,17 @@ static void testScanStateFromWithChildValues()
 }
 
 
+static void testScanStateFromWithError()
+{
+  const char *text =
+    "test {\n"
+    "#}\n";
+  istringstream stream(text);
+  ScanStateResult result = scanStateFrom(stream);
+  assert(result.isError());
+}
+
+
 static void testPrintAndScanStateWithNoChildren()
 {
   WrapperState state("top");
@@ -139,5 +150,6 @@ int main()
   testScanStateFromWithEnumerationValueAndChildren();
   testScanStateFromWithStringValue();
   testScanStateFromWithChildValues();
+  testScanStateFromWithError();
   testPrintAndScanStateWithNoChildren();
 }

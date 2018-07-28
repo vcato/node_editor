@@ -206,22 +206,34 @@ struct FakeMainWindow : MainWindow {
 
   std::string _askForSavePath() override
   {
-    return *maybe_chosen_path;
+    return *maybe_save_path;
   }
 
   std::string _askForOpenPath() override
   {
-    assert(false);
+    return *maybe_open_path;
+  }
+
+  void _showError(const std::string &/*message*/) override
+  {
   }
 
   FakeTreeEditor tree_editor;
-  Optional<string> maybe_chosen_path;
+  Optional<string> maybe_save_path;
+  Optional<string> maybe_open_path;
 
   void userPressesSaveProject(const string &chosen_path)
   {
-    maybe_chosen_path = chosen_path;
+    maybe_save_path = chosen_path;
     _saveProjectPressed();
-    maybe_chosen_path.reset();
+    maybe_save_path.reset();
+  }
+
+  void userPressesOpenProject(const string &chosen_path)
+  {
+    maybe_open_path = chosen_path;
+    _openProjectPressed();
+    maybe_open_path.reset();
   }
 };
 }
@@ -500,6 +512,13 @@ static void testCancellingSaveProject()
 }
 
 
+static void testCancellingOpenProject()
+{
+  FakeMainWindow main_window;
+  main_window.userPressesOpenProject(/*chosen_path*/"");
+}
+
+
 #if 0
 static void testCreatingABodyWithAnAveragePosition()
 {
@@ -555,5 +574,6 @@ int main()
   testRemovingABody();
   testRemovingAPosExpr();
   testCancellingSaveProject();
+  testCancellingOpenProject();
   // testCreatingABodyWithAnAveragePosition();
 }
