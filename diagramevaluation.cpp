@@ -26,8 +26,11 @@ static void
 {
   const Node::Line &line = node.lines[line_index];
 
+  ostringstream error_stream; // We'll need to do something
+    // more sophisticated here.
+
   Optional<Any> maybe_output_value =
-    evaluateLineText(line.text,input_values,executor);
+    evaluateLineText(line.text,input_values,executor,error_stream);
 
   if (output_index>=0) {
     if (maybe_output_value) {

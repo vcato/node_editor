@@ -257,3 +257,18 @@ Need to be able to copy diagram nodes by ctrl-dragging.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
+
+---
+If we import a diagram that has nodes that already exist, then we get a crash.
+* It should know how to reassign node indices so there is no conflict.
+---
+Need a way to debug expressions.
+Some pop-up text showing the error would be nice.
+
+evaluateDiagramNodeLine() needs to handle errors better.
+  * We are passing an error_stream to evaluateLineText().  If there was an
+    error, we should annotate which line it was, but currently we don't
+    have a way to differentiate between a line that has no value and
+    a line that got an error.
+    * Is that true?  it returns an optional, so the difference is between
+      whether it is an optional with no value or a void value.

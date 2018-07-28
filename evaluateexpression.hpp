@@ -7,5 +7,6 @@ extern Optional<Any>
   evaluateExpression(
     StringParser &parser,
     const std::vector<Any> &input_values,
-    int &input_index
+    int &input_index,
+    std::ostream &error_stream
   );

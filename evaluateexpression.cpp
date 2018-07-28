@@ -4,13 +4,15 @@
 using std::vector;
 using std::cerr;
 using std::string;
+using std::ostream;
 
 
 static Optional<Any>
   evaluatePrimaryExpression(
     StringParser &parser,
     const std::vector<Any> &input_values,
-    int &input_index
+    int &input_index,
+    ostream &error_stream
   )
 {
   float value = 0;
@@ -18,7 +20,9 @@ static Optional<Any>
   if (parser.peekChar()=='(') {
     parser.skipChar();
     Optional<Any> result =
-      evaluateExpression(parser,input_values,input_index);
+      evaluateExpression(
+        parser,input_values,input_index,error_stream
+      );
 
     if (!result) {
       return {};
@@ -55,7 +59,7 @@ static Optional<Any>
 
     for (;;) {
       Optional<Any> maybe_value =
-        evaluateExpression(parser,input_values,input_index);
+        evaluateExpression(parser,input_values,input_index,error_stream);
 
       if (!maybe_value) {
         return {};
@@ -101,11 +105,12 @@ Optional<Any>
   evaluateExpression(
     StringParser &parser,
     const std::vector<Any> &input_values,
-    int &input_index
+    int &input_index,
+    ostream &error_stream
   )
 {
   Optional<Any> maybe_first_term =
-    evaluatePrimaryExpression(parser,input_values,input_index);
+    evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
 
   if (!maybe_first_term) {
     return maybe_first_term;
@@ -119,7 +124,7 @@ Optional<Any>
     parser.skipChar();
 
     Optional<Any> maybe_second_term =
-      evaluatePrimaryExpression(parser,input_values,input_index);
+      evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
 
     if (!maybe_second_term) {
       return {};
@@ -167,7 +172,7 @@ Optional<Any>
     parser.skipChar();
 
     Optional<Any> maybe_second_term =
-      evaluatePrimaryExpression(parser,input_values,input_index);
+      evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
 
     if (!maybe_second_term) {
       return {};
@@ -201,7 +206,7 @@ Optional<Any>
     parser.skipChar();
 
     Optional<Any> maybe_second_term =
-      evaluatePrimaryExpression(parser,input_values,input_index);
+      evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
 
     if (!maybe_second_term) {
       return {};
@@ -223,6 +228,13 @@ Optional<Any>
       }
 
       return {std::move(result)};
+    }
+    else if (first_term.isFloat() && second_term.isFloat()) {
+      return {first_term.asFloat() / second_term.asFloat()};
+    }
+    else {
+      error_stream << "Unknown operation: " << first_term.typeName() << "/" <<
+        second_term.typeName() << "\n";
     }
 
     return {};

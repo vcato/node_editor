@@ -18,7 +18,8 @@ extern Optional<Any>
   evaluateLineText(
     const std::string &line_text_arg,
     const std::vector<Any> &input_values,
-    Executor &executor
+    Executor &executor,
+    std::ostream &error_stream
   );
 
 #endif /* LINETEXT_HPP */

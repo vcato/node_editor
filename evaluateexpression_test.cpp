@@ -2,11 +2,13 @@
 
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 
 using std::vector;
 using std::cerr;
 using std::string;
+using std::ostringstream;
 
 
 static vector<Any> makeVector()
@@ -28,7 +30,8 @@ static Optional<Any> evaluateString(const string &arg)
   StringParser parser{arg,index};
   vector<Any> input_values;
   int input_index = 0;
-  return evaluateExpression(parser,input_values,input_index);
+  ostringstream error_stream;
+  return evaluateExpression(parser,input_values,input_index,error_stream);
 }
 
 
@@ -68,11 +71,13 @@ static void testAddingInputs()
   StringParser parser(text,index);
   vector<Any> input_values = {1,2};
   int input_index = 0;
+  ostringstream error_stream;
   Optional<Any> maybe_result =
     evaluateExpression(
       parser,
       input_values,
-      input_index
+      input_index,
+      error_stream
     );
   assert(maybe_result);
   const Any& result = *maybe_result;

@@ -19,7 +19,9 @@ static Any lineTextValue(const char *text,const vector<Any> &input_values)
 {
   ostringstream stream;
   StreamExecutor executor = {stream};
-  Optional<Any> maybe_result = evaluateLineText(text,input_values,executor);
+  ostringstream error_stream;
+  Optional<Any> maybe_result =
+    evaluateLineText(text,input_values,executor,error_stream);
   assert(maybe_result);
   string output = stream.str();
   assert(output=="");
@@ -73,7 +75,9 @@ static Any lineTextValue(const string &line_text)
 {
   ostringstream dummy_stream;
   StreamExecutor executor = {dummy_stream};
-  Optional<Any> maybe_result = evaluateLineText(line_text,{},executor);
+  ostringstream error_stream;
+  Optional<Any> maybe_result =
+    evaluateLineText(line_text,{},executor,error_stream);
 
   if (!maybe_result) {
     return Any();
@@ -95,7 +99,9 @@ static vector<Any> makeVector(float a,float b)
 static void testInvalid(const string &line_text)
 {
   FakeExecutor executor;
-  Optional<Any> maybe_result = evaluateLineText(line_text,{},executor);
+  ostringstream error_stream;
+  Optional<Any> maybe_result =
+    evaluateLineText(line_text,{},executor,error_stream);
   assert(!maybe_result);
 }
 
@@ -118,6 +124,7 @@ int main()
   assert(lineTextValue("")==Any());
   assert(lineTextValue("$+$",{1,2})==3);
   assert(lineTextValue("[1,2]")==makeVector(1,2));
+  assert(lineTextValue("1/2")==0.5);
 
   testInvalid("show");
   testInvalid("show(5");
@@ -126,28 +133,34 @@ int main()
 
   {
     FakeExecutor executor;
-    evaluateLineText("return 3",{},executor);
+    ostringstream error_stream;
+    evaluateLineText("return 3",{},executor,error_stream);
     string execution = executor.stream.str();
     assert(execution=="return(3)\n");
   }
 
   {
     FakeExecutor executor;
-    evaluateLineText("return [1,2]",{},executor);
+    ostringstream error_stream;
+    evaluateLineText("return [1,2]",{},executor,error_stream);
     string execution = executor.stream.str();
     assert(execution=="return([1,2])\n");
   }
 
   {
     FakeExecutor executor;
-    Optional<Any> maybe_result = evaluateLineText("return [",{},executor);
+    ostringstream error_stream;
+    Optional<Any> maybe_result =
+      evaluateLineText("return [",{},executor,error_stream);
     assert(!maybe_result);
   }
 
   {
     FakeExecutor executor;
     executor.environment["x"] = 5;
-    Optional<Any> maybe_result = evaluateLineText("x",{},executor);
+    ostringstream error_stream;
+    Optional<Any> maybe_result =
+      evaluateLineText("x",{},executor,error_stream);
     assert(maybe_result);
     assert(*maybe_result==5);
   }

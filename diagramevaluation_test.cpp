@@ -5,10 +5,76 @@
 #include "diagramevaluation.hpp"
 #include "diagramexecutor.hpp"
 #include "defaultdiagrams.hpp"
+#include "makediagram.hpp"
 
 
 using std::vector;
 using std::cerr;
+
+
+static const char *averaging_diagram_text =
+  "diagram {\n"
+  "  node {\n"
+  "    id: 1\n"
+  "    position: [275,198]\n"
+  "    text {\n"
+  "      \"[$,$]\"\n"
+  "    }\n"
+  "    connection {\n"
+  "      input_index: 0\n"
+  "      source_node_id: 5\n"
+  "      source_output_index: 0\n"
+  "    }\n"
+  "    connection {\n"
+  "      input_index: 1\n"
+  "      source_node_id: 5\n"
+  "      source_output_index: 0\n"
+  "    }\n"
+  "  }\n"
+  "  node {\n"
+  "    id: 2\n"
+  "    position: [20,187]\n"
+  "    text {\n"
+  "      \"x\"\n"
+  "    }\n"
+  "  }\n"
+  "  node {\n"
+  "    id: 3\n"
+  "    position: [20,135]\n"
+  "    text {\n"
+  "      \"y\"\n"
+  "    }\n"
+  "  }\n"
+  "  node {\n"
+  "    id: 4\n"
+  "    position: [436,183]\n"
+  "    text {\n"
+  "      \"return $\"\n"
+  "    }\n"
+  "    connection {\n"
+  "      input_index: 0\n"
+  "      source_node_id: 1\n"
+  "      source_output_index: 0\n"
+  "    }\n"
+  "  }\n"
+  "  node {\n"
+  "    id: 5\n"
+  "    position: [113,186]\n"
+  "    text {\n"
+  "      \"($+$)/2\"\n"
+  "    }\n"
+  "    connection {\n"
+  "      input_index: 0\n"
+  "      source_node_id: 2\n"
+  "      source_output_index: 0\n"
+  "    }\n"
+  "    connection {\n"
+  "      input_index: 1\n"
+  "      source_node_id: 3\n"
+  "      source_output_index: 0\n"
+  "    }\n"
+  "  }\n"
+  "}\n";
 
 
 static Point2D
@@ -85,10 +151,23 @@ static void testLocalPositionDiagram()
 }
 
 
+static void testAveragingDiagram()
+{
+  Diagram diagram = makeDiagram(averaging_diagram_text);
+  DiagramExecutor::Environment environment;
+  environment["x"] = 1;
+  environment["y"] = 3;
+
+  Point2D result = evaluateDiagramReturningPoint2D(diagram,environment);
+  assert(result==Point2D(2,2));
+}
+
+
 int main()
 {
   testSimpleReturn();
   testConnectedReturn();
   testBuildingVector();
   testLocalPositionDiagram();
+  testAveragingDiagram();
 }

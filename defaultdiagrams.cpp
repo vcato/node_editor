@@ -2,18 +2,11 @@
 
 #include <sstream>
 #include "diagramio.hpp"
+#include "makediagram.hpp"
+
 
 
 using std::istringstream;
-
-
-static Diagram makeDiagram(const char *text)
-{
-  istringstream stream(text);
-  Diagram diagram;
-  scanDiagramFrom(stream,diagram);
-  return diagram;
-}
 
 
 Diagram posExprDiagram()

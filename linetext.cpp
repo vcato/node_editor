@@ -13,6 +13,7 @@
 using std::cerr;
 using std::string;
 using std::vector;
+using std::ostream;
 
 
 int lineTextInputCount(const string &text)
@@ -101,7 +102,8 @@ Optional<Any>
   evaluateLineText(
     const string &line_text_arg,
     const vector<Any> &input_values,
-    Executor &executor
+    Executor &executor,
+    ostream &error_stream
   )
 {
   string line_text = trimmed(line_text_arg);
@@ -128,7 +130,8 @@ Optional<Any>
         evaluateExpression(
           parser,
           input_values,
-          input_index
+          input_index,
+          error_stream
         );
 
       bool was_evaluated = maybe_value.hasValue();
@@ -157,7 +160,8 @@ Optional<Any>
         evaluateExpression(
           parser,
           input_values,
-          input_index
+          input_index,
+          error_stream
         );
 
       if (maybe_value) {
@@ -173,5 +177,5 @@ Optional<Any>
     return executor.variableValue(identifier);
   }
 
-  return evaluateExpression(parser,input_values,input_index);
+  return evaluateExpression(parser,input_values,input_index,error_stream);
 }

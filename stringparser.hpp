@@ -121,7 +121,7 @@ void StringParser::skipWhitespace() const
 
 bool StringParser::getIdentifier(std::string &identifier) const
 {
-  if (!isIdentifierChar(peekChar())) {
+  if (!isBeginIdentifierChar(peekChar())) {
     return false;
   }
 
