@@ -260,5 +260,3 @@ to it to the right.
 ---
 It looks like the local position diagram isn't actually evaluated.  If we
 delete the x node, it still uses the x value.
----
-use diagram.dat for local position

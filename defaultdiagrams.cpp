@@ -200,23 +200,56 @@ diagram {
 }
 
 
+
+
 Diagram localPositionDiagram()
 {
-  Diagram diagram;
-  NodeIndex vector_index = diagram.addNode("[$,$]");
-  diagram.node(vector_index).setPosition({100,180});
+  const char *text =
+    "diagram {\n"
+    "  node {\n"
+    "    id: 1\n"
+    "    position: [100,180]\n"
+    "    text {\n"
+    "      \"[$,$]\"\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 0\n"
+    "      source_node_id: 2\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 1\n"
+    "      source_node_id: 3\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 2\n"
+    "    position: [20,187]\n"
+    "    text {\n"
+    "      \"x\"\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 3\n"
+    "    position: [20,135]\n"
+    "    text {\n"
+    "      \"y\"\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 4\n"
+    "    position: [224,162]\n"
+    "    text {\n"
+    "      \"local_position=$\"\n"
+    "    }\n"
+    "    connection {\n"
+    "      input_index: 0\n"
+    "      source_node_id: 1\n"
+    "      source_output_index: 0\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
 
-  NodeIndex x_index = diagram.addNode("x");
-  diagram.connectNodes(x_index,0,vector_index,0);
-  diagram.node(x_index).setPosition({20,200});
-
-  NodeIndex y_index = diagram.addNode("y");
-  diagram.node(y_index).setPosition({20,150});
-  diagram.connectNodes(y_index,0,vector_index,1);
-
-  NodeIndex local_postion_index = diagram.addNode("local_position=$");
-  diagram.node(local_postion_index).setPosition({230,150});
-
-  diagram.connectNodes(vector_index,0,local_postion_index,0);
-  return diagram;
+  return makeDiagram(text);
 }
