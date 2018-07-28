@@ -61,7 +61,7 @@ void QtDiagramEditor::exportDiagramSlot()
 }
 
 
-void QtDiagramEditor::importDiagramSlot()
+void QtDiagramEditor::importDiagramPressed()
 {
   QFileDialog file_dialog;
   QString result = file_dialog.getOpenFileName(this,"Import Diagram");
@@ -74,6 +74,12 @@ void QtDiagramEditor::importDiagramSlot()
     return;
   }
   scanDiagramFrom(stream,diagram());
+}
+
+
+void QtDiagramEditor::importDiagramSlot()
+{
+  importDiagramPressed();
 }
 
 

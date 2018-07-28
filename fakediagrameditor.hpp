@@ -43,6 +43,13 @@ struct FakeDiagramEditor : DiagramEditor {
     maybe_chosen_path.reset();
   }
 
+#if 0
+  void userPressesImportDiagram(const std::string &/*chosen_path*/)
+  {
+    importDiagramPressed();
+  }
+#endif
+
   void userPressesMouseAt(const Point2D &p)
   {
     mousePressedAt(p,/*shift_is_pressed*/false);

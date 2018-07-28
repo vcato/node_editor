@@ -272,3 +272,7 @@ evaluateDiagramNodeLine() needs to handle errors better.
     a line that got an error.
     * Is that true?  it returns an optional, so the difference is between
       whether it is an optional with no value or a void value.
+---
+After importing a diagram, the charmap isn't reevaluated.
+
+Finish diagramevaluation_test.cpp: testImportingDiagram()

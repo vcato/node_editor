@@ -232,6 +232,20 @@ static void testCancellingExport()
 }
 
 
+#if 0
+static void testImportingDiagram()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  int diagram_changed_count = 0;
+  editor.diagramChangedCallback() = [&]{ ++diagram_changed_count; };
+  editor.userPressesImportDiagram(/*chosen_path*/"test.dat");
+  assert(!editor.an_error_was_shown);
+  assert(diagram_changed_count==1);
+}
+#endif
+
+
 static bool
   diagramHasConnection(
     const Diagram &diagram,
@@ -281,4 +295,5 @@ int main()
   testSelectingMultipleNodes();
   testCancellingExport();
   testConnectingNodes();
+  // testImportingDiagram();
 }

@@ -79,6 +79,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
 
     void showError(const std::string &message) override;
     std::string askForSavePath() override;
+    void importDiagramPressed();
 };
 
 #endif /* QTDIAGRAMEDITOR_HPP_ */
