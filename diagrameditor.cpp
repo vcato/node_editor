@@ -2,11 +2,14 @@
 
 #include <cassert>
 #include <algorithm>
+#include <fstream>
 #include "ostreamvector.hpp"
+#include "diagramio.hpp"
 
 using std::string;
 using std::vector;
 using std::cerr;
+using std::ofstream;
 
 
 DiagramEditor::DiagramEditor()
@@ -698,4 +701,20 @@ void DiagramEditor::mouseMovedTo(const Point2D &mouse_position)
     redraw();
     return;
   }
+}
+
+
+void DiagramEditor::exportDiagramPressed()
+{
+  string path = askForSavePath();
+
+  ofstream stream(path);
+
+  if (!stream) {
+    string message = "Unable to create "+path;
+    showError(message);
+    return;
+  }
+
+  printDiagramOn(stream,diagram());
 }

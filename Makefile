@@ -74,7 +74,7 @@ diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
   linetext.o diagramnode.o diagram.o circle.o statementtext.o \
-  diagramevaluation.o evaluateexpression.o
+  diagramevaluation.o evaluateexpression.o diagramio.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
@@ -135,7 +135,7 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
 treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
   statementtext.o stringutil.o fakediagrameditorwindows.o \
-  evaluateexpression.o wrapperstate.o
+  evaluateexpression.o wrapperstate.o diagramio.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \

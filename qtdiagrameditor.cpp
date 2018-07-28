@@ -37,26 +37,27 @@ QtDiagramEditor::QtDiagramEditor()
 
 
 
-void QtDiagramEditor::exportDiagramSlot()
+string QtDiagramEditor::askForSavePath()
 {
-  cerr << "QtDiagramEditor::exportDiagramSlot()\n";
   QFileDialog file_dialog;
   QString result =
     file_dialog.getSaveFileName(this,"Export Diagram","diagram.dat");
   string path = result.toStdString();
+  return path;
+}
 
-  {
-    ofstream stream(path);
 
-    if (!stream) {
-      QMessageBox box;
-      box.setText(QString::fromStdString("Unable to create "+path));
-      box.exec();
-      return;
-    }
+void QtDiagramEditor::showError(const string &message)
+{
+  QMessageBox box;
+  box.setText(QString::fromStdString(message));
+  box.exec();
+}
 
-    printDiagramOn(stream,diagram());
-  }
+
+void QtDiagramEditor::exportDiagramSlot()
+{
+  exportDiagramPressed();
 }
 
 

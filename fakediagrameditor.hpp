@@ -118,12 +118,12 @@ struct FakeDiagramEditor : DiagramEditor {
     textTyped(text);
   }
 
-  virtual void redraw()
+  void redraw() override
   {
     ++redraw_count;
   }
 
-  virtual Rect rectAroundText(const TextObject &text_object) const
+  Rect rectAroundText(const TextObject &text_object) const override
   {
     // Just make all text objects fit in a 10x10 square for now.
     Point2D begin_pos = text_object.position;
@@ -131,6 +131,16 @@ struct FakeDiagramEditor : DiagramEditor {
     end_pos.x += 10;
     end_pos.y += 10;
     return Rect{begin_pos,end_pos};
+  }
+
+  std::string askForSavePath() override
+  {
+    assert(false);
+  }
+
+  void showError(const std::string &/*message*/) override
+  {
+    assert(false);
   }
 
   Point2D nodeCenter(NodeIndex node_index)

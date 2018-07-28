@@ -182,6 +182,8 @@ class DiagramEditor {
 
     virtual void redraw() = 0;
     virtual Rect rectAroundText(const TextObject &text_object) const = 0;
+    virtual std::string askForSavePath() = 0;
+    virtual void showError(const std::string &message) = 0;
 
     void deleteNode(int index);
     std::string &focusedText();
@@ -245,6 +247,7 @@ class DiagramEditor {
 
     void alsoSelectNode(NodeIndex node_index);
     bool aNodeIsSelected() const;
+    void exportDiagramPressed();
 
   private:
     void notifyDiagramChanged();

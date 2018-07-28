@@ -76,6 +76,9 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       outputTextObject(const std::string &s,float right_x,float y) const;
     void drawNode(NodeIndex);
     void paintGL() override;
+
+    void showError(const std::string &message) override;
+    std::string askForSavePath() override;
 };
 
 #endif /* QTDIAGRAMEDITOR_HPP_ */
