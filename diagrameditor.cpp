@@ -740,12 +740,15 @@ void DiagramEditor::importDiagramPressed()
   }
 
   string error;
-  scanDiagramFrom(stream,diagram(),error);
+  Diagram new_diagram;
+  scanDiagramFrom(stream,new_diagram,error);
 
   if (!error.empty()) {
     showError(error);
     return;
   }
+
+  diagram() = new_diagram;
 
   notifyDiagramChanged();
 }

@@ -281,6 +281,25 @@ class ImportTester {
       assert(diagram_changed_count==0);
     }
 
+    void runWithExistingNodes()
+    {
+      const char *text =
+        "diagram {\n"
+        "  node {\n"
+        "    id: 1\n"
+        "    position: [275,198]\n"
+        "    text {\n"
+        "      \"5\"\n"
+        "    }\n"
+        "  }\n"
+        "}\n";
+
+      userImportsDiagramText(text);
+      assert(!editor.an_error_was_shown);
+      userImportsDiagramText(text);
+      assert(!editor.an_error_was_shown);
+    }
+
   private:
     Diagram diagram;
     FakeDiagramEditor editor{diagram};
@@ -347,4 +366,5 @@ int main()
   testConnectingNodes();
   ImportTester().runWithEmptyDiagram();
   ImportTester().runWithBadDiagram();
+  ImportTester().runWithExistingNodes();
 }
