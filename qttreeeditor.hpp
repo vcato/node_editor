@@ -1,14 +1,8 @@
 #ifndef QTTREEEDITOR_HPP_
 #define QTTREEEDITOR_HPP_
 
-#include <QLabel>
-#include <QString>
-#include <QTreeWidgetItem>
-#include "qtwidget.hpp"
-#include "qtdiagrameditor.hpp"
-#include "qtdiagrameditorwindow.hpp"
+#include <QTreeWidget>
 #include "treeeditor.hpp"
-
 
 
 class QtTreeEditor : public QTreeWidget, public TreeEditor {
@@ -16,8 +10,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
 
   public:
     QtTreeEditor();
-
-    void selectItem(const TreePath &path);
 
   private slots:
     void itemSelectionChangedSlot();
@@ -29,22 +21,11 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);
     void prepareMenu(const QPoint &pos);
-    QtDiagramEditorWindow& createDiagramEditor() override;
+    DiagramEditorWindow& createDiagramEditor() override;
     int itemChildCount(const TreePath &parent_item) const override;
 
     template <typename T>
-    T &createItemWidget(QTreeWidgetItem &item,const std::string &label)
-    {
-      QWidget *wrapper_widget_ptr = new QWidget();
-      // NOTE: setting the item widget before adding the contents makes
-      // it not have the proper size.
-      QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
-      QLabel &label_widget = createWidget<QLabel>(layout);
-      label_widget.setText(QString::fromStdString(label));
-      T& widget = createWidget<T>(layout);
-      setItemWidget(&item,/*column*/0,wrapper_widget_ptr);
-      return widget;
-    }
+    T &createItemWidget(QTreeWidgetItem &item,const std::string &label);
 
     static QTreeWidgetItem&
       createChildItem(QTreeWidgetItem &parent_item,const std::string &label);
@@ -129,6 +110,8 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
         const TreePath &path,
         const std::vector<std::string> &items
       ) override;
+
+    void selectItem(const TreePath &path);
 };
 
 #endif /* QTTREEEDITOR_HPP_ */

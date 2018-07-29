@@ -1,0 +1,15 @@
+#!/bin/sh
+awk '
+  BEGIN {
+    while (getline) {
+      header=$2
+      getline
+      getline
+      getline
+      time=$0
+      getline
+      print time" "header
+    }
+  }
+' <results.txt | sort -n >processed_results.txt
+

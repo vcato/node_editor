@@ -1,6 +1,8 @@
 #ifndef TREEPATH_HPP_
 #define TREEPATH_HPP_
 
+#include <vector>
+
 
 using TreeItemIndex = int;
 using TreePath = std::vector<TreeItemIndex>;

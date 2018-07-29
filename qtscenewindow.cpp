@@ -6,6 +6,8 @@
 #include "qtwidget.hpp"
 #include "qtsceneviewer.hpp"
 #include "qttreewidgetitem.hpp"
+#include "qtscenetree.hpp"
+#include "qtlayout.hpp"
 
 
 QtSceneWindow::QtSceneWindow(QWidget *parent_widget_ptr)
@@ -20,14 +22,14 @@ QtSceneWindow::QtSceneWindow(QWidget *parent_widget_ptr)
 }
 
 
-QtSceneViewer &QtSceneWindow::viewer()
+SceneViewer &QtSceneWindow::viewer()
 {
   assert(viewer_ptr);
   return *viewer_ptr;
 }
 
 
-QtSceneTree &QtSceneWindow::tree()
+SceneTree &QtSceneWindow::tree()
 {
   assert(tree_ptr);
   return *tree_ptr;

@@ -1,3 +1,7 @@
+#include <iostream>
+#include <vector>
+
+
 template <typename T>
 std::ostream& operator<<(std::ostream &stream,const std::vector<T> &value)
 {

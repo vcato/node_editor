@@ -1,3 +1,6 @@
+#include <iostream>
+
+
 struct StreamParser {
   std::istream &stream;
   std::string word;

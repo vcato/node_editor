@@ -2,6 +2,7 @@
 #define STRINGPARSER_HPP_
 
 
+#include <cassert>
 #include <string>
 
 

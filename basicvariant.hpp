@@ -5,10 +5,7 @@
 #include <utility>
 #include <iostream>
 #include "createobject.hpp"
-
-
-struct VariantPolicyNoInitTag {
-};
+#include "noinittag.hpp"
 
 
 template <typename Policy>
@@ -16,7 +13,6 @@ class BasicVariant : public Policy {
   private:
     using Self = BasicVariant;
     using Value = typename Policy::Value;
-    using NoInitTag = VariantPolicyNoInitTag;
 
   public:
     using Type = typename Policy::Type;

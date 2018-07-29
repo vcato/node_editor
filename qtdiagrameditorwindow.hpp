@@ -2,9 +2,10 @@
 #define QTDIAGRAMEDITORWINDOW_HPP
 
 #include <QDialog>
-#include "diagram.hpp"
-#include "qtdiagrameditor.hpp"
 #include "diagrameditorwindow.hpp"
+
+
+class QtDiagramEditor;
 
 
 class QtDiagramEditorWindow : public QDialog, public DiagramEditorWindow {
@@ -12,11 +13,7 @@ class QtDiagramEditorWindow : public QDialog, public DiagramEditorWindow {
     QtDiagramEditorWindow();
 
   private:
-    DiagramEditor &diagramEditor() override
-    {
-      assert(diagram_editor_ptr);
-      return *diagram_editor_ptr;
-    }
+    DiagramEditor &diagramEditor() override;
 
     QtDiagramEditor *diagram_editor_ptr = nullptr;
 

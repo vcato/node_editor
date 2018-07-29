@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QKeyEvent>
 #include "diagramevaluation.hpp"
 #include "diagramio.hpp"
 #include "qtmenu.hpp"

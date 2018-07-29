@@ -4,6 +4,8 @@
 #include <QMenu>
 #include <QHeaderView>
 #include <QLineEdit>
+#include <QBoxLayout>
+#include <QLabel>
 #include "qtmenu.hpp"
 #include "qtslot.hpp"
 #include "qtspinbox.hpp"
@@ -12,6 +14,9 @@
 #include "qtlineedit.hpp"
 #include "qttreewidgetitem.hpp"
 #include "qtdiagrameditorwindow.hpp"
+#include "qtwidget.hpp"
+#include "qtlayout.hpp"
+
 
 using std::cerr;
 using std::vector;
@@ -19,6 +24,25 @@ using std::ostream;
 using std::string;
 using std::function;
 using std::list;
+
+
+template <typename T>
+T &
+  QtTreeEditor::createItemWidget(
+    QTreeWidgetItem &item,
+    const std::string &label
+  )
+{
+  QWidget *wrapper_widget_ptr = new QWidget();
+  // NOTE: setting the item widget before adding the contents makes
+  // it not have the proper size.
+  QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
+  QLabel &label_widget = createWidget<QLabel>(layout);
+  label_widget.setText(QString::fromStdString(label));
+  T& widget = createWidget<T>(layout);
+  setItemWidget(&item,/*column*/0,wrapper_widget_ptr);
+  return widget;
+}
 
 
 QtTreeEditor::QtTreeEditor()
@@ -330,7 +354,7 @@ void QtTreeEditor::itemSelectionChangedSlot()
 }
 
 
-QtDiagramEditorWindow& QtTreeEditor::createDiagramEditor()
+DiagramEditorWindow& QtTreeEditor::createDiagramEditor()
 {
   auto window_ptr = new QtDiagramEditorWindow;
   window_ptr->show();

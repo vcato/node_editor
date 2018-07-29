@@ -3,6 +3,7 @@
 #include <cassert>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 #include "ostreamvector.hpp"
 #include "diagramio.hpp"
 

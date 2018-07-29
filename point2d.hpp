@@ -1,7 +1,7 @@
 #ifndef POINT2D_HPP_
 #define POINT2D_HPP_
 
-#include <iostream>
+#include <iosfwd>
 
 struct Point2D {
   float x,y;
@@ -75,11 +75,7 @@ inline Vector2D operator-(const Point2D &a,const Point2D &b)
 }
 
 
-inline std::ostream& operator<<(std::ostream &stream,const Point2D &p)
-{
-  stream << "Point2D(" << p.x << "," << p.y << ")";
-  return stream;
-}
+extern std::ostream& operator<<(std::ostream &stream,const Point2D &p);
 
 
 #endif /* POINT2D_HPP_ */

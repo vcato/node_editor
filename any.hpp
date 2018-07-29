@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <vector>
-#include <iostream>
+#include <iosfwd>
 #include "printonany.hpp"
 #include "basicvariant.hpp"
 
@@ -23,7 +23,7 @@ struct AnyPolicy {
       bool operator==(const Void &) const { return true; }
     };
 
-    AnyPolicy(VariantPolicyNoInitTag)
+    AnyPolicy(NoInitTag)
     {
     }
 

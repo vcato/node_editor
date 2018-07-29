@@ -1,5 +1,7 @@
 #include "scenewindow.hpp"
 
+#include <iostream>
+
 using std::string;
 using std::cerr;
 

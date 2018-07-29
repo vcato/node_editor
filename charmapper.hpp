@@ -2,8 +2,6 @@
 #define CHARMAPPER_HPP_
 
 #include <vector>
-#include <map>
-#include <memory>
 #include <cassert>
 #include "diagram.hpp"
 #include "scene.hpp"

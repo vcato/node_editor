@@ -1,6 +1,7 @@
 #include "diagram.hpp"
 
 #include <cassert>
+#include <iostream>
 
 
 using std::cerr;

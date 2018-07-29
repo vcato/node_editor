@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include <iostream>
 #include "streamparser.hpp"
 #include "stringutil.hpp"
 

@@ -77,7 +77,7 @@ struct ScanStateResultPolicy {
     assert(false);
   }
 
-  ScanStateResultPolicy(VariantPolicyNoInitTag)
+  ScanStateResultPolicy(NoInitTag)
   {
   }
 

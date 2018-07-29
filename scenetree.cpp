@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <vector>
+#include <iostream>
 
 
 using Body = Scene::Body;

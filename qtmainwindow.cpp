@@ -4,7 +4,13 @@
 #include <QMenuBar>
 #include <QFileDialog>
 #include <QErrorMessage>
+#include <QBoxLayout>
+#include <QSplitter>
 #include "qtmenu.hpp"
+#include "qtwidget.hpp"
+#include "qttreeeditor.hpp"
+#include "qtmenubar.hpp"
+#include "qtsplitter.hpp"
 
 
 using std::cerr;
@@ -45,7 +51,7 @@ QtMainWindow::QtMainWindow()
 }
 
 
-QtTreeEditor &QtMainWindow::treeEditor()
+TreeEditor &QtMainWindow::treeEditor()
 {
   assert(tree_editor_ptr);
   return *tree_editor_ptr;

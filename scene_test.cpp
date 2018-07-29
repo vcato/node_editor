@@ -1,6 +1,7 @@
 #include "scene.hpp"
 
 #include <cassert>
+#include <iostream>
 
 using std::cerr;
 

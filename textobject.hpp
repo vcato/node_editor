@@ -1,6 +1,7 @@
 #ifndef TEXTOBJECT_HPP_
 #define TEXTOBJECT_HPP_
 
+#include <string>
 #include "point2d.hpp"
 
 

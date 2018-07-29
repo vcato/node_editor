@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include "qtscenewindow.hpp"
+#include "qtwidget.hpp"
 
 
 QtWorld::QtWorld(QtMainWindow &main_window_arg)

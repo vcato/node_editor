@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include "qtwidget.hpp"
+#include "qtdiagrameditor.hpp"
+#include "qtlayout.hpp"
 
 
 using std::cerr;
@@ -11,6 +13,13 @@ QtDiagramEditorWindow::QtDiagramEditorWindow()
 {
   auto &layout = createLayout<QVBoxLayout>(*this);
   diagram_editor_ptr = &createWidget<QtDiagramEditor>(layout);
+}
+
+
+DiagramEditor &QtDiagramEditorWindow::diagramEditor()
+{
+  assert(diagram_editor_ptr);
+  return *diagram_editor_ptr;
 }
 
 

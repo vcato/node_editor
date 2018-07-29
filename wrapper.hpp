@@ -2,7 +2,6 @@
 #define WRAPPER_HPP_
 
 #include <string>
-
 #include <vector>
 #include <cassert>
 #include "diagram.hpp"

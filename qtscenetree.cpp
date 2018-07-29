@@ -1,6 +1,7 @@
 #include "qtscenetree.hpp"
 
 #include <cassert>
+#include <iostream>
 #include <QHeaderView>
 #include "qttreewidgetitem.hpp"
 #include "treepath.hpp"

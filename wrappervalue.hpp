@@ -1,3 +1,9 @@
+#include <string>
+#include <cassert>
+#include "noinittag.hpp"
+#include "createobject.hpp"
+#include "basicvariant.hpp"
+
 using NumericValue = int;
 using StringValue = std::string;
 
@@ -91,7 +97,7 @@ struct WrapperValuePolicy {
   };
 
   protected:
-    WrapperValuePolicy(VariantPolicyNoInitTag)
+    WrapperValuePolicy(NoInitTag)
     {
     }
 

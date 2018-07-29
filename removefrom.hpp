@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <memory>
+
 
 template <typename T>
 void removeFrom(std::vector<T> &v,const T &arg)

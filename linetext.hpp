@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
+#include <iosfwd>
 #include <cassert>
 #include "stringutil.hpp"
 #include "executor.hpp"

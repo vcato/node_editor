@@ -3,9 +3,11 @@
 
 #include <cassert>
 #include <QGLWidget>
-#include <QKeyEvent>
 #include "diagrameditor.hpp"
 #include "circle.hpp"
+
+
+class QKeyEvent;
 
 
 struct Color {
