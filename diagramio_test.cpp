@@ -32,6 +32,29 @@ static void testWithEmptyDiagram()
 }
 
 
+static void testWithOneNodeAndUnknownSection()
+{
+  const char *diagram_text =
+    "diagram {\n"
+    "  blah {\n"
+    "    blah {\n"
+    "    }\n"
+    "  }\n"
+    "  node {\n"
+    "    id: 1\n"
+    "    position: [0,0]\n"
+    "    text {\n"
+    "      \"x=5\"\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+  Diagram d = makeDiagram(diagram_text);
+  assert(d.nExistingNodes()==1);
+  assert(d.node(0).position()==Point2D(0,0));
+  assert(d.node(0).lines[0].text=="x=5");
+}
+
+
 static void testWithOneNode()
 {
   Diagram d;
@@ -119,16 +142,89 @@ static void testBadText(const string &text,const string &expected_error)
   string error;
   Diagram diagram;
   scanDiagramFrom(stream,diagram,error);
+
+  if (error!=expected_error) {
+    cerr << "text: " << text << "\n";
+    cerr << "error: " << error << "\n";
+    cerr << "expected_error: " << expected_error << "\n";
+  }
+
   assert(error==expected_error);
 }
 
 
 static void testWithBadText()
 {
-  const char *text =
-    "diagram{\n"
-    "}\n";
-  testBadText(text,"Expected tag 'diagram'");
+  {
+    const char *text =
+      "diagram{\n"
+      "}\n";
+    testBadText(text,"Expected tag 'diagram'");
+  }
+  {
+    const char *text =
+      "diagram\n"
+      "}\n";
+    testBadText(text,"Expected '{'");
+  }
+  {
+    const char *text =
+      "diagram {\n"
+      "  blah\n"
+      "}\n";
+    testBadText(text,"Expected '{'");
+  }
+}
+
+
+static void testWithUnknownSection()
+{
+  {
+    const char *text =
+      "diagram {\n"
+      "  blah {\n"
+      "  }\n"
+      "}\n";
+    makeDiagram(text);
+  }
+  {
+    const char *text =
+      "diagram {\n"
+      "  blah {\n"
+      "    blah {\n"
+      "    }\n"
+      "  }\n"
+      "}\n";
+    makeDiagram(text);
+  }
+  {
+    const char *text =
+      "diagram {\n"
+      "  blah: 5\n"
+      "}\n";
+    makeDiagram(text);
+  }
+  {
+    const char *text =
+      "diagram {\n"
+      "  blah {\n"
+      "    blah: 5\n"
+      "  }\n"
+      "}\n";
+    makeDiagram(text);
+  }
+  {
+    const char *text =
+      "diagram {\n"
+      "  blah {\n"
+      "    blah {\n"
+      "      blah {\n"
+      "      }\n"
+      "    }\n"
+      "  }\n"
+      "}\n";
+    makeDiagram(text);
+  }
 }
 
 
@@ -136,8 +232,10 @@ int main()
 {
   testWithEmptyDiagram();
   testWithOneNode();
+  testWithOneNodeAndUnknownSection();
   testWithTwoConnectedNodes();
   testWithTwoConnections();
   testWithMultiLineText();
   testWithBadText();
+  testWithUnknownSection();
 }

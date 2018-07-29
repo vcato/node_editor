@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sstream>
 #include "streamparser.hpp"
+#include "stringutil.hpp"
 
 
 using Node = DiagramNode;
@@ -152,15 +153,8 @@ namespace {
 struct DiagramParser : StreamParser {
   DiagramParser(istream &stream_arg) : StreamParser(stream_arg) { }
 
-  void scanNodeConnection(Node &node)
+  void scanNodeConnectionSection(Node &node)
   {
-    scanWord();
-
-    if (word!="{") {
-      assert(false);
-    }
-
-    scanEndOfLine();
     scanWord();
 
     if (word!="input_index:") {
@@ -217,16 +211,8 @@ struct DiagramParser : StreamParser {
     }
   }
 
-  void scanNodeText(Node &node)
+  void scanNodeTextSection(Node &node)
   {
-    scanWord();
-
-    if (word!="{") {
-      assert(false);
-    }
-
-    scanEndOfLine();
-
     for (;;) {
       skipWhitespace();
 
@@ -242,47 +228,84 @@ struct DiagramParser : StreamParser {
     }
   }
 
-  void scanNode(Diagram &diagram)
+  bool scanNodeSection(Diagram &diagram)
   {
-    scanWord();
-
-    if (word!="{") {
-      assert(false);
-    }
-
-    scanEndOfLine();
     scanWord();
 
     if (word!="id:") {
       // The id is required to be first so that we can create the node.
       assert(false);
+      return false;
     }
 
     int id = nextIntFrom(stream);
     Node &node = diagram.createNode(id-1);
     scanEndOfLine();
 
-    for (;;) {
-      scanWord();
+    return
+      scanSection(
+        /*line_handler*/[&](const string &tag){
+          if (tag=="position:") {
+            node.setPosition(nextPoint2DFrom(stream));
+          }
 
-      if (word=="}") {
-        break;
-      }
+          scanEndOfLine();
+        },
+        /*section_handler*/[&](const string &tag){
+          if (tag=="connection") {
+            scanNodeConnectionSection(node);
+            return true;
+          }
 
-      if (word=="connection") {
-        scanNodeConnection(node);
-      }
-      else if (word=="text") {
-        scanNodeText(node);
-      }
-      else if (word=="position:") {
-        node.setPosition(nextPoint2DFrom(stream));
-      }
-      else {
-        assert(false);
+          if (tag=="text") {
+            scanNodeTextSection(node);
+            return true;
+          }
+
+          if (tag=="position:") {
+            node.setPosition(nextPoint2DFrom(stream));
+            return true;
+          }
+
+          return true;
+        }
+      );
+  }
+
+  template <typename LineHandler,typename SectionHandler>
+  bool
+    scanSection(
+      const LineHandler &line_handler,
+      const SectionHandler &section_handler
+    )
+    {
+      for (;;) {
+        scanWord();
+
+        if (word=="}") {
+          scanEndOfLine();
+          return true;
+        }
+
+        if (endsWith(word,":")) {
+          line_handler(word);
+        }
+        else {
+          string tag = word;
+          scanWord();
+
+          if (word!="{") {
+            setError("Expected '{'");
+            return false;
+          }
+
+          scanEndOfLine();
+          if (!section_handler(tag)) {
+            return false;
+          }
+        }
       }
     }
-  }
 
   bool scanDiagram(Diagram &diagram)
   {
@@ -296,25 +319,28 @@ struct DiagramParser : StreamParser {
     scanWord();
 
     if (word!="{") {
-      assert(false);
+      setError("Expected '{'");
+      return false;
     }
 
     scanEndOfLine();
 
-    for (;;) {
-      scanWord();
+    bool section_was_scanned_successfully =
+      scanSection(
+         /*line_handler*/[&](const string &/*tag*/){
+           scanEndOfLine();
+         },
+         /*section_handler*/[&](const string &tag){
+           if (tag=="node") {
+             return scanNodeSection(diagram);
+           }
 
-      if (word=="}") {
-        break;
-      }
+           return ignoreSection();
+         }
+      );
 
-      if (word=="node") {
-        scanNode(diagram);
-      }
-      else {
-        cerr << "word: " << word << "\n";
-        assert(false);
-      }
+    if (!section_was_scanned_successfully) {
+      return false;
     }
 
     for (auto i : diagram.existingNodeIndices()) {
@@ -322,6 +348,14 @@ struct DiagramParser : StreamParser {
     }
 
     return true;
+  }
+
+  bool ignoreSection()
+  {
+    return scanSection(
+      /*line_handler*/[&](const string &/*tag*/){ return scanEndOfLine(); },
+      /*section_handler*/[&](const string &/*tag*/){ return ignoreSection(); }
+    );
   }
 };
 }
