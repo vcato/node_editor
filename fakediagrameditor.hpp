@@ -60,7 +60,7 @@ struct FakeDiagramEditor : DiagramEditor {
     mouseMovedTo(p);
   }
 
-  void userRelasesMouseAt(const Point2D &p)
+  void userReleasesMouseAt(const Point2D &p)
   {
     mouseReleasedAt(p);
   }

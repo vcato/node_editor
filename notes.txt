@@ -269,3 +269,8 @@ evaluateDiagramNodeLine() needs to handle errors better.
       whether it is an optional with no value or a void value.
 ---
 Need a way to select multiple nodes.
+
+* Need to be able to draw a rectangle around nodes.
+---
+If we click on a node to select it, it is also adding a new node.
+If we shift-click on a node to select it, it also adds a new node.

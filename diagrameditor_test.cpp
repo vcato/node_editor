@@ -212,7 +212,7 @@ static void testRenderInfo()
 }
 
 
-static void testSelectingMultipleNodes()
+static void testShiftSelectingMultipleNodes()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
@@ -231,10 +231,27 @@ static void testSelectingMultipleNodes()
   editor.userMovesMouseTo(mouse_release_position);
   assert(diagram.node(n1).position()==Point2D(10,0));
   assert(diagram.node(n2).position()==Point2D(10,100));
-  editor.userRelasesMouseAt(mouse_release_position);
+  editor.userReleasesMouseAt(mouse_release_position);
   editor.userPressesBackspace();
   assert(diagram.nExistingNodes()==0);
 }
+
+
+#if 0
+static void testRectangleSelectingMultipleNodes()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex n1 = editor.userAddsANodeWithTextAt("x",Point2D(10,10));
+  NodeIndex n2 = editor.userAddsANodeWithTextAt("y",Point2D(20,20));
+  editor.userPressesMouseAt(Point2D(0,0));
+  assert(diagram.nNodes()==2);
+  editor.userMovesMouseTo(Point2D(30,30));
+  editor.userReleasesMouseAt(Point2D(30,30));
+  assert(editor.nodeIsSelected(n1));
+  assert(editor.nodeIsSelected(n2));
+}
+#endif
 
 
 static void testCancellingExport()
@@ -340,7 +357,7 @@ static void testConnectingNodes()
 
   int diagram_change_count = 0;
   editor.diagramChangedCallback() = [&]{ ++diagram_change_count; };
-  editor.userRelasesMouseAt(editor.nodeInputPosition(node2,0));
+  editor.userReleasesMouseAt(editor.nodeInputPosition(node2,0));
   assert(diagramHasConnection(diagram,node1,0,node2,0));
   assert(diagram_change_count==1);
 }
@@ -361,9 +378,18 @@ int main()
   testEscape();
   test2();
   testRenderInfo();
-  testSelectingMultipleNodes();
+  testShiftSelectingMultipleNodes();
+  // testRectangleSelectingMultipleNodes();
+
+  // Need a test for clicking on a node to select it
+  //   make sure it doesn't also create a new node.
+
+  // Need a test for shift-clicking on a node to select it
+  //   make sure it doesn't also create a new node.
+
   testCancellingExport();
   testConnectingNodes();
+
   ImportTester().runWithEmptyDiagram();
   ImportTester().runWithBadDiagram();
   ImportTester().runWithExistingNodes();
