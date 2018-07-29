@@ -9,6 +9,7 @@
 using std::string;
 using std::vector;
 using std::cerr;
+using std::ifstream;
 using std::ofstream;
 
 
@@ -724,4 +725,20 @@ void DiagramEditor::exportDiagramPressed()
   }
 
   printDiagramOn(stream,diagram());
+}
+
+
+void DiagramEditor::importDiagramPressed()
+{
+  string path = askForOpenPath();
+  ifstream stream(path);
+
+  if (!stream) {
+    showError("Unable to open "+path);
+    return;
+  }
+
+  scanDiagramFrom(stream,diagram());
+
+  notifyDiagramChanged();
 }

@@ -289,6 +289,7 @@ struct DiagramParser : StreamParser {
     scanWord();
 
     if (word!="diagram") {
+      cerr << "word: " << word << "\n";
       assert(false);
     }
 

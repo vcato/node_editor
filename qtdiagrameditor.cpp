@@ -61,19 +61,12 @@ void QtDiagramEditor::exportDiagramSlot()
 }
 
 
-void QtDiagramEditor::importDiagramPressed()
+string QtDiagramEditor::askForOpenPath()
 {
   QFileDialog file_dialog;
   QString result = file_dialog.getOpenFileName(this,"Import Diagram");
   string path = result.toStdString();
-  ifstream stream(path);
-  if (!stream) {
-    QMessageBox box;
-    box.setText(QString::fromStdString("Unable to open "+path));
-    box.exec();
-    return;
-  }
-  scanDiagramFrom(stream,diagram());
+  return path;
 }
 
 

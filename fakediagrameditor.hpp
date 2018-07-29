@@ -43,12 +43,12 @@ struct FakeDiagramEditor : DiagramEditor {
     maybe_chosen_path.reset();
   }
 
-#if 0
-  void userPressesImportDiagram(const std::string &/*chosen_path*/)
+  void userPressesImportDiagram(const std::string &chosen_path)
   {
+    maybe_chosen_path = chosen_path;
     importDiagramPressed();
+    maybe_chosen_path.reset();
   }
-#endif
 
   void userPressesMouseAt(const Point2D &p)
   {
@@ -152,6 +152,11 @@ struct FakeDiagramEditor : DiagramEditor {
   }
 
   std::string askForSavePath() override
+  {
+    return *maybe_chosen_path;
+  }
+
+  std::string askForOpenPath() override
   {
     return *maybe_chosen_path;
   }

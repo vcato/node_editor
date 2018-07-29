@@ -1,11 +1,20 @@
 #include "diagrameditor.hpp"
 
+#include <unistd.h>
 #include <cassert>
+#include <fstream>
 #include "fakediagrameditor.hpp"
 
 
 using std::string;
 using std::cerr;
+using std::ofstream;
+
+
+
+static const char *empty_diagram_text =
+  "diagram {\n"
+  "}\n";
 
 
 static void test1()
@@ -232,18 +241,27 @@ static void testCancellingExport()
 }
 
 
-#if 0
+static void saveFile(const char *path,const char *text)
+{
+  ofstream stream(path);
+  assert(!!stream);
+  stream << text;
+}
+
+
 static void testImportingDiagram()
 {
+  const char *test_diagram_path = "diagrameditortest.dat";
+  saveFile(test_diagram_path,empty_diagram_text);
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
   int diagram_changed_count = 0;
   editor.diagramChangedCallback() = [&]{ ++diagram_changed_count; };
-  editor.userPressesImportDiagram(/*chosen_path*/"test.dat");
+  editor.userPressesImportDiagram(test_diagram_path);
   assert(!editor.an_error_was_shown);
   assert(diagram_changed_count==1);
+  unlink(test_diagram_path);
 }
-#endif
 
 
 static bool
@@ -295,5 +313,5 @@ int main()
   testSelectingMultipleNodes();
   testCancellingExport();
   testConnectingNodes();
-  // testImportingDiagram();
+  testImportingDiagram();
 }
