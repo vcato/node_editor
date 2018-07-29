@@ -273,4 +273,6 @@ evaluateDiagramNodeLine() needs to handle errors better.
     * Is that true?  it returns an optional, so the difference is between
       whether it is an optional with no value or a void value.
 ---
-More robust scanDiagram :  handle the case where thef irst word isn't "diagram"
+More robust scanDiagram :  handle the case where thef first word isn't "diagram"
+---
+See what the most expensive header files are.

@@ -5,6 +5,8 @@ struct StreamParser {
 
   StreamParser(std::istream &stream_arg) : stream(stream_arg) { }
 
+  void setError(const std::string &arg) { error = arg; }
+
   void scanWord()
   {
     stream >> word;

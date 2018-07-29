@@ -1,13 +1,18 @@
 #include "makediagram.hpp"
 
 #include <sstream>
+#include <cassert>
 #include "diagramio.hpp"
 
+using std::string;
 
-Diagram makeDiagram(const char *text)
+
+Diagram makeDiagram(const string &text)
 {
   std::istringstream stream(text);
   Diagram diagram;
-  scanDiagramFrom(stream,diagram);
+  string error;
+  scanDiagramFrom(stream,diagram,error);
+  assert(error.empty());
   return diagram;
 }

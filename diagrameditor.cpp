@@ -738,7 +738,13 @@ void DiagramEditor::importDiagramPressed()
     return;
   }
 
-  scanDiagramFrom(stream,diagram());
+  string error;
+  scanDiagramFrom(stream,diagram(),error);
+
+  if (!error.empty()) {
+    showError(error);
+    return;
+  }
 
   notifyDiagramChanged();
 }

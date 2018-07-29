@@ -284,13 +284,13 @@ struct DiagramParser : StreamParser {
     }
   }
 
-  void scanDiagram(Diagram &diagram)
+  bool scanDiagram(Diagram &diagram)
   {
     scanWord();
 
     if (word!="diagram") {
-      cerr << "word: " << word << "\n";
-      assert(false);
+      setError("Expected tag 'diagram'");
+      return false;
     }
 
     scanWord();
@@ -320,13 +320,18 @@ struct DiagramParser : StreamParser {
     for (auto i : diagram.existingNodeIndices()) {
       diagram.node(i).updateInputsAndOutputs();
     }
+
+    return true;
   }
 };
 }
 
 
-void scanDiagramFrom(std::istream &stream,Diagram &diagram)
+void scanDiagramFrom(std::istream &stream,Diagram &diagram,string &error)
 {
   DiagramParser parser(stream);
-  parser.scanDiagram(diagram);
+
+  if (!parser.scanDiagram(diagram)) {
+    error = parser.error;
+  }
 }

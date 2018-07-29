@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include "makediagram.hpp"
 
 
 using std::istringstream;
@@ -19,15 +20,6 @@ static string makeText(const Diagram &d)
 }
 
 
-static Diagram scanFromText(const string &text)
-{
-  Diagram diagram;
-  istringstream stream(text);
-  scanDiagramFrom(stream,diagram);
-  return diagram;
-}
-
-
 static void testWithEmptyDiagram()
 {
   Diagram d;
@@ -36,7 +28,7 @@ static void testWithEmptyDiagram()
     "diagram {\n"
     "}\n";
   assert(diagram_text==expected_text);
-  Diagram d2 = scanFromText(diagram_text);
+  Diagram d2 = makeDiagram(diagram_text);
 }
 
 
@@ -56,7 +48,7 @@ static void testWithOneNode()
     "}\n";
   string diagram_text = makeText(d);
   assert(diagram_text==expected_text);
-  Diagram d2 = scanFromText(diagram_text);
+  Diagram d2 = makeDiagram(diagram_text);
   assert(d2.nExistingNodes()==1);
   assert(d2.node(0).position()==Point2D(0,0));
   assert(d2.node(0).lines[0].text=="x=5");
@@ -94,7 +86,7 @@ static void testWithTwoConnectedNodes()
     "}\n";
   string diagram_text = makeText(d);
   assert(diagram_text==expected_text);
-  Diagram d2 = scanFromText(diagram_text);
+  Diagram d2 = makeDiagram(diagram_text);
   assert(d2.nExistingNodes()==2);
   assert(d2.node(0).position()==Point2D(101,102));
 }
@@ -108,7 +100,7 @@ static void testWithTwoConnections()
   NodeIndex n3 = d.addNode("$+$");
   d.connectNodes(n1,0,n3,0);
   d.connectNodes(n2,0,n3,1);
-  Diagram d2 = scanFromText(makeText(d));
+  Diagram d2 = makeDiagram(makeText(d));
   assert(d2.node(n1).outputs.size()==1);
 }
 
@@ -117,7 +109,26 @@ static void testWithMultiLineText()
 {
   Diagram d;
   d.addNode("5\n6");
-  Diagram d2 = scanFromText(makeText(d));
+  Diagram d2 = makeDiagram(makeText(d));
+}
+
+
+static void testBadText(const string &text,const string &expected_error)
+{
+  istringstream stream(text);
+  string error;
+  Diagram diagram;
+  scanDiagramFrom(stream,diagram,error);
+  assert(error==expected_error);
+}
+
+
+static void testWithBadText()
+{
+  const char *text =
+    "diagram{\n"
+    "}\n";
+  testBadText(text,"Expected tag 'diagram'");
 }
 
 
@@ -128,4 +139,5 @@ int main()
   testWithTwoConnectedNodes();
   testWithTwoConnections();
   testWithMultiLineText();
+  testWithBadText();
 }

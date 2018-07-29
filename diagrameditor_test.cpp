@@ -17,6 +17,11 @@ static const char *empty_diagram_text =
   "}\n";
 
 
+static const char *bad_diagram_text =
+  "diagram{\n"
+  "}\n";
+
+
 static void test1()
 {
   Diagram diagram;
@@ -249,18 +254,45 @@ static void saveFile(const char *path,const char *text)
 }
 
 
-static void testImportingDiagram()
-{
-  const char *test_diagram_path = "diagrameditortest.dat";
-  saveFile(test_diagram_path,empty_diagram_text);
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
-  int diagram_changed_count = 0;
-  editor.diagramChangedCallback() = [&]{ ++diagram_changed_count; };
-  editor.userPressesImportDiagram(test_diagram_path);
-  assert(!editor.an_error_was_shown);
-  assert(diagram_changed_count==1);
-  unlink(test_diagram_path);
+namespace {
+class ImportTester {
+  public:
+    ImportTester()
+    {
+      editor.diagramChangedCallback() = [&]{ ++diagram_changed_count; };
+    }
+
+    ~ImportTester()
+    {
+      unlink(test_diagram_path);
+    }
+
+    void runWithEmptyDiagram()
+    {
+      userImportsDiagramText(empty_diagram_text);
+      assert(!editor.an_error_was_shown);
+      assert(diagram_changed_count==1);
+    }
+
+    void runWithBadDiagram()
+    {
+      userImportsDiagramText(bad_diagram_text);
+      assert(editor.an_error_was_shown);
+      assert(diagram_changed_count==0);
+    }
+
+  private:
+    Diagram diagram;
+    FakeDiagramEditor editor{diagram};
+    int diagram_changed_count = 0;
+    const char *test_diagram_path = "diagrameditortest.dat";
+
+    void userImportsDiagramText(const char *text)
+    {
+      saveFile(test_diagram_path,text);
+      editor.userPressesImportDiagram(test_diagram_path);
+    }
+};
 }
 
 
@@ -313,5 +345,6 @@ int main()
   testSelectingMultipleNodes();
   testCancellingExport();
   testConnectingNodes();
-  testImportingDiagram();
+  ImportTester().runWithEmptyDiagram();
+  ImportTester().runWithBadDiagram();
 }

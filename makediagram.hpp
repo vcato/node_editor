@@ -1,4 +1,4 @@
 #include "diagram.hpp"
 
 
-extern Diagram makeDiagram(const char *text);
+extern Diagram makeDiagram(const std::string &);

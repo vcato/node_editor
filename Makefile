@@ -96,7 +96,7 @@ diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
-  linetext.o statementtext.o stringutil.o evaluateexpression.o
+  linetext.o statementtext.o stringutil.o evaluateexpression.o makediagram.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
