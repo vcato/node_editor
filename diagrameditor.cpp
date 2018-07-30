@@ -542,6 +542,13 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
   }
 
   if (mouse_press_position==mouse_release_position) {
+    if (!aNodeIsFocused() && !aNodeIsSelected()) {
+      int new_node_index = addNode("",mouse_press_position);
+      focusNode(new_node_index,diagram());
+      redraw();
+      return;
+    }
+
     if (node_was_selected && selectedNodeIndex()!=noNodeIndex()) {
       focusNode(selectedNodeIndex(),diagram());
       clearSelection();
@@ -621,9 +628,6 @@ void DiagramEditor::mousePressedAt(Point2D p,bool shift_is_pressed)
       return;
     }
   }
-
-  int new_node_index = addNode("",mouse_press_position);
-  focusNode(new_node_index,diagram());
 
   redraw();
 }

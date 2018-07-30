@@ -168,8 +168,11 @@ static void testClickingOnBackgroundTwice()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
+  editor.redraw_count = 0;
   editor.userClicksAt(Point2D(100,100));
+  assert(editor.redraw_count==2);
   editor.userClicksAt(Point2D(200,200));
+  assert(editor.redraw_count==4);
 }
 
 
@@ -178,6 +181,7 @@ static void testEscape()
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
   editor.userClicksAt(Point2D(100,100));
+  assert(diagram.nNodes()==1);
   int n_redraws = editor.redraw_count;
   editor.userPressesEscape();
   assert(!editor.aNodeIsFocused());
@@ -209,6 +213,17 @@ static void testRenderInfo()
   auto render_info = editor.nodeRenderInfo(node);
   int n_input_circles = render_info.input_connector_circles.size();
   assert(n_input_circles==node.nInputs());
+}
+
+
+static void testClickingOnANode()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex n1 = editor.userAddsANodeWithText("test");
+  editor.userClicksAt(editor.nodeCenter(n1));
+  assert(editor.nodeIsSelected(n1));
+  assert(diagram.nNodes()==1);
 }
 
 
@@ -378,6 +393,7 @@ int main()
   testEscape();
   test2();
   testRenderInfo();
+  testClickingOnANode();
   testShiftSelectingMultipleNodes();
   // testRectangleSelectingMultipleNodes();
 
