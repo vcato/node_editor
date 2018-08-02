@@ -198,7 +198,9 @@ Optional<Any>
       return maybeScaleVector(second_term.asFloat(),first_term.asVector());
     }
 
-    assert(false);
+    error_stream << "Unhandled multiplication: " <<
+      first_term.typeName() << "*" <<
+      second_term.typeName() << "\n";
     return {};
   }
 
