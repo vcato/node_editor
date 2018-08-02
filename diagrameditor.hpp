@@ -149,19 +149,14 @@ class DiagramEditor {
       }
     }
 
-    std::vector<NodeIndex> selected_node_indices;
-    NodeIndex focused_node_index = noNodeIndex();
-    bool node_was_selected = false;
     NodeTextEditor text_editor;
-    static constexpr float connector_radius = 5;
-    Point2D mouse_press_position;
-    std::map<NodeIndex,Point2D> original_node_positions;
     NodeConnectorIndex selected_node_connector_index =
       NodeConnectorIndex::null();
-    Point2D temp_source_pos;
     Diagram *diagram_ptr;
-    std::function<void()> diagram_changed_callback;
+    NodeIndex focused_node_index = noNodeIndex();
+    Point2D temp_source_pos;
 
+  protected:
     Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
 
     virtual void redraw() = 0;
@@ -236,6 +231,13 @@ class DiagramEditor {
     void importDiagramPressed();
 
   private:
+    std::vector<NodeIndex> selected_node_indices;
+    bool node_was_selected = false;
+    static constexpr float connector_radius = 5;
+    Point2D mouse_press_position;
+    std::map<NodeIndex,Point2D> original_node_positions;
+    std::function<void()> diagram_changed_callback;
+
     void notifyDiagramChanged();
 };
 
