@@ -2,6 +2,8 @@
 #define POINT2D_HPP_
 
 #include <iosfwd>
+#include "vector2d.hpp"
+
 
 struct Point2D {
   float x,y;
@@ -28,31 +30,6 @@ struct Point2D {
 };
 
 
-struct Vector2D {
-  float x,y;
-
-  Vector2D()
-  : x(0), y(0)
-  {
-  }
-
-  Vector2D(float x_arg,float y_arg)
-  : x(x_arg), y(y_arg)
-  {
-  }
-
-  bool operator==(const Vector2D &arg) const
-  {
-    return x==arg.x && y==arg.y;
-  }
-
-  bool operator!=(const Vector2D &arg) const
-  {
-    return !operator==(arg);
-  }
-};
-
-
 inline Point2D &operator+=(Point2D &point,const Vector2D &vector)
 {
   point.x += vector.x;
@@ -72,6 +49,22 @@ inline Point2D &operator-=(Point2D &point,const Vector2D &vector)
 inline Vector2D operator-(const Point2D &a,const Point2D &b)
 {
   return Vector2D( a.x-b.x, a.y-b.y );
+}
+
+
+inline Point2D operator-(const Point2D &a,const Vector2D &b)
+{
+  float x = a.x - b.x;
+  float y = a.y - b.y;
+  return Point2D{x,y};
+}
+
+
+inline Point2D operator+(const Point2D &a,const Vector2D &b)
+{
+  float x = a.x + b.x;
+  float y = a.y + b.y;
+  return Point2D{x,y};
 }
 
 
