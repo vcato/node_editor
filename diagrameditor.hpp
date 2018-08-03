@@ -13,6 +13,7 @@
 #include "diagram.hpp"
 #include "circle.hpp"
 #include "rect.hpp"
+#include "optional.hpp"
 
 
 struct NodeRenderInfo {
@@ -126,6 +127,7 @@ class DiagramEditor {
     Diagram *diagram_ptr;
     NodeIndex focused_node_index = noNodeIndex();
     Point2D temp_source_pos;
+    Optional<Rect> maybe_selection_rectangle;
 
   protected:
     Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
@@ -210,6 +212,8 @@ class DiagramEditor {
     std::function<void()> diagram_changed_callback;
 
     void notifyDiagramChanged();
+    void selectNodesInRect(const Rect &/*rect*/);
+    bool nodeIsInRect(NodeIndex node_index,const Rect &rect) const;
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */

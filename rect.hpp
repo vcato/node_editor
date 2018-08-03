@@ -8,6 +8,15 @@ struct Rect {
       p.y >= start.y && p.y <= end.y;
   }
 
+  bool contains(const Rect &r) const
+  {
+    if (r.start.x<start.x) return false;
+    if (r.start.y<start.y) return false;
+    if (r.end.x>end.x) return false;
+    if (r.end.y>end.y) return false;
+    return true;
+  }
+
   Point2D center() const
   {
     float x = (start.x + end.x)/2;

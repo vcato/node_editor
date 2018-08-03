@@ -426,9 +426,11 @@ int DiagramEditor::indexOfNodeContaining(const Point2D &p)
   for (NodeIndex i : diagram().existingNodeIndices()) {
     Node &node = diagram().node(i);
     NodeRenderInfo render_info = nodeRenderInfo(node);
+
     if (render_info.header_rect.contains(p)) {
       return i;
     }
+
     if (render_info.body_outer_rect.contains(p)) {
       return i;
     }
@@ -504,6 +506,33 @@ NodeConnectorIndex
 }
 
 
+bool DiagramEditor::nodeIsInRect(NodeIndex node_index,const Rect &rect) const
+{
+  Node &node = diagram().node(node_index);
+  NodeRenderInfo render_info = nodeRenderInfo(node);
+
+  return rect.contains(render_info.body_outer_rect);
+}
+
+
+void DiagramEditor::selectNodesInRect(const Rect &rect)
+{
+  for (NodeIndex index : diagram().existingNodeIndices()) {
+    if (nodeIsInRect(index,rect)) {
+      alsoSelectNode(index);
+    }
+  }
+}
+
+
+static void order(float &a,float &b)
+{
+  if (a>b) {
+    std::swap(a,b);
+  }
+}
+
+
 void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
 {
   if (!selected_node_connector_index.isNull()) {
@@ -547,6 +576,22 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
     notifyDiagramChanged();
     redraw();
     return;
+  }
+
+  if (maybe_selection_rectangle) {
+    maybe_selection_rectangle->end = mouse_release_position;
+    Rect selection_rect = *maybe_selection_rectangle;
+
+    order(selection_rect.start.x,selection_rect.end.x);
+    order(selection_rect.start.y,selection_rect.end.y);
+
+    maybe_selection_rectangle.reset();
+
+    if (selection_rect.start!=selection_rect.end) {
+      selectNodesInRect(selection_rect);
+      redraw();
+      return;
+    }
   }
 
   if (mouse_press_position==mouse_release_position) {
@@ -637,6 +682,9 @@ void DiagramEditor::mousePressedAt(Point2D p,bool shift_is_pressed)
     }
   }
 
+  maybe_selection_rectangle = Rect();
+  maybe_selection_rectangle->start = maybe_selection_rectangle->end = p;
+
   redraw();
 }
 
@@ -647,7 +695,7 @@ int DiagramEditor::nSelectedNodes() const
 }
 
 
-void DiagramEditor::selectNode(NodeIndex  node_index)
+void DiagramEditor::selectNode(NodeIndex node_index)
 {
   if (aNodeIsFocused()) {
     unfocus();
@@ -717,6 +765,11 @@ void DiagramEditor::mouseMovedTo(const Point2D &mouse_position)
     }
     redraw();
     return;
+  }
+
+  if (maybe_selection_rectangle) {
+    maybe_selection_rectangle->end = mouse_position;
+    redraw();
   }
 }
 

@@ -202,7 +202,11 @@ void QtDiagramEditor::drawClosedLine(const std::vector<Point2D> &vertices)
 }
 
 
-void QtDiagramEditor::drawPolygon(const std::vector<Point2D> &vertices,const Color &color)
+void
+  QtDiagramEditor::drawPolygon(
+    const std::vector<Point2D> &vertices,
+    const Color &color
+  )
 {
   int n_vertices = vertices.size();
   int vertex_size = 2;
@@ -603,5 +607,9 @@ void QtDiagramEditor::paintGL()
       connectorCircle(selected_node_connector_index).center,
       temp_source_pos
     );
+  }
+
+  if (maybe_selection_rectangle) {
+    drawRect(*maybe_selection_rectangle);
   }
 }

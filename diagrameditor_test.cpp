@@ -252,21 +252,37 @@ static void testShiftSelectingMultipleNodes()
 }
 
 
-#if 0
-static void testRectangleSelectingMultipleNodes()
+static void
+  testRectangleSelectingMultipleNodes(const Point2D &start,const Point2D &end)
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
   NodeIndex n1 = editor.userAddsANodeWithTextAt("x",Point2D(10,10));
   NodeIndex n2 = editor.userAddsANodeWithTextAt("y",Point2D(20,20));
-  editor.userPressesMouseAt(Point2D(0,0));
-  assert(diagram.nNodes()==2);
-  editor.userMovesMouseTo(Point2D(30,30));
-  editor.userReleasesMouseAt(Point2D(30,30));
+
+  editor.userPressesMouseAt(start);
+  editor.userMovesMouseTo(end);
+  editor.userReleasesMouseAt(end);
+
   assert(editor.nodeIsSelected(n1));
   assert(editor.nodeIsSelected(n2));
 }
-#endif
+
+
+static void testRectangleSelectingMultipleNodes1()
+{
+  testRectangleSelectingMultipleNodes(
+    /*start*/Point2D(0,0),/*end*/Point2D(40,40)
+  );
+}
+
+
+static void testRectangleSelectingMultipleNodes2()
+{
+  testRectangleSelectingMultipleNodes(
+    /*start*/Point2D(40,40),/*end*/Point2D(0,0)
+  );
+}
 
 
 static void testCancellingExport()
@@ -395,7 +411,8 @@ int main()
   testRenderInfo();
   testClickingOnANode();
   testShiftSelectingMultipleNodes();
-  // testRectangleSelectingMultipleNodes();
+  testRectangleSelectingMultipleNodes1();
+  testRectangleSelectingMultipleNodes2();
 
   // Need a test for clicking on a node to select it
   //   make sure it doesn't also create a new node.
