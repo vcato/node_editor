@@ -12,6 +12,14 @@ using std::vector;
 using std::cerr;
 using std::ifstream;
 using std::ofstream;
+using Node = DiagramNode;
+
+
+inline Rect withMargin(const Rect &rect,float margin)
+{
+  auto offset = Vector2D{margin,margin};
+  return Rect{rect.start-offset,rect.end+offset};
+}
 
 
 DiagramEditor::DiagramEditor()

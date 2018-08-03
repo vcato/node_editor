@@ -12,26 +12,7 @@
 #include "nodetexteditor.hpp"
 #include "diagram.hpp"
 #include "circle.hpp"
-
-
-struct Rect {
-  Point2D start, end;
-
-  bool contains(const Point2D &p)
-  {
-    return
-      p.x >= start.x && p.x <= end.x &&
-      p.y >= start.y && p.y <= end.y;
-  }
-
-  Point2D center() const
-  {
-    float x = (start.x + end.x)/2;
-    float y = (start.y + end.y)/2;
-
-    return Point2D(x,y);
-  }
-};
+#include "rect.hpp"
 
 
 struct NodeRenderInfo {
@@ -41,17 +22,6 @@ struct NodeRenderInfo {
   std::vector<Circle> input_connector_circles;
   std::vector<Circle> output_connector_circles;
 };
-
-
-
-using Node = DiagramNode;
-
-
-inline Rect withMargin(const Rect &rect,float margin)
-{
-  auto offset = Vector2D{margin,margin};
-  return Rect{rect.start-offset,rect.end+offset};
-}
 
 
 struct NodeInputIndex {
@@ -128,6 +98,7 @@ class DiagramEditor {
     std::function<void()> &diagramChangedCallback();
 
   protected:
+    using Node = DiagramNode;
     static NodeIndex noNodeIndex() { return -1; }
 
     NodeIndex selectedNodeIndex() const
