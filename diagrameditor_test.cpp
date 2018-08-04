@@ -190,7 +190,7 @@ static void testEscape()
 }
 
 
-static void test2()
+static void testTypingInNode()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
@@ -282,6 +282,18 @@ static void testRectangleSelectingMultipleNodes2()
   testRectangleSelectingMultipleNodes(
     /*start*/Point2D(40,40),/*end*/Point2D(0,0)
   );
+}
+
+
+static void testTranslatingView()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  EventModifiers modifiers;
+  modifiers.alt_is_pressed = true;
+  editor.userPressesMiddleMouseAt(Point2D(10,10),modifiers);
+  editor.userMovesMouseTo(Point2D(20,10));
+  assert(editor.viewOffset()==Vector2D(10,0));
 }
 
 
@@ -407,12 +419,13 @@ int main()
   testSettingDiagramPtrWithAnEmptyFocusedNode();
   testClickingOnBackgroundTwice();
   testEscape();
-  test2();
+  testTypingInNode();
   testRenderInfo();
   testClickingOnANode();
   testShiftSelectingMultipleNodes();
   testRectangleSelectingMultipleNodes1();
   testRectangleSelectingMultipleNodes2();
+  testTranslatingView();
 
   // Need a test for clicking on a node to select it
   //   make sure it doesn't also create a new node.

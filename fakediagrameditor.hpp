@@ -52,7 +52,16 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userPressesMouseAt(const Point2D &p)
   {
-    mousePressedAt(p,EventModifiers());
+    leftMousePressedAt(p,EventModifiers());
+  }
+
+  void
+    userPressesMiddleMouseAt(
+      const Point2D &p,
+      const EventModifiers &modifiers
+    )
+  {
+    middleMousePressedAt(p,modifiers);
   }
 
   void userMovesMouseTo(const Point2D &p)
@@ -87,7 +96,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userClicksAt(const Point2D &p)
   {
-    mousePressedAt(p,EventModifiers());
+    leftMousePressedAt(p,EventModifiers());
     mouseReleasedAt(p);
   }
 
@@ -95,7 +104,7 @@ struct FakeDiagramEditor : DiagramEditor {
   {
     EventModifiers modifiers;
     modifiers.shift_is_pressed = true;
-    mousePressedAt(p,modifiers);
+    leftMousePressedAt(p,modifiers);
     mouseReleasedAt(p);
   }
 
@@ -142,6 +151,8 @@ struct FakeDiagramEditor : DiagramEditor {
   {
     ++redraw_count;
   }
+
+  Vector2D viewOffset() const { return view_offset; }
 
   Rect rectAroundText(const TextObject &text_object) const override
   {

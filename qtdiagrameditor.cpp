@@ -152,7 +152,7 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
     bool shift_is_pressed = event.modifiers().testFlag(Qt::ShiftModifier);
     EventModifiers modifiers;
     modifiers.shift_is_pressed = shift_is_pressed;
-    mousePressedAt(p,modifiers);
+    leftMousePressedAt(p,modifiers);
   }
   else if (event.button()==Qt::RightButton) {
     QMenu menu;
@@ -178,7 +178,7 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
     bool alt_is_pressed = event.modifiers().testFlag(Qt::AltModifier);
     EventModifiers modifiers;
     modifiers.alt_is_pressed = alt_is_pressed;
-    mousePressedAt(p,modifiers);
+    middleMousePressedAt(p,modifiers);
   }
 }
 

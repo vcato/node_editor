@@ -1,3 +1,6 @@
+#include <iosfwd>
+
+
 struct Vector2D {
   float x,y;
 
@@ -21,3 +24,11 @@ struct Vector2D {
     return !operator==(arg);
   }
 };
+
+
+inline Vector2D operator+(const Vector2D &a,const Vector2D &b)
+{
+  return Vector2D(a.x+b.x, a.y+b.y);
+}
+
+extern std::ostream& operator<<(std::ostream &,const Vector2D &v);

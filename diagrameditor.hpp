@@ -106,89 +106,33 @@ class DiagramEditor {
 
   protected:
     using Node = DiagramNode;
-    static NodeIndex noNodeIndex() { return -1; }
-
-    NodeIndex selectedNodeIndex() const
-    {
-      if (selected_node_indices.size()!=1) {
-        return noNodeIndex();
-      }
-      return selected_node_indices[0];
-    }
-
-    void setSelectedNodeIndex(NodeIndex arg)
-    {
-      if (arg==noNodeIndex()) {
-        selected_node_indices.clear();
-      }
-      else {
-        selected_node_indices.resize(1);
-        selected_node_indices[0] = arg;
-      }
-    }
-
-    NodeTextEditor text_editor;
-    NodeConnectorIndex selected_node_connector_index =
-      NodeConnectorIndex::null();
-    Diagram *diagram_ptr;
-    NodeIndex focused_node_index = noNodeIndex();
-    Point2D temp_source_pos;
-    Optional<Rect> maybe_selection_rectangle;
-
-  protected:
-    Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
-
-    virtual void redraw() = 0;
-    virtual Rect rectAroundText(const TextObject &text_object) const = 0;
-    virtual std::string askForSavePath() = 0;
-    virtual std::string askForOpenPath() = 0;
-    virtual void showError(const std::string &message) = 0;
-
-    void deleteNode(int index);
-    std::string &focusedText();
-    void enterPressed();
-    int nSelectedNodes() const;
 
     void backspacePressed();
     void escapePressed();
+    void enterPressed();
     void textTyped(const std::string &new_text);
-    void updateNodeInputs(int node_index);
-    int addNode(const std::string &text,const Point2D &position);
-    void unfocus();
-    Node &node(NodeIndex arg) { return diagram().node(arg); }
-    const Node &node(NodeIndex arg) const { return diagram().node(arg); }
-    Circle nodeOutputCircle(const Node &node,int output_index);
-    bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
-    Circle nodeInputCircle(const Node &,int input_index);
-    bool nodeInputContains(int node_index,int input_index,const Point2D &p);
-    NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
-    TextObject
-      inputTextObject(const std::string &s,float left_x,float y) const;
-    Point2D
-      alignmentPoint(
-        const Rect &rect,
-        float horizontal_alignment,
-        float vertical_alignment
-      ) const;
-
-    TextObject
-      alignedTextObject(
-        const std::string &text,
-        const Point2D &position,
-        float horizontal_alignment,
-        float vertical_alignment
-      ) const;
-
-    Rect nodeBodyRect(const Node &,const Rect &header_rect) const;
-    Rect nodeRect(const TextObject &text_object) const;
-    Rect nodeHeaderRect(const TextObject &text_object) const;
-    int indexOfNodeContaining(const Point2D &p);
-    NodeRenderInfo nodeRenderInfo(const Node &node) const;
-    void clearFocus();
-    void clearSelection();
-    void mousePressedAt(Point2D,EventModifiers);
+    void exportDiagramPressed();
+    void importDiagramPressed();
+    void leftMousePressedAt(Point2D,EventModifiers);
+    void middleMousePressedAt(Point2D p,EventModifiers modifiers);
     void mouseReleasedAt(Point2D mouse_release_position);
     void mouseMovedTo(const Point2D &);
+
+    bool aNodeIsFocused() const;
+    NodeRenderInfo nodeRenderInfo(const Node &node) const;
+    int nSelectedNodes() const;
+    bool nodeIsSelected(NodeIndex);
+    int addNode(const std::string &text,const Point2D &position);
+    void selectNode(NodeIndex);
+    void alsoSelectNode(NodeIndex node_index);
+    void focusNode(int node_index,Diagram &diagram);
+    Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
+    void unfocus();
+    Circle nodeInputCircle(const Node &,int input_index);
+    Node &node(NodeIndex arg) { return diagram().node(arg); }
+    Circle nodeOutputCircle(const Node &node,int output_index);
+    Rect nodeRect(const TextObject &text_object) const;
+    const Node &node(NodeIndex arg) const { return diagram().node(arg); }
 
     void
       connectNodes(
@@ -198,28 +142,71 @@ class DiagramEditor {
         int input_index
       );
 
-    void selectNode(NodeIndex);
-    bool aNodeIsFocused() const;
-    bool nodeIsSelected(NodeIndex);
-    void focusNode(int node_index,Diagram &diagram);
-    Node& focusedNode(Diagram &diagram);
+    TextObject
+      alignedTextObject(
+        const std::string &text,
+        const Point2D &position,
+        float horizontal_alignment,
+        float vertical_alignment
+      ) const;
 
-    void alsoSelectNode(NodeIndex node_index);
-    bool aNodeIsSelected() const;
-    void exportDiagramPressed();
-    void importDiagramPressed();
+    NodeTextEditor text_editor;
+    NodeConnectorIndex selected_node_connector_index =
+      NodeConnectorIndex::null();
+    Diagram *diagram_ptr;
+    NodeIndex focused_node_index = noNodeIndex();
+    Point2D temp_source_pos;
+    Optional<Rect> maybe_selection_rectangle;
+    Vector2D view_offset{0,0};
 
   private:
+    enum class MouseMode {
+      none, translate_view
+    };
+
+    virtual void redraw() = 0;
+    virtual Rect rectAroundText(const TextObject &text_object) const = 0;
+    virtual std::string askForSavePath() = 0;
+    virtual std::string askForOpenPath() = 0;
+    virtual void showError(const std::string &message) = 0;
+
+    static NodeIndex noNodeIndex() { return -1; }
+    void deleteNode(int index);
+    std::string &focusedText();
+    NodeIndex selectedNodeIndex() const;
+    void setSelectedNodeIndex(NodeIndex arg);
+    void updateNodeInputs(int node_index);
+    bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
+    bool nodeInputContains(int node_index,int input_index,const Point2D &p);
+    NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
+    TextObject
+      inputTextObject(const std::string &s,float left_x,float y) const;
+    Rect nodeBodyRect(const Node &,const Rect &header_rect) const;
+    Rect nodeHeaderRect(const TextObject &text_object) const;
+    int indexOfNodeContaining(const Point2D &p);
+    void clearFocus();
+    void clearSelection();
+    Node& focusedNode(Diagram &diagram);
+    bool aNodeIsSelected() const;
+    void notifyDiagramChanged();
+    void selectNodesInRect(const Rect &/*rect*/);
+    bool nodeIsInRect(NodeIndex node_index,const Rect &rect) const;
+
+    Point2D
+      alignmentPoint(
+        const Rect &rect,
+        float horizontal_alignment,
+        float vertical_alignment
+      ) const;
+
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;
     static constexpr float connector_radius = 5;
     Point2D mouse_press_position;
     std::map<NodeIndex,Point2D> original_node_positions;
     std::function<void()> diagram_changed_callback;
-
-    void notifyDiagramChanged();
-    void selectNodesInRect(const Rect &/*rect*/);
-    bool nodeIsInRect(NodeIndex node_index,const Rect &rect) const;
+    MouseMode mouse_mode = MouseMode::none;
+    Vector2D mouse_down_view_offset;
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */

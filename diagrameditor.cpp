@@ -631,13 +631,27 @@ void DiagramEditor::clearSelection()
 }
 
 
-void DiagramEditor::mousePressedAt(Point2D p,EventModifiers modifiers)
+void
+  DiagramEditor::middleMousePressedAt(
+    Point2D p,
+    EventModifiers modifiers
+  )
 {
-  bool shift_is_pressed = modifiers.shift_is_pressed;
+  if (modifiers.alt_is_pressed) {
+    mouse_mode = MouseMode::translate_view;
+    mouse_press_position = p;
+    mouse_down_view_offset = view_offset;
+  }
+}
 
+
+void DiagramEditor::leftMousePressedAt(Point2D p,EventModifiers modifiers)
+{
   if (!diagram_ptr) {
     return;
   }
+
+  bool shift_is_pressed = modifiers.shift_is_pressed;
 
   mouse_press_position = p;
   node_was_selected = false;
@@ -753,6 +767,12 @@ bool DiagramEditor::aNodeIsSelected() const
 
 void DiagramEditor::mouseMovedTo(const Point2D &mouse_position)
 {
+  if (mouse_mode==MouseMode::translate_view) {
+    view_offset =
+      mouse_down_view_offset + (mouse_position - mouse_press_position);
+    return;
+  }
+
   if (!selected_node_connector_index.isNull()) {
     temp_source_pos = mouse_position;
     redraw();
@@ -818,4 +838,25 @@ void DiagramEditor::importDiagramPressed()
   diagram() = new_diagram;
 
   notifyDiagramChanged();
+}
+
+
+void DiagramEditor::setSelectedNodeIndex(NodeIndex arg)
+{
+  if (arg==noNodeIndex()) {
+    selected_node_indices.clear();
+  }
+  else {
+    selected_node_indices.resize(1);
+    selected_node_indices[0] = arg;
+  }
+}
+
+
+NodeIndex DiagramEditor::selectedNodeIndex() const
+{
+  if (selected_node_indices.size()!=1) {
+    return noNodeIndex();
+  }
+  return selected_node_indices[0];
 }
