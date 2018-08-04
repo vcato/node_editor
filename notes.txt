@@ -267,3 +267,18 @@ evaluateDiagramNodeLine() needs to handle errors better.
     a line that got an error.
     * Is that true?  it returns an optional, so the difference is between
       whether it is an optional with no value or a void value.
+
+---
+modified diagrams need to be saved in the project
+* I suppose we can determine whether a diagram is modified or not by
+  whether or not it comes out in the state.
+---
+The lines of nodes should probably be more distinct.  Maybe they look like
+separate nodes stacked on top of each other.
+---
+Need to be able to have multiple frames in a scene.
+---
+The Pos Expr diagram should actually be evaluated.
+---
+Need to be able to scroll the diagram.
+* See if we can get an alt-click

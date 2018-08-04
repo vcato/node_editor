@@ -32,7 +32,7 @@ diagram {
   }
   node {
     id: 5
-    position: [266,183]
+    position: [253,176]
     text {
       "global_position"
     }
@@ -50,16 +50,15 @@ diagram {
     }
     connection {
       input_index: 1
-      source_node_id: 8
-      source_output_index: 1
+      source_node_id: 14
+      source_output_index: 0
     }
   }
   node {
     id: 8
-    position: [59,158]
+    position: [40,175]
     text {
       "target_body"
-      "local_position"
     }
   }
   node {
@@ -89,6 +88,13 @@ diagram {
       input_index: 0
       source_node_id: 8
       source_output_index: 0
+    }
+  }
+  node {
+    id: 14
+    position: [33,71]
+    text {
+      "local_position"
     }
   }
 }

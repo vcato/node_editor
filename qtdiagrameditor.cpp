@@ -146,11 +146,13 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
   QMouseEvent &event = *event_ptr;
+  Point2D p = screenToGLCoords(event.x(),event.y());
 
   if (event.button()==Qt::LeftButton) {
-    Point2D p = screenToGLCoords(event.x(),event.y());
     bool shift_is_pressed = event.modifiers().testFlag(Qt::ShiftModifier);
-    mousePressedAt(p,shift_is_pressed);
+    EventModifiers modifiers;
+    modifiers.shift_is_pressed = shift_is_pressed;
+    mousePressedAt(p,modifiers);
   }
   else if (event.button()==Qt::RightButton) {
     QMenu menu;
@@ -171,6 +173,12 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
       );
     }
     menu.exec(mapToGlobal(event.pos()));
+  }
+  else if (event.button()==Qt::MiddleButton) {
+    bool alt_is_pressed = event.modifiers().testFlag(Qt::AltModifier);
+    EventModifiers modifiers;
+    modifiers.alt_is_pressed = alt_is_pressed;
+    mousePressedAt(p,modifiers);
   }
 }
 

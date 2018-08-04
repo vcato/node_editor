@@ -52,7 +52,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userPressesMouseAt(const Point2D &p)
   {
-    mousePressedAt(p,/*shift_is_pressed*/false);
+    mousePressedAt(p,EventModifiers());
   }
 
   void userMovesMouseTo(const Point2D &p)
@@ -87,13 +87,15 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userClicksAt(const Point2D &p)
   {
-    mousePressedAt(p,/*shift_is_pressed*/false);
+    mousePressedAt(p,EventModifiers());
     mouseReleasedAt(p);
   }
 
   void userClicksWithShiftPressedAt(const Point2D &p)
   {
-    mousePressedAt(p,/*shift_is_pressed*/true);
+    EventModifiers modifiers;
+    modifiers.shift_is_pressed = true;
+    mousePressedAt(p,modifiers);
     mouseReleasedAt(p);
   }
 

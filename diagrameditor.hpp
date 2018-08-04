@@ -16,6 +16,12 @@
 #include "optional.hpp"
 
 
+struct EventModifiers {
+  bool shift_is_pressed = false;
+  bool alt_is_pressed = false;
+};
+
+
 struct NodeRenderInfo {
   Rect header_rect;
   Rect body_outer_rect;
@@ -180,7 +186,7 @@ class DiagramEditor {
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
     void clearFocus();
     void clearSelection();
-    void mousePressedAt(Point2D,bool shift_is_pressed);
+    void mousePressedAt(Point2D,EventModifiers);
     void mouseReleasedAt(Point2D mouse_release_position);
     void mouseMovedTo(const Point2D &);
 

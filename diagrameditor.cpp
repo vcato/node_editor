@@ -631,8 +631,10 @@ void DiagramEditor::clearSelection()
 }
 
 
-void DiagramEditor::mousePressedAt(Point2D p,bool shift_is_pressed)
+void DiagramEditor::mousePressedAt(Point2D p,EventModifiers modifiers)
 {
+  bool shift_is_pressed = modifiers.shift_is_pressed;
+
   if (!diagram_ptr) {
     return;
   }
