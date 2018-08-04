@@ -62,7 +62,7 @@ string QtMainWindow::_askForSavePath()
 {
   QFileDialog file_dialog;
   QString result =
-    file_dialog.getSaveFileName(this,"Save Project","project.dat");
+    file_dialog.getSaveFileName(this,"Save Project","projects/project.dat");
   return result.toStdString();
 }
 
@@ -71,7 +71,7 @@ string QtMainWindow::_askForOpenPath()
 {
   QFileDialog file_dialog;
   QString result =
-    file_dialog.getOpenFileName(this,"Open Project","project.dat");
+    file_dialog.getOpenFileName(this,"Open Project","projects/project.dat");
   return result.toStdString();
 }
 

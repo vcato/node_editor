@@ -42,7 +42,7 @@ string QtDiagramEditor::askForSavePath()
 {
   QFileDialog file_dialog;
   QString result =
-    file_dialog.getSaveFileName(this,"Export Diagram","diagram.dat");
+    file_dialog.getSaveFileName(this,"Export Diagram","diagrams/diagram.dat");
   string path = result.toStdString();
   return path;
 }
@@ -65,7 +65,8 @@ void QtDiagramEditor::exportDiagramSlot()
 string QtDiagramEditor::askForOpenPath()
 {
   QFileDialog file_dialog;
-  QString result = file_dialog.getOpenFileName(this,"Import Diagram");
+  QString result =
+    file_dialog.getOpenFileName(this,"Import Diagram","diagrams/diagram.dat");
   string path = result.toStdString();
   return path;
 }

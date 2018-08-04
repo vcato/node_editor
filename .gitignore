@@ -2,7 +2,7 @@
 *.o
 *.d
 *.pass
-*.dat
+/*.dat
 .*.swp
 moc_*.cpp
 main

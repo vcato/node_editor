@@ -1,0 +1,62 @@
+diagram {
+  node {
+    id: 1
+    position: [275,198]
+    text {
+      "[$,$]"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 5
+      source_output_index: 0
+    }
+    connection {
+      input_index: 1
+      source_node_id: 5
+      source_output_index: 0
+    }
+  }
+  node {
+    id: 2
+    position: [20,187]
+    text {
+      "x"
+    }
+  }
+  node {
+    id: 3
+    position: [20,135]
+    text {
+      "y"
+    }
+  }
+  node {
+    id: 4
+    position: [436,183]
+    text {
+      "return $"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 1
+      source_output_index: 0
+    }
+  }
+  node {
+    id: 5
+    position: [113,186]
+    text {
+      "($+$)/2"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 2
+      source_output_index: 0
+    }
+    connection {
+      input_index: 1
+      source_node_id: 3
+      source_output_index: 0
+    }
+  }
+}

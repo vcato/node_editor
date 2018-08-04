@@ -1,0 +1,42 @@
+world {
+  scene1 {
+    background_frame {
+      0: 23
+      1: 0
+      2: 0
+      3: 0
+    }
+    body {
+      name: "Body1"
+      position_map {
+        x_variable: 0
+        y_variable: 1
+      }
+    }
+    body {
+      name: "Body2"
+      position_map {
+        x_variable: 2
+        y_variable: 3
+      }
+    }
+  }
+  charmapper1 {
+    motion_pass {
+      pos_expr {
+        target_body: scene1:body2
+        local_position {
+          x: 0
+          y: 0
+        }
+        global_position: from_body {
+          source_body: scene1:body1
+          local_position {
+            x: 25
+            y: 0
+          }
+        }
+      }
+    }
+  }
+}
