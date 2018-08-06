@@ -22,7 +22,11 @@ class DiagramNode {
 
     void setText(const std::string &text);
     std::string text() const;
+#if USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
+    void setPosition(const DiagramCoords &);
+#else
     void setPosition(const Point2D &);
+#endif
     const Point2D &position() const { return header_text_object.position; }
     int nLines() const { return lines.size(); }
     int nInputs() const { return inputs.size(); }

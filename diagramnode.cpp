@@ -1,14 +1,12 @@
 #include "diagramnode.hpp"
 
 #include <cassert>
-#include <sstream>
 #include "statementtext.hpp"
 #include "linetext.hpp"
 
 
 using std::vector;
 using std::string;
-using std::istringstream;
 using std::cerr;
 
 using Node = DiagramNode;
@@ -185,22 +183,17 @@ size_t Node::countOutputs(const Node &node)
 }
 
 
-static vector<string> split(const string &text)
+#if USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
+void Node::setPosition(const DiagramCoords &arg)
 {
-  istringstream stream(text);
-  vector<string> result;
-  string line;
-  while (getline(stream,line)) {
-    result.push_back(line);
-  }
-  return result;
+  header_text_object.position = arg;
 }
-
-
+#else
 void Node::setPosition(const Point2D &arg)
 {
   header_text_object.position = arg;
 }
+#endif
 
 
 void Node::setText(const std::string &text)

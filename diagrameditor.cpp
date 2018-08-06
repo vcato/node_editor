@@ -113,6 +113,7 @@ void DiagramEditor::escapePressed()
 }
 
 
+#if !USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
 int DiagramEditor::addNode(const std::string &text,const Point2D &position)
 {
   // The node editor keeps a pointer to a node, but Nodes may move in memory.
@@ -122,6 +123,21 @@ int DiagramEditor::addNode(const std::string &text,const Point2D &position)
   diagram().node(node_index).header_text_object.position = position;
   return node_index;
 }
+#else
+int
+  DiagramEditor::addNode(
+    const std::string &text,
+    const DiagramCoords &position
+  )
+{
+  // The node editor keeps a pointer to a node, but Nodes may move in memory.
+  assert(!aNodeIsFocused());
+
+  int node_index = diagram().addNode(text);
+  diagram().node(node_index).header_text_object.position = position;
+  return node_index;
+}
+#endif
 
 
 void
@@ -197,14 +213,14 @@ Point2D
 TextObject
   DiagramEditor::alignedTextObject(
     const std::string &text,
-    const Point2D &position,
+    const DiagramCoords &position,
     float horizontal_alignment,
     float vertical_alignment
   ) const
 {
   TextObject text_object;
   text_object.text = text;
-  text_object.position = Point2D(0,0);
+  text_object.position = DiagramCoords(0,0);
   Rect rect = rectAroundText(text_object);
   Vector2D offset =
     alignmentPoint(rect,horizontal_alignment,vertical_alignment) - Point2D(0,0);
@@ -533,7 +549,7 @@ static void order(float &a,float &b)
 }
 
 
-void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
+void DiagramEditor::mouseReleasedAt(ViewportCoords mouse_release_position)
 {
   if (!selected_node_connector_index.isNull()) {
     NodeConnectorIndex release_index =
@@ -594,6 +610,11 @@ void DiagramEditor::mouseReleasedAt(Point2D mouse_release_position)
     }
   }
 
+#if USE_OPTIONAL_MOUSE_PRESS_POSITION
+  assert(maybe_mouse_press_position);
+  const Point2D mouse_press_position = *maybe_mouse_press_position;
+#endif
+
   if (mouse_press_position==mouse_release_position) {
     if (!aNodeIsFocused() && !aNodeIsSelected()) {
       int new_node_index = addNode("",mouse_press_position);
@@ -633,19 +654,34 @@ void DiagramEditor::clearSelection()
 
 void
   DiagramEditor::middleMousePressedAt(
-    Point2D p,
+    ViewportCoords p,
     EventModifiers modifiers
   )
 {
+#if USE_OPTIONAL_MOUSE_PRESS_POSITION
+  if (maybe_mouse_press_position) {
+    // A mouse button is already pressed.  Not sure how to handle this yet.
+    assert(false);
+  }
+#endif
+
   if (modifiers.alt_is_pressed) {
     mouse_mode = MouseMode::translate_view;
+#if USE_OPTIONAL_MOUSE_PRESS_POSITION
+    maybe_mouse_press_position = p;
+#else
     mouse_press_position = p;
+#endif
     mouse_down_view_offset = view_offset;
   }
 }
 
 
-void DiagramEditor::leftMousePressedAt(Point2D p,EventModifiers modifiers)
+void
+  DiagramEditor::leftMousePressedAt(
+    ViewportCoords p,
+    EventModifiers modifiers
+  )
 {
   if (!diagram_ptr) {
     return;
@@ -653,7 +689,17 @@ void DiagramEditor::leftMousePressedAt(Point2D p,EventModifiers modifiers)
 
   bool shift_is_pressed = modifiers.shift_is_pressed;
 
+#if USE_OPTIONAL_MOUSE_PRESS_POSITION
+  if (maybe_mouse_press_position) {
+    // A mouse button is already pressed.  Not sure how to handle this yet.
+    assert(false);
+  }
+
+  maybe_mouse_press_position = p;
+#else
   mouse_press_position = p;
+#endif
+
   node_was_selected = false;
 
   clearFocus();
@@ -765,11 +811,12 @@ bool DiagramEditor::aNodeIsSelected() const
 }
 
 
-void DiagramEditor::mouseMovedTo(const Point2D &mouse_position)
+void DiagramEditor::mouseMovedTo(const ViewportCoords &mouse_position)
 {
   if (mouse_mode==MouseMode::translate_view) {
     view_offset =
       mouse_down_view_offset + (mouse_position - mouse_press_position);
+    redraw();
     return;
   }
 
@@ -858,5 +905,24 @@ NodeIndex DiagramEditor::selectedNodeIndex() const
   if (selected_node_indices.size()!=1) {
     return noNodeIndex();
   }
+
   return selected_node_indices[0];
+}
+
+
+auto
+  DiagramEditor::viewportCoordsFromDiagramCoords(
+    const Point2D &diagram_coords
+  ) const -> ViewportCoords
+{
+  return ViewportCoords(diagram_coords + view_offset);
+}
+
+
+auto
+  DiagramEditor::diagramCoordsFromViewportCoords(
+    const ViewportCoords &viewport_coords
+  ) const -> Point2D
+{
+  return viewport_coords - view_offset;
 }

@@ -1,25 +1,30 @@
 #include "stringutil.hpp"
 
 #include <cassert>
+#include <sstream>
+
+using std::vector;
+using std::string;
+using std::istringstream;
 
 
-bool endsWith(const std::string &text,const std::string &suffix)
+bool endsWith(const string &text,const string &suffix)
 {
   if (suffix.size()>text.size()) return false;
-  if (std::string(text.end()-suffix.size(),text.end())==suffix) return true;
+  if (string(text.end()-suffix.size(),text.end())==suffix) return true;
   return false;
 }
 
 
-bool startsWith(const std::string &text,const std::string &prefix)
+bool startsWith(const string &text,const string &prefix)
 {
   if (prefix.size()>text.size()) return false;
-  if (std::string(text.begin(),text.begin()+prefix.size())==prefix) return true;
+  if (string(text.begin(),text.begin()+prefix.size())==prefix) return true;
   return false;
 }
 
 
-bool startsWith(const std::string &text,char c)
+bool startsWith(const string &text,char c)
 {
   if (text.length()==0) {
     assert(false);
@@ -29,7 +34,7 @@ bool startsWith(const std::string &text,char c)
 }
 
 
-bool contains(const std::string &text,const std::string &contents)
+bool contains(const string &text,const string &contents)
 {
   size_t position = text.find(contents);
   if (position==text.npos) {
@@ -39,8 +44,20 @@ bool contains(const std::string &text,const std::string &contents)
 }
 
 
-std::string withoutRight(const std::string &text,size_t n)
+string withoutRight(const string &text,size_t n)
 {
   assert(text.length()>=n);
   return text.substr(0,text.length()-n);
+}
+
+
+vector<string> split(const string &text)
+{
+  istringstream stream(text);
+  vector<string> result;
+  string line;
+  while (getline(stream,line)) {
+    result.push_back(line);
+  }
+  return result;
 }

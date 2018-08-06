@@ -31,11 +31,16 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void initializeGL() override { }
     QSize sizeHint() const override { return QSize(640,480); }
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
-    Point2D screenToGLCoords(int x,int y) const;
+#if 0
+    Point2D screenToViewportCoords(int x,int y) const;
+#else
+    ViewportCoords screenToViewportCoords(int x,int y) const;
+#endif
     bool contains(const TextObject &text_object,const Point2D &p);
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
+    void drawAll();
     void drawClosedLine(const std::vector<Point2D> &vertices);
     void drawPolygon(const std::vector<Point2D> &vertices);
     void drawPolygon(const std::vector<Point2D> &vertices,const Color &);

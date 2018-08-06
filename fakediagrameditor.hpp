@@ -52,24 +52,24 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userPressesMouseAt(const Point2D &p)
   {
-    leftMousePressedAt(p,EventModifiers());
+    leftMousePressedAt(ViewportCoords(p),EventModifiers());
   }
 
   void
     userPressesMiddleMouseAt(
-      const Point2D &p,
+      const ViewportCoords &p,
       const EventModifiers &modifiers
     )
   {
     middleMousePressedAt(p,modifiers);
   }
 
-  void userMovesMouseTo(const Point2D &p)
+  void userMovesMouseTo(const ViewportCoords &p)
   {
     mouseMovedTo(p);
   }
 
-  void userReleasesMouseAt(const Point2D &p)
+  void userReleasesMouseAt(const ViewportCoords &p)
   {
     mouseReleasedAt(p);
   }
@@ -94,13 +94,13 @@ struct FakeDiagramEditor : DiagramEditor {
     text_editor.moveCursor(line,column);
   }
 
-  void userClicksAt(const Point2D &p)
+  void userClicksAt(const ViewportCoords &p)
   {
     leftMousePressedAt(p,EventModifiers());
     mouseReleasedAt(p);
   }
 
-  void userClicksWithShiftPressedAt(const Point2D &p)
+  void userClicksWithShiftPressedAt(const ViewportCoords &p)
   {
     EventModifiers modifiers;
     modifiers.shift_is_pressed = true;
@@ -198,6 +198,8 @@ struct FakeDiagramEditor : DiagramEditor {
   using DiagramEditor::nodeRenderInfo;
   using DiagramEditor::nSelectedNodes;
   using DiagramEditor::nodeIsSelected;
+  using DiagramEditor::viewportCoordsFromDiagramCoords;
+  using DiagramEditor::ViewportCoords;
 };
 
 

@@ -130,9 +130,10 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
 }
 
 
-Point2D QtDiagramEditor::screenToGLCoords(int x,int y) const
+auto QtDiagramEditor::screenToViewportCoords(int x,int y) const
+  -> ViewportCoords
 {
-  return Point2D{static_cast<float>(x),height()-static_cast<float>(y)};
+  return ViewportCoords{static_cast<float>(x),height()-static_cast<float>(y)};
 }
 
 
@@ -146,7 +147,7 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
   QMouseEvent &event = *event_ptr;
-  Point2D p = screenToGLCoords(event.x(),event.y());
+  ViewportCoords p = screenToViewportCoords(event.x(),event.y());
 
   if (event.button()==Qt::LeftButton) {
     bool shift_is_pressed = event.modifiers().testFlag(Qt::ShiftModifier);
@@ -186,8 +187,8 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
-  Point2D mouse_release_position =
-    screenToGLCoords(event_ptr->x(),event_ptr->y());
+  ViewportCoords mouse_release_position =
+    screenToViewportCoords(event_ptr->x(),event_ptr->y());
 
   mouseReleasedAt(mouse_release_position);
 }
@@ -195,7 +196,8 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *event_ptr)
 
 void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
 {
-  Point2D mouse_position = screenToGLCoords(event_ptr->x(),event_ptr->y());
+  ViewportCoords mouse_position =
+    screenToViewportCoords(event_ptr->x(),event_ptr->y());
 
   mouseMovedTo(mouse_position);
 }
@@ -591,14 +593,8 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
 }
 
 
-void QtDiagramEditor::paintGL()
+void QtDiagramEditor::drawAll()
 {
-  begin2DDrawing(width(),height());
-
-  if (!diagram_ptr) {
-    return;
-  }
-
   for (NodeIndex index : diagram().existingNodeIndices()) {
     drawNode(index);
   }
@@ -621,4 +617,18 @@ void QtDiagramEditor::paintGL()
   if (maybe_selection_rectangle) {
     drawRect(*maybe_selection_rectangle);
   }
+}
+
+
+void QtDiagramEditor::paintGL()
+{
+  if (!diagram_ptr) {
+    return;
+  }
+
+  begin2DDrawing(width(),height());
+  glPushMatrix();
+  glTranslatef(view_offset.x,view_offset.y,0);
+  drawAll();
+  glPopMatrix();
 }

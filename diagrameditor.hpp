@@ -16,6 +16,9 @@
 #include "optional.hpp"
 
 
+#define USE_OPTIONAL_MOUSE_PRESS_POSITION 0
+
+
 struct EventModifiers {
   bool shift_is_pressed = false;
   bool alt_is_pressed = false;
@@ -107,22 +110,29 @@ class DiagramEditor {
   protected:
     using Node = DiagramNode;
 
+    struct ViewportCoordsTag;
+    using ViewportCoords = TaggedPoint2D<ViewportCoordsTag>;
+
     void backspacePressed();
     void escapePressed();
     void enterPressed();
     void textTyped(const std::string &new_text);
     void exportDiagramPressed();
     void importDiagramPressed();
-    void leftMousePressedAt(Point2D,EventModifiers);
-    void middleMousePressedAt(Point2D p,EventModifiers modifiers);
-    void mouseReleasedAt(Point2D mouse_release_position);
-    void mouseMovedTo(const Point2D &);
+    void leftMousePressedAt(ViewportCoords,EventModifiers);
+    void middleMousePressedAt(ViewportCoords p,EventModifiers modifiers);
+    void mouseReleasedAt(ViewportCoords mouse_release_position);
+    void mouseMovedTo(const ViewportCoords &);
 
     bool aNodeIsFocused() const;
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
     int nSelectedNodes() const;
     bool nodeIsSelected(NodeIndex);
+#if USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
+    int addNode(const std::string &text,const DiagramCoords &position);
+#else
     int addNode(const std::string &text,const Point2D &position);
+#endif
     void selectNode(NodeIndex);
     void alsoSelectNode(NodeIndex node_index);
     void focusNode(int node_index,Diagram &diagram);
@@ -133,6 +143,14 @@ class DiagramEditor {
     Circle nodeOutputCircle(const Node &node,int output_index);
     Rect nodeRect(const TextObject &text_object) const;
     const Node &node(NodeIndex arg) const { return diagram().node(arg); }
+
+    ViewportCoords
+      viewportCoordsFromDiagramCoords(const Point2D &diagram_coords) const;
+
+    Point2D
+      diagramCoordsFromViewportCoords(
+        const ViewportCoords &canvas_coords
+      ) const;
 
     void
       connectNodes(
@@ -145,7 +163,7 @@ class DiagramEditor {
     TextObject
       alignedTextObject(
         const std::string &text,
-        const Point2D &position,
+        const DiagramCoords &position,
         float horizontal_alignment,
         float vertical_alignment
       ) const;
@@ -202,7 +220,11 @@ class DiagramEditor {
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;
     static constexpr float connector_radius = 5;
+#if !USE_OPTIONAL_MOUSE_PRESS_POSITION
     Point2D mouse_press_position;
+#else
+    Optional<Point2D> maybe_mouse_press_position;
+#endif
     std::map<NodeIndex,Point2D> original_node_positions;
     std::function<void()> diagram_changed_callback;
     MouseMode mouse_mode = MouseMode::none;

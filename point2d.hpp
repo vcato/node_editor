@@ -30,7 +30,25 @@ struct Point2D {
 };
 
 
+template <typename Tag>
+struct TaggedPoint2D : Point2D {
+  explicit TaggedPoint2D(const Point2D &arg) : Point2D(arg) { }
+
+  using Point2D::Point2D;
+};
+
+
 inline Point2D &operator+=(Point2D &point,const Vector2D &vector)
+{
+  point.x += vector.x;
+  point.y += vector.y;
+  return point;
+}
+
+
+template <typename Tag>
+TaggedPoint2D<Tag> &
+  operator+=(TaggedPoint2D<Tag> &point,const Vector2D &vector)
 {
   point.x += vector.x;
   point.y += vector.y;
