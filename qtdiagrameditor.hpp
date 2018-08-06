@@ -31,56 +31,56 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void initializeGL() override { }
     QSize sizeHint() const override { return QSize(640,480); }
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
-#if 0
-    Point2D screenToViewportCoords(int x,int y) const;
-#else
     ViewportCoords screenToViewportCoords(int x,int y) const;
-#endif
-    bool contains(const TextObject &text_object,const Point2D &p);
+
+    bool
+      contains(
+        const DiagramTextObject &text_object,
+        const ViewportCoords &p
+      );
+
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
     void drawAll();
-    void drawClosedLine(const std::vector<Point2D> &vertices);
-    void drawPolygon(const std::vector<Point2D> &vertices);
-    void drawPolygon(const std::vector<Point2D> &vertices,const Color &);
-    static std::vector<Point2D> verticesOf(const Rect &rect);
-    static std::vector<Point2D>
-      roundedVerticesOf(const Rect &rect,float offset);
-    std::vector<Point2D> verticesOf(const Circle &circle);
-    void drawRect(const Rect &arg);
-    void drawRoundedRect(const Rect &arg);
+    void drawClosedLine(const std::vector<ViewportCoords> &vertices);
+    void drawPolygon(const std::vector<ViewportCoords> &vertices);
+    void drawPolygon(const std::vector<ViewportCoords> &vertices,const Color &);
+    static std::vector<ViewportCoords> verticesOf(const ViewportRect &rect);
+    static std::vector<ViewportCoords>
+      roundedVerticesOf(const ViewportRect &rect,float offset);
+    std::vector<ViewportCoords> verticesOf(const Circle &circle);
+    void drawRect(const ViewportRect &arg);
+    void drawRoundedRect(const ViewportRect &arg);
     void drawCircle(const Circle &circle);
-    void drawFilledRect(const Rect &rect);
-    void drawFilledRoundedRect(const Rect &rect,const Color &);
+    void drawFilledRect(const ViewportRect &rect);
+    void drawFilledRoundedRect(const ViewportRect &rect,const Color &);
     void drawFilledCircle(const Circle &circle);
-    Rect rectAroundText(const TextObject &text_object) const;
+    ViewportRect rectAroundText(const ViewportTextObject &text_object) const;
 
     void
       drawAlignedText(
         const std::string &text,
-        const Point2D &position,
+        const ViewportCoords &position,
         float horizontal_alignment,
         float vertical_alignment
       );
 
-    void drawText(const TextObject &text_object);
+    void drawText(const ViewportTextObject &text_object);
     void
       drawBoxedText2(
-        const TextObject &text_object,
+        const ViewportTextObject &text_object,
         bool is_selected,
-        const Rect &
+        const ViewportRect &
       );
-    void drawBoxedText(const TextObject &text_object,bool is_selected);
+    void drawBoxedText(const DiagramTextObject &text_object,bool is_selected);
     int textHeight() const;
     int textWidth(const std::string &s) const;
-    void drawCursor(const TextObject &text_object);
-    void drawCursor(const TextObject &text_object,int column_index);
+    void drawCursor(const ViewportTextObject &text_object);
+    void drawCursor(const ViewportTextObject &text_object,int column_index);
     static constexpr float node_input_radius = 5;
 
     Circle connectorCircle(NodeConnectorIndex) const;
-    TextObject
-      outputTextObject(const std::string &s,float right_x,float y) const;
     void drawNode(NodeIndex);
     void paintGL() override;
 

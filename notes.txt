@@ -302,3 +302,7 @@ Need to have an operator-(DiagramCoords,Vector2D) -> DiagramCoords
     const Rect &header_rect
   ) const
   * needs to use a Rect that is for diagram coordinates.
+
+
+bool QtDiagramEditor::contains(const TextObject &text_object,const Point2D &p)
+should be moved to DiagramEditor

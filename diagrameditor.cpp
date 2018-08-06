@@ -15,10 +15,11 @@ using std::ofstream;
 using Node = DiagramNode;
 
 
-inline Rect withMargin(const Rect &rect,float margin)
+template <typename Tag>
+inline TaggedRect<Tag> withMargin(const TaggedRect<Tag> &rect,float margin)
 {
   auto offset = Vector2D{margin,margin};
-  return Rect{rect.start-offset,rect.end+offset};
+  return TaggedRect<Tag>{rect.start-offset,rect.end+offset};
 }
 
 
@@ -113,17 +114,6 @@ void DiagramEditor::escapePressed()
 }
 
 
-#if !USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
-int DiagramEditor::addNode(const std::string &text,const Point2D &position)
-{
-  // The node editor keeps a pointer to a node, but Nodes may move in memory.
-  assert(!aNodeIsFocused());
-
-  int node_index = diagram().addNode(text);
-  diagram().node(node_index).header_text_object.position = position;
-  return node_index;
-}
-#else
 int
   DiagramEditor::addNode(
     const std::string &text,
@@ -137,7 +127,6 @@ int
   diagram().node(node_index).header_text_object.position = position;
   return node_index;
 }
-#endif
 
 
 void
@@ -174,26 +163,45 @@ void DiagramEditor::unfocus()
 }
 
 
-Rect DiagramEditor::nodeRect(const TextObject &text_object) const
+ViewportTextObject
+  DiagramEditor::viewportTextObject(
+    const DiagramTextObject &diagram_text_object
+  ) const
 {
-  return withMargin(rectAroundText(text_object),5);
+  ViewportTextObject result;
+
+  result.position =
+    viewportCoordsFromDiagramCoords(diagram_text_object.position);
+  result.text = diagram_text_object.text;
+
+  return result;
 }
 
 
-Rect DiagramEditor::nodeHeaderRect(const TextObject &text_object) const
+ViewportRect
+  DiagramEditor::nodeRect(const DiagramTextObject &text_object) const
+{
+  return withMargin(rectAroundText(viewportTextObject(text_object)),5);
+}
+
+
+ViewportRect
+  DiagramEditor::nodeHeaderRect(const DiagramTextObject &text_object) const
 {
   if (text_object.text=="") {
-    Point2D start = text_object.position;
-    Point2D end = start;
-    return Rect{start,end};
+    ViewportCoords start =
+      viewportCoordsFromDiagramCoords(text_object.position);
+    ViewportCoords end = start;
+    return ViewportRect{start,end};
   }
+
   return nodeRect(text_object);
 }
 
 
-Point2D
+ViewportCoords
   DiagramEditor::alignmentPoint(
-    const Rect &rect,
+    const ViewportRect &rect,
     float horizontal_alignment,
     float vertical_alignment
   ) const
@@ -206,33 +214,34 @@ Point2D
   float y2 = rect.end.y;
   float x = x1*(1-h) + x2*h;
   float y = y1*(1-v) + y2*v;
-  return Point2D(x,y);
+  return ViewportCoords(x,y);
 }
 
 
-TextObject
+ViewportTextObject
   DiagramEditor::alignedTextObject(
     const std::string &text,
-    const DiagramCoords &position,
+    const ViewportCoords &position,
     float horizontal_alignment,
     float vertical_alignment
   ) const
 {
-  TextObject text_object;
+  ViewportTextObject text_object;
   text_object.text = text;
-  text_object.position = DiagramCoords(0,0);
-  Rect rect = rectAroundText(text_object);
+  text_object.position = ViewportCoords(0,0);
+  ViewportRect rect = rectAroundText(text_object);
   Vector2D offset =
-    alignmentPoint(rect,horizontal_alignment,vertical_alignment) - Point2D(0,0);
+    alignmentPoint(rect,horizontal_alignment,vertical_alignment) -
+    ViewportCoords(0,0);
   text_object.position = position - offset;
   return text_object;
 }
 
 
-Rect
+ViewportRect
   DiagramEditor::nodeBodyRect(
     const Node &node,
-    const Rect &header_rect
+    const ViewportRect &header_rect
   ) const
 {
   // The top of the rectangle should be the bottom of the header text
@@ -250,13 +259,15 @@ Rect
   vector<string> strings = node.strings();
 
   for (const auto& s : strings) {
-    Rect r =
-      rectAroundText(alignedTextObject(
-        s,
-        Point2D(left_x,bottom_y),
-        /*horizontal_alignment*/0,
-        /*vertical_alignment*/1
-      ));
+    ViewportRect r =
+      rectAroundText(
+        alignedTextObject(
+          s,
+          ViewportCoords(left_x,bottom_y),
+          /*horizontal_alignment*/0,
+          /*vertical_alignment*/1
+        )
+      );
     bottom_y = r.start.y;
   }
 
@@ -264,11 +275,11 @@ Rect
   int n_lines = strings.size();
 
   while (n_lines<n_inputs) {
-    Rect r =
+    ViewportRect r =
       rectAroundText(
         alignedTextObject(
           "$",
-          Point2D(left_x,bottom_y),
+          ViewportCoords(left_x,bottom_y),
           /*horizontal_alignment*/0,
           /*vertical_alignment*/1
         )
@@ -282,11 +293,11 @@ Rect
   float right_x = header_rect.end.x;
 
   for (const auto &s : strings) {
-    Rect r =
+    ViewportRect r =
       rectAroundText(
         alignedTextObject(
           s,
-          Point2D(left_x,top_y),
+          ViewportCoords(left_x,top_y),
           /*horizontal_alignment*/0,
           /*vertical_alignment*/1
         )
@@ -296,40 +307,41 @@ Rect
     }
   }
 
-  Rect body_rect;
+  ViewportRect body_rect;
 
-  body_rect.start.x = left_x;
-  body_rect.start.y = bottom_y;
-  body_rect.end.x = right_x;
-  body_rect.end.y = top_y;
+  body_rect.start = ViewportCoords(left_x,bottom_y);
+  body_rect.end = ViewportCoords(right_x,top_y);
 
   return body_rect;
 }
 
 
-TextObject
-  DiagramEditor::inputTextObject(const string &s,float left_x,float y) const
+ViewportTextObject
+  DiagramEditor::inputTextObject(
+    const string &s,
+    float left_x,
+    float y
+  ) const
 {
-  TextObject t =
+  return
     alignedTextObject(
       s,
-      Point2D(left_x,y),
+      ViewportCoords(left_x,y),
       /*horizontal_alignment*/0,
       /*vertical_alignment*/1
     );
-  return t;
 }
 
 
 NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 {
-  const TextObject &header_text_object = node.header_text_object;
+  const DiagramTextObject &header_text_object = node.header_text_object;
 
   // We need to determine a rectangle that fits around the contents.
-  Rect header_rect = nodeHeaderRect(header_text_object);
+  ViewportRect header_rect = nodeHeaderRect(header_text_object);
 
   NodeRenderInfo render_info;
-  Rect body_rect = nodeBodyRect(node,header_rect);
+  ViewportRect body_rect = nodeBodyRect(node,header_rect);
   render_info.header_rect = header_rect;
 
   float left_x = body_rect.start.x;
@@ -350,8 +362,8 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
     int n_inputs = node.nInputs();
 
     for (int i=0; i!=n_inputs; ++i) {
-      TextObject t = inputTextObject("$",left_x,y);
-      Rect r = rectAroundText(t);
+      ViewportTextObject t = inputTextObject("$",left_x,y);
+      ViewportRect r = rectAroundText(t);
       float line_start_y = r.start.y;
       float line_end_y = r.end.y;
       float line_center_y = (line_start_y + line_end_y)/2;
@@ -378,9 +390,9 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 
     for (size_t line_index=0; line_index!=n_lines; ++line_index) {
       const auto &line = node.lines[line_index];
-      TextObject t = inputTextObject(line.text,left_x,y);
+      ViewportTextObject t = inputTextObject(line.text,left_x,y);
       render_info.text_objects.push_back(t);
-      Rect r = rectAroundText(t);
+      ViewportRect r = rectAroundText(t);
       line_start_ys[line_index] = r.start.y;
       line_end_ys[line_index] = r.end.y;
       y = r.start.y;
@@ -437,7 +449,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 }
 
 
-int DiagramEditor::indexOfNodeContaining(const Point2D &p)
+int DiagramEditor::indexOfNodeContaining(const ViewportCoords &p)
 {
   for (NodeIndex i : diagram().existingNodeIndices()) {
     Node &node = diagram().node(i);
@@ -522,7 +534,11 @@ NodeConnectorIndex
 }
 
 
-bool DiagramEditor::nodeIsInRect(NodeIndex node_index,const Rect &rect) const
+bool
+  DiagramEditor::nodeIsInRect(
+    NodeIndex node_index,
+    const ViewportRect &rect
+  ) const
 {
   Node &node = diagram().node(node_index);
   NodeRenderInfo render_info = nodeRenderInfo(node);
@@ -531,7 +547,7 @@ bool DiagramEditor::nodeIsInRect(NodeIndex node_index,const Rect &rect) const
 }
 
 
-void DiagramEditor::selectNodesInRect(const Rect &rect)
+void DiagramEditor::selectNodesInRect(const ViewportRect &rect)
 {
   for (NodeIndex index : diagram().existingNodeIndices()) {
     if (nodeIsInRect(index,rect)) {
@@ -551,6 +567,11 @@ static void order(float &a,float &b)
 
 void DiagramEditor::mouseReleasedAt(ViewportCoords mouse_release_position)
 {
+  if (mouse_mode==MouseMode::translate_view) {
+    mouse_mode = MouseMode::none;
+    return;
+  }
+
   if (!selected_node_connector_index.isNull()) {
     NodeConnectorIndex release_index =
       indexOfNodeConnectorContaining(mouse_release_position);
@@ -596,7 +617,7 @@ void DiagramEditor::mouseReleasedAt(ViewportCoords mouse_release_position)
 
   if (maybe_selection_rectangle) {
     maybe_selection_rectangle->end = mouse_release_position;
-    Rect selection_rect = *maybe_selection_rectangle;
+    ViewportRect selection_rect = *maybe_selection_rectangle;
 
     order(selection_rect.start.x,selection_rect.end.x);
     order(selection_rect.start.y,selection_rect.end.y);
@@ -612,12 +633,13 @@ void DiagramEditor::mouseReleasedAt(ViewportCoords mouse_release_position)
 
 #if USE_OPTIONAL_MOUSE_PRESS_POSITION
   assert(maybe_mouse_press_position);
-  const Point2D mouse_press_position = *maybe_mouse_press_position;
+  const ViewportCoords mouse_press_position = *maybe_mouse_press_position;
 #endif
 
   if (mouse_press_position==mouse_release_position) {
     if (!aNodeIsFocused() && !aNodeIsSelected()) {
-      int new_node_index = addNode("",mouse_press_position);
+      int new_node_index =
+        addNode("",diagramCoordsFromViewportCoords(mouse_press_position));
       focusNode(new_node_index,diagram());
       redraw();
       return;
@@ -744,7 +766,7 @@ void
     }
   }
 
-  maybe_selection_rectangle = Rect();
+  maybe_selection_rectangle = ViewportRect();
   maybe_selection_rectangle->start = maybe_selection_rectangle->end = p;
 
   redraw();
@@ -919,10 +941,10 @@ auto
 }
 
 
-auto
+DiagramCoords
   DiagramEditor::diagramCoordsFromViewportCoords(
     const ViewportCoords &viewport_coords
-  ) const -> Point2D
+  ) const
 {
-  return viewport_coords - view_offset;
+  return DiagramCoords(viewport_coords - view_offset);
 }

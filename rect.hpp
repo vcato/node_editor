@@ -1,5 +1,10 @@
-struct Rect {
-  Point2D start, end;
+#include "point2d.hpp"
+
+
+template <typename Tag>
+struct TaggedRect {
+  TaggedPoint2D<Tag> start, end;
+  using Point2D = TaggedPoint2D<Tag>;
 
   bool contains(const Point2D &p)
   {
@@ -8,7 +13,7 @@ struct Rect {
       p.y >= start.y && p.y <= end.y;
   }
 
-  bool contains(const Rect &r) const
+  bool contains(const TaggedRect &r) const
   {
     if (r.start.x<start.x) return false;
     if (r.start.y<start.y) return false;

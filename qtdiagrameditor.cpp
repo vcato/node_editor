@@ -137,7 +137,11 @@ auto QtDiagramEditor::screenToViewportCoords(int x,int y) const
 }
 
 
-bool QtDiagramEditor::contains(const TextObject &text_object,const Point2D &p)
+bool
+  QtDiagramEditor::contains(
+    const DiagramTextObject &text_object,
+    const ViewportCoords &p
+  )
 {
   return nodeRect(text_object).contains(p);
 }
@@ -203,7 +207,10 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
 }
 
 
-void QtDiagramEditor::drawClosedLine(const std::vector<Point2D> &vertices)
+void
+  QtDiagramEditor::drawClosedLine(
+    const std::vector<ViewportCoords> &vertices
+  )
 {
   int n = vertices.size();
 
@@ -215,7 +222,7 @@ void QtDiagramEditor::drawClosedLine(const std::vector<Point2D> &vertices)
 
 void
   QtDiagramEditor::drawPolygon(
-    const std::vector<Point2D> &vertices,
+    const std::vector<ViewportCoords> &vertices,
     const Color &color
   )
 {
@@ -262,34 +269,35 @@ void
 }
 
 
-void QtDiagramEditor::drawPolygon(const std::vector<Point2D> &vertices)
+void QtDiagramEditor::drawPolygon(const std::vector<ViewportCoords> &vertices)
 {
   drawPolygon(vertices,Color{0.5,0.5,0});
 }
 
 
-std::vector<Point2D> QtDiagramEditor::verticesOf(const Rect &rect)
+std::vector<ViewportCoords>
+  QtDiagramEditor::verticesOf(const ViewportRect &rect)
 {
-  std::vector<Point2D> vertices;
+  std::vector<ViewportCoords> vertices;
 
   float x1 = rect.start.x;
   float y1 = rect.start.y;
   float x2 = rect.end.x;
   float y2 = rect.end.y;
 
-  vertices.push_back(Point2D{x1,y1});
-  vertices.push_back(Point2D{x2,y1});
-  vertices.push_back(Point2D{x2,y2});
-  vertices.push_back(Point2D{x1,y2});
+  vertices.push_back(ViewportCoords{x1,y1});
+  vertices.push_back(ViewportCoords{x2,y1});
+  vertices.push_back(ViewportCoords{x2,y2});
+  vertices.push_back(ViewportCoords{x1,y2});
 
   return vertices;
 }
 
 
-std::vector<Point2D>
-  QtDiagramEditor::roundedVerticesOf(const Rect &rect,float offset)
+std::vector<ViewportCoords>
+  QtDiagramEditor::roundedVerticesOf(const ViewportRect &rect,float offset)
 {
-  std::vector<Point2D> vertices;
+  std::vector<ViewportCoords> vertices;
   float radius = 5;
   float v = radius*sqrtf(2)/2;
 
@@ -306,21 +314,21 @@ std::vector<Point2D>
   float y2a = y2 - radius;
   float y2b = y2a + v;
 
-  vertices.push_back(Point2D{x1,y1a});
-  vertices.push_back(Point2D{x1b,y1b});
-  vertices.push_back(Point2D{x1a,y1});
+  vertices.push_back(ViewportCoords{x1,y1a});
+  vertices.push_back(ViewportCoords{x1b,y1b});
+  vertices.push_back(ViewportCoords{x1a,y1});
 
-  vertices.push_back(Point2D{x2a,y1});
-  vertices.push_back(Point2D{x2b,y1b});
-  vertices.push_back(Point2D{x2,y1a});
+  vertices.push_back(ViewportCoords{x2a,y1});
+  vertices.push_back(ViewportCoords{x2b,y1b});
+  vertices.push_back(ViewportCoords{x2,y1a});
 
-  vertices.push_back(Point2D{x2,y2a});
-  vertices.push_back(Point2D{x2b,y2b});
-  vertices.push_back(Point2D{x2a,y2});
+  vertices.push_back(ViewportCoords{x2,y2a});
+  vertices.push_back(ViewportCoords{x2b,y2b});
+  vertices.push_back(ViewportCoords{x2a,y2});
 
-  vertices.push_back(Point2D{x1a,y2});
-  vertices.push_back(Point2D{x1b,y2b});
-  vertices.push_back(Point2D{x1,y2a});
+  vertices.push_back(ViewportCoords{x1a,y2});
+  vertices.push_back(ViewportCoords{x1b,y2b});
+  vertices.push_back(ViewportCoords{x1,y2a});
 
   return vertices;
 }
@@ -328,31 +336,31 @@ std::vector<Point2D>
 
 
 
-std::vector<Point2D> QtDiagramEditor::verticesOf(const Circle &circle)
+std::vector<ViewportCoords> QtDiagramEditor::verticesOf(const Circle &circle)
 {
   Point2D center = circle.center;
   float radius = circle.radius;
-  std::vector<Point2D> vertices;
+  std::vector<ViewportCoords> vertices;
 
   for (int i=0; i!=10; ++i) {
     float fraction = i/10.0;
     float angle = 2*M_PI * fraction;
     float x = center.x + cos(angle)*radius;
     float y = center.y + sin(angle)*radius;
-    vertices.push_back(Point2D{x,y});
+    vertices.push_back(ViewportCoords{x,y});
   }
 
   return vertices;
 }
 
 
-void QtDiagramEditor::drawRect(const Rect &arg)
+void QtDiagramEditor::drawRect(const ViewportRect &arg)
 {
   drawClosedLine(verticesOf(arg));
 }
 
 
-void QtDiagramEditor::drawRoundedRect(const Rect &arg)
+void QtDiagramEditor::drawRoundedRect(const ViewportRect &arg)
 {
   float offset = 0.5;
   drawClosedLine(roundedVerticesOf(arg,offset));
@@ -365,13 +373,16 @@ void QtDiagramEditor::drawCircle(const Circle &circle)
 }
 
 
-void QtDiagramEditor::drawFilledRect(const Rect &rect)
+void QtDiagramEditor::drawFilledRect(const ViewportRect &rect)
 {
   drawPolygon(verticesOf(rect));
 }
 
 
-void QtDiagramEditor::drawFilledRoundedRect(const Rect &rect,const Color &color)
+void
+  QtDiagramEditor::drawFilledRoundedRect(
+    const ViewportRect &rect,const Color &color
+  )
 {
   float offset = 0;
   drawPolygon(roundedVerticesOf(rect,offset),color);
@@ -384,7 +395,8 @@ void QtDiagramEditor::drawFilledCircle(const Circle &circle)
 }
 
 
-Rect QtDiagramEditor::rectAroundText(const TextObject &text_object) const
+ViewportRect
+  QtDiagramEditor::rectAroundText(const ViewportTextObject &text_object) const
 {
   std::string text = text_object.text;
   if (text == "") {
@@ -404,38 +416,38 @@ Rect QtDiagramEditor::rectAroundText(const TextObject &text_object) const
   auto ex = x+br.x()+1;
   auto by = y-br.y()-1;
   auto ey = y-tl.y();
-  auto begin = Point2D{bx,by};
-  auto end =   Point2D{ex,ey};
-  return Rect{begin,end};
+  auto begin = ViewportCoords{bx,by};
+  auto end =   ViewportCoords{ex,ey};
+  return {begin,end};
 }
 
 
 void
   QtDiagramEditor::drawAlignedText(
     const std::string &text,
-    const Point2D &position,
+    const ViewportCoords &position,
     float horizontal_alignment,
     float vertical_alignment
   )
 {
-  TextObject text_object =
+  ViewportTextObject text_object =
     alignedTextObject(text,position,horizontal_alignment,vertical_alignment);
   drawText(text_object);
 }
 
 
-void QtDiagramEditor::drawText(const TextObject &text_object)
+void QtDiagramEditor::drawText(const ViewportTextObject &text_object)
 {
-  Point2D position = text_object.position;
+  ViewportCoords position = text_object.position;
   renderText(position.x,position.y,0,qString(text_object.text));
 }
 
 
 void
   QtDiagramEditor::drawBoxedText2(
-    const TextObject &text_object,
+    const ViewportTextObject &text_object,
     bool is_selected,
-    const Rect &rect
+    const ViewportRect &rect
   )
 {
   if (is_selected) {
@@ -449,12 +461,12 @@ void
 
 void
   QtDiagramEditor::drawBoxedText(
-    const TextObject &text_object,
+    const DiagramTextObject &text_object,
     bool is_selected
   )
 {
-  Rect rect = nodeRect(text_object);
-  drawBoxedText2(text_object,is_selected,rect);
+  ViewportRect rect = nodeRect(text_object);
+  drawBoxedText2(viewportTextObject(text_object),is_selected,rect);
 }
 
 
@@ -470,7 +482,11 @@ int QtDiagramEditor::textWidth(const std::string &s) const
 }
 
 
-void QtDiagramEditor::drawCursor(const TextObject &text_object,int column_index)
+void
+  QtDiagramEditor::drawCursor(
+    const ViewportTextObject &text_object,
+    int column_index
+  )
 {
   float cursor_height = textHeight();
   float text_width = textWidth(text_object.text.substr(0,column_index));
@@ -480,7 +496,7 @@ void QtDiagramEditor::drawCursor(const TextObject &text_object,int column_index)
 }
 
 
-void QtDiagramEditor::drawCursor(const TextObject &text_object)
+void QtDiagramEditor::drawCursor(const ViewportTextObject &text_object)
 {
   drawCursor(text_object,text_object.text.length());
 }
@@ -513,29 +529,18 @@ Circle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
 }
 
 
-
-TextObject
-  QtDiagramEditor::outputTextObject(const string &s,float right_x,float y) const
-{
-  TextObject t =
-    alignedTextObject(
-      s,
-      Point2D(right_x,y),
-      /*horizontal_alignment*/1,
-      /*vertical_alignment*/1
-    );
-  return t;
-}
-
-
 void QtDiagramEditor::drawNode(NodeIndex node_index)
 {
   const Node &node = this->node(node_index);
   NodeRenderInfo render_info = nodeRenderInfo(node);
 
   bool is_selected = nodeIsSelected(node_index);
-  const TextObject &header_text_object = node.header_text_object;
-  drawBoxedText2(header_text_object,is_selected,render_info.header_rect);
+  const DiagramTextObject &header_text_object = node.header_text_object;
+  drawBoxedText2(
+    viewportTextObject(header_text_object),
+    is_selected,
+    render_info.header_rect
+  );
 
   Color unselected_color{0.25,0.25,0.5};
   Color selected_color{0.5,0.5,0};
@@ -627,8 +632,5 @@ void QtDiagramEditor::paintGL()
   }
 
   begin2DDrawing(width(),height());
-  glPushMatrix();
-  glTranslatef(view_offset.x,view_offset.y,0);
   drawAll();
-  glPopMatrix();
 }

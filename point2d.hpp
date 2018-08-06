@@ -5,25 +5,31 @@
 #include "vector2d.hpp"
 
 
-struct Point2D {
+#define USE_BASIC_POINT2D 0
+
+
+template <typename Tag> struct TaggedPoint2D;
+
+template <>
+struct TaggedPoint2D<void> {
   float x,y;
 
-  Point2D()
+  TaggedPoint2D()
   : x(0), y(0)
   {
   }
 
-  Point2D(float x_arg,float y_arg)
+  TaggedPoint2D(float x_arg,float y_arg)
   : x(x_arg), y(y_arg)
   {
   }
 
-  bool operator==(const Point2D &arg) const
+  bool operator==(const TaggedPoint2D &arg) const
   {
     return x==arg.x && y==arg.y;
   }
 
-  bool operator!=(const Point2D &arg) const
+  bool operator!=(const TaggedPoint2D &arg) const
   {
     return !operator==(arg);
   }
@@ -31,23 +37,23 @@ struct Point2D {
 
 
 template <typename Tag>
-struct TaggedPoint2D : Point2D {
-  explicit TaggedPoint2D(const Point2D &arg) : Point2D(arg) { }
+struct TaggedPoint2D : TaggedPoint2D<void> {
+  using TaggedPoint2D<void>::TaggedPoint2D;
 
-  using Point2D::Point2D;
+  TaggedPoint2D() = default;
+
+  explicit TaggedPoint2D(const TaggedPoint2D<void> &arg)
+  : TaggedPoint2D<void>(arg)
+  {
+  }
 };
 
 
-inline Point2D &operator+=(Point2D &point,const Vector2D &vector)
-{
-  point.x += vector.x;
-  point.y += vector.y;
-  return point;
-}
+using Point2D = TaggedPoint2D<void>;
 
 
 template <typename Tag>
-TaggedPoint2D<Tag> &
+inline TaggedPoint2D<Tag> &
   operator+=(TaggedPoint2D<Tag> &point,const Vector2D &vector)
 {
   point.x += vector.x;
@@ -56,7 +62,9 @@ TaggedPoint2D<Tag> &
 }
 
 
-inline Point2D &operator-=(Point2D &point,const Vector2D &vector)
+template <typename Tag>
+inline TaggedPoint2D<Tag> &
+  operator-=(TaggedPoint2D<Tag> &point,const Vector2D &vector)
 {
   point.x -= vector.x;
   point.y -= vector.y;
@@ -64,25 +72,31 @@ inline Point2D &operator-=(Point2D &point,const Vector2D &vector)
 }
 
 
-inline Vector2D operator-(const Point2D &a,const Point2D &b)
+template <typename Tag>
+inline Vector2D
+  operator-(const TaggedPoint2D<Tag> &a,const TaggedPoint2D<Tag> &b)
 {
   return Vector2D( a.x-b.x, a.y-b.y );
 }
 
 
-inline Point2D operator-(const Point2D &a,const Vector2D &b)
+template <typename Tag>
+inline TaggedPoint2D<Tag>
+  operator-(const TaggedPoint2D<Tag> &a,const Vector2D &b)
 {
   float x = a.x - b.x;
   float y = a.y - b.y;
-  return Point2D{x,y};
+  return {x,y};
 }
 
 
-inline Point2D operator+(const Point2D &a,const Vector2D &b)
+template <typename Tag>
+inline TaggedPoint2D<Tag>
+  operator+(const TaggedPoint2D<Tag> &a,const Vector2D &b)
 {
   float x = a.x + b.x;
   float y = a.y + b.y;
-  return Point2D{x,y};
+  return {x,y};
 }
 
 

@@ -183,17 +183,10 @@ size_t Node::countOutputs(const Node &node)
 }
 
 
-#if USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
 void Node::setPosition(const DiagramCoords &arg)
 {
   header_text_object.position = arg;
 }
-#else
-void Node::setPosition(const Point2D &arg)
-{
-  header_text_object.position = arg;
-}
-#endif
 
 
 void Node::setText(const std::string &text)

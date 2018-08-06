@@ -26,14 +26,17 @@ struct FakeDiagramEditor : DiagramEditor {
   }
 
   NodeIndex
-    userAddsANodeWithTextAt(const std::string &text,const Point2D &position)
+    userAddsANodeWithTextAt(
+      const std::string &text,
+      const DiagramCoords &position
+    )
   {
     return addNode(text,position);
   }
 
   int userAddsANodeWithText(const std::string &text)
   {
-    return userAddsANodeWithTextAt(text,Point2D(0,0));
+    return userAddsANodeWithTextAt(text,DiagramCoords(0,0));
   }
 
   void userPressesExportDiagram(const std::string &chosen_path)
@@ -154,14 +157,16 @@ struct FakeDiagramEditor : DiagramEditor {
 
   Vector2D viewOffset() const { return view_offset; }
 
-  Rect rectAroundText(const TextObject &text_object) const override
+  ViewportRect
+    rectAroundText(const ViewportTextObject &text_object) const override
   {
     // Just make all text objects fit in a 10x10 square for now.
-    Point2D begin_pos = text_object.position;
-    Point2D end_pos = begin_pos;
+    ViewportCoords begin_pos =
+      viewportCoordsFromDiagramCoords(text_object.position);
+    ViewportCoords end_pos = begin_pos;
     end_pos.x += 10;
     end_pos.y += 10;
-    return Rect{begin_pos,end_pos};
+    return {begin_pos,end_pos};
   }
 
   std::string askForSavePath() override
@@ -199,7 +204,6 @@ struct FakeDiagramEditor : DiagramEditor {
   using DiagramEditor::nSelectedNodes;
   using DiagramEditor::nodeIsSelected;
   using DiagramEditor::viewportCoordsFromDiagramCoords;
-  using DiagramEditor::ViewportCoords;
 };
 
 

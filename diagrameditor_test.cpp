@@ -9,7 +9,6 @@
 using std::string;
 using std::cerr;
 using std::ofstream;
-using ViewportCoords = FakeDiagramEditor::ViewportCoords;
 
 
 
@@ -236,8 +235,8 @@ static void testShiftSelectingMultipleNodes()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  NodeIndex n1 = editor.userAddsANodeWithTextAt("test",Point2D(0,0));
-  NodeIndex n2 = editor.userAddsANodeWithTextAt("test",Point2D(0,100));
+  NodeIndex n1 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,0));
+  NodeIndex n2 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,100));
 
   editor.userClicksAt(
     editor.viewportCoordsFromDiagramCoords(editor.nodeCenter(n1))
@@ -273,8 +272,8 @@ static void
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  NodeIndex n1 = editor.userAddsANodeWithTextAt("x",Point2D(10,10));
-  NodeIndex n2 = editor.userAddsANodeWithTextAt("y",Point2D(20,20));
+  NodeIndex n1 = editor.userAddsANodeWithTextAt("x",DiagramCoords(10,10));
+  NodeIndex n2 = editor.userAddsANodeWithTextAt("y",DiagramCoords(20,20));
 
   editor.userPressesMouseAt(start);
   editor.userMovesMouseTo(end);
@@ -310,6 +309,31 @@ static void testTranslatingView()
   editor.userPressesMiddleMouseAt(ViewportCoords(10,10),modifiers);
   editor.userMovesMouseTo(ViewportCoords(20,10));
   assert(editor.viewOffset()==Vector2D(10,0));
+}
+
+
+static void testTranslatingView2()
+{
+  Diagram diagram;
+  NodeIndex node_index = diagram.addNode("test");
+  FakeDiagramEditor editor(diagram);
+  EventModifiers modifiers;
+  modifiers.alt_is_pressed = true;
+  editor.userPressesMiddleMouseAt(ViewportCoords(10,10),modifiers);
+
+  NodeRenderInfo orig_render_info =
+    editor.nodeRenderInfo(diagram.node(node_index));
+
+  editor.userMovesMouseTo(ViewportCoords(20,10));
+
+  assert(editor.viewOffset()==Vector2D(10,0));
+  NodeRenderInfo translated_render_info =
+    editor.nodeRenderInfo(diagram.node(node_index));
+
+  assert(
+    translated_render_info.header_rect.start ==
+    orig_render_info.header_rect.start + Vector2D(10,0)
+  );
 }
 
 
@@ -410,8 +434,8 @@ static void testConnectingNodes()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  NodeIndex node1 = editor.userAddsANodeWithTextAt("1",Point2D(0,0));
-  NodeIndex node2 = editor.userAddsANodeWithTextAt("return $",Point2D(100,0));
+  NodeIndex node1 = editor.userAddsANodeWithTextAt("1",DiagramCoords(0,0));
+  NodeIndex node2 = editor.userAddsANodeWithTextAt("return $",DiagramCoords(100,0));
   editor.userPressesMouseAt(editor.nodeOutputPosition(node1,0));
 
   int diagram_change_count = 0;
@@ -444,6 +468,7 @@ int main()
   testRectangleSelectingMultipleNodes1();
   testRectangleSelectingMultipleNodes2();
   testTranslatingView();
+  testTranslatingView2();
   testCancellingExport();
   testConnectingNodes();
 

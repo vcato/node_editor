@@ -5,31 +5,28 @@
 #include "point2d.hpp"
 
 
-#define USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION 0
+#if 0
+using DiagramCoordsTag = void;
+using ViewportCoordsTag = void;
+#else
+struct DiagramCoordsTag;
+struct ViewportCoordsTag;
+#endif
 
 
-#if USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
-struct DiagramCoords : Point2D {
-  using Point2D::Point2D;
+using DiagramCoords = TaggedPoint2D<DiagramCoordsTag>;
+using ViewportCoords = TaggedPoint2D<ViewportCoordsTag>;
+
+
+struct DiagramTextObject {
+  std::string text;
+  DiagramCoords position;
 };
 
 
-inline DiagramCoords operator-(const DiagramCoords &a,const Vector2D &b)
-{
-  return DiagramCoords(a-b);
-}
-#else
-using DiagramCoords = Point2D;
-#endif
-
-
-struct TextObject {
+struct ViewportTextObject {
   std::string text;
-#if USE_DIAGRAM_COORDS_FOR_TEXT_OBJECT_POSITION
-  DiagramCoords position;
-#else
-  Point2D position;
-#endif
+  ViewportCoords position;
 };
 
 #endif /* TEXTOBJECT_HPP_ */

@@ -247,7 +247,7 @@ struct DiagramParser : StreamParser {
       scanSection(
         /*line_handler*/[&](const string &tag){
           if (tag=="position:") {
-            node.setPosition(nextPoint2DFrom(stream));
+            node.setPosition(DiagramCoords(nextPoint2DFrom(stream)));
           }
 
           scanEndOfLine();
@@ -264,7 +264,7 @@ struct DiagramParser : StreamParser {
           }
 
           if (tag=="position:") {
-            node.setPosition(nextPoint2DFrom(stream));
+            node.setPosition(DiagramCoords(nextPoint2DFrom(stream)));
             return true;
           }
 
