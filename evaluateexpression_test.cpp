@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include "environment.hpp"
 
 
 using std::vector;
@@ -86,6 +87,45 @@ static void testAddingInputs()
 }
 
 
+#if 0
+static void testIdentifier()
+{
+  string text = "x";
+  int index = 0;
+  StringParser parser(text,index);
+  vector<Any> input_values = {};
+  ostringstream error_stream;
+  Environment environment;
+  environment["x"] = 5;
+  int input_index = 0;
+  Optional<Any> maybe_result =
+    evaluateExpression(
+      parser,
+      input_values,
+      input_index,
+      error_stream
+    );
+
+  if (!maybe_result) {
+    string error_text = error_stream.str();
+    cerr << "error: " << error_text << "\n";
+  }
+
+  assert(maybe_result);
+  const Any &result = *maybe_result;
+  assert(result.asFloat()==5);
+}
+#endif
+
+
+#if 0
+static void testPosEXpr()
+{
+  Optional<Any> maybe_result = evaluateString("PosExpr()");
+}
+#endif
+
+
 int main()
 {
   testInvalidExpression("[,2]");
@@ -110,4 +150,8 @@ int main()
   testInvalidExpression("([1,2] + [2,3]");
   testInvalidExpression("[[],2]/2");
   testAddingInputs();
+  //testIdentifier();
+#if 0
+  testPosEXpr();
+#endif
 }

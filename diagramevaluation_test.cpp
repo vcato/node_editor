@@ -77,8 +77,8 @@ static const char *averaging_diagram_text =
   "}\n";
 
 
-static Point2D
-  evaluateDiagramReturningPoint2D(
+static Any
+  evaluateDiagramReturningAny(
     const Diagram &diagram,
     const Environment &environment = {}
   )
@@ -87,8 +87,19 @@ static Point2D
   DiagramExecutor executor(show_stream);
   executor.environment = environment;
   evaluateDiagram(diagram,executor);
-  assert(executor.return_value.isVector());
-  const vector<Any> &return_vector = executor.return_value.asVector();
+  return std::move(executor.return_value);
+}
+
+
+static Point2D
+  evaluateDiagramReturningPoint2D(
+    const Diagram &diagram,
+    const Environment &environment = {}
+  )
+{
+  Any return_value = evaluateDiagramReturningAny(diagram,environment);
+  assert(return_value.isVector());
+  const vector<Any> &return_vector = return_value.asVector();
   assert(return_vector.size()==2);
   const Any &any_x = return_vector[0];
   const Any &any_y = return_vector[1];
@@ -96,6 +107,25 @@ static Point2D
   assert(any_y.isFloat());
   return Point2D(any_x.asFloat(),any_y.asFloat());
 }
+
+
+#if 0
+static float
+  evaluateDiagramReturningFloat(
+    const Diagram &diagram,
+    const DiagramExecutor::Environment &environment = {}
+  )
+{
+  Any return_value = evaluateDiagramReturningAny(diagram,environment);
+
+  if (!return_value.isFloat()) {
+    cerr << "Got a " << return_value.typeName() << " instead of float\n";
+  }
+
+  assert(return_value.isFloat());
+  return return_value.asFloat();
+}
+#endif
 
 
 static void testSimpleReturn()
@@ -163,6 +193,19 @@ static void testAveragingDiagram()
 }
 
 
+#if 0
+static void testExpression()
+{
+  Diagram diagram;
+  DiagramExecutor::Environment environment;
+  environment["x"] = 6;
+  diagram.addNode("return x+5");
+  float result = evaluateDiagramReturningFloat(diagram,environment);
+  assert(result==11);
+}
+#endif
+
+
 int main()
 {
   testSimpleReturn();
@@ -170,4 +213,5 @@ int main()
   testBuildingVector();
   testLocalPositionDiagram();
   testAveragingDiagram();
+  // testExpression();
 }

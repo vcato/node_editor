@@ -7,22 +7,26 @@ using std::string;
 using std::ostream;
 
 
-static Optional<Any>
-  evaluatePrimaryExpression(
-    StringParser &parser,
-    const std::vector<Any> &input_values,
-    int &input_index,
-    ostream &error_stream
-  )
+namespace {
+struct ExpressionEvaluator {
+  StringParser &parser;
+  const std::vector<Any> &input_values;
+  int &input_index;
+  ostream &error_stream;
+
+  Optional<Any> evaluatePrimaryExpression() const;
+  Optional<Any> evaluateExpression() const;
+};
+}
+
+
+Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
 {
   float value = 0;
 
   if (parser.peekChar()=='(') {
     parser.skipChar();
-    Optional<Any> result =
-      evaluateExpression(
-        parser,input_values,input_index,error_stream
-      );
+    Optional<Any> result = evaluateExpression();
 
     if (!result) {
       return {};
@@ -58,8 +62,7 @@ static Optional<Any>
     }
 
     for (;;) {
-      Optional<Any> maybe_value =
-        evaluateExpression(parser,input_values,input_index,error_stream);
+      Optional<Any> maybe_value = evaluateExpression();
 
       if (!maybe_value) {
         return {};
@@ -79,6 +82,16 @@ static Optional<Any>
 
     return Optional<Any>(std::move(vector_value));
   }
+
+#if 0
+  string identifier;
+
+  if (parser.getIdentifier(identifier)) {
+    assert(false);
+  }
+#endif
+
+  error_stream << "Unexpected '" << parser.peekChar() << "'\n";
 
   return Optional<Any>();
 }
@@ -101,16 +114,9 @@ static Optional<Any>
 }
 
 
-Optional<Any>
-  evaluateExpression(
-    StringParser &parser,
-    const std::vector<Any> &input_values,
-    int &input_index,
-    ostream &error_stream
-  )
+Optional<Any> ExpressionEvaluator::evaluateExpression() const
 {
-  Optional<Any> maybe_first_term =
-    evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
+  Optional<Any> maybe_first_term = evaluatePrimaryExpression();
 
   if (!maybe_first_term) {
     return maybe_first_term;
@@ -123,8 +129,7 @@ Optional<Any>
   if (parser.peekChar()=='+') {
     parser.skipChar();
 
-    Optional<Any> maybe_second_term =
-      evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
+    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
 
     if (!maybe_second_term) {
       return {};
@@ -171,8 +176,7 @@ Optional<Any>
   if (parser.peekChar()=='*') {
     parser.skipChar();
 
-    Optional<Any> maybe_second_term =
-      evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
+    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
 
     if (!maybe_second_term) {
       return {};
@@ -207,8 +211,7 @@ Optional<Any>
   if (parser.peekChar()=='/') {
     parser.skipChar();
 
-    Optional<Any> maybe_second_term =
-      evaluatePrimaryExpression(parser,input_values,input_index,error_stream);
+    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
 
     if (!maybe_second_term) {
       return {};
@@ -243,4 +246,18 @@ Optional<Any>
   }
 
   return maybe_first_term;
+}
+
+
+Optional<Any>
+  evaluateExpression(
+    StringParser &parser,
+    const std::vector<Any> &input_values,
+    int &input_index,
+    ostream &error_stream
+  )
+{
+  ExpressionEvaluator evaluator{parser,input_values,input_index,error_stream};
+
+  return evaluator.evaluateExpression();
 }
