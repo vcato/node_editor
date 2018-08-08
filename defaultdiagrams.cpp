@@ -56,45 +56,28 @@ diagram {
   }
   node {
     id: 8
-    position: [40,175]
+    position: [54,108]
     text {
       "target_body"
     }
   }
   node {
-    id: 10
-    position: [559,233]
-    text {
-      "$.pos=$"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 13
-      source_output_index: 0
-    }
-    connection {
-      input_index: 1
-      source_node_id: 4
-      source_output_index: 0
-    }
-  }
-  node {
-    id: 13
-    position: [283,233]
-    text {
-      "$"
-    }
-    connection {
-      input_index: 0
-      source_node_id: 8
-      source_output_index: 0
-    }
-  }
-  node {
     id: 14
-    position: [33,71]
+    position: [40,61]
     text {
       "local_position"
+    }
+  }
+  node {
+    id: 15
+    position: [578,134]
+    text {
+      "PosExpr(body=target_body,pos=$)"
+    }
+    connection {
+      input_index: 0
+      source_node_id: 4
+      source_output_index: 0
     }
   }
 }
