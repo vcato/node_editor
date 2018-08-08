@@ -1,10 +1,8 @@
-#include <map>
 #include "executor.hpp"
+#include "environment.hpp"
 
 
 struct DiagramExecutor : Executor {
-  using Environment = std::map<std::string,Any>;
-
   Any return_value;
   std::ostream &show_stream;
   Environment environment;

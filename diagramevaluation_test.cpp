@@ -80,7 +80,7 @@ static const char *averaging_diagram_text =
 static Point2D
   evaluateDiagramReturningPoint2D(
     const Diagram &diagram,
-    const DiagramExecutor::Environment &environment = {}
+    const Environment &environment = {}
   )
 {
   std::ostringstream show_stream;
@@ -129,7 +129,7 @@ static void testBuildingVector()
   diagram.connectNodes(y_node,0,build_vector_node,1);
   diagram.connectNodes(build_vector_node,0,return_node,0);
 
-  DiagramExecutor::Environment environment;
+  Environment environment;
   environment["x"] = 1;
   environment["y"] = 2;
 
@@ -142,7 +142,7 @@ static void testLocalPositionDiagram()
 {
   Diagram diagram = localPositionDiagram();
 
-  DiagramExecutor::Environment environment;
+  Environment environment;
   environment["x"] = 1;
   environment["y"] = 2;
 
@@ -154,7 +154,7 @@ static void testLocalPositionDiagram()
 static void testAveragingDiagram()
 {
   Diagram diagram = makeDiagram(averaging_diagram_text);
-  DiagramExecutor::Environment environment;
+  Environment environment;
   environment["x"] = 1;
   environment["y"] = 3;
 
