@@ -159,6 +159,7 @@ void Charmapper::apply()
   for (int i=0; i!=n_passes; ++i) {
     auto &pass = this->pass(i);
     auto n_exprs = pass.nExprs();
+
     for (int i=0; i!=n_exprs; ++i) {
       auto &expr = pass.expr(i);
       BodyLink &target_body_link = expr.target_body_link;
@@ -197,9 +198,26 @@ void Charmapper::apply()
           assert(false);
         }
 
+#if 1
         new_position -= makeVector2D(expr.local_position);
 
         setDisplayedBodyPosition(target_body_link,new_position);
+#else
+        // I'm thinking this is roughly how it should work.  To support
+        // this.  We'll need to introduce class and object types into
+        // the Any type.
+        Diagram &diagram = expr.diagram;
+        DiagramExecutor executor(/*show_stream*/cerr);
+        executor.environment["PosExpr"] = posExprClass();
+        executor.environment["target_body"] = target_body_link;
+        executor.environment["local_position"] =
+          makeVector2D(local_position);
+        executor.environment["global_position"] =
+          makeVector2D(global_position);
+        PosExpr pos_expr =
+          evaluatePosExprDiagram(diagram,executor,default_pos_expr)
+        applyPosExpr(pos_expr);
+#endif
       }
     }
   }

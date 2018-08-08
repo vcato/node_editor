@@ -283,5 +283,15 @@ The Pos Expr diagram should actually be evaluated.
 If you add a $ before another one, then the existing connector should move
 down, so that you keep the same connection with the existing $.
 ---
+There's a question of how target bodies should work.
+  * It makes sense that the target body would be in the environment, but
+    the environment is a set of Anys.  Should we expand the Any type to
+    handle target body links?  Seems like Any shouldn't be tied to that,
+    since we would effectively be tying diagrams to charmapper-specific
+    data types.  What is the alternative?
+    * We could add PosExpr to the environment.  We could evaluate it like
+      a function, and have it return some generic object type.
+    * This means we need to introduce classes and objects into the Any type.
+---
 Closing the qtdiagrameditorwindow_manualtest window with the X causes
 a crash.
