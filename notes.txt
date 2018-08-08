@@ -292,6 +292,3 @@ There's a question of how target bodies should work.
     * We could add PosExpr to the environment.  We could evaluate it like
       a function, and have it return some generic object type.
     * This means we need to introduce classes and objects into the Any type.
----
-Closing the qtdiagrameditorwindow_manualtest window with the X causes
-a crash.

@@ -51,7 +51,7 @@ main: main.o diagrameditor.o \
   scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
   qtscenewindow.o qttreewidgetitem.o scenewindow.o \
   qtscenetree.o scenetree.o sceneviewer.o wrapperutil.o evaluateexpression.o \
-  wrapperstate.o makediagram.o point2d.o vector2d.o
+  wrapperstate.o makediagram.o point2d.o vector2d.o diagrameditorwindow.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -138,7 +138,8 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
 treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
   statementtext.o stringutil.o fakediagrameditorwindows.o \
-  evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o
+  evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o \
+  diagrameditorwindow.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
@@ -149,7 +150,7 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   treeeditor.o wrapper.o world.o scenetree.o generatename.o sceneviewer.o \
   wrapperutil.o diagrameditor.o circle.o fakediagrameditorwindows.o \
   diagramevaluation.o evaluateexpression.o wrapperstate.o makediagram.o \
-  point2d.o vector2d.o
+  point2d.o vector2d.o diagrameditorwindow.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
@@ -161,7 +162,8 @@ qtdiagrameditorwindow_manualtest: qtdiagrameditorwindow_manualtest.o \
   qtdiagrameditor.o moc_qtdiagrameditor.o diagrameditor.o diagramio.o \
   qtmenu.o draw.o diagram.o diagramevaluation.o diagramnode.o circle.o \
   qtslot.o moc_qtslot.o linetext.o statementtext.o stringutil.o \
-  qtdiagrameditorwindow.o evaluateexpression.o point2d.o vector2d.o
+  qtdiagrameditorwindow.o evaluateexpression.o point2d.o vector2d.o \
+  diagrameditorwindow.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

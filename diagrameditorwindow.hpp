@@ -6,27 +6,15 @@
 
 class DiagramEditorWindow {
   public:
-    void setDiagramPtr(Diagram *arg)
-    {
-      diagramEditor().setDiagramPtr(arg);
-    }
-
+    void setDiagramPtr(Diagram *arg);
     Diagram *diagramPtr() { return diagramEditor().diagramPtr(); }
 
+    std::function<void()> close_callback;
+    std::function<void()> &diagramChangedCallback();
     virtual void forceClose() = 0;
 
-    std::function<void()> close_callback;
-
-    std::function<void()> &diagramChangedCallback()
-    {
-      return diagramEditor().diagramChangedCallback();
-    }
-
   protected:
-    void notifyWindowClosing()
-    {
-      close_callback();
-    }
+    void notifyWindowClosing();
 
   private:
     virtual DiagramEditor &diagramEditor() = 0;
