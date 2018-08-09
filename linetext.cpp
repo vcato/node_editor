@@ -176,7 +176,15 @@ Optional<Any>
       return Any();
     }
 
-    return executor.variableValue(identifier);
+    return
+      evaluateExpressionStartingWithIdentifier(
+        identifier,
+        parser,
+        input_values,
+        input_index,
+        error_stream,
+        executor.environment
+      );
   }
 
   return

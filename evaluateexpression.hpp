@@ -12,3 +12,13 @@ extern Optional<Any>
     std::ostream &error_stream,
     const Environment &
   );
+
+extern Optional<Any>
+  evaluateExpressionStartingWithIdentifier(
+    const std::string &identifier,
+    StringParser &parser,
+    const std::vector<Any> &input_values,
+    int &input_index,
+    std::ostream &error_stream,
+    const Environment &environment
+  );

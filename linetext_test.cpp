@@ -148,6 +148,12 @@ int main()
   }
   {
     FakeExecutor executor;
+    executor.environment["x"] = 5;
+    Optional<Any> maybe_result = testLineTextWithoutError("x+6",executor);
+    assert(*maybe_result==11);
+  }
+  {
+    FakeExecutor executor;
     ostringstream error_stream;
     Optional<Any> maybe_result =
       evaluateLineText("return [",{},executor,error_stream);

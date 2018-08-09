@@ -13,11 +13,27 @@ struct ExpressionEvaluator {
   const std::vector<Any> &input_values;
   int &input_index;
   ostream &error_stream;
-  const Environment &environemnt;
+  const Environment &environment;
 
   Optional<Any> evaluatePrimaryExpression() const;
+  Optional<Any>
+    evaluatePrimaryExpressionStartingWithIdentifier(const string &) const;
   Optional<Any> evaluateExpression() const;
+  Optional<Any> evaluateExpressionStartingWithIdentifier(const string &) const;
+  Optional<Any>
+    evaluateExpressionStartingWithTerm(
+      Optional<Any> maybe_first_term
+    ) const;
 };
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluatePrimaryExpressionStartingWithIdentifier(
+    const string &identifier
+  ) const
+{
+  return variableValue(identifier,environment);
 }
 
 
@@ -87,7 +103,7 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
   string identifier;
 
   if (parser.getIdentifier(identifier)) {
-    return variableValue(identifier,environemnt);
+    return variableValue(identifier,environment);
   }
 
   error_stream << "Unexpected '" << parser.peekChar() << "'\n";
@@ -113,10 +129,23 @@ static Optional<Any>
 }
 
 
-Optional<Any> ExpressionEvaluator::evaluateExpression() const
+Optional<Any>
+  ExpressionEvaluator::evaluateExpressionStartingWithIdentifier(
+    const string &identifier
+  ) const
 {
-  Optional<Any> maybe_first_term = evaluatePrimaryExpression();
+  return
+    evaluateExpressionStartingWithTerm(
+      evaluatePrimaryExpressionStartingWithIdentifier(identifier)
+    );
+}
 
+
+Optional<Any>
+  ExpressionEvaluator::evaluateExpressionStartingWithTerm(
+    Optional<Any> maybe_first_term
+  ) const
+{
   if (!maybe_first_term) {
     return maybe_first_term;
   }
@@ -248,6 +277,12 @@ Optional<Any> ExpressionEvaluator::evaluateExpression() const
 }
 
 
+Optional<Any> ExpressionEvaluator::evaluateExpression() const
+{
+  return evaluateExpressionStartingWithTerm(evaluatePrimaryExpression());
+}
+
+
 Optional<Any>
   evaluateExpression(
     StringParser &parser,
@@ -262,4 +297,22 @@ Optional<Any>
   };
 
   return evaluator.evaluateExpression();
+}
+
+
+Optional<Any>
+  evaluateExpressionStartingWithIdentifier(
+    const string &identifier,
+    StringParser &parser,
+    const std::vector<Any> &input_values,
+    int &input_index,
+    ostream &error_stream,
+    const Environment &environment
+  )
+{
+  ExpressionEvaluator evaluator{
+    parser,input_values,input_index,error_stream,environment
+  };
+
+  return evaluator.evaluateExpressionStartingWithIdentifier(identifier);
 }
