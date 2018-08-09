@@ -34,10 +34,15 @@ static Optional<Any> evaluateString(const string &arg)
   ostringstream error_stream;
   Environment environment;
 
-  return
-    evaluateExpression(
-      parser,input_values,input_index,error_stream,environment
-    );
+  ExpressionEvaluatorData data{
+    parser,
+    input_values,
+    input_index,
+    error_stream,
+    environment
+  };
+
+  return evaluateExpression(data);
 }
 
 
@@ -79,14 +84,15 @@ static void testAddingInputs()
   int input_index = 0;
   ostringstream error_stream;
   Environment environment;
-  Optional<Any> maybe_result =
-    evaluateExpression(
-      parser,
-      input_values,
-      input_index,
-      error_stream,
-      environment
-    );
+  ExpressionEvaluatorData data{
+    parser,
+    input_values,
+    input_index,
+    error_stream,
+    environment
+  };
+
+  Optional<Any> maybe_result = evaluateExpression(data);
   assert(maybe_result);
   const Any& result = *maybe_result;
   assert(result.isFloat());
@@ -104,14 +110,15 @@ static void testIdentifier()
   Environment environment;
   environment["x"] = 5;
   int input_index = 0;
-  Optional<Any> maybe_result =
-    evaluateExpression(
-      parser,
-      input_values,
-      input_index,
-      error_stream,
-      environment
-    );
+  ExpressionEvaluatorData data{
+    parser,
+    input_values,
+    input_index,
+    error_stream,
+    environment
+  };
+
+  Optional<Any> maybe_result = evaluateExpression(data);
 
   if (!maybe_result) {
     string error_text = error_stream.str();

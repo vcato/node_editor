@@ -56,25 +56,6 @@ static bool isReturnStatement(const std::string &text)
 }
 
 
-static bool isNumber(const std::string &text)
-{
-  int index = 0;
-  StringParser parser{text,index};
-
-  parser.skipWhitespace();
-
-  if (!parser.skipNumber()) {
-    return false;
-  }
-
-  parser.skipWhitespace();
-
-  if (!parser.atEnd()) return false;
-
-  return true;
-}
-
-
 static string trimmed(const string &s)
 {
   const char *whitespace = " ";
@@ -106,16 +87,19 @@ Optional<Any>
     ostream &error_stream
   )
 {
-  string line_text = trimmed(line_text_arg);
+  int character_index = 0;
+  StringParser parser{line_text_arg,character_index};
+  parser.skipWhitespace();
   int input_index = 0;
 
-  if (isNumber(line_text)) {
-    float result = std::stoi(line_text);
-    return Any(result);
-  }
+  ExpressionEvaluatorData data{
+    parser,
+    input_values,
+    input_index,
+    error_stream,
+    executor.environment
+  };
 
-  int character_index = 0;
-  StringParser parser{line_text,character_index};
   string identifier;
 
   if (parser.getIdentifier(identifier)) {
@@ -124,20 +108,11 @@ Optional<Any>
         return {};
       }
 
-      ++character_index;
+      parser.skipChar();
 
-      Optional<Any> maybe_value =
-        evaluateExpression(
-          parser,
-          input_values,
-          input_index,
-          error_stream,
-          executor.environment
-        );
+      Optional<Any> maybe_value = evaluateExpression(data);
 
-      bool was_evaluated = maybe_value.hasValue();
-
-      if (!was_evaluated) {
+      if (!maybe_value) {
         return {};
       }
 
@@ -145,7 +120,7 @@ Optional<Any>
         return {};
       }
 
-      ++character_index;
+      parser.skipChar();
 
       executor.executeShow(*maybe_value);
 
@@ -157,38 +132,19 @@ Optional<Any>
     }
 
     if (identifier=="return") {
-      Optional<Any> maybe_value =
-        evaluateExpression(
-          parser,
-          input_values,
-          input_index,
-          error_stream,
-          executor.environment
-        );
+      Optional<Any> maybe_value = evaluateExpression(data);
 
-      if (maybe_value) {
-        executor.executeReturn(*maybe_value);
-      }
-      else {
+      if (!maybe_value) {
         return {};
       }
+
+      executor.executeReturn(*maybe_value);
 
       return Any();
     }
 
-    return
-      evaluateExpressionStartingWithIdentifier(
-        identifier,
-        parser,
-        input_values,
-        input_index,
-        error_stream,
-        executor.environment
-      );
+    return evaluateExpressionStartingWithIdentifier(data,identifier);
   }
 
-  return
-    evaluateExpression(
-      parser,input_values,input_index,error_stream,executor.environment
-    );
+  return evaluateExpression(data);
 }

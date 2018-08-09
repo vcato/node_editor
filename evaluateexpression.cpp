@@ -8,12 +8,11 @@ using std::ostream;
 
 
 namespace {
-struct ExpressionEvaluator {
-  StringParser &parser;
-  const std::vector<Any> &input_values;
-  int &input_index;
-  ostream &error_stream;
-  const Environment &environment;
+struct ExpressionEvaluator : ExpressionEvaluatorData {
+  ExpressionEvaluator(const ExpressionEvaluatorData &data)
+  : ExpressionEvaluatorData(data)
+  {
+  }
 
   Optional<Any> evaluatePrimaryExpression() const;
   Optional<Any>
@@ -283,36 +282,20 @@ Optional<Any> ExpressionEvaluator::evaluateExpression() const
 }
 
 
-Optional<Any>
-  evaluateExpression(
-    StringParser &parser,
-    const std::vector<Any> &input_values,
-    int &input_index,
-    ostream &error_stream,
-    const Environment &environment
-  )
+Optional<Any> evaluateExpression(const ExpressionEvaluatorData &data)
 {
-  ExpressionEvaluator evaluator{
-    parser,input_values,input_index,error_stream,environment
-  };
-
-  return evaluator.evaluateExpression();
+  return ExpressionEvaluator(data).evaluateExpression();
 }
 
 
 Optional<Any>
   evaluateExpressionStartingWithIdentifier(
-    const string &identifier,
-    StringParser &parser,
-    const std::vector<Any> &input_values,
-    int &input_index,
-    ostream &error_stream,
-    const Environment &environment
+    const ExpressionEvaluatorData &data,
+    const string &identifier
   )
 {
-  ExpressionEvaluator evaluator{
-    parser,input_values,input_index,error_stream,environment
-  };
-
-  return evaluator.evaluateExpressionStartingWithIdentifier(identifier);
+  return
+    ExpressionEvaluator(data).evaluateExpressionStartingWithIdentifier(
+      identifier
+    );
 }

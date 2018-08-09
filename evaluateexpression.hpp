@@ -4,21 +4,19 @@
 #include "environment.hpp"
 
 
-extern Optional<Any>
-  evaluateExpression(
-    StringParser &parser,
-    const std::vector<Any> &input_values,
-    int &input_index,
-    std::ostream &error_stream,
-    const Environment &
-  );
+struct ExpressionEvaluatorData {
+  StringParser &parser;
+  const std::vector<Any> &input_values;
+  int &input_index;
+  std::ostream &error_stream;
+  const Environment &environment;
+};
+
+
+extern Optional<Any> evaluateExpression(const ExpressionEvaluatorData &data);
 
 extern Optional<Any>
   evaluateExpressionStartingWithIdentifier(
-    const std::string &identifier,
-    StringParser &parser,
-    const std::vector<Any> &input_values,
-    int &input_index,
-    std::ostream &error_stream,
-    const Environment &environment
+    const ExpressionEvaluatorData &data,
+    const std::string &identifier
   );
