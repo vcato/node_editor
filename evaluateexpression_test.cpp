@@ -32,7 +32,12 @@ static Optional<Any> evaluateString(const string &arg)
   vector<Any> input_values;
   int input_index = 0;
   ostringstream error_stream;
-  return evaluateExpression(parser,input_values,input_index,error_stream);
+  Environment environment;
+
+  return
+    evaluateExpression(
+      parser,input_values,input_index,error_stream,environment
+    );
 }
 
 
@@ -73,12 +78,14 @@ static void testAddingInputs()
   vector<Any> input_values = {1,2};
   int input_index = 0;
   ostringstream error_stream;
+  Environment environment;
   Optional<Any> maybe_result =
     evaluateExpression(
       parser,
       input_values,
       input_index,
-      error_stream
+      error_stream,
+      environment
     );
   assert(maybe_result);
   const Any& result = *maybe_result;
@@ -87,7 +94,6 @@ static void testAddingInputs()
 }
 
 
-#if 0
 static void testIdentifier()
 {
   string text = "x";
@@ -103,7 +109,8 @@ static void testIdentifier()
       parser,
       input_values,
       input_index,
-      error_stream
+      error_stream,
+      environment
     );
 
   if (!maybe_result) {
@@ -115,7 +122,6 @@ static void testIdentifier()
   const Any &result = *maybe_result;
   assert(result.asFloat()==5);
 }
-#endif
 
 
 #if 0
@@ -150,7 +156,7 @@ int main()
   testInvalidExpression("([1,2] + [2,3]");
   testInvalidExpression("[[],2]/2");
   testAddingInputs();
-  //testIdentifier();
+  testIdentifier();
 #if 0
   testPosEXpr();
 #endif

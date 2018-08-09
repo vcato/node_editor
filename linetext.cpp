@@ -131,7 +131,8 @@ Optional<Any>
           parser,
           input_values,
           input_index,
-          error_stream
+          error_stream,
+          executor.environment
         );
 
       bool was_evaluated = maybe_value.hasValue();
@@ -161,7 +162,8 @@ Optional<Any>
           parser,
           input_values,
           input_index,
-          error_stream
+          error_stream,
+          executor.environment
         );
 
       if (maybe_value) {
@@ -177,5 +179,8 @@ Optional<Any>
     return executor.variableValue(identifier);
   }
 
-  return evaluateExpression(parser,input_values,input_index,error_stream);
+  return
+    evaluateExpression(
+      parser,input_values,input_index,error_stream,executor.environment
+    );
 }

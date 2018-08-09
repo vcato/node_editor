@@ -109,11 +109,10 @@ static Point2D
 }
 
 
-#if 0
 static float
   evaluateDiagramReturningFloat(
     const Diagram &diagram,
-    const DiagramExecutor::Environment &environment = {}
+    const Environment &environment = {}
   )
 {
   Any return_value = evaluateDiagramReturningAny(diagram,environment);
@@ -125,7 +124,6 @@ static float
   assert(return_value.isFloat());
   return return_value.asFloat();
 }
-#endif
 
 
 static void testSimpleReturn()
@@ -193,17 +191,15 @@ static void testAveragingDiagram()
 }
 
 
-#if 0
 static void testExpression()
 {
   Diagram diagram;
-  DiagramExecutor::Environment environment;
+  Environment environment;
   environment["x"] = 6;
   diagram.addNode("return x+5");
   float result = evaluateDiagramReturningFloat(diagram,environment);
   assert(result==11);
 }
-#endif
 
 
 int main()
@@ -213,5 +209,5 @@ int main()
   testBuildingVector();
   testLocalPositionDiagram();
   testAveragingDiagram();
-  // testExpression();
+  testExpression();
 }

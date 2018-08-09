@@ -293,10 +293,5 @@ There's a question of how target bodies should work.
       a function, and have it return some generic object type.
     * This means we need to introduce classes and objects into the Any type.
 ---
-Looks like evaluateExpression doesn't actually handle identifiers.  We
-handle identifiers in evaluateLineText().
----
-Need to have the environment be part of the expression evaluator.
----
-Need an expressionEvaluator so that we don't have to pass as many
-parameters to all the functions.
+Need to handle a diagram node that has an expression that starts with an
+identifier.

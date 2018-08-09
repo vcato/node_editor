@@ -44,7 +44,6 @@ static bool lineTextHasInput(const string &text)
 namespace {
 struct FakeExecutor : Executor {
   ostringstream stream;
-  map<string,Any> environment;
 
   void executeShow(const Any&) override
   {
@@ -55,17 +54,6 @@ struct FakeExecutor : Executor {
     stream << "return(";
     printOn(stream,arg);
     stream << ")\n";
-  }
-
-  Optional<Any> variableValue(const std::string &name) const override
-  {
-    auto iter = environment.find(name);
-
-    if (iter==environment.end()) {
-      return {};
-    }
-
-    return iter->second;
   }
 };
 }
@@ -106,6 +94,16 @@ static void testInvalid(const string &line_text)
 }
 
 
+static Optional<Any>
+  testLineTextWithoutError(const string &text,FakeExecutor &executor)
+{
+  ostringstream error_stream;
+  Optional<Any> result = evaluateLineText(text,{},executor,error_stream);
+  assert(error_stream.str()=="");
+  return result;
+}
+
+
 int main()
 {
   assert(lineTextHasInput("x=$"));
@@ -130,38 +128,29 @@ int main()
   testInvalid("show(5");
   testInvalid("show()");
   testInvalid("show(5)x");
-
   {
     FakeExecutor executor;
-    ostringstream error_stream;
-    evaluateLineText("return 3",{},executor,error_stream);
+    testLineTextWithoutError("return 3",executor);
     string execution = executor.stream.str();
     assert(execution=="return(3)\n");
   }
-
   {
     FakeExecutor executor;
-    ostringstream error_stream;
-    evaluateLineText("return [1,2]",{},executor,error_stream);
+    testLineTextWithoutError("return [1,2]",executor);
     string execution = executor.stream.str();
     assert(execution=="return([1,2])\n");
   }
-
+  {
+    FakeExecutor executor;
+    executor.environment["x"] = 5;
+    Optional<Any> maybe_result = testLineTextWithoutError("x",executor);
+    assert(*maybe_result==5);
+  }
   {
     FakeExecutor executor;
     ostringstream error_stream;
     Optional<Any> maybe_result =
       evaluateLineText("return [",{},executor,error_stream);
     assert(!maybe_result);
-  }
-
-  {
-    FakeExecutor executor;
-    executor.environment["x"] = 5;
-    ostringstream error_stream;
-    Optional<Any> maybe_result =
-      evaluateLineText("x",{},executor,error_stream);
-    assert(maybe_result);
-    assert(*maybe_result==5);
   }
 }

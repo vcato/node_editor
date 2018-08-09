@@ -13,6 +13,7 @@ struct ExpressionEvaluator {
   const std::vector<Any> &input_values;
   int &input_index;
   ostream &error_stream;
+  const Environment &environemnt;
 
   Optional<Any> evaluatePrimaryExpression() const;
   Optional<Any> evaluateExpression() const;
@@ -83,13 +84,11 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
     return Optional<Any>(std::move(vector_value));
   }
 
-#if 0
   string identifier;
 
   if (parser.getIdentifier(identifier)) {
-    assert(false);
+    return variableValue(identifier,environemnt);
   }
-#endif
 
   error_stream << "Unexpected '" << parser.peekChar() << "'\n";
 
@@ -254,10 +253,13 @@ Optional<Any>
     StringParser &parser,
     const std::vector<Any> &input_values,
     int &input_index,
-    ostream &error_stream
+    ostream &error_stream,
+    const Environment &environment
   )
 {
-  ExpressionEvaluator evaluator{parser,input_values,input_index,error_stream};
+  ExpressionEvaluator evaluator{
+    parser,input_values,input_index,error_stream,environment
+  };
 
   return evaluator.evaluateExpression();
 }
