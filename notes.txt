@@ -294,3 +294,43 @@ There's a question of how target bodies should work.
     * This means we need to introduce classes and objects into the Any type.
 ---
 Probably need to unify WrapperValue and Any.
+---
+We don't want to assign objects, but we need to assign Anys and Anys can
+contain objects.  If we were assigning an Any containing an object to
+another any that contained an object, we would end up assigning objects.
+The case were this comes up is in assigning an environment member.
+We aren't actually assigning an Object in this case, but we don't
+have a specialization of Any::operator= for each type.  We are basically
+constructing an Any from anything and then doing a general assignment,
+and the general assignment has to take into consideration that we may
+be assigning one object to another.  Maybe we should make Any handle
+assignment for specific types.
+---
+Testing having a class constructor with parameters.
+---
+Seems like we can use the Wrapper classes to provide a generic way
+to access objects within expressions.  However, wrappers are typically
+short-lived.  We'd need a way to dynamically allocate a wrapper so
+that it can be passed around.
+
+In the case of a body, how do we verify that the wrapper ref we get is
+actually a body?  We'd have to dynamic_cast the wrapper to the particular
+kind of wrapper we are expecting.
+
+I think I want to abstract the object mechanism for the expressions so that
+it doesn't specifically know about wrappers.
+
+We basically just need a way to generate members.
+
+struct Object {
+  function<Any(const string &member_name)> make_member;
+};
+
+
+I'm not sure how we will extract a BodyLink out of a PosExpr if our
+objects just have functions for extracting members.  Seems like we'll have
+to have some internal data that we can dynamic_cast.
+
+Objects may not need to keep class pointers.  It seems like if the only
+thing an object needs is to be able to generate members, then the class
+never actually comes into play.

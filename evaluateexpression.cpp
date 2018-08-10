@@ -32,7 +32,14 @@ Optional<Any>
     const string &identifier
   ) const
 {
-  return variableValue(identifier,environment);
+  Optional<Any> maybe_value = variableValue(identifier,environment);
+
+  if (!maybe_value) {
+    error_stream << "Unknown name: " << identifier << "\n";
+    return {};
+  }
+
+  return maybe_value;
 }
 
 
@@ -102,7 +109,7 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
   string identifier;
 
   if (parser.getIdentifier(identifier)) {
-    return variableValue(identifier,environment);
+    return evaluateExpressionStartingWithIdentifier(identifier);
   }
 
   error_stream << "Unexpected '" << parser.peekChar() << "'\n";
@@ -152,6 +159,36 @@ Optional<Any>
   const Any &first_term = *maybe_first_term;
 
   parser.skipWhitespace();
+
+  if (parser.peekChar()=='(') {
+    if (first_term.isClassPtr()) {
+      parser.skipChar();
+      if (parser.peekChar()==')') {
+        assert(first_term.asClassPtr());
+        assert(first_term.asClassPtr()->make_object_function);
+        const Class &the_class = *first_term.asClassPtr();
+        return {the_class.make_object_function(the_class)};
+      }
+
+      string identifier;
+
+      if (parser.getIdentifier(identifier)) {
+        if (parser.peekChar()=='=') {
+          parser.skipChar();
+          Optional<Any> value = evaluateExpression();
+          if (!value) {
+            assert(false);
+          }
+          assert(false);
+        }
+        assert(false);
+      }
+
+      assert(false);
+    }
+
+    assert(false);
+  }
 
   if (parser.peekChar()=='+') {
     parser.skipChar();

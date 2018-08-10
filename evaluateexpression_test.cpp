@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include "environment.hpp"
+#include "point2d.hpp"
 
 
 using std::vector;
@@ -25,14 +26,14 @@ static vector<Any> makeVector(Any a,Any b)
 }
 
 
-static Optional<Any> evaluateString(const string &arg)
+static Optional<Any>
+  evaluateStringInEnvironment(const string &arg,Environment &environment)
 {
   int index = 0;
   StringParser parser{arg,index};
   vector<Any> input_values;
   int input_index = 0;
   ostringstream error_stream;
-  Environment environment;
 
   ExpressionEvaluatorData data{
     parser,
@@ -43,6 +44,36 @@ static Optional<Any> evaluateString(const string &arg)
   };
 
   return evaluateExpression(data);
+}
+
+
+static string evaluateStringWithError(const string &arg)
+{
+  Environment environment;
+  int index = 0;
+  StringParser parser{arg,index};
+  vector<Any> input_values;
+  int input_index = 0;
+  ostringstream error_stream;
+
+  ExpressionEvaluatorData data{
+    parser,
+    input_values,
+    input_index,
+    error_stream,
+    environment
+  };
+
+  Optional<Any> maybe_result = evaluateExpression(data);
+  assert(!maybe_result);
+  return error_stream.str();
+}
+
+
+static Optional<Any> evaluateString(const string &arg)
+{
+  Environment environment;
+  return evaluateStringInEnvironment(arg,environment);
 }
 
 
@@ -131,10 +162,87 @@ static void testIdentifier()
 }
 
 
-#if 0
-static void testPosEXpr()
+static void testPosExpr()
 {
-  Optional<Any> maybe_result = evaluateString("PosExpr()");
+  {
+    Environment environment;
+    auto pos_expr_member_function =
+      [](const std::string &/*member_name*/) -> Optional<Any> {
+        return {};
+      };
+
+    auto make_pos_expr_object_function =
+      [&](const Class &pos_expr_class){
+        return Object(&pos_expr_class,pos_expr_member_function);
+      };
+    Class pos_expr_class(make_pos_expr_object_function);
+    environment["PosExpr"] = &pos_expr_class;
+    Optional<Any> maybe_result =
+      evaluateStringInEnvironment("PosExpr()",environment);
+    assert(maybe_result);
+    assert(maybe_result->isObject());
+#if 0
+    assert(maybe_result->asObject().classPtr()==&pos_expr_class);
+#endif
+  }
+#if 0
+  {
+    Environment environment;
+    Class pos_expr_class;
+    BodyRef body1_ref;
+    ObjectRef scene1_ref;
+    scene1_object.members.push_back(ObjectMember("body1",body1_ref));
+    environment["PosExpr"] = &pos_expr_class;
+    environment["scene1"] = &scene1_object;
+    string expr_string = "PosExpr(body=scene1.body1,position=[0,0,0])";
+    Optional<Any> maybe_result =
+      evaluateStringInEnvironment(
+        expr_string,environment);
+    assert(maybe_result);
+    assert(maybe_result->isObject());
+    assert(maybe_result->asObject().classPtr()==&pos_expr_class);
+  }
+#endif
+}
+
+
+static void testCallingUnknownFunction()
+{
+  string error = evaluateStringWithError("f()");
+  assert(error=="Unknown name: f\n");
+}
+
+
+#if 0
+static void testObjectMembers()
+{
+  Point2D point(1.5,2.5);
+
+  auto point_member_function =
+    [&](const string &member_name) -> Optional<Any> {
+      if (member_name=="x") {
+        return {point.x};
+      }
+
+      if (member_name=="y") {
+        return {point.y};
+      }
+
+      return {};
+    };
+
+  auto make_point2d_object_function = [&](const Class &point2d_class){
+    return Object(&point2d_class,point_member_function);
+  };
+
+  Class point2d_class(make_point2d_object_function);
+
+  Object point_object{&point2d_class,point_member_function};
+
+  Environment environment;
+  environment["p"] = Any(std::move(point_object));
+  Optional<Any> result = evaluateStringInEnvironment("p.x",environment);
+  assert(result->asFloat()==1.5);
 }
 #endif
 
@@ -164,7 +272,7 @@ int main()
   testInvalidExpression("[[],2]/2");
   testAddingInputs();
   testIdentifier();
-#if 0
-  testPosEXpr();
-#endif
+  testPosExpr();
+  testCallingUnknownFunction();
+  // testObjectMembers();
 }

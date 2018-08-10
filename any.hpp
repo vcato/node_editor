@@ -4,20 +4,47 @@
 #include <cassert>
 #include <vector>
 #include <iosfwd>
+#include <functional>
 #include "printonany.hpp"
+#include "optional.hpp"
 #include "basicvariant.hpp"
 
+
 struct AnyPolicy;
+struct Object;
 
 using Any = BasicVariant<AnyPolicy>;
 
-struct Object {
-  bool operator==(const Object &) const { return true; }
+struct Class {
+  using MakeObjectFunction = std::function<Object(const Class &)>;
+  bool operator==(const Class &) const { return true; }
+
+  Class(MakeObjectFunction make_object_function_arg)
+  : make_object_function(std::move(make_object_function_arg))
+  {
+  }
+
+  MakeObjectFunction make_object_function;
 };
 
-struct Class {
-  bool operator==(const Class &) const { return true; }
+
+struct Object {
+  using MemberFunction =
+    std::function<Optional<Any>(const std::string &member_name)>;
+  MemberFunction member_function;
+
+  Object(const Class *,MemberFunction member_function_arg)
+  : member_function(std::move(member_function_arg))
+  {
+  }
+
+  bool operator==(const Object &/*arg*/) const
+  {
+    // This isn't right, but I'm not sure what to do about it yet.
+    return true;
+  }
 };
+
 
 struct AnyPolicy {
   public:
@@ -26,7 +53,7 @@ struct AnyPolicy {
       float_type,
       vector_type,
       object_type,
-      class_type
+      class_ptr_type
     };
 
     struct Void {
@@ -61,17 +88,17 @@ struct AnyPolicy {
       createObject(_value.object_value,std::move(arg));
     }
 
-    AnyPolicy(Class &&arg)
-    : _type(class_type)
+    AnyPolicy(Class *arg)
+    : _type(class_ptr_type)
     {
-      createObject(_value.class_value,std::move(arg));
+      createObject(_value.class_ptr_value,arg);
     }
 
     bool isVoid() const { return _type==void_type; }
     bool isVector() const { return _type==vector_type; }
     bool isFloat() const { return _type==float_type; }
     bool isObject() const { return _type==object_type; }
-    bool isClass() const { return _type==class_type; }
+    bool isClassPtr() const { return _type==class_ptr_type; }
 
     std::string typeName() const
     {
@@ -80,7 +107,7 @@ struct AnyPolicy {
         case vector_type: return "vector";
         case float_type: return "float";
         case object_type: return "object";
-        case class_type: return "class";
+        case class_ptr_type: return "class_ptr";
       }
 
       assert(false);
@@ -91,6 +118,18 @@ struct AnyPolicy {
     {
       assert(_type==vector_type);
       return _value.vector_value;
+    }
+
+    const Object &asObject() const
+    {
+      assert(_type==object_type);
+      return _value.object_value;
+    }
+
+    const Class *asClassPtr() const
+    {
+      assert(_type==class_ptr_type);
+      return _value.class_ptr_value;
     }
 
     float asFloat() const
@@ -111,7 +150,7 @@ struct AnyPolicy {
       float float_value;
       std::vector<Any> vector_value;
       Object object_value;
-      Class class_value;
+      Class *class_ptr_value;
 
       Value() {}
       ~Value() {}
@@ -125,7 +164,7 @@ struct AnyPolicy {
         case void_type:   return v(&Value::void_value);
         case vector_type: return v(&Value::vector_value);
         case object_type: return v(&Value::object_value);
-        case class_type: return v(&Value::class_value);
+        case class_ptr_type: return v(&Value::class_ptr_value);
       }
 
       assert(false);
@@ -179,7 +218,7 @@ inline void printOn(std::ostream &,const Object &)
 
 
 template <>
-inline void printOn(std::ostream &,const Class &)
+inline void printOn(std::ostream &,Class *const &)
 {
   assert(false);
 }
