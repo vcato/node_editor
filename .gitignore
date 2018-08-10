@@ -6,6 +6,7 @@
 .*.swp
 moc_*.cpp
 main
+any_test
 diagrameditor_test
 linetext_test
 nodetexteditor_test

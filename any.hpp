@@ -11,12 +11,22 @@ struct AnyPolicy;
 
 using Any = BasicVariant<AnyPolicy>;
 
+struct Object {
+  bool operator==(const Object &) const { return true; }
+};
+
+struct Class {
+  bool operator==(const Class &) const { return true; }
+};
+
 struct AnyPolicy {
   public:
     enum Type {
       void_type,
       float_type,
-      vector_type
+      vector_type,
+      object_type,
+      class_type
     };
 
     struct Void {
@@ -45,9 +55,23 @@ struct AnyPolicy {
       createObject(_value.vector_value,std::move(arg));
     }
 
+    AnyPolicy(Object &&arg)
+    : _type(object_type)
+    {
+      createObject(_value.object_value,std::move(arg));
+    }
+
+    AnyPolicy(Class &&arg)
+    : _type(class_type)
+    {
+      createObject(_value.class_value,std::move(arg));
+    }
+
     bool isVoid() const { return _type==void_type; }
     bool isVector() const { return _type==vector_type; }
     bool isFloat() const { return _type==float_type; }
+    bool isObject() const { return _type==object_type; }
+    bool isClass() const { return _type==class_type; }
 
     std::string typeName() const
     {
@@ -55,6 +79,8 @@ struct AnyPolicy {
         case void_type: return "void";
         case vector_type: return "vector";
         case float_type: return "float";
+        case object_type: return "object";
+        case class_type: return "class";
       }
 
       assert(false);
@@ -84,6 +110,8 @@ struct AnyPolicy {
       Void void_value;
       float float_value;
       std::vector<Any> vector_value;
+      Object object_value;
+      Class class_value;
 
       Value() {}
       ~Value() {}
@@ -96,6 +124,8 @@ struct AnyPolicy {
         case float_type:  return v(&Value::float_value);
         case void_type:   return v(&Value::void_value);
         case vector_type: return v(&Value::vector_value);
+        case object_type: return v(&Value::object_value);
+        case class_type: return v(&Value::class_value);
       }
 
       assert(false);
@@ -138,6 +168,20 @@ inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
   }
 
   stream << "]";
+}
+
+
+template <>
+inline void printOn(std::ostream &,const Object &)
+{
+  assert(false);
+}
+
+
+template <>
+inline void printOn(std::ostream &,const Class &)
+{
+  assert(false);
 }
 
 
