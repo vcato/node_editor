@@ -180,8 +180,8 @@ struct PosExprObjectData : Object::Data {
 static Class posExprClass()
 {
   auto make_pos_expr_object_function =
-    [&](const Class &pos_expr_class){
-      return Object(&pos_expr_class,*new PosExprObjectData);
+    [&](const Class &){
+      return Object(*new PosExprObjectData);
     };
 
   return Class(make_pos_expr_object_function);
@@ -267,13 +267,13 @@ static void testObjectMembers()
     }
   };
 
-  auto make_point2d_object_function = [&](const Class &point2d_class){
-    return Object(&point2d_class,*new Data{point});
+  auto make_point2d_object_function = [&](const Class &){
+    return Object(*new Data{point});
   };
 
   Class point2d_class(make_point2d_object_function);
 
-  Object point_object{&point2d_class,*new Data(point)};
+  Object point_object{*new Data(point)};
 
   Environment environment;
   environment["p"] = Any(std::move(point_object));

@@ -37,7 +37,7 @@ struct Object {
 
   Data *data_ptr;
 
-  Object(const Class *,Data &data)
+  Object(Data &data)
   : data_ptr(&data)
   {
   }

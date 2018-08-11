@@ -18,14 +18,14 @@ static void testObject()
     }
   };
 
-  auto make_test_object_function = [&](const Class &test_class){
-    return Object(&test_class,*new Data);
+  auto make_test_object_function = [&](const Class &){
+    return Object(*new Data);
   };
 
   Class test_class(make_test_object_function);
 
   std::function<Any(const string &member_name)> make_member_function;
-  Any a{ Object(&test_class,*new Data) };
+  Any a{ Object(*new Data) };
   assert(a.isObject());
   assert(a.asObject()==a.asObject());
 }
