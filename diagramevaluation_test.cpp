@@ -6,6 +6,7 @@
 #include "diagramexecutor.hpp"
 #include "defaultdiagrams.hpp"
 #include "makediagram.hpp"
+#include "maybepoint2d.hpp"
 
 
 using std::vector;
@@ -98,14 +99,9 @@ static Point2D
   )
 {
   Any return_value = evaluateDiagramReturningAny(diagram,environment);
-  assert(return_value.isVector());
-  const vector<Any> &return_vector = return_value.asVector();
-  assert(return_vector.size()==2);
-  const Any &any_x = return_vector[0];
-  const Any &any_y = return_vector[1];
-  assert(any_x.isFloat());
-  assert(any_y.isFloat());
-  return Point2D(any_x.asFloat(),any_y.asFloat());
+  Optional<Point2D> maybe_point2d = maybePoint2D(return_value);
+  assert(maybe_point2d);
+  return *maybe_point2d;
 }
 
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <iosfwd>
 #include <functional>
+#include <map>
 #include "printonany.hpp"
 #include "optional.hpp"
 #include "basicvariant.hpp"
@@ -16,7 +17,9 @@ struct Object;
 using Any = BasicVariant<AnyPolicy>;
 
 struct Class {
-  using MakeObjectFunction = std::function<Object(const Class &)>;
+  using NamedParameters = std::map<std::string,Any>;
+  using MakeObjectFunction =
+    std::function<Optional<Object>(const NamedParameters &)>;
   bool operator==(const Class &) const { return true; }
 
   Class(MakeObjectFunction make_object_function_arg)

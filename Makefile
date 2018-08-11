@@ -68,12 +68,14 @@ optional_test: optional_test.o
 any_test: any_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o
+evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o \
+  maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
   linetext.o statementtext.o stringutil.o evaluateexpression.o \
-  diagramevaluation.o defaultdiagrams.o diagramio.o makediagram.o
+  diagramevaluation.o defaultdiagrams.o diagramio.o makediagram.o \
+  maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \

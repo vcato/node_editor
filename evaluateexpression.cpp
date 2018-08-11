@@ -5,6 +5,7 @@ using std::vector;
 using std::cerr;
 using std::string;
 using std::ostream;
+using std::map;
 
 
 namespace {
@@ -163,28 +164,72 @@ Optional<Any>
   if (parser.peekChar()=='(') {
     if (first_term.isClassPtr()) {
       parser.skipChar();
+      map<string,Any> named_parameters;
+
       if (parser.peekChar()==')') {
         assert(first_term.asClassPtr());
         assert(first_term.asClassPtr()->make_object_function);
         const Class &the_class = *first_term.asClassPtr();
-        return {the_class.make_object_function(the_class)};
-      }
+        Optional<Object> maybe_object =
+          the_class.make_object_function(named_parameters);
 
-      string identifier;
-
-      if (parser.getIdentifier(identifier)) {
-        if (parser.peekChar()=='=') {
-          parser.skipChar();
-          Optional<Any> value = evaluateExpression();
-          if (!value) {
-            assert(false);
-          }
-          assert(false);
+        if (!maybe_object) {
+          // We got an error trying to create the object with the given
+          // parameters.  We need a way for the error to be reported.
+          return {};
         }
+
         assert(false);
       }
 
-      assert(false);
+      for (;;) {
+        string identifier;
+
+        if (parser.getIdentifier(identifier)) {
+          if (parser.peekChar()=='=') {
+            const string &parameter_name = identifier;
+            parser.skipChar();
+            Optional<Any> value = evaluateExpression();
+
+            if (!value) {
+              assert(false);
+            }
+
+            named_parameters[parameter_name] = std::move(*value);
+          }
+          else {
+            assert(false);
+          }
+
+          if (parser.peekChar()==',') {
+            parser.skipChar();
+          }
+          else if (parser.peekChar()==')') {
+            parser.skipChar();
+            break;
+          }
+          else {
+            cerr << "parser.peekChar()='" << parser.peekChar() << "'\n";
+            assert(false);
+          }
+        }
+        else {
+          assert(false);
+        }
+      }
+
+      assert(first_term.asClassPtr());
+      assert(first_term.asClassPtr()->make_object_function);
+      const Class &the_class = *first_term.asClassPtr();
+      Optional<Object> maybe_object =
+        the_class.make_object_function(named_parameters);
+
+      if (!maybe_object) {
+        return {};
+      }
+      else {
+        return Any(std::move(*maybe_object));
+      }
     }
 
     assert(false);

@@ -18,7 +18,7 @@ static void testObject()
     }
   };
 
-  auto make_test_object_function = [&](const Class &){
+  auto make_test_object_function = [&](const Class::NamedParameters &){
     return Object(*new Data);
   };
 
@@ -33,7 +33,7 @@ static void testObject()
 
 static void testClass()
 {
-  std::function<Object(const Class &)> make_object_function;
+  std::function<Object(const Class::NamedParameters &)> make_object_function;
   Class c(make_object_function);
   Any a(&c);
   assert(a.isClassPtr());

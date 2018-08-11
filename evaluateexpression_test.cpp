@@ -5,6 +5,7 @@
 #include <sstream>
 #include "environment.hpp"
 #include "point2d.hpp"
+#include "maybepoint2d.hpp"
 
 
 using std::vector;
@@ -163,7 +164,19 @@ static void testIdentifier()
 
 
 namespace {
+struct TestBody {
+};
+}
+
+
+namespace {
 struct PosExprObjectData : Object::Data {
+  PosExprObjectData(TestBody *body_ptr_arg,const Point2D &position_arg)
+  : body_ptr(body_ptr_arg),
+    position(position_arg)
+  {
+  }
+
   PosExprObjectData *clone() override
   {
     return new PosExprObjectData(*this);
@@ -173,6 +186,30 @@ struct PosExprObjectData : Object::Data {
   {
     assert(false);
   }
+
+  TestBody *body_ptr;
+  Point2D position;
+};
+}
+
+
+namespace {
+struct BodyObjectData : Object::Data {
+  BodyObjectData(TestBody *body_ptr_arg)
+  : body_ptr(body_ptr_arg)
+  {
+  }
+
+  virtual Data *clone() { return new BodyObjectData(*this); }
+
+  virtual Optional<Any> member(const std::string &/*member_name*/)
+  {
+    assert(false);
+  }
+
+  virtual ~BodyObjectData() {}
+
+  TestBody *body_ptr;
 };
 }
 
@@ -180,8 +217,55 @@ struct PosExprObjectData : Object::Data {
 static Class posExprClass()
 {
   auto make_pos_expr_object_function =
-    [&](const Class &){
-      return Object(*new PosExprObjectData);
+    [&](const Class::NamedParameters &named_parameters) -> Optional<Object> {
+      TestBody *body_ptr = nullptr;
+      Optional<Point2D> maybe_position;
+
+      for (auto &named_parameter : named_parameters) {
+        const string &name = named_parameter.first;
+        const Any &value = named_parameter.second;
+
+        if (name=="body") {
+          if (!value.isObject()) {
+            assert(false);
+          }
+
+          auto body_object_data_ptr =
+            dynamic_cast<BodyObjectData*>(value.asObject().data_ptr);
+
+          if (!body_object_data_ptr) {
+            assert(false);
+          }
+
+          body_ptr = body_object_data_ptr->body_ptr;
+          assert(body_ptr);
+        }
+        else if (name=="position") {
+          maybe_position = maybePoint2D(value);
+
+          if (!maybe_position) {
+            // This needs to give an error once we have access to the
+            // error stream.
+            return {};
+          }
+        }
+        else {
+          cerr << "name: " << name << "\n";
+          assert(false);
+        }
+      }
+
+      if (!body_ptr) {
+        // This needs to give an error, but we don't have access to the
+        // error stream.
+        return {};
+      }
+
+      if (!maybe_position) {
+        assert(false);
+      }
+
+      return Object(*new PosExprObjectData(body_ptr,*maybe_position));
     };
 
   return Class(make_pos_expr_object_function);
@@ -198,36 +282,55 @@ static void testPosExpr()
     environment["PosExpr"] = &pos_expr_class;
     Optional<Any> maybe_result =
       evaluateStringInEnvironment("PosExpr()",environment);
-    assert(maybe_result);
-    assert(maybe_result->isObject());
-    PosExprObjectData *data_ptr =
-      dynamic_cast<PosExprObjectData*>( maybe_result->asObject().data_ptr );
-    assert(data_ptr);
+    // This fails because the body parameter is required.
+    assert(!maybe_result);
   }
 }
 
 
-#if 0
+#if 1
 static void testPosExpr2()
 {
+  struct SceneObjectData : Object::Data {
+    SceneObjectData(TestBody *body1_ptr_arg)
+    : body1_ptr(body1_ptr_arg)
+    {
+    }
+
+    virtual Data *clone() { return new SceneObjectData(*this); }
+
+    virtual Optional<Any> member(const std::string &member_name)
+    {
+      if (member_name=="body1") {
+        return {Object(*new BodyObjectData(body1_ptr))};
+      }
+
+      assert(false);
+    }
+
+    TestBody *body1_ptr;
+  };
+
   Class pos_expr_class = posExprClass();
+  TestBody body1;
   Environment environment;
   environment["PosExpr"] = &pos_expr_class;
-  environment["scene1"] = Object(*new SceneObjectData);
+  environment["scene1"] = Object(*new SceneObjectData(&body1));
+  string expr_string = "PosExpr(body=scene1.body1,position=[0,0])";
+  Optional<Any> maybe_result =
+    evaluateStringInEnvironment(expr_string,environment);
 #if 0
   BodyRef body1_ref;
   ObjectRef scene1_ref;
   scene1_object.members.push_back(ObjectMember("body1",body1_ref));
   environment["PosExpr"] = &pos_expr_class;
   environment["scene1"] = &scene1_object;
-  string expr_string = "PosExpr(body=scene1.body1,position=[0,0,0])";
-  Optional<Any> maybe_result =
-    evaluateStringInEnvironment(
-      expr_string,environment);
+#endif
   assert(maybe_result);
   assert(maybe_result->isObject());
-  assert(maybe_result->asObject().classPtr()==&pos_expr_class);
-#endif
+  PosExprObjectData *pos_expr_object_data_ptr =
+    dynamic_cast<PosExprObjectData*>(maybe_result->asObject().data_ptr);
+  assert(pos_expr_object_data_ptr);
 }
 #endif
 
@@ -267,7 +370,7 @@ static void testObjectMembers()
     }
   };
 
-  auto make_point2d_object_function = [&](const Class &){
+  auto make_point2d_object_function = [&](const Class::NamedParameters &){
     return Object(*new Data{point});
   };
 
@@ -309,6 +412,6 @@ int main()
   testIdentifier();
   testPosExpr();
   testObjectMembers();
-  // testPosExpr2();
   testCallingUnknownFunction();
+  testPosExpr2();
 }
