@@ -162,48 +162,58 @@ static void testIdentifier()
 }
 
 
+namespace {
+struct PosExprObjectData : Object::Data {
+  virtual PosExprObjectData *clone()
+  {
+    return new PosExprObjectData(*this);
+  }
+};
+}
+
+
 static void testPosExpr()
 {
+  auto make_pos_expr_object_function =
+    [&](const Class &pos_expr_class){
+      return Object(&pos_expr_class,*new PosExprObjectData);
+    };
+
+  Class pos_expr_class(make_pos_expr_object_function);
+
   {
     Environment environment;
-    auto pos_expr_member_function =
-      [](const std::string &/*member_name*/) -> Optional<Any> {
-        return {};
-      };
 
-    auto make_pos_expr_object_function =
-      [&](const Class &pos_expr_class){
-        return Object(&pos_expr_class,pos_expr_member_function);
-      };
-    Class pos_expr_class(make_pos_expr_object_function);
     environment["PosExpr"] = &pos_expr_class;
     Optional<Any> maybe_result =
       evaluateStringInEnvironment("PosExpr()",environment);
     assert(maybe_result);
     assert(maybe_result->isObject());
-#if 0
-    assert(maybe_result->asObject().classPtr()==&pos_expr_class);
-#endif
+    PosExprObjectData *data_ptr =
+      dynamic_cast<PosExprObjectData*>( maybe_result->asObject().data_ptr );
+    assert(data_ptr);
   }
-#if 0
-  {
-    Environment environment;
-    Class pos_expr_class;
-    BodyRef body1_ref;
-    ObjectRef scene1_ref;
-    scene1_object.members.push_back(ObjectMember("body1",body1_ref));
-    environment["PosExpr"] = &pos_expr_class;
-    environment["scene1"] = &scene1_object;
-    string expr_string = "PosExpr(body=scene1.body1,position=[0,0,0])";
-    Optional<Any> maybe_result =
-      evaluateStringInEnvironment(
-        expr_string,environment);
-    assert(maybe_result);
-    assert(maybe_result->isObject());
-    assert(maybe_result->asObject().classPtr()==&pos_expr_class);
-  }
-#endif
 }
+
+
+#if 0
+static void testPosExpr2()
+{
+  Environment environment;
+  BodyRef body1_ref;
+  ObjectRef scene1_ref;
+  scene1_object.members.push_back(ObjectMember("body1",body1_ref));
+  environment["PosExpr"] = &pos_expr_class;
+  environment["scene1"] = &scene1_object;
+  string expr_string = "PosExpr(body=scene1.body1,position=[0,0,0])";
+  Optional<Any> maybe_result =
+    evaluateStringInEnvironment(
+      expr_string,environment);
+  assert(maybe_result);
+  assert(maybe_result->isObject());
+  assert(maybe_result->asObject().classPtr()==&pos_expr_class);
+}
+#endif
 
 
 static void testCallingUnknownFunction()
@@ -218,8 +228,13 @@ static void testObjectMembers()
 {
   Point2D point(1.5,2.5);
 
-  auto point_member_function =
-    [&](const string &member_name) -> Optional<Any> {
+  struct Data : Object::Data {
+    Point2D &point;
+
+    Data(Point2D &point_arg) : point(point_arg) { }
+
+    Optional<Any> member(const string &member_name)
+    {
       if (member_name=="x") {
         return {point.x};
       }
@@ -229,15 +244,21 @@ static void testObjectMembers()
       }
 
       return {};
-    };
+    }
+
+    virtual Data *clone()
+    {
+      return new Data(*this);
+    }
+  };
 
   auto make_point2d_object_function = [&](const Class &point2d_class){
-    return Object(&point2d_class,point_member_function);
+    return Object(&point2d_class,*new Data{point});
   };
 
   Class point2d_class(make_point2d_object_function);
 
-  Object point_object{&point2d_class,point_member_function};
+  Object point_object{&point2d_class,*new Data(point)};
 
   Environment environment;
   environment["p"] = Any(std::move(point_object));
@@ -273,6 +294,7 @@ int main()
   testAddingInputs();
   testIdentifier();
   testPosExpr();
+  // testPosExpr2();
   testCallingUnknownFunction();
   // testObjectMembers();
 }

@@ -6,17 +6,21 @@ using std::string;
 
 static void testObject()
 {
-  auto test_member_function =
-    [](const std::string &/*member_name*/) -> Optional<Any> { return {}; };
+  struct Data : Object::Data {
+    virtual Data *clone()
+    {
+      return new Data(*this);
+    }
+  };
 
   auto make_test_object_function = [&](const Class &test_class){
-    return Object(&test_class,test_member_function);
+    return Object(&test_class,*new Data);
   };
 
   Class test_class(make_test_object_function);
 
   std::function<Any(const string &member_name)> make_member_function;
-  Any a{ Object(&test_class,make_member_function) };
+  Any a{ Object(&test_class,*new Data) };
   assert(a.isObject());
   assert(a.asObject()==a.asObject());
 }
@@ -32,8 +36,18 @@ static void testClass()
 }
 
 
+static void testMemoryLeak1()
+{
+  std::vector<Any> v;
+  v.push_back(5);
+  Optional<Any> op{Any(std::move(v))};
+  Optional<Any> op2{std::move(op)};
+}
+
+
 int main()
 {
   testObject();
   testClass();
+  testMemoryLeak1();
 }

@@ -55,7 +55,7 @@ class Optional {
     {
       if (arg._has_value) {
         createObject(_value,std::move(arg._value));
-        arg._has_value = false;
+        arg.reset();
       }
     }
 

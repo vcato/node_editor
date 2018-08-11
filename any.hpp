@@ -29,13 +29,32 @@ struct Class {
 
 
 struct Object {
-  using MemberFunction =
-    std::function<Optional<Any>(const std::string &member_name)>;
-  MemberFunction member_function;
+  struct Data {
+    virtual Data *clone() = 0;
+    virtual ~Data() {}
+  };
 
-  Object(const Class *,MemberFunction member_function_arg)
-  : member_function(std::move(member_function_arg))
+  Data *data_ptr;
+
+  Object(const Class *,Data &data)
+  : data_ptr(&data)
   {
+  }
+
+  Object(const Object &arg)
+  : data_ptr(arg.data_ptr->clone())
+  {
+  }
+
+  ~Object()
+  {
+    delete data_ptr;
+  }
+
+  Object &operator=(const Object &/*arg*/)
+  {
+    assert(false);
+    return *this;
   }
 
   bool operator==(const Object &/*arg*/) const
