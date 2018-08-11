@@ -31,6 +31,7 @@ struct Class {
 struct Object {
   struct Data {
     virtual Data *clone() = 0;
+    virtual Optional<Any> member(const std::string &member_name) = 0;
     virtual ~Data() {}
   };
 
@@ -45,6 +46,8 @@ struct Object {
   : data_ptr(arg.data_ptr->clone())
   {
   }
+
+  inline Optional<Any> member(const std::string &member_name) const;
 
   ~Object()
   {
@@ -192,6 +195,13 @@ struct AnyPolicy {
     Type _type;
     Value _value;
 };
+
+
+inline Optional<Any> Object::member(const std::string &member_name) const
+{
+  assert(data_ptr);
+  return data_ptr->member(member_name);
+}
 
 
 template <>

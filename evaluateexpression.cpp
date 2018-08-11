@@ -309,7 +309,19 @@ Optional<Any>
     return {};
   }
 
-  return maybe_first_term;
+  if (parser.peekChar()=='.') {
+    parser.skipChar();
+    string member_name;
+    parser.getIdentifier(member_name);
+
+    if (!first_term.isObject()) {
+      assert(false);
+    }
+
+    return first_term.asObject().member(member_name);
+  }
+
+  return first_term;
 }
 
 

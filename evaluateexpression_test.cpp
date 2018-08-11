@@ -164,22 +164,33 @@ static void testIdentifier()
 
 namespace {
 struct PosExprObjectData : Object::Data {
-  virtual PosExprObjectData *clone()
+  PosExprObjectData *clone() override
   {
     return new PosExprObjectData(*this);
+  }
+
+  Optional<Any> member(const std::string &/*member_name*/) override
+  {
+    assert(false);
   }
 };
 }
 
 
-static void testPosExpr()
+static Class posExprClass()
 {
   auto make_pos_expr_object_function =
     [&](const Class &pos_expr_class){
       return Object(&pos_expr_class,*new PosExprObjectData);
     };
 
-  Class pos_expr_class(make_pos_expr_object_function);
+  return Class(make_pos_expr_object_function);
+}
+
+
+static void testPosExpr()
+{
+  Class pos_expr_class = posExprClass();
 
   {
     Environment environment;
@@ -199,7 +210,11 @@ static void testPosExpr()
 #if 0
 static void testPosExpr2()
 {
+  Class pos_expr_class = posExprClass();
   Environment environment;
+  environment["PosExpr"] = &pos_expr_class;
+  environment["scene1"] = Object(*new SceneObjectData);
+#if 0
   BodyRef body1_ref;
   ObjectRef scene1_ref;
   scene1_object.members.push_back(ObjectMember("body1",body1_ref));
@@ -212,6 +227,7 @@ static void testPosExpr2()
   assert(maybe_result);
   assert(maybe_result->isObject());
   assert(maybe_result->asObject().classPtr()==&pos_expr_class);
+#endif
 }
 #endif
 
@@ -223,7 +239,6 @@ static void testCallingUnknownFunction()
 }
 
 
-#if 0
 static void testObjectMembers()
 {
   Point2D point(1.5,2.5);
@@ -265,7 +280,6 @@ static void testObjectMembers()
   Optional<Any> result = evaluateStringInEnvironment("p.x",environment);
   assert(result->asFloat()==1.5);
 }
-#endif
 
 
 int main()
@@ -294,7 +308,7 @@ int main()
   testAddingInputs();
   testIdentifier();
   testPosExpr();
+  testObjectMembers();
   // testPosExpr2();
   testCallingUnknownFunction();
-  // testObjectMembers();
 }

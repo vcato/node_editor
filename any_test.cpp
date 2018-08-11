@@ -7,9 +7,14 @@ using std::string;
 static void testObject()
 {
   struct Data : Object::Data {
-    virtual Data *clone()
+    Data *clone() override
     {
       return new Data(*this);
+    }
+
+    Optional<Any> member(const std::string &/*member_name*/) override
+    {
+      assert(false);
     }
   };
 
