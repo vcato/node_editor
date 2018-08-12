@@ -53,7 +53,8 @@ main: main.o diagrameditor.o \
   qtscenewindow.o qttreewidgetitem.o scenewindow.o \
   qtscenetree.o scenetree.o sceneviewer.o wrapperutil.o evaluateexpression.o \
   wrapperstate.o makediagram.o point2d.o vector2d.o diagrameditorwindow.o \
-  maybepoint2d.o charmapperobjects.o sceneobjects.o point2dobject.o
+  maybepoint2d.o charmapperobjects.o sceneobjects.o point2dobject.o \
+  globalvec.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -120,7 +121,7 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
   generatename.o charmapper.o defaultdiagrams.o diagram.o diagramio.o \
   diagramnode.o linetext.o statementtext.o stringutil.o sceneviewer.o \
   diagramevaluation.o evaluateexpression.o makediagram.o maybepoint2d.o \
-  sceneobjects.o charmapperobjects.o point2dobject.o
+  sceneobjects.o charmapperobjects.o point2dobject.o globalvec.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o wrapper.o
@@ -136,14 +137,14 @@ worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   wrapperutil.o wrapper.o scenewindow.o scenetree.o generatename.o \
   sceneviewer.o diagramevaluation.o evaluateexpression.o wrapperstate.o \
   makediagram.o maybepoint2d.o charmapperobjects.o sceneobjects.o \
-  point2dobject.o
+  point2dobject.o globalvec.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   diagram.o diagramio.o diagramnode.o linetext.o statementtext.o \
   stringutil.o generatename.o diagramevaluation.o evaluateexpression.o \
   makediagram.o maybepoint2d.o point2dobject.o charmapperobjects.o \
-  sceneobjects.o
+  sceneobjects.o globalvec.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
@@ -162,7 +163,7 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   wrapperutil.o diagrameditor.o circle.o fakediagrameditorwindows.o \
   diagramevaluation.o evaluateexpression.o wrapperstate.o makediagram.o \
   point2d.o vector2d.o diagrameditorwindow.o maybepoint2d.o \
-  charmapperobjects.o sceneobjects.o point2dobject.o
+  charmapperobjects.o sceneobjects.o point2dobject.o globalvec.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \

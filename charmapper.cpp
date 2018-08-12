@@ -11,6 +11,7 @@
 #include "sceneobjects.hpp"
 #include "point2dobject.hpp"
 #include "maybepoint2d.hpp"
+#include "globalvec.hpp"
 
 
 #define USE_POS_EXPR_DIAGRAM 0
@@ -118,17 +119,10 @@ static Point2D makePoint2D(const Charmapper::GlobalPosition::ComponentsData &p)
 }
 
 
-#if !USE_POS_EXPR_DIAGRAM
-static Vector2D makeVector2D(const Charmapper::Position &p)
-{
-  return Vector2D(p.x.value,p.y.value);
-}
-#else
 static Point2D makePoint2D(const Charmapper::Position &p)
 {
   return Point2D(p.x.value,p.y.value);
 }
-#endif
 
 
 static void
@@ -162,7 +156,7 @@ void Charmapper::apply()
       BodyLink &target_body_link = expr.target_body_link;
 
       if (target_body_link.hasValue()) {
-        Point2D new_position(0,0);
+        Point2D global_position(0,0);
 
         if (expr.global_position.isComponents()) {
           Diagram &diagram = expr.global_position.diagram;
@@ -170,7 +164,7 @@ void Charmapper::apply()
           Point2D parameters = makePoint2D(expr.global_position.components());
           executor.environment["x"] = parameters.x;
           executor.environment["y"] = parameters.y;
-          evaluatePoint2DDiagram(diagram,executor,new_position);
+          evaluatePoint2DDiagram(diagram,executor,global_position);
         }
         else if (expr.global_position.isFromBody()) {
           using FromBodyData = GlobalPosition::FromBodyData;
@@ -178,7 +172,7 @@ void Charmapper::apply()
           BodyLink &source_body_link = from_body_data.source_body_link;
 
           if (source_body_link.hasValue()) {
-            new_position = displayedBodyPosition(source_body_link);
+            global_position = displayedBodyPosition(source_body_link);
           }
 
           Diagram &diagram = from_body_data.local_position.diagram;
@@ -189,14 +183,25 @@ void Charmapper::apply()
           executor.environment["y"] = y_param;
           Point2D local_position(0,0);
           evaluatePoint2DDiagram(diagram,executor,local_position);
-          new_position += local_position - Point2D(0,0);
+          global_position += local_position - Point2D(0,0);
         }
         else {
           assert(false);
         }
 
 #if !USE_POS_EXPR_DIAGRAM
-        new_position -= makeVector2D(expr.local_position);
+        // local_position * body_global_position = desired_global_position;
+        // local_position * body_global_rot + body_global_trans =
+        //   desired_global_position
+        // body_global_trans =
+        //   desired_global_position - local_position*body_global_rot;
+        // body_global_trans =
+        //   desired_global_position - globalVec(local_position);
+        Vector2D local_offset = makePoint2D(expr.local_position)-Point2D(0,0);
+        Vector2D globalized_local_offset =
+          globalVec(target_body_link,local_offset);
+        Point2D new_position =
+          global_position - globalized_local_offset;
 
         setDisplayedBodyPosition(target_body_link,new_position);
 #else
@@ -212,7 +217,7 @@ void Charmapper::apply()
         executor.environment["local_position"] =
           makePoint2DObject(local_position);
         executor.environment["global_position"] =
-          makePoint2DObject(new_position);
+          makePoint2DObject(global_position);
         evaluateDiagram(diagram,executor);
         Optional<PosExprData> maybe_pos_expr =
           maybePosExpr(executor.return_value);

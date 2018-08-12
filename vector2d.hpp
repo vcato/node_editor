@@ -1,3 +1,6 @@
+#ifndef VECTOR2D_HPP
+#define VECTOR2D_HPP
+
 #include <iosfwd>
 
 
@@ -32,3 +35,6 @@ inline Vector2D operator+(const Vector2D &a,const Vector2D &b)
 }
 
 extern std::ostream& operator<<(std::ostream &,const Vector2D &v);
+
+
+#endif /* VECTOR2D_HPP */
