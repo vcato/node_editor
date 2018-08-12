@@ -2,6 +2,7 @@
 
 
 using std::string;
+using std::vector;
 
 
 static void testObject()
@@ -41,6 +42,21 @@ static void testClass()
 }
 
 
+static void testFunction()
+{
+  bool function_was_called = false;
+
+  std::function<Optional<Any>(const vector<Any> &)> f =
+    [&](const vector<Any> &) -> Optional<Any>
+    { function_was_called = true; return {5}; };
+  Any a(Function{f});
+  assert(a.isFunction());
+  Optional<Any> maybe_result = a.asFunction()(vector<Any>{});
+  assert(function_was_called);
+  assert(*maybe_result==5);
+}
+
+
 static void testMemoryLeak1()
 {
   std::vector<Any> v;
@@ -54,5 +70,6 @@ int main()
 {
   testObject();
   testClass();
+  testFunction();
   testMemoryLeak1();
 }

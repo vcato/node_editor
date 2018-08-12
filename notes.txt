@@ -299,5 +299,3 @@ If you don't specify a body for PosExpr() in the expression evaluation, then
 it should give an error.
 ---
 Be able to turn on USE_POS_EXPR_DIAGRAM 1
----
-Implement Function types for Any

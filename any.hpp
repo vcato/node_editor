@@ -71,6 +71,21 @@ struct Object {
 };
 
 
+struct Function {
+  using FunctionMember =
+    std::function<Optional<Any>(const std::vector<Any> &)>;
+  FunctionMember function_member;
+
+  inline Optional<Any> operator()(const std::vector<Any> &parameters) const;
+
+  bool operator==(const Function &) const
+  {
+    // Not sure about function equality yet.  We can't compare std::functions.
+    assert(false);
+  }
+};
+
+
 struct AnyPolicy {
   public:
     enum Type {
@@ -78,7 +93,8 @@ struct AnyPolicy {
       float_type,
       vector_type,
       object_type,
-      class_ptr_type
+      class_ptr_type,
+      function_type
     };
 
     struct Void {
@@ -119,11 +135,18 @@ struct AnyPolicy {
       createObject(_value.class_ptr_value,arg);
     }
 
+    AnyPolicy(Function arg)
+    : _type(function_type)
+    {
+      createObject(_value.function_value,std::move(arg));
+    }
+
     bool isVoid() const { return _type==void_type; }
     bool isVector() const { return _type==vector_type; }
     bool isFloat() const { return _type==float_type; }
     bool isObject() const { return _type==object_type; }
     bool isClassPtr() const { return _type==class_ptr_type; }
+    bool isFunction() const { return _type==function_type; }
 
     std::string typeName() const
     {
@@ -133,10 +156,23 @@ struct AnyPolicy {
         case float_type: return "float";
         case object_type: return "object";
         case class_ptr_type: return "class_ptr";
+        case function_type: return "function";
       }
 
       assert(false);
       return "unknown";
+    }
+
+    Void asVoid() const
+    {
+      assert(_type==void_type);
+      return _value.void_value;
+    }
+
+    float asFloat() const
+    {
+      assert(_type==float_type);
+      return _value.float_value;
     }
 
     const std::vector<Any> &asVector() const
@@ -157,16 +193,10 @@ struct AnyPolicy {
       return _value.class_ptr_value;
     }
 
-    float asFloat() const
+    const Function &asFunction() const
     {
-      assert(_type==float_type);
-      return _value.float_value;
-    }
-
-    Void asVoid() const
-    {
-      assert(_type==void_type);
-      return _value.void_value;
+      assert(_type==function_type);
+      return _value.function_value;
     }
 
   protected:
@@ -176,6 +206,7 @@ struct AnyPolicy {
       std::vector<Any> vector_value;
       Object object_value;
       Class *class_ptr_value;
+      Function function_value;
 
       Value() {}
       ~Value() {}
@@ -190,6 +221,7 @@ struct AnyPolicy {
         case vector_type: return v(&Value::vector_value);
         case object_type: return v(&Value::object_value);
         case class_ptr_type: return v(&Value::class_ptr_value);
+        case function_type: return v(&Value::function_value);
       }
 
       assert(false);
@@ -204,6 +236,14 @@ inline Optional<Any> Object::member(const std::string &member_name) const
 {
   assert(data_ptr);
   return data_ptr->member(member_name);
+}
+
+
+inline Optional<Any>
+  Function::operator()(const std::vector<Any> &parameters) const
+{
+  assert(function_member);
+  return function_member(parameters);
 }
 
 
@@ -244,6 +284,13 @@ inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
 
 template <>
 inline void printOn(std::ostream &,const Object &)
+{
+  assert(false);
+}
+
+
+template <>
+inline void printOn(std::ostream &,const Function &)
 {
   assert(false);
 }
