@@ -187,8 +187,8 @@ static void testPosExpr()
 static void testPosExpr2()
 {
   struct SceneObjectData : Object::Data {
-    SceneObjectData(Scene::Body *body1_ptr_arg)
-    : body1_ptr(body1_ptr_arg)
+    SceneObjectData(BodyLink body1_link_arg)
+    : body1_link(body1_link_arg)
     {
     }
 
@@ -197,13 +197,13 @@ static void testPosExpr2()
     virtual Optional<Any> member(const std::string &member_name)
     {
       if (member_name=="body1") {
-        return {Object(*new BodyObjectData(body1_ptr))};
+        return {Object(*new BodyObjectData(body1_link))};
       }
 
       assert(false);
     }
 
-    Scene::Body *body1_ptr;
+    BodyLink body1_link;
   };
 
   Class pos_expr_class = posExprClass();
@@ -214,7 +214,8 @@ static void testPosExpr2()
   Scene::Body body1(body1_position_map);
   Environment environment;
   environment["PosExpr"] = &pos_expr_class;
-  environment["scene1"] = Object(*new SceneObjectData(&body1));
+  Scene scene;
+  environment["scene1"] = Object(*new SceneObjectData(BodyLink(&scene,&body1)));
   string expr_string = "PosExpr(body=scene1.body1,position=[0,0])";
   Optional<Any> maybe_result =
     evaluateStringInEnvironment(expr_string,environment);

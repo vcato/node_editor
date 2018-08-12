@@ -11,7 +11,7 @@ Class posExprClass()
 {
   auto make_pos_expr_object_function =
     [&](const Class::NamedParameters &named_parameters) -> Optional<Object> {
-      Scene::Body *body_ptr = nullptr;
+      BodyLink body_link;
       Optional<Point2D> maybe_position;
 
       for (auto &named_parameter : named_parameters) {
@@ -30,8 +30,8 @@ Class posExprClass()
             assert(false);
           }
 
-          body_ptr = body_object_data_ptr->body_ptr;
-          assert(body_ptr);
+          body_link = body_object_data_ptr->body_link;
+          assert(body_link.hasValue());
         }
         else if (name=="position") {
           maybe_position = maybePoint2D(value);
@@ -48,17 +48,18 @@ Class posExprClass()
         }
       }
 
-      if (!body_ptr) {
+      if (!body_link.hasValue()) {
         // This needs to give an error, but we don't have access to the
         // error stream.
         return {};
       }
 
+
       if (!maybe_position) {
         assert(false);
       }
 
-      return Object(*new PosExprObjectData(body_ptr,*maybe_position));
+      return Object(*new PosExprObjectData(body_link,*maybe_position));
     };
 
   return Class(make_pos_expr_object_function);

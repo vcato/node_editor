@@ -431,12 +431,12 @@ struct MotionPassWrapper : VoidWrapper {
 
   struct BodyWrapper : NoOperationWrapper<LeafWrapper<EnumerationWrapper>> {
     const Callbacks &callbacks;
-    Charmapper::BodyLink &body_link;
+    BodyLink &body_link;
     const char *label_member;
 
     BodyWrapper(
       const char *label_arg,
-      Charmapper::BodyLink &body_link_arg,
+      BodyLink &body_link_arg,
       const Callbacks &callbacks_arg
     )
     : callbacks(callbacks_arg),

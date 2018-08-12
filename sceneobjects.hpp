@@ -1,6 +1,9 @@
+#include "bodylink.hpp"
+
+
 struct BodyObjectData : Object::Data {
-  BodyObjectData(Scene::Body *body_ptr_arg)
-  : body_ptr(body_ptr_arg)
+  BodyObjectData(BodyLink body_link_arg)
+  : body_link(body_link_arg)
   {
   }
 
@@ -13,5 +16,5 @@ struct BodyObjectData : Object::Data {
 
   virtual ~BodyObjectData() {}
 
-  Scene::Body *body_ptr;
+  BodyLink body_link;
 };

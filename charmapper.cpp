@@ -7,6 +7,7 @@
 #include "streamexecutor.hpp"
 #include "diagramexecutor.hpp"
 #include "diagramio.hpp"
+#include "charmapperobjects.hpp"
 
 
 using std::make_unique;
@@ -85,7 +86,7 @@ void Charmapper::MotionPass::removePosExpr(int index)
 
 static void
   setDisplayedBodyPosition(
-    Charmapper::BodyLink &target_body_link,
+    BodyLink &target_body_link,
     const Point2D &new_position
   )
 {
@@ -96,7 +97,7 @@ static void
 }
 
 
-static Point2D displayedBodyPosition(Charmapper::BodyLink &source_body_link)
+static Point2D displayedBodyPosition(BodyLink &source_body_link)
 {
   Scene::Body &source_body = source_body_link.body();
   Scene &source_scene = source_body_link.scene();
@@ -208,7 +209,8 @@ void Charmapper::apply()
         // the Any type.
         Diagram &diagram = expr.diagram;
         DiagramExecutor executor(/*show_stream*/cerr);
-        executor.environment["PosExpr"] = posExprClass();
+        Class pos_expr_class = posExprClass();
+        executor.environment["PosExpr"] = &pos_expr_class;
         executor.environment["target_body"] = target_body_link;
         executor.environment["local_position"] =
           makeVector2D(local_position);

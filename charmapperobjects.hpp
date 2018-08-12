@@ -1,10 +1,11 @@
 #include "any.hpp"
 #include "scene.hpp"
+#include "bodylink.hpp"
 
 
 struct PosExprObjectData : Object::Data {
-  PosExprObjectData(Scene::Body *body_ptr_arg,const Point2D &position_arg)
-  : body_ptr(body_ptr_arg),
+  PosExprObjectData(BodyLink body_link_arg,const Point2D &position_arg)
+  : body_link(body_link_arg),
     position(position_arg)
   {
   }
@@ -19,7 +20,7 @@ struct PosExprObjectData : Object::Data {
     assert(false);
   }
 
-  Scene::Body *body_ptr;
+  BodyLink body_link;
   Point2D position;
 };
 

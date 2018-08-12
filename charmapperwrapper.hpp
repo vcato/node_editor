@@ -6,7 +6,6 @@
 class CharmapperWrapper : public VoidWrapper {
   public:
     struct SceneList {
-      using BodyLink = Charmapper::BodyLink;
       using BodyLinks = std::vector<BodyLink>;
 
       virtual int nScenes() = 0;

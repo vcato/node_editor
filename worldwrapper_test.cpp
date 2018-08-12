@@ -331,7 +331,7 @@ static void testChangingABodyPositionInTheScene()
   Scene::Body &body = scene.addBody(); // child 0
   WorldWrapper world_wrapper(world);
 
-  pos_expr.target_body_link = Charmapper::BodyLink(&scene,&body);
+  pos_expr.target_body_link = BodyLink(&scene,&body);
   assert(pos_expr.target_body_link.hasValue());
   TreePath path = makePath(world_wrapper,"Scene1|Body|position map|x variable");
   setNumericValue(world_wrapper,path,1);
@@ -461,7 +461,7 @@ static void testUsingCharmapperToMoveABody()
   Scene::Body &body = scene.addBody();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
-  pos_expr.target_body_link = Charmapper::BodyLink(&scene,&body);
+  pos_expr.target_body_link = BodyLink(&scene,&body);
   WorldWrapper wrapper(world);
   auto &components = charmapper.pass(0).expr(0).global_position.components();
   string global_position_path =
@@ -494,13 +494,13 @@ static void testWithTwoCharmappers()
   Charmapper &charmapper1 = world.addCharmapper();
   Charmapper::MotionPass &motion_pass1 = charmapper1.addMotionPass();
   Charmapper::MotionPass::PosExpr &pos_expr1 = motion_pass1.addPosExpr();
-  pos_expr1.target_body_link = Charmapper::BodyLink(&scene,&body1);
+  pos_expr1.target_body_link = BodyLink(&scene,&body1);
   pos_expr1.global_position.components().x.value = 1;
 
   Charmapper &charmapper2 = world.addCharmapper();
   Charmapper::MotionPass &motion_pass2 = charmapper2.addMotionPass();
   Charmapper::MotionPass::PosExpr &pos_expr2 = motion_pass2.addPosExpr();
-  pos_expr2.target_body_link = Charmapper::BodyLink(&scene,&body2);
+  pos_expr2.target_body_link = BodyLink(&scene,&body2);
   pos_expr2.global_position.components().x.value = 2;
 
   WorldWrapper wrapper(world);

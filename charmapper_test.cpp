@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-using BodyLink = Charmapper::BodyLink;
 using std::cerr;
 using std::string;
 
