@@ -8,6 +8,7 @@
 #include "diagramexecutor.hpp"
 #include "diagramio.hpp"
 #include "charmapperobjects.hpp"
+#include "sceneobjects.hpp"
 
 
 using std::make_unique;
@@ -211,9 +212,9 @@ void Charmapper::apply()
         DiagramExecutor executor(/*show_stream*/cerr);
         Class pos_expr_class = posExprClass();
         executor.environment["PosExpr"] = &pos_expr_class;
-        executor.environment["target_body"] = target_body_link;
+        executor.environment["target_body"] = bodyObject(target_body_link);
         executor.environment["local_position"] =
-          makeVector2D(local_position);
+          makeVector2D(expr.local_position);
         executor.environment["global_position"] =
           makeVector2D(global_position);
         PosExpr pos_expr =

@@ -9,6 +9,7 @@
 #include "scene.hpp"
 #include "sceneobjects.hpp"
 #include "charmapperobjects.hpp"
+#include "point2dobject.hpp"
 
 
 using std::vector;
@@ -238,37 +239,13 @@ static void testObjectMembers()
 {
   Point2D point(1.5,2.5);
 
-  struct Data : Object::Data {
-    Point2D &point;
-
-    Data(Point2D &point_arg) : point(point_arg) { }
-
-    Optional<Any> member(const string &member_name)
-    {
-      if (member_name=="x") {
-        return {point.x};
-      }
-
-      if (member_name=="y") {
-        return {point.y};
-      }
-
-      return {};
-    }
-
-    virtual Data *clone()
-    {
-      return new Data(*this);
-    }
-  };
-
   auto make_point2d_object_function = [&](const Class::NamedParameters &){
-    return Object(*new Data{point});
+    return makePoint2DObject(point);
   };
 
   Class point2d_class(make_point2d_object_function);
 
-  Object point_object{*new Data(point)};
+  Object point_object = makePoint2DObject(point);
 
   Environment environment;
   environment["p"] = Any(std::move(point_object));

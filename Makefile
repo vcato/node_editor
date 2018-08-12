@@ -69,7 +69,8 @@ any_test: any_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o \
-  maybepoint2d.o charmapperobjects.o scene.o generatename.o sceneobjects.o
+  maybepoint2d.o charmapperobjects.o scene.o generatename.o sceneobjects.o \
+  point2dobject.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
