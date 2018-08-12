@@ -1,6 +1,9 @@
 #ifndef BODYLINK_HPP
 #define BODYLINK_HPP
 
+#include "scene.hpp"
+
+
 class BodyLink {
   public:
     BodyLink(Scene *scene_ptr_arg,Scene::Body *body_ptr_arg)

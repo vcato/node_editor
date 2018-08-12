@@ -297,3 +297,6 @@ Probably need to unify WrapperValue and Any.
 ---
 If you don't specify a body for PosExpr() in the expression evaluation, then
 it should give an error.
+---
+executor.environment["target_body"] = target_body_link;
+  This doesn't work because a body link doesn't go into an object.

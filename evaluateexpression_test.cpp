@@ -197,7 +197,7 @@ static void testPosExpr2()
     virtual Optional<Any> member(const std::string &member_name)
     {
       if (member_name=="body1") {
-        return {Object(*new BodyObjectData(body1_link))};
+        return {bodyObject(body1_link)};
       }
 
       assert(false);

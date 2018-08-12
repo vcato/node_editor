@@ -1,4 +1,5 @@
 #include "bodylink.hpp"
+#include "any.hpp"
 
 
 struct BodyObjectData : Object::Data {
@@ -18,3 +19,6 @@ struct BodyObjectData : Object::Data {
 
   BodyLink body_link;
 };
+
+
+extern Object bodyObject(BodyLink body_link);
