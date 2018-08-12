@@ -3,10 +3,15 @@
 #include "bodylink.hpp"
 
 
-struct PosExprObjectData : Object::Data {
+struct PosExprData {
+  BodyLink body_link;
+  Point2D position;
+};
+
+
+struct PosExprObjectData : Object::Data, PosExprData {
   PosExprObjectData(BodyLink body_link_arg,const Point2D &position_arg)
-  : body_link(body_link_arg),
-    position(position_arg)
+  : PosExprData{body_link_arg,position_arg}
   {
   }
 
@@ -19,9 +24,7 @@ struct PosExprObjectData : Object::Data {
   {
     assert(false);
   }
-
-  BodyLink body_link;
-  Point2D position;
 };
 
+extern Optional<PosExprData> maybePosExpr(const Any &);
 extern Class posExprClass();

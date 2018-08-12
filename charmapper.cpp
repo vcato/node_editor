@@ -9,6 +9,11 @@
 #include "diagramio.hpp"
 #include "charmapperobjects.hpp"
 #include "sceneobjects.hpp"
+#include "point2dobject.hpp"
+#include "maybepoint2d.hpp"
+
+
+#define USE_POS_EXPR_DIAGRAM 0
 
 
 using std::make_unique;
@@ -113,10 +118,17 @@ static Point2D makePoint2D(const Charmapper::GlobalPosition::ComponentsData &p)
 }
 
 
+#if !USE_POS_EXPR_DIAGRAM
 static Vector2D makeVector2D(const Charmapper::Position &p)
 {
   return Vector2D(p.x.value,p.y.value);
 }
+#else
+static Point2D makePoint2D(const Charmapper::Position &p)
+{
+  return Point2D(p.x.value,p.y.value);
+}
+#endif
 
 
 static void
@@ -126,31 +138,14 @@ static void
     Point2D &new_position
   )
 {
-  DiagramState diagram_state;
-  evaluateDiagram(diagram,executor,diagram_state);
+  evaluateDiagram(diagram,executor);
+  Optional<Point2D> maybe_result = maybePoint2D(executor.return_value);
 
-  if (!executor.return_value.isVector()) {
+  if (!maybe_result) {
     return;
   }
 
-  const vector<Any> &return_vector = executor.return_value.asVector();
-
-  if (return_vector.size()!=2) {
-    return;
-  }
-
-  const Any &any_x = return_vector[0];
-  const Any &any_y = return_vector[1];
-
-  if (!any_x.isFloat()) {
-    return;
-  }
-
-  if (!any_y.isFloat()) {
-    return;
-  }
-
-  new_position = Point2D(any_x.asFloat(),any_y.asFloat());
+  new_position = *maybe_result;
 }
 
 
@@ -200,7 +195,7 @@ void Charmapper::apply()
           assert(false);
         }
 
-#if 1
+#if !USE_POS_EXPR_DIAGRAM
         new_position -= makeVector2D(expr.local_position);
 
         setDisplayedBodyPosition(target_body_link,new_position);
@@ -213,13 +208,19 @@ void Charmapper::apply()
         Class pos_expr_class = posExprClass();
         executor.environment["PosExpr"] = &pos_expr_class;
         executor.environment["target_body"] = bodyObject(target_body_link);
+        Point2D local_position = makePoint2D(expr.local_position);
         executor.environment["local_position"] =
-          makeVector2D(expr.local_position);
+          makePoint2DObject(local_position);
         executor.environment["global_position"] =
-          makeVector2D(global_position);
-        PosExpr pos_expr =
-          evaluatePosExprDiagram(diagram,executor,default_pos_expr)
-        applyPosExpr(pos_expr);
+          makePoint2DObject(new_position);
+        evaluateDiagram(diagram,executor);
+        Optional<PosExprData> maybe_pos_expr =
+          maybePosExpr(executor.return_value);
+        if (maybe_pos_expr) {
+          setDisplayedBodyPosition(
+            maybe_pos_expr->body_link,maybe_pos_expr->position
+          );
+        }
 #endif
       }
     }

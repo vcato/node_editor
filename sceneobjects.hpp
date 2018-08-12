@@ -8,14 +8,11 @@ struct BodyObjectData : Object::Data {
   {
   }
 
-  virtual Data *clone() { return new BodyObjectData(*this); }
+  Data *clone() override { return new BodyObjectData(*this); }
 
-  virtual Optional<Any> member(const std::string &/*member_name*/)
-  {
-    assert(false);
-  }
+  Optional<Any> member(const std::string &member_name) override;
 
-  virtual ~BodyObjectData() {}
+  ~BodyObjectData() override {}
 
   BodyLink body_link;
 };

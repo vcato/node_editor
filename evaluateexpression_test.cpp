@@ -50,6 +50,9 @@ static Optional<Any>
     environment
   };
 
+  string error_string = error_stream.str();
+  assert(error_string=="");
+
   return evaluateExpression(data);
 }
 
@@ -185,6 +188,23 @@ static void testPosExpr()
 }
 
 
+static Optional<PosExprData>
+  evaluatePosExprExpression(
+    const string &expr_string,
+    Environment &environment
+  )
+{
+  Optional<Any> maybe_result =
+    evaluateStringInEnvironment(expr_string,environment);
+
+  if (!maybe_result) {
+    return {};
+  }
+
+  return maybePosExpr(*maybe_result);
+}
+
+
 static void testPosExpr2()
 {
   struct SceneObjectData : Object::Data {
@@ -216,15 +236,14 @@ static void testPosExpr2()
   Environment environment;
   environment["PosExpr"] = &pos_expr_class;
   Scene scene;
-  environment["scene1"] = Object(*new SceneObjectData(BodyLink(&scene,&body1)));
+  BodyLink body1_link(&scene,&body1);
+  environment["scene1"] = Object(*new SceneObjectData(body1_link));
   string expr_string = "PosExpr(body=scene1.body1,position=[0,0])";
-  Optional<Any> maybe_result =
-    evaluateStringInEnvironment(expr_string,environment);
-  assert(maybe_result);
-  assert(maybe_result->isObject());
-  PosExprObjectData *pos_expr_object_data_ptr =
-    dynamic_cast<PosExprObjectData*>(maybe_result->asObject().data_ptr);
-  assert(pos_expr_object_data_ptr);
+  Optional<PosExprData> maybe_pos_expr =
+    evaluatePosExprExpression(expr_string,environment);
+  PosExprData pos_expr = *maybe_pos_expr;
+  assert(pos_expr.body_link==body1_link);
+  assert(pos_expr.position==Point2D(0,0));
 }
 
 

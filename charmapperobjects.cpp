@@ -64,3 +64,22 @@ Class posExprClass()
 
   return Class(make_pos_expr_object_function);
 }
+
+
+Optional<PosExprData> maybePosExpr(const Any &result)
+{
+  if (!result.isObject()) {
+    return {};
+  }
+
+  PosExprObjectData *pos_expr_object_data_ptr =
+    dynamic_cast<PosExprObjectData*>(result.asObject().data_ptr);
+
+  if (!pos_expr_object_data_ptr) {
+    return {};
+  }
+
+  PosExprData pos_expr = *pos_expr_object_data_ptr;
+
+  return pos_expr;
+}
