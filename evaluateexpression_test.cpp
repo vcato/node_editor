@@ -259,6 +259,43 @@ static void testCallingUnknownFunction()
 }
 
 
+static void testCallingMemberFunction()
+{
+  string expression = "obj.f()";
+
+  struct TestObjectData : Object::Data {
+    Data *clone() override { return new auto(*this); }
+
+    Optional<Any> member(const std::string &member_name) override
+    {
+      if (member_name=="f") {
+        auto f = [](const vector<Any> &) -> Optional<Any> { return {5}; };
+        Function::FunctionMember f_member(f);
+        return Any(Function{f_member});
+      }
+      else {
+        cerr << "member_name: " << member_name << "\n";
+        assert(false);
+      }
+    }
+
+    void printOn(std::ostream &) const override
+    {
+      assert(false);
+    }
+  };
+
+  Any obj = Object(*new TestObjectData);
+
+  Environment environment;
+  environment["obj"] = obj;
+  Optional<Any> maybe_result =
+    evaluateStringInEnvironment(expression,environment);
+  assert(maybe_result);
+  assert((*maybe_result)==5);
+}
+
+
 static void testObjectMembers()
 {
   Point2D point(1.5,2.5);
@@ -306,5 +343,6 @@ int main()
   testPosExpr();
   testObjectMembers();
   testCallingUnknownFunction();
+  testCallingMemberFunction();
   testPosExpr2();
 }

@@ -308,4 +308,5 @@ We created a Point2D object, but we're expecting a vector.
 Looks like we're not handling function evaluation properly.
 * Example: $.globalVec($) returns a function.
 * I think it is missing the parentheses.
-* Need to make a test.
+* It may be specific to using $ as the object.
+* I made obj.f() work.

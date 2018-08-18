@@ -24,6 +24,7 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
     evaluateExpressionStartingWithTerm(
       Optional<Any> maybe_first_term
     ) const;
+  Optional<Any> parseObjectConstuction(const Class &) const;
 };
 }
 
@@ -149,6 +150,78 @@ Optional<Any>
 
 
 Optional<Any>
+  ExpressionEvaluator::parseObjectConstuction(const Class &the_class) const
+{
+  // Need to extract this to a separate function.
+  assert(parser.peekChar()=='(');
+  parser.skipChar();
+  map<string,Any> named_parameters;
+
+  if (parser.peekChar()==')') {
+    assert(the_class.make_object_function);
+    Optional<Object> maybe_object =
+      the_class.make_object_function(named_parameters);
+
+    if (!maybe_object) {
+      // We got an error trying to create the object with the given
+      // parameters.  We need a way for the error to be reported.
+      return {};
+    }
+
+    assert(false);
+  }
+
+  for (;;) {
+    string identifier;
+
+    if (parser.getIdentifier(identifier)) {
+      if (parser.peekChar()=='=') {
+        const string &parameter_name = identifier;
+        parser.skipChar();
+        Optional<Any> value = evaluateExpression();
+
+        if (!value) {
+          assert(false);
+        }
+
+        named_parameters[parameter_name] = std::move(*value);
+      }
+      else {
+        assert(false);
+      }
+
+      if (parser.peekChar()==',') {
+        parser.skipChar();
+      }
+      else if (parser.peekChar()==')') {
+        parser.skipChar();
+        break;
+      }
+      else {
+        cerr << "parser.peekChar()='" << parser.peekChar() << "'\n";
+        assert(false);
+      }
+    }
+    else {
+      assert(false);
+    }
+  }
+
+  assert(the_class.make_object_function);
+  Optional<Object> maybe_object =
+    the_class.make_object_function(named_parameters);
+
+  if (!maybe_object) {
+    cerr << "Failed to make object\n";
+    return {};
+  }
+  else {
+    return Any(std::move(*maybe_object));
+  }
+}
+
+
+Optional<Any>
   ExpressionEvaluator::evaluateExpressionStartingWithTerm(
     Optional<Any> maybe_first_term
   ) const
@@ -163,73 +236,27 @@ Optional<Any>
 
   if (parser.peekChar()=='(') {
     if (first_term.isClassPtr()) {
+      const Class *class_ptr = first_term.asClassPtr();
+      assert(class_ptr);
+
+      return parseObjectConstuction(*class_ptr);
+    }
+
+    if (first_term.isFunction()) {
       parser.skipChar();
-      map<string,Any> named_parameters;
-
       if (parser.peekChar()==')') {
-        assert(first_term.asClassPtr());
-        assert(first_term.asClassPtr()->make_object_function);
-        const Class &the_class = *first_term.asClassPtr();
-        Optional<Object> maybe_object =
-          the_class.make_object_function(named_parameters);
+        vector<Any> parameters;
+        Optional<Any> maybe_result = first_term.asFunction()(parameters);
 
-        if (!maybe_object) {
-          // We got an error trying to create the object with the given
-          // parameters.  We need a way for the error to be reported.
-          return {};
-        }
-
-        assert(false);
-      }
-
-      for (;;) {
-        string identifier;
-
-        if (parser.getIdentifier(identifier)) {
-          if (parser.peekChar()=='=') {
-            const string &parameter_name = identifier;
-            parser.skipChar();
-            Optional<Any> value = evaluateExpression();
-
-            if (!value) {
-              assert(false);
-            }
-
-            named_parameters[parameter_name] = std::move(*value);
-          }
-          else {
-            assert(false);
-          }
-
-          if (parser.peekChar()==',') {
-            parser.skipChar();
-          }
-          else if (parser.peekChar()==')') {
-            parser.skipChar();
-            break;
-          }
-          else {
-            cerr << "parser.peekChar()='" << parser.peekChar() << "'\n";
-            assert(false);
-          }
-        }
-        else {
+        if (!maybe_result) {
           assert(false);
         }
-      }
 
-      assert(first_term.asClassPtr());
-      assert(first_term.asClassPtr()->make_object_function);
-      const Class &the_class = *first_term.asClassPtr();
-      Optional<Object> maybe_object =
-        the_class.make_object_function(named_parameters);
-
-      if (!maybe_object) {
-        cerr << "Failed to make object\n";
-        return {};
+        return maybe_result;
       }
       else {
-        return Any(std::move(*maybe_object));
+        cerr << "next char: " << parser.peekChar() << "\n";
+        assert(false);
       }
     }
 
