@@ -14,7 +14,7 @@ class BodyLink {
 
     BodyLink() = default;
 
-    Scene &scene()
+    Scene &scene() const
     {
       assert(scene_ptr);
       return *scene_ptr;

@@ -3,6 +3,7 @@
 
 using std::string;
 using std::vector;
+using std::ostream;
 
 
 static void testObject()
@@ -13,7 +14,12 @@ static void testObject()
       return new Data(*this);
     }
 
-    Optional<Any> member(const std::string &/*member_name*/) override
+    Optional<Any> member(const string &/*member_name*/) override
+    {
+      assert(false);
+    }
+
+    void printOn(ostream &) const override
     {
       assert(false);
     }

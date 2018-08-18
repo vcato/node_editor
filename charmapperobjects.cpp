@@ -33,12 +33,14 @@ Class posExprClass()
           body_link = body_object_data_ptr->body_link;
           assert(body_link.hasValue());
         }
-        else if (name=="position") {
+        else if (name=="pos") {
           maybe_position = maybePoint2D(value);
 
           if (!maybe_position) {
             // This needs to give an error once we have access to the
             // error stream.
+            cerr << "Could't make the position\n";
+            cerr << "value.type: " << value.typeName() << "\n";
             return {};
           }
         }
@@ -51,6 +53,7 @@ Class posExprClass()
       if (!body_link.hasValue()) {
         // This needs to give an error, but we don't have access to the
         // error stream.
+        cerr << "No body specified\n";
         return {};
       }
 

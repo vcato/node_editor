@@ -16,7 +16,8 @@ static void testWithTargetBody()
   pos_expr.target_body_link.set(&scene,&body);
   pos_expr.global_position.components().x.value = 15;
   charmapper.apply();
-  assert(body.position.x(scene.displayFrame())==15);
+  Scene::VarValue result = body.position.x(scene.displayFrame());
+  assert(result==15);
 }
 
 
@@ -134,7 +135,14 @@ static void testTargetLocalOffset()
   charmapper.apply();
 
   Point2D final_position = bodyPosition(body1,scene.displayFrame());
-  assert(final_position==Point2D(1-10,2-20));
+  Point2D expected_position = Point2D(1-10,2-20);
+
+  if (final_position!=expected_position) {
+    cerr << "final_position: " << final_position << "\n";
+    cerr << "expected_position: " << expected_position << "\n";
+  }
+
+  assert(final_position==expected_position);
 }
 
 

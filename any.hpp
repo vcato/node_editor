@@ -35,6 +35,7 @@ struct Object {
   struct Data {
     virtual Data *clone() = 0;
     virtual Optional<Any> member(const std::string &member_name) = 0;
+    virtual void printOn(std::ostream &) const = 0;
     virtual ~Data() {}
   };
 
@@ -67,6 +68,12 @@ struct Object {
   {
     // This isn't right, but I'm not sure what to do about it yet.
     return true;
+  }
+
+  void printOn(std::ostream &stream) const
+  {
+    assert(data_ptr);
+    data_ptr->printOn(stream);
   }
 };
 
@@ -283,15 +290,16 @@ inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
 
 
 template <>
-inline void printOn(std::ostream &,const Object &)
+inline void printOn(std::ostream &stream,const Object &object)
 {
-  assert(false);
+  object.printOn(stream);
 }
 
 
 template <>
-inline void printOn(std::ostream &,const Function &)
+inline void printOn(std::ostream &stream,const Function &)
 {
+  stream << "Function()\n";
   assert(false);
 }
 

@@ -299,3 +299,13 @@ If you don't specify a body for PosExpr() in the expression evaluation, then
 it should give an error.
 ---
 Be able to turn on USE_POS_EXPR_DIAGRAM 1
+---
+Need to rename diagramevaluation.cpp to evaluatediagram.cpp
+---
+Looks like we have an inconsistency in how Point2D is handled in expressions.
+We created a Point2D object, but we're expecting a vector.
+---
+Looks like we're not handling function evaluation properly.
+* Example: $.globalVec($) returns a function.
+* I think it is missing the parentheses.
+* Need to make a test.

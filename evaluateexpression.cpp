@@ -225,6 +225,7 @@ Optional<Any>
         the_class.make_object_function(named_parameters);
 
       if (!maybe_object) {
+        cerr << "Failed to make object\n";
         return {};
       }
       else {

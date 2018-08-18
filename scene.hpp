@@ -10,7 +10,7 @@
 
 class Scene {
   public:
-    struct Body;
+    class Body;
     struct Bodies;
     struct Frame;
     using VarIndex = int;

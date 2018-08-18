@@ -17,10 +17,9 @@ Object bodyObject(BodyLink body_link)
 Optional<Any> BodyObjectData::member(const std::string &member_name)
 {
   if (member_name=="globalVec") {
-#if 0
     return {
-      Function(
-        [body_link=body_link](const vector<Any> &parameters) {
+      Function{
+        [body_link=body_link](const vector<Any> &parameters) -> Optional<Any> {
           if (parameters.size()!=1) {
             assert(false);
           }
@@ -30,15 +29,28 @@ Optional<Any> BodyObjectData::member(const std::string &member_name)
             assert(false);
           }
 
-          return globalVec(body_link,*maybe_point2d - Point2D(0,0));
+          Vector2D result_value =
+            globalVec(body_link,*maybe_point2d - Point2D(0,0));
+          vector<Any> result;
+          result.push_back(result_value.x);
+          result.push_back(result_value.y);
+          return Any(std::move(result));
         }
-      )
+      }
     };
-#else
-    assert(false);
-#endif
   }
 
   cerr << "member_name: " << member_name << "\n";
   assert(false);
+}
+
+
+void BodyObjectData::printOn(std::ostream &stream) const
+{
+  if (body_link.hasValue()) {
+    stream << "Body(name=\"" + body_link.body().name + "\")";
+  }
+  else {
+    assert(false);
+  }
 }

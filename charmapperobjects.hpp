@@ -24,6 +24,11 @@ struct PosExprObjectData : Object::Data, PosExprData {
   {
     assert(false);
   }
+
+  void printOn(std::ostream &) const override
+  {
+    assert(false);
+  }
 };
 
 extern Optional<PosExprData> maybePosExpr(const Any &);

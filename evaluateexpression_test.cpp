@@ -213,14 +213,19 @@ static void testPosExpr2()
     {
     }
 
-    virtual Data *clone() { return new SceneObjectData(*this); }
+    Data *clone() override { return new SceneObjectData(*this); }
 
-    virtual Optional<Any> member(const std::string &member_name)
+    Optional<Any> member(const std::string &member_name) override
     {
       if (member_name=="body1") {
         return {bodyObject(body1_link)};
       }
 
+      assert(false);
+    }
+
+    void printOn(std::ostream &) const override
+    {
       assert(false);
     }
 
@@ -238,7 +243,7 @@ static void testPosExpr2()
   Scene scene;
   BodyLink body1_link(&scene,&body1);
   environment["scene1"] = Object(*new SceneObjectData(body1_link));
-  string expr_string = "PosExpr(body=scene1.body1,position=[0,0])";
+  string expr_string = "PosExpr(body=scene1.body1,pos=[0,0])";
   Optional<PosExprData> maybe_pos_expr =
     evaluatePosExprExpression(expr_string,environment);
   PosExprData pos_expr = *maybe_pos_expr;

@@ -226,6 +226,9 @@ void Charmapper::apply()
             maybe_pos_expr->body_link,maybe_pos_expr->position
           );
         }
+        else {
+          cerr << "pos expr diagram failed\n";
+        }
 #endif
       }
     }

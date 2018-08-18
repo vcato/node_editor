@@ -37,6 +37,13 @@ static void
       diagram_state.node_output_values[node_index][output_index] =
         *maybe_output_value;
     }
+    else {
+      cerr << "Error: " << error_stream.str() << "\n";
+      cerr << "  line: " << line.text << "\n";
+      for (int i=0, n_inputs=input_values.size(); i!=n_inputs; ++i) {
+        cerr << "input_values[" << i << "]=" << input_values[i] << "\n";
+      }
+    }
   }
 }
 

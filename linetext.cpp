@@ -105,6 +105,7 @@ Optional<Any>
   if (parser.getIdentifier(identifier)) {
     if (identifier=="show") {
       if (parser.peekChar()!='(') {
+        error_stream << "Missing '(' after show\n";
         return {};
       }
 
@@ -117,6 +118,7 @@ Optional<Any>
       }
 
       if (parser.peekChar()!=')') {
+        error_stream << "Missing ')' for show\n";
         return {};
       }
 

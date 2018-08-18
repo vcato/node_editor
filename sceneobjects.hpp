@@ -14,6 +14,8 @@ struct BodyObjectData : Object::Data {
 
   ~BodyObjectData() override {}
 
+  void printOn(std::ostream &) const override;
+
   BodyLink body_link;
 };
 

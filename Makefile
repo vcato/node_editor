@@ -72,13 +72,13 @@ any_test: any_test.o
 
 evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o \
   maybepoint2d.o charmapperobjects.o scene.o generatename.o sceneobjects.o \
-  point2dobject.o
+  point2dobject.o globalvec.o point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
   linetext.o statementtext.o stringutil.o evaluateexpression.o \
   diagramevaluation.o defaultdiagrams.o diagramio.o makediagram.o \
-  maybepoint2d.o
+  maybepoint2d.o point2dobject.o point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
@@ -121,7 +121,8 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
   generatename.o charmapper.o defaultdiagrams.o diagram.o diagramio.o \
   diagramnode.o linetext.o statementtext.o stringutil.o sceneviewer.o \
   diagramevaluation.o evaluateexpression.o makediagram.o maybepoint2d.o \
-  sceneobjects.o charmapperobjects.o point2dobject.o globalvec.o
+  sceneobjects.o charmapperobjects.o point2dobject.o globalvec.o \
+  point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o wrapper.o
@@ -137,14 +138,14 @@ worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   wrapperutil.o wrapper.o scenewindow.o scenetree.o generatename.o \
   sceneviewer.o diagramevaluation.o evaluateexpression.o wrapperstate.o \
   makediagram.o maybepoint2d.o charmapperobjects.o sceneobjects.o \
-  point2dobject.o globalvec.o
+  point2dobject.o globalvec.o point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   diagram.o diagramio.o diagramnode.o linetext.o statementtext.o \
   stringutil.o generatename.o diagramevaluation.o evaluateexpression.o \
   makediagram.o maybepoint2d.o point2dobject.o charmapperobjects.o \
-  sceneobjects.o globalvec.o
+  sceneobjects.o globalvec.o point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
