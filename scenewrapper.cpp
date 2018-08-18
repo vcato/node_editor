@@ -426,13 +426,20 @@ void
 }
 
 
+template <typename T>
+static T& indirect(T* ptr)
+{
+  assert(ptr);
+  return *ptr;
+}
+
 SceneWrapper::SceneWrapper(
   Scene &scene_arg,
-  const Callbacks &notify_arg,
+  const Callbacks *notify_ptr,
   const Label &label_arg
 )
 : scene(scene_arg),
-  callbacks(notify_arg),
+  callbacks(indirect(notify_ptr)),
   label_member(label_arg)
 {
 }

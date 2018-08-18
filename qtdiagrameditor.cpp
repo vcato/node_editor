@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 #include <QMenu>
 #include <QFileDialog>
 #include <QMessageBox>

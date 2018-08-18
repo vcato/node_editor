@@ -5,6 +5,7 @@
 #include <vector>
 #include <cassert>
 #include <map>
+#include <functional>
 #include "point2d.hpp"
 #include "stringutil.hpp"
 #include "textobject.hpp"

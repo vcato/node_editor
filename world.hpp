@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 #include "charmapper.hpp"
 #include "scene.hpp"
 #include "scenewindow.hpp"

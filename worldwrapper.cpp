@@ -335,7 +335,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
     callbacks.body_added_func = body_added_func;
     callbacks.removing_body_func = removing_body_func;
     callbacks.removed_body_func = removed_body_func;
-    visitor(SceneWrapper{member.scene,callbacks,member.name});
+    visitor(SceneWrapper{member.scene,&callbacks,member.name});
   }
 };
 }

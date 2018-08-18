@@ -33,7 +33,10 @@ static SceneWrapper::SceneObserver unusedObserver()
 
 static SceneWrapper::SceneObserver ignoringObserver()
 {
-  return SceneWrapper::SceneObserver( [](const Wrapper::TreeObserver &){} );
+  return
+    SceneWrapper::SceneObserver(
+      /*changed_func*/ [](const Wrapper::TreeObserver &){}
+    );
 }
 
 
@@ -67,7 +70,8 @@ static void testHierarchy()
   Scene scene;
   Scene::Body &body = scene.addBody();
   scene.addChildBodyTo(body);
-  SceneWrapper wrapper(scene,unusedObserver(),"Scene");
+  SceneWrapper::SceneObserver observer = unusedObserver();
+  SceneWrapper wrapper(scene,&observer,"Scene");
   ostringstream stream;
   printTree(stream,wrapper);
   string output = stream.str();
@@ -160,7 +164,7 @@ static void testAddingBodies()
 {
   Scene scene;
   SceneWrapper::SceneObserver notify([](const Wrapper::TreeObserver &){});
-  SceneWrapper wrapper(scene,notify,"Scene");
+  SceneWrapper wrapper(scene,&notify,"Scene");
   ostringstream stream;
 
   int body_index = 2;
@@ -204,7 +208,7 @@ static void testGettingState()
   );
   Scene::Body &body = scene.addBody();
   scene.addChildBodyTo(body);
-  SceneWrapper wrapper(scene,notify,"Scene");
+  SceneWrapper wrapper(scene,&notify,"Scene");
   WrapperState state = stateOf(wrapper);
   ostringstream stream;
   printStateOn(stream,state);
@@ -246,7 +250,8 @@ static void testGettingState()
 static void testBuildingFrameFromState()
 {
   Scene scene;
-  SceneWrapper wrapper(scene,ignoringObserver(),"Scene");
+  SceneWrapper::SceneObserver observer = ignoringObserver();
+  SceneWrapper wrapper(scene,&observer,"Scene");
 
   const char *text =
     "scene {\n"
@@ -272,7 +277,8 @@ static void testBuildingFrameFromState()
 static void testBuildingFromState()
 {
   Scene scene;
-  SceneWrapper wrapper(scene,unusedObserver(),"Scene");
+  SceneWrapper::SceneObserver observer = unusedObserver();
+  SceneWrapper wrapper(scene,&observer,"Scene");
   WrapperState state("scene");
   state.children.push_back(WrapperState("background_frame"));
 

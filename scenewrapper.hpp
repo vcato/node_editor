@@ -27,7 +27,7 @@ struct SceneWrapper : VoidWrapper {
 
   SceneWrapper(
     Scene &scene_arg,
-    const SceneObserver& notify,
+    const SceneObserver* notify_ptr,
     const std::string &label
   );
 
