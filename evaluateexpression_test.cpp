@@ -16,6 +16,7 @@ using std::vector;
 using std::cerr;
 using std::string;
 using std::ostringstream;
+using std::make_unique;
 
 
 
@@ -242,7 +243,7 @@ static void testPosExpr2()
   environment["PosExpr"] = &pos_expr_class;
   Scene scene;
   BodyLink body1_link(&scene,&body1);
-  environment["scene1"] = Object(*new SceneObjectData(body1_link));
+  environment["scene1"] = Object(make_unique<SceneObjectData>(body1_link));
   string expr_string = "PosExpr(body=scene1.body1,pos=[0,0])";
   Optional<PosExprData> maybe_pos_expr =
     evaluatePosExprExpression(expr_string,environment);
@@ -285,7 +286,7 @@ static void testCallingMemberFunction()
     }
   };
 
-  Any obj = Object(*new TestObjectData);
+  Any obj = Object(make_unique<TestObjectData>());
 
   Environment environment;
   environment["obj"] = obj;

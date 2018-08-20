@@ -6,6 +6,7 @@
 #include <iosfwd>
 #include <functional>
 #include <map>
+#include <memory>
 #include "printonany.hpp"
 #include "optional.hpp"
 #include "basicvariant.hpp"
@@ -39,10 +40,10 @@ struct Object {
     virtual ~Data() {}
   };
 
-  Data *data_ptr;
+  std::unique_ptr<Data> data_ptr;
 
-  Object(Data &data)
-  : data_ptr(&data)
+  Object(std::unique_ptr<Data> data_ptr_arg)
+  : data_ptr(std::move(data_ptr_arg))
   {
   }
 
@@ -55,7 +56,6 @@ struct Object {
 
   ~Object()
   {
-    delete data_ptr;
   }
 
   Object &operator=(const Object &/*arg*/)

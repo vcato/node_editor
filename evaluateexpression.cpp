@@ -73,7 +73,7 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
     const Any& value = input_values[input_index];
     ++input_index;
     parser.skipChar();
-    return Optional<Any>(value);
+    return evaluateExpressionStartingWithTerm(value);
   }
 
   if (parser.peekChar()=='[') {
@@ -245,18 +245,37 @@ Optional<Any>
     if (first_term.isFunction()) {
       parser.skipChar();
       if (parser.peekChar()==')') {
-        vector<Any> parameters;
-        Optional<Any> maybe_result = first_term.asFunction()(parameters);
+        vector<Any> arguments;
+        Optional<Any> maybe_result = first_term.asFunction()(arguments);
 
         if (!maybe_result) {
           assert(false);
         }
 
+        // This should be calling evaluateExpressionStartingWithTerm() again
+        // so that we can handle the case where the function returns an
+        // object.
         return maybe_result;
       }
       else {
-        cerr << "next char: " << parser.peekChar() << "\n";
-        assert(false);
+        Optional<Any> maybe_first_argument = evaluateExpression();
+
+        if (!maybe_first_argument) {
+          assert(false);
+        }
+
+        if (parser.peekChar()!=')') {
+          assert(false);
+        }
+
+        vector<Any> arguments;
+        arguments.push_back(*maybe_first_argument);
+        parser.skipChar();
+
+        // This should be calling evaluateExpressionStartingWithTerm() again
+        // so that we can handle the case where the function returns an
+        // object.
+        return first_term.asFunction()(arguments);
       }
     }
 

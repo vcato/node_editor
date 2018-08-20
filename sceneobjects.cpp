@@ -6,11 +6,12 @@
 
 using std::cerr;
 using std::vector;
+using std::make_unique;
 
 
 Object bodyObject(BodyLink body_link)
 {
-  return Object(*new BodyObjectData(body_link));
+  return Object(make_unique<BodyObjectData>(body_link));
 }
 
 

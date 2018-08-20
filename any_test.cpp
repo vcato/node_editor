@@ -26,13 +26,13 @@ static void testObject()
   };
 
   auto make_test_object_function = [&](const Class::NamedParameters &){
-    return Object(*new Data);
+    return Object(std::make_unique<Data>());
   };
 
   Class test_class(make_test_object_function);
 
   std::function<Any(const string &member_name)> make_member_function;
-  Any a{ Object(*new Data) };
+  Any a{ Object(std::make_unique<Data>()) };
   assert(a.isObject());
   assert(a.asObject()==a.asObject());
 }

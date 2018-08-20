@@ -13,6 +13,7 @@ using std::string;
 using std::vector;
 using std::cerr;
 using std::map;
+using std::make_unique;
 
 
 static Any lineTextValue(const char *text,const vector<Any> &input_values)
@@ -43,7 +44,7 @@ static bool lineTextHasInput(const string &text)
 
 namespace {
 struct FakeExecutor : Executor {
-  ostringstream stream;
+  ostringstream execution_stream;
 
   void executeShow(const Any&) override
   {
@@ -51,9 +52,9 @@ struct FakeExecutor : Executor {
 
   void executeReturn(const Any& arg) override
   {
-    stream << "return(";
-    printOn(stream,arg);
-    stream << ")\n";
+    execution_stream << "return(";
+    printOn(execution_stream,arg);
+    execution_stream << ")\n";
   }
 };
 }
@@ -65,7 +66,7 @@ static Any lineTextValue(const string &line_text)
   StreamExecutor executor = {dummy_stream};
   ostringstream error_stream;
   Optional<Any> maybe_result =
-    evaluateLineText(line_text,{},executor,error_stream);
+    evaluateLineText(line_text,/*input_values*/{},executor,error_stream);
 
   if (!maybe_result) {
     return Any();
@@ -89,7 +90,7 @@ static void testInvalid(const string &line_text)
   FakeExecutor executor;
   ostringstream error_stream;
   Optional<Any> maybe_result =
-    evaluateLineText(line_text,{},executor,error_stream);
+    evaluateLineText(line_text,/*input_values*/{},executor,error_stream);
   assert(!maybe_result);
 }
 
@@ -98,9 +99,20 @@ static Optional<Any>
   testLineTextWithoutError(const string &text,FakeExecutor &executor)
 {
   ostringstream error_stream;
-  Optional<Any> result = evaluateLineText(text,{},executor,error_stream);
+  Optional<Any> result =
+    evaluateLineText(text,/*input_values*/{},executor,error_stream);
   assert(error_stream.str()=="");
   return result;
+}
+
+
+static void
+  testExecution(const string &line_text,const string &expected_execution)
+{
+  FakeExecutor executor;
+  testLineTextWithoutError(line_text,executor);
+  string execution = executor.execution_stream.str();
+  assert(execution==expected_execution);
 }
 
 
@@ -128,18 +140,11 @@ int main()
   testInvalid("show(5");
   testInvalid("show()");
   testInvalid("show(5)x");
-  {
-    FakeExecutor executor;
-    testLineTextWithoutError("return 3",executor);
-    string execution = executor.stream.str();
-    assert(execution=="return(3)\n");
-  }
-  {
-    FakeExecutor executor;
-    testLineTextWithoutError("return [1,2]",executor);
-    string execution = executor.stream.str();
-    assert(execution=="return([1,2])\n");
-  }
+  testInvalid("return [");
+
+  testExecution("return 3","return(3)\n");
+  testExecution("return [1,2]","return([1,2])\n");
+
   {
     FakeExecutor executor;
     executor.environment["x"] = 5;
@@ -153,10 +158,34 @@ int main()
     assert(*maybe_result==11);
   }
   {
+    string line_text = "$.f()";
+
+    struct TestObjectData : Object::Data {
+      virtual Data *clone() { return new auto(*this); }
+
+      virtual Optional<Any> member(const std::string &member_name)
+      {
+        if (member_name=="f") {
+          auto f = [](const vector<Any> &) -> Optional<Any> { return {3}; };
+          return {Function{f}};
+        }
+        cerr << "member_name: " << member_name << "\n";
+        assert(false);
+      }
+
+      virtual void printOn(std::ostream &) const
+      {
+        assert(false);
+      }
+    };
+
     FakeExecutor executor;
+    TestObjectData object_data;
+    vector<Any> input_values;
+    input_values.push_back(Object(make_unique<TestObjectData>()));
     ostringstream error_stream;
     Optional<Any> maybe_result =
-      evaluateLineText("return [",{},executor,error_stream);
-    assert(!maybe_result);
+      evaluateLineText(line_text,input_values,executor,error_stream);
+    assert(*maybe_result==3);
   }
 }

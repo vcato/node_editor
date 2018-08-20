@@ -5,6 +5,7 @@
 
 using std::string;
 using std::cerr;
+using std::make_unique;
 
 
 Class posExprClass()
@@ -24,7 +25,7 @@ Class posExprClass()
           }
 
           auto body_object_data_ptr =
-            dynamic_cast<BodyObjectData*>(value.asObject().data_ptr);
+            dynamic_cast<BodyObjectData*>(value.asObject().data_ptr.get());
 
           if (!body_object_data_ptr) {
             assert(false);
@@ -62,7 +63,7 @@ Class posExprClass()
         assert(false);
       }
 
-      return Object(*new PosExprObjectData(body_link,*maybe_position));
+      return Object(make_unique<PosExprObjectData>(body_link,*maybe_position));
     };
 
   return Class(make_pos_expr_object_function);
@@ -76,7 +77,7 @@ Optional<PosExprData> maybePosExpr(const Any &result)
   }
 
   PosExprObjectData *pos_expr_object_data_ptr =
-    dynamic_cast<PosExprObjectData*>(result.asObject().data_ptr);
+    dynamic_cast<PosExprObjectData*>(result.asObject().data_ptr.get());
 
   if (!pos_expr_object_data_ptr) {
     return {};
