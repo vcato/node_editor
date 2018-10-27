@@ -1,6 +1,6 @@
 PACKAGES=QtGui QtOpenGL gl glu
 CXXFLAGS=-W -Wall -pedantic -std=c++14 -I`pkg-config --cflags $(PACKAGES)` \
- -D_GLIBCXX_DEBUG=1 -MD -MP -g
+ -D_GLIBCXX_DEBUG=1 -MD -MP -ggdb3
 
 LDFLAGS=`pkg-config --libs $(PACKAGES)`
 
