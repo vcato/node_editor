@@ -5,6 +5,7 @@
 #include "optional.hpp"
 #include "streamparser.hpp"
 #include "stringutil.hpp"
+#include "printindent.hpp"
 
 
 using std::istringstream;
@@ -42,14 +43,6 @@ struct WrapperValuePrinter {
     stream << ": " << arg.name;
   }
 };
-}
-
-
-static void printIndent(ostream &stream,int indent)
-{
-  for (int i=0; i!=indent; ++i) {
-    stream << "  ";
-  }
 }
 
 

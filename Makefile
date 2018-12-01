@@ -54,7 +54,7 @@ main: main.o diagrameditor.o \
   qtscenetree.o scenetree.o sceneviewer.o wrapperutil.o evaluateexpression.o \
   wrapperstate.o makediagram.o point2d.o vector2d.o diagrameditorwindow.o \
   maybepoint2d.o charmapperobjects.o sceneobjects.o point2dobject.o \
-  globalvec.o
+  globalvec.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -125,11 +125,12 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
   point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o wrapper.o
+wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o wrapper.o \
+  printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
-  generatename.o wrapperstate.o stringutil.o wrapper.o
+  generatename.o wrapperstate.o stringutil.o wrapper.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
@@ -138,7 +139,7 @@ worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   wrapperutil.o wrapper.o scenewindow.o scenetree.o generatename.o \
   sceneviewer.o diagramevaluation.o evaluateexpression.o wrapperstate.o \
   makediagram.o maybepoint2d.o charmapperobjects.o sceneobjects.o \
-  point2dobject.o globalvec.o point2d.o
+  point2dobject.o globalvec.o point2d.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
@@ -152,7 +153,7 @@ treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
   statementtext.o stringutil.o fakediagrameditorwindows.o \
   evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o \
-  diagrameditorwindow.o
+  diagrameditorwindow.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
@@ -164,7 +165,8 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   wrapperutil.o diagrameditor.o circle.o fakediagrameditorwindows.o \
   diagramevaluation.o evaluateexpression.o wrapperstate.o makediagram.o \
   point2d.o vector2d.o diagrameditorwindow.o maybepoint2d.o \
-  charmapperobjects.o sceneobjects.o point2dobject.o globalvec.o
+  charmapperobjects.o sceneobjects.o point2dobject.o globalvec.o \
+  printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
