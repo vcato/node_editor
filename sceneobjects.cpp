@@ -44,14 +44,3 @@ Optional<Any> BodyObjectData::maybeMember(const std::string &member_name)
   cerr << "member_name: " << member_name << "\n";
   assert(false);
 }
-
-
-void BodyObjectData::printOn(std::ostream &stream) const
-{
-  if (body_link.hasValue()) {
-    stream << "Body(name=\"" + body_link.body().name + "\")";
-  }
-  else {
-    assert(false);
-  }
-}

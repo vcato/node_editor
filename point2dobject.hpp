@@ -25,8 +25,6 @@ struct Point2DObjectData : Object::Data {
     return new Point2DObjectData(*this);
   }
 
-  void printOn(std::ostream &stream) const override;
-
   std::vector<std::string> memberNames() const override
   {
     assert(false); // needs test

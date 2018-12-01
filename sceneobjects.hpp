@@ -14,8 +14,6 @@ struct BodyObjectData : Object::Data {
 
   ~BodyObjectData() override {}
 
-  void printOn(std::ostream &) const override;
-
   std::vector<std::string> memberNames() const override
   {
     assert(false); // needs test

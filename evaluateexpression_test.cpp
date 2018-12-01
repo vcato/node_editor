@@ -226,11 +226,6 @@ static void testPosExpr2()
       assert(false);
     }
 
-    void printOn(std::ostream &) const override
-    {
-      assert(false);
-    }
-
     std::vector<std::string> memberNames() const override
     {
       assert(false); // needs test
@@ -287,11 +282,6 @@ static void testCallingMemberFunctionWithNoArguments()
       }
     }
 
-    void printOn(std::ostream &) const override
-    {
-      assert(false);
-    }
-
     std::vector<std::string> memberNames() const override
     {
       assert(false); // needs test
@@ -332,11 +322,6 @@ static void testCallingMemberFunctionWithArgument()
         cerr << "member_name: " << member_name << "\n";
         assert(false);
       }
-    }
-
-    void printOn(std::ostream &) const override
-    {
-      assert(false);
     }
 
     std::vector<std::string> memberNames() const override

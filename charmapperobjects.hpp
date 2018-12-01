@@ -26,11 +26,6 @@ struct PosExprObjectData : Object::Data, PosExprData {
     assert(false);
   }
 
-  void printOn(std::ostream &) const override
-  {
-    assert(false);
-  }
-
   std::vector<std::string> memberNames() const override
   {
     assert(false); // needs test

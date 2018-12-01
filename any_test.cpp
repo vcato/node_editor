@@ -19,11 +19,6 @@ static void testObject()
       assert(false);
     }
 
-    void printOn(ostream &) const override
-    {
-      assert(false);
-    }
-
     virtual std::vector<std::string> memberNames() const
     {
       assert(false); // needs test

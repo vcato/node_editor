@@ -38,8 +38,6 @@ struct Object {
   struct Data {
     virtual Data *clone() = 0;
     virtual Optional<Any> maybeMember(const std::string &member_name) = 0;
-    virtual void printOn(std::ostream &) const = 0;
-
     virtual std::vector<std::string> memberNames() const = 0;
 
     virtual ~Data() {}
@@ -243,15 +241,14 @@ struct AnyPolicy {
 inline void Object::printOn(std::ostream &stream) const
 {
   assert(data_ptr);
-#if !NEW_OBJECT_PRINTON_IMPLEMENTATION
-  data_ptr->printOn(stream);
-#else
+
   // We need a way to handle indentation
   for (const auto &member_name : data_ptr->memberNames()) {
+    assert(false); // needs test
     stream << member_name << ": ";
-    data_ptr->member(member_name).printOn(stream);
+    const Any &member_value = *data_ptr->maybeMember(member_name);
+    ::printOn(stream,member_value);
   }
-#endif
 }
 
 
@@ -329,6 +326,7 @@ inline void printOn(std::ostream &,Class *const &)
 
 inline std::ostream& operator<<(std::ostream &stream,const Any &arg)
 {
+  // This printOn() is defined in basicvariant.hpp
   printOn(stream,arg);
   return stream;
 }
