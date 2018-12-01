@@ -32,11 +32,16 @@ struct Class {
 };
 
 
+// This is the base class for dynamic objects that can hold arbitrary
+// members with dynamic values.
 struct Object {
   struct Data {
     virtual Data *clone() = 0;
     virtual Optional<Any> member(const std::string &member_name) = 0;
     virtual void printOn(std::ostream &) const = 0;
+
+    virtual std::vector<std::string> memberNames() const = 0;
+
     virtual ~Data() {}
   };
 

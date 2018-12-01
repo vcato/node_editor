@@ -221,6 +221,7 @@ void Charmapper::apply()
         evaluateDiagram(diagram,executor);
         Optional<PosExprData> maybe_pos_expr =
           maybePosExpr(executor.return_value);
+
         if (maybe_pos_expr) {
           setDisplayedBodyPosition(
             maybe_pos_expr->body_link,maybe_pos_expr->position

@@ -231,6 +231,11 @@ static void testPosExpr2()
       assert(false);
     }
 
+    std::vector<std::string> memberNames() const override
+    {
+      assert(false); // needs test
+    }
+
     BodyLink body1_link;
   };
 
@@ -286,6 +291,11 @@ static void testCallingMemberFunctionWithNoArguments()
     {
       assert(false);
     }
+
+    std::vector<std::string> memberNames() const override
+    {
+      assert(false); // needs test
+    }
   };
 
   Any obj = Object(make_unique<TestObjectData>());
@@ -327,6 +337,11 @@ static void testCallingMemberFunctionWithArgument()
     void printOn(std::ostream &) const override
     {
       assert(false);
+    }
+
+    std::vector<std::string> memberNames() const override
+    {
+      assert(false); // needs test
     }
   };
 

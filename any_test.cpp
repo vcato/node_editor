@@ -23,6 +23,11 @@ static void testObject()
     {
       assert(false);
     }
+
+    virtual std::vector<std::string> memberNames() const
+    {
+      assert(false); // needs test
+    }
   };
 
   auto make_test_object_function = [&](const Class::NamedParameters &){

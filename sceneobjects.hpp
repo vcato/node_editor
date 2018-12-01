@@ -16,6 +16,11 @@ struct BodyObjectData : Object::Data {
 
   void printOn(std::ostream &) const override;
 
+  std::vector<std::string> memberNames() const override
+  {
+    assert(false); // needs test
+  }
+
   BodyLink body_link;
 };
 

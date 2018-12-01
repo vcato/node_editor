@@ -179,6 +179,11 @@ int main()
       {
         assert(false);
       }
+
+      std::vector<std::string> memberNames() const override
+      {
+        assert(false); // needs test
+      }
     };
 
     FakeExecutor executor;
