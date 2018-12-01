@@ -20,6 +20,14 @@ using std::make_unique;
 
 
 
+namespace {
+struct Tester {
+  Environment environment;
+  vector<Any> input_values;
+  ostringstream error_stream;
+};
+}
+
 
 static vector<Any> makeVector()
 {
@@ -35,23 +43,21 @@ static vector<Any> makeVector(Any a,Any b)
 
 
 static Optional<Any>
-  evaluateStringInEnvironment(const string &arg,Environment &environment)
+  evaluateStringWithTester(const string &arg,Tester &tester)
 {
   int index = 0;
   StringParser parser{arg,index};
-  vector<Any> input_values;
   int input_index = 0;
-  ostringstream error_stream;
 
   ExpressionEvaluatorData data{
     parser,
-    input_values,
+    tester.input_values,
     input_index,
-    error_stream,
-    environment
+    tester.error_stream,
+    tester.environment
   };
 
-  string error_string = error_stream.str();
+  string error_string = tester.error_stream.str();
   assert(error_string=="");
 
   return evaluateExpression(data);
@@ -60,31 +66,29 @@ static Optional<Any>
 
 static string evaluateStringWithError(const string &arg)
 {
-  Environment environment;
+  Tester tester;
   int index = 0;
   StringParser parser{arg,index};
-  vector<Any> input_values;
   int input_index = 0;
-  ostringstream error_stream;
 
   ExpressionEvaluatorData data{
     parser,
-    input_values,
+    tester.input_values,
     input_index,
-    error_stream,
-    environment
+    tester.error_stream,
+    tester.environment
   };
 
   Optional<Any> maybe_result = evaluateExpression(data);
   assert(!maybe_result);
-  return error_stream.str();
+  return tester.error_stream.str();
 }
 
 
 static Optional<Any> evaluateString(const string &arg)
 {
-  Environment environment;
-  return evaluateStringInEnvironment(arg,environment);
+  Tester tester;
+  return evaluateStringWithTester(arg,tester);
 }
 
 
@@ -122,16 +126,15 @@ static void testAddingInputs()
   string text = "$+$";
   int index = 0;
   StringParser parser(text,index);
-  vector<Any> input_values = {1,2};
+  Tester tester;
+  tester.input_values = {1,2};
   int input_index = 0;
-  ostringstream error_stream;
-  Environment environment;
   ExpressionEvaluatorData data{
     parser,
-    input_values,
+    tester.input_values,
     input_index,
-    error_stream,
-    environment
+    tester.error_stream,
+    tester.environment
   };
 
   Optional<Any> maybe_result = evaluateExpression(data);
@@ -147,23 +150,21 @@ static void testIdentifier()
   string text = "x";
   int index = 0;
   StringParser parser(text,index);
-  vector<Any> input_values = {};
-  ostringstream error_stream;
-  Environment environment;
-  environment["x"] = 5;
+  Tester tester;
+  tester.environment["x"] = 5;
   int input_index = 0;
   ExpressionEvaluatorData data{
     parser,
-    input_values,
+    tester.input_values,
     input_index,
-    error_stream,
-    environment
+    tester.error_stream,
+    tester.environment
   };
 
   Optional<Any> maybe_result = evaluateExpression(data);
 
   if (!maybe_result) {
-    string error_text = error_stream.str();
+    string error_text = tester.error_stream.str();
     cerr << "error: " << error_text << "\n";
   }
 
@@ -178,11 +179,11 @@ static void testPosExpr()
   Class pos_expr_class = posExprClass();
 
   {
-    Environment environment;
+    Tester tester;
 
-    environment["PosExpr"] = &pos_expr_class;
+    tester.environment["PosExpr"] = &pos_expr_class;
     Optional<Any> maybe_result =
-      evaluateStringInEnvironment("PosExpr()",environment);
+      evaluateStringWithTester("PosExpr()",tester);
     // This fails because the body parameter is required.
     assert(!maybe_result);
   }
@@ -192,11 +193,11 @@ static void testPosExpr()
 static Optional<PosExprData>
   evaluatePosExprExpression(
     const string &expr_string,
-    Environment &environment
+    Tester &tester
   )
 {
   Optional<Any> maybe_result =
-    evaluateStringInEnvironment(expr_string,environment);
+    evaluateStringWithTester(expr_string,tester);
 
   if (!maybe_result) {
     return {};
@@ -239,14 +240,15 @@ static void testPosExpr2()
   Scene::FloatMap x_map(x_var_index), y_map(y_var_index);
   Scene::Point2DMap body1_position_map{x_map,y_map};
   Scene::Body body1(body1_position_map);
-  Environment environment;
+  Tester tester;
+  Environment &environment = tester.environment;
   environment["PosExpr"] = &pos_expr_class;
   Scene scene;
   BodyLink body1_link(&scene,&body1);
   environment["scene1"] = Object(make_unique<SceneObjectData>(body1_link));
   string expr_string = "PosExpr(body=scene1.body1,pos=[0,0])";
   Optional<PosExprData> maybe_pos_expr =
-    evaluatePosExprExpression(expr_string,environment);
+    evaluatePosExprExpression(expr_string,tester);
   PosExprData pos_expr = *maybe_pos_expr;
   assert(pos_expr.body_link==body1_link);
   assert(pos_expr.position==Point2D(0,0));
@@ -260,7 +262,7 @@ static void testCallingUnknownFunction()
 }
 
 
-static void testCallingMemberFunction()
+static void testCallingMemberFunctionWithNoArguments()
 {
   string expression = "obj.f()";
 
@@ -288,12 +290,54 @@ static void testCallingMemberFunction()
 
   Any obj = Object(make_unique<TestObjectData>());
 
-  Environment environment;
-  environment["obj"] = obj;
+  Tester tester;
+  tester.environment["obj"] = obj;
   Optional<Any> maybe_result =
-    evaluateStringInEnvironment(expression,environment);
+    evaluateStringWithTester(expression,tester);
   assert(maybe_result);
   assert((*maybe_result)==5);
+}
+
+
+static void testCallingMemberFunctionWithArgument()
+{
+  string expression = "$.f($)";
+  Tester tester;
+
+  struct TestObjectData : Object::Data {
+    Data *clone() override { return new auto(*this); }
+
+    Optional<Any> member(const std::string &member_name) override
+    {
+      if (member_name=="f") {
+        auto f = [](const vector<Any> &arg) -> Optional<Any> {
+          assert(arg.size()==1);
+          return arg[0];
+        };
+
+        Function::FunctionMember f_member(f);
+        return Any(Function{f_member});
+      }
+      else {
+        cerr << "member_name: " << member_name << "\n";
+        assert(false);
+      }
+    }
+
+    void printOn(std::ostream &) const override
+    {
+      assert(false);
+    }
+  };
+
+  tester.input_values = {
+    Object(make_unique<TestObjectData>()),
+    6
+  };
+
+  Optional<Any> result = evaluateStringWithTester(expression,tester);
+  assert(result);
+  assert(*result == 6);
 }
 
 
@@ -309,9 +353,9 @@ static void testObjectMembers()
 
   Object point_object = makePoint2DObject(point);
 
-  Environment environment;
-  environment["p"] = Any(std::move(point_object));
-  Optional<Any> result = evaluateStringInEnvironment("p.x",environment);
+  Tester tester;
+  tester.environment["p"] = Any(std::move(point_object));
+  Optional<Any> result = evaluateStringWithTester("p.x",tester);
   assert(result->asFloat()==1.5);
 }
 
@@ -344,6 +388,7 @@ int main()
   testPosExpr();
   testObjectMembers();
   testCallingUnknownFunction();
-  testCallingMemberFunction();
+  testCallingMemberFunctionWithNoArguments();
+  testCallingMemberFunctionWithArgument();
   testPosExpr2();
 }
