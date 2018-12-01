@@ -160,7 +160,7 @@ void Charmapper::apply()
 
         if (expr.global_position.isComponents()) {
           Diagram &diagram = expr.global_position.diagram;
-          DiagramExecutor executor(/*show_stream*/cerr);
+          DiagramExecutor executor(/*show_stream*/cerr,/*error_stream*/cerr);
           Point2D parameters = makePoint2D(expr.global_position.components());
           executor.environment["x"] = parameters.x;
           executor.environment["y"] = parameters.y;
@@ -176,7 +176,7 @@ void Charmapper::apply()
           }
 
           Diagram &diagram = from_body_data.local_position.diagram;
-          DiagramExecutor executor(/*show_stream*/cerr);
+          DiagramExecutor executor(/*show_stream*/cerr,/*error_stream*/cerr);
           float x_param = from_body_data.local_position.x.value;
           float y_param = from_body_data.local_position.y.value;
           executor.environment["x"] = x_param;

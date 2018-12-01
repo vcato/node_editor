@@ -19,7 +19,7 @@ using std::make_unique;
 static Any lineTextValue(const char *text,const vector<Any> &input_values)
 {
   ostringstream stream;
-  StreamExecutor executor = {stream};
+  StreamExecutor executor = {stream,cerr};
   ostringstream error_stream;
   Optional<Any> maybe_result =
     evaluateLineText(text,input_values,executor,error_stream);
@@ -56,6 +56,8 @@ struct FakeExecutor : Executor {
     printOn(execution_stream,arg);
     execution_stream << ")\n";
   }
+
+  virtual std::ostream& errorStream() override { return cerr; }
 };
 }
 
@@ -63,7 +65,7 @@ struct FakeExecutor : Executor {
 static Any lineTextValue(const string &line_text)
 {
   ostringstream dummy_stream;
-  StreamExecutor executor = {dummy_stream};
+  StreamExecutor executor = {dummy_stream,cerr};
   ostringstream error_stream;
   Optional<Any> maybe_result =
     evaluateLineText(line_text,/*input_values*/{},executor,error_stream);

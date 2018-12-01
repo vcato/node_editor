@@ -26,11 +26,10 @@ static void
 {
   const Node::Line &line = node.lines[line_index];
 
-  ostringstream error_stream; // We'll need to do something
-    // more sophisticated here.
+  ostringstream line_error_stream;
 
   Optional<Any> maybe_output_value =
-    evaluateLineText(line.text,input_values,executor,error_stream);
+    evaluateLineText(line.text,input_values,executor,line_error_stream);
 
   if (output_index>=0) {
     if (maybe_output_value) {
@@ -38,10 +37,12 @@ static void
         *maybe_output_value;
     }
     else {
-      cerr << "Error: " << error_stream.str() << "\n";
-      cerr << "  line: " << line.text << "\n";
+      std::ostream &error_stream = executor.errorStream();
+      error_stream << "Error: " << line_error_stream.str() << "\n";
+      error_stream << "  line: " << line.text << "\n";
+
       for (int i=0, n_inputs=input_values.size(); i!=n_inputs; ++i) {
-        cerr << "input_values[" << i << "]=" << input_values[i] << "\n";
+        error_stream << "input_values[" << i << "]=" << input_values[i] << "\n";
       }
     }
   }

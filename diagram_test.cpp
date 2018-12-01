@@ -17,7 +17,7 @@ using std::cerr;
 static void evaluateDiagram(Diagram &diagram,DiagramState &diagram_state)
 {
   ostringstream dummy_stream;
-  StreamExecutor executor(dummy_stream);
+  StreamExecutor executor(dummy_stream,cerr);
   evaluateDiagram(diagram,executor,diagram_state);
 }
 
@@ -44,7 +44,8 @@ static void testEvaluation2()
 
 static void evaluate(Diagram &diagram,ostream &stream)
 {
-  StreamExecutor executor(stream);
+  ostringstream error_stream;
+  StreamExecutor executor(stream,error_stream);
   DiagramState diagram_state;
   evaluateDiagram(diagram,executor,diagram_state);
 }

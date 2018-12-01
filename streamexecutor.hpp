@@ -4,9 +4,10 @@
 
 struct StreamExecutor : Executor {
   std::ostream &stream;
+  std::ostream &error_stream;
 
-  StreamExecutor(std::ostream &stream_arg)
-  : stream(stream_arg)
+  StreamExecutor(std::ostream &stream_arg,std::ostream &error_stream_arg)
+  : stream(stream_arg), error_stream(error_stream_arg)
   {
   }
 
@@ -37,4 +38,6 @@ struct StreamExecutor : Executor {
     printOn(std::cerr,arg);
     std::cerr << "\n";
   }
+
+  virtual std::ostream& errorStream() { return error_stream; }
 };

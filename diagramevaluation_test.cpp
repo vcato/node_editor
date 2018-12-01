@@ -85,7 +85,7 @@ static Any
   )
 {
   std::ostringstream show_stream;
-  DiagramExecutor executor(show_stream);
+  DiagramExecutor executor(show_stream,cerr);
   executor.environment = environment;
   evaluateDiagram(diagram,executor);
   return std::move(executor.return_value);

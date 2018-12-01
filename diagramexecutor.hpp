@@ -5,9 +5,14 @@
 struct DiagramExecutor : Executor {
   Any return_value;
   std::ostream &show_stream;
+  std::ostream &error_stream;
 
-  DiagramExecutor(std::ostream &show_stream_arg)
-  : show_stream(show_stream_arg)
+  DiagramExecutor(
+    std::ostream &show_stream_arg,
+    std::ostream &error_stream_arg
+  )
+  : show_stream(show_stream_arg),
+    error_stream(error_stream_arg)
   {
   }
 
@@ -20,4 +25,6 @@ struct DiagramExecutor : Executor {
   {
     return_value = arg;
   }
+
+  std::ostream& errorStream() override { return error_stream; }
 };
