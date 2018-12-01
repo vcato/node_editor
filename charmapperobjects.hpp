@@ -21,7 +21,7 @@ struct PosExprObjectData : Object::Data, PosExprData {
     return new PosExprObjectData(*this);
   }
 
-  Optional<Any> member(const std::string &/*member_name*/) override
+  Optional<Any> maybeMember(const std::string &/*member_name*/) override
   {
     assert(false);
   }

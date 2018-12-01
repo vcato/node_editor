@@ -217,7 +217,7 @@ static void testPosExpr2()
 
     Data *clone() override { return new SceneObjectData(*this); }
 
-    Optional<Any> member(const std::string &member_name) override
+    Optional<Any> maybeMember(const std::string &member_name) override
     {
       if (member_name=="body1") {
         return {bodyObject(body1_link)};
@@ -274,7 +274,7 @@ static void testCallingMemberFunctionWithNoArguments()
   struct TestObjectData : Object::Data {
     Data *clone() override { return new auto(*this); }
 
-    Optional<Any> member(const std::string &member_name) override
+    Optional<Any> maybeMember(const std::string &member_name) override
     {
       if (member_name=="f") {
         auto f = [](const vector<Any> &) -> Optional<Any> { return {5}; };
@@ -317,7 +317,7 @@ static void testCallingMemberFunctionWithArgument()
   struct TestObjectData : Object::Data {
     Data *clone() override { return new auto(*this); }
 
-    Optional<Any> member(const std::string &member_name) override
+    Optional<Any> maybeMember(const std::string &member_name) override
     {
       if (member_name=="f") {
         auto f = [](const vector<Any> &arg) -> Optional<Any> {

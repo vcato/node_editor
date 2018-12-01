@@ -165,7 +165,7 @@ int main()
     struct TestObjectData : Object::Data {
       virtual Data *clone() { return new auto(*this); }
 
-      virtual Optional<Any> member(const std::string &member_name)
+      Optional<Any> maybeMember(const std::string &member_name) override
       {
         if (member_name=="f") {
           auto f = [](const vector<Any> &) -> Optional<Any> { return {3}; };

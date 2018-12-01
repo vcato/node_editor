@@ -14,7 +14,7 @@ static void testObject()
       return new Data(*this);
     }
 
-    Optional<Any> member(const string &/*member_name*/) override
+    Optional<Any> maybeMember(const string &/*member_name*/) override
     {
       assert(false);
     }

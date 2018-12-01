@@ -37,7 +37,7 @@ struct Class {
 struct Object {
   struct Data {
     virtual Data *clone() = 0;
-    virtual Optional<Any> member(const std::string &member_name) = 0;
+    virtual Optional<Any> maybeMember(const std::string &member_name) = 0;
     virtual void printOn(std::ostream &) const = 0;
 
     virtual std::vector<std::string> memberNames() const = 0;
@@ -75,11 +75,7 @@ struct Object {
     return true;
   }
 
-  void printOn(std::ostream &stream) const
-  {
-    assert(data_ptr);
-    data_ptr->printOn(stream);
-  }
+  inline void printOn(std::ostream &stream) const;
 };
 
 
@@ -244,10 +240,25 @@ struct AnyPolicy {
 };
 
 
+inline void Object::printOn(std::ostream &stream) const
+{
+  assert(data_ptr);
+#if !NEW_OBJECT_PRINTON_IMPLEMENTATION
+  data_ptr->printOn(stream);
+#else
+  // We need a way to handle indentation
+  for (const auto &member_name : data_ptr->memberNames()) {
+    stream << member_name << ": ";
+    data_ptr->member(member_name).printOn(stream);
+  }
+#endif
+}
+
+
 inline Optional<Any> Object::member(const std::string &member_name) const
 {
   assert(data_ptr);
-  return data_ptr->member(member_name);
+  return data_ptr->maybeMember(member_name);
 }
 
 

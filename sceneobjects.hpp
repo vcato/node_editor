@@ -10,7 +10,7 @@ struct BodyObjectData : Object::Data {
 
   Data *clone() override { return new BodyObjectData(*this); }
 
-  Optional<Any> member(const std::string &member_name) override;
+  Optional<Any> maybeMember(const std::string &member_name) override;
 
   ~BodyObjectData() override {}
 
