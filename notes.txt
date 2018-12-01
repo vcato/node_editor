@@ -310,3 +310,4 @@ Looks like we're not handling function evaluation properly.
 * I think it is missing the parentheses.
 * It may be specific to using $ as the object.
 * Need to test $.f($)
+* This is working.

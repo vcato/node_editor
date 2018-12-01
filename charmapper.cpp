@@ -209,7 +209,7 @@ void Charmapper::apply()
         // this.  We'll need to introduce class and object types into
         // the Any type.
         Diagram &diagram = expr.diagram;
-        DiagramExecutor executor(/*show_stream*/cerr);
+        DiagramExecutor executor(/*show_stream*/cerr,/*error_stream*/cerr);
         Class pos_expr_class = posExprClass();
         executor.environment["PosExpr"] = &pos_expr_class;
         executor.environment["target_body"] = bodyObject(target_body_link);
