@@ -57,7 +57,7 @@ struct Object {
   {
   }
 
-  inline Optional<Any> member(const std::string &member_name) const;
+  inline Optional<Any> maybeMember(const std::string &member_name) const;
 
   ~Object()
   {
@@ -255,7 +255,7 @@ inline void Object::printOn(std::ostream &stream) const
 }
 
 
-inline Optional<Any> Object::member(const std::string &member_name) const
+inline Optional<Any> Object::maybeMember(const std::string &member_name) const
 {
   assert(data_ptr);
   return data_ptr->maybeMember(member_name);

@@ -410,7 +410,7 @@ Optional<Any>
       assert(false);
     }
 
-    return first_term.asObject().member(member_name);
+    return first_term.asObject().maybeMember(member_name);
   }
 
   return first_term;
