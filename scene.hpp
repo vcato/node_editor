@@ -13,6 +13,7 @@ class Scene {
     class Body;
     struct Bodies;
     struct Frame;
+    struct Point2DMap;
     using VarIndex = int;
     using VarValue = float;
 
@@ -21,6 +22,7 @@ class Scene {
 
     int nBodies() const { return bodies().size(); }
     Body &addBody();
+    Body &addBody(const std::string &name,const Point2DMap &position_map);
     Body& addChildBodyTo(Body &parent);
     void removeChildBodyFrom(Body &parent,int child_index);
     const Bodies &bodies() const { return root_body.children; }
@@ -132,12 +134,6 @@ class Scene {
           return *body_ptrs.back();
         }
 
-        Body& createChild(const Point2DMap &position_map)
-        {
-          body_ptrs.push_back(std::make_unique<Body>(position_map));
-          return *body_ptrs.back();
-        }
-
         void remove(int child_index)
         {
           body_ptrs.erase(body_ptrs.begin() + child_index);
@@ -146,7 +142,12 @@ class Scene {
 
     class Body {
       public:
-        Body(const Point2DMap &position_arg) : position(position_arg) { }
+        explicit
+          Body(const std::string &name_arg,const Point2DMap &position_arg)
+        : position(position_arg),
+          name(name_arg)
+        {
+        }
 
         Point2DMap position;
         Bodies children;
@@ -159,9 +160,7 @@ class Scene {
 
         Body& addChild(const std::string &name,const Point2DMap &position_map)
         {
-          Body &result = children.createChild(position_map);
-          result.name = name;
-          return result;
+          return children.createChild(Body(name,position_map));
         }
 
         void removeChild(int child_index)
@@ -179,7 +178,7 @@ class Scene {
 
   private:
     int n_frame_variables = 0;
-    Body root_body = Body{{0,0}};
+    Body root_body = Body("",{0,0});
     Frame background_frame;
     Frame display_frame;
 

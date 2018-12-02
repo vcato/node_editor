@@ -239,53 +239,22 @@ static Optional<PosExprData>
 
 static void testPosExpr2()
 {
-  struct SceneObjectData : Object::Data {
-    SceneObjectData(BodyLink body1_link_arg)
-    : body1_link(body1_link_arg)
-    {
-    }
-
-    Data *clone() override { return new SceneObjectData(*this); }
-
-    std::string typeName() const override
-    {
-      assert(false); // needs test
-    }
-
-    Any member(const std::string &member_name) const override
-    {
-      if (member_name=="body1") {
-        return bodyObject(body1_link);
-      }
-
-      assert(false);
-    }
-
-    std::vector<std::string> memberNames() const override
-    {
-      return {"body1"};
-    }
-
-    BodyLink body1_link;
-  };
-
   Class pos_expr_class = posExprClass();
   int x_var_index = 0;
   int y_var_index = 1;
+  Scene scene;
   Scene::FloatMap x_map(x_var_index), y_map(y_var_index);
   Scene::Point2DMap body1_position_map{x_map,y_map};
-  Scene::Body body1(body1_position_map);
+  Scene::Body &body1 = scene.addBody("body1",body1_position_map);
   Tester tester;
   Environment &environment = tester.environment;
   environment["PosExpr"] = &pos_expr_class;
-  Scene scene;
-  BodyLink body1_link(&scene,&body1);
-  environment["scene1"] = Object(make_unique<SceneObjectData>(body1_link));
+  environment["scene1"] = Object(make_unique<SceneObjectData>(scene));
   string expr_string = "PosExpr(body=scene1.body1,pos=[0,0])";
   Optional<PosExprData> maybe_pos_expr =
     evaluatePosExprExpression(expr_string,tester);
   PosExprData pos_expr = *maybe_pos_expr;
-  assert(pos_expr.body_link==body1_link);
+  assert(pos_expr.body_link==BodyLink(&scene,&body1));
   assert(pos_expr.position==Point2D(0,0));
 }
 

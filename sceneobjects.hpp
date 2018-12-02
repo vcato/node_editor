@@ -18,3 +18,46 @@ struct BodyObjectData : Object::Data {
 
 
 extern Object bodyObject(BodyLink body_link);
+
+
+struct SceneObjectData : Object::Data {
+  SceneObjectData(Scene &scene_arg)
+  : scene(scene_arg)
+  {
+  }
+
+  Data *clone() override { return new SceneObjectData(*this); }
+
+  std::string typeName() const override
+  {
+    assert(false); // needs test
+  }
+
+  Any member(const std::string &member_name) const override
+  {
+    auto n_bodies = scene.nBodies();
+    for (auto i=n_bodies*0; i!=n_bodies; ++i) {
+      Scene::Body &body = scene.body(i);
+      if (body.name==member_name) {
+        return bodyObject(BodyLink(&scene,&body));
+      }
+    }
+
+    assert(false);
+  }
+
+  std::vector<std::string> memberNames() const override
+  {
+    std::vector<std::string> names;
+    auto n_bodies = scene.nBodies();
+
+    for (auto i=n_bodies*0; i!=n_bodies; ++i) {
+      Scene::Body &body = scene.body(i);
+      names.push_back(body.name);
+    }
+
+    return names;
+  }
+
+  Scene &scene;
+};
