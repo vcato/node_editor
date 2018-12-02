@@ -4,9 +4,10 @@
 
 
 using std::make_unique;
+using std::vector;
 
 
-Object makePoint2DObject(const Point2D &point)
+Any makePoint2DObject(const Point2D &point)
 {
-  return Object(make_unique<Point2DObjectData>(point));
+  return vector<Any>{point.x,point.y};
 }

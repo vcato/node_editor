@@ -1,5 +1,7 @@
 #include "evaluateexpression.hpp"
 
+#include "maybepoint2d.hpp"
+
 
 using std::vector;
 using std::cerr;
@@ -405,6 +407,18 @@ Optional<Any>
     parser.skipChar();
     string member_name;
     parser.getIdentifier(member_name);
+
+    if (Optional<Point2D> maybe_point2d = maybePoint2D(first_term)) {
+      if (member_name=="x") {
+        return Any(maybe_point2d->x);
+      }
+
+      if (member_name=="y") {
+        return Any(maybe_point2d->y);
+      }
+
+      return {};
+    }
 
     if (!first_term.isObject()) {
       assert(false);

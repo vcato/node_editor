@@ -354,22 +354,26 @@ static void testCallingMemberFunctionWithArgument()
 }
 
 
-static void testObjectMembers()
+static void testPoint2DMembers()
 {
   Point2D point(1.5,2.5);
 
-  auto make_point2d_object_function = [&](const Class::NamedParameters &){
-    return makePoint2DObject(point);
-  };
-
-  Class point2d_class(make_point2d_object_function);
-
-  Object point_object = makePoint2DObject(point);
+  Any point_object = makePoint2DObject(point);
 
   Tester tester;
   tester.environment["p"] = Any(std::move(point_object));
-  Optional<Any> result = evaluateStringWithTester("p.x",tester);
-  assert(result->asFloat()==1.5);
+  {
+    Optional<Any> result = evaluateStringWithTester("p.x",tester);
+    assert(result->asFloat()==1.5);
+  }
+  {
+    Optional<Any> result = evaluateStringWithTester("p.y",tester);
+    assert(result->asFloat()==2.5);
+  }
+  {
+    Optional<Any> result = evaluateStringWithTester("p.z",tester);
+    assert(!result);
+  }
 }
 
 
@@ -399,7 +403,7 @@ int main()
   testAddingInputs();
   testIdentifier();
   testPosExpr();
-  testObjectMembers();
+  testPoint2DMembers();
   testCallingUnknownFunction();
   testCallingMemberFunctionWithNoArguments();
   testCallingMemberFunctionWithArgument();

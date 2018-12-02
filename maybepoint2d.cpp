@@ -8,18 +8,6 @@ using std::vector;
 Optional<Point2D> maybePoint2D(const Any &arg)
 {
   if (!arg.isVector()) {
-    if (arg.isObject()) {
-      const Object::Data *data_ptr = &arg.asObject().data();
-      assert(data_ptr);
-      auto point2d_data_ptr = dynamic_cast<const Point2DObjectData*>(data_ptr);
-
-      if (!point2d_data_ptr) {
-        assert(false);
-      }
-
-      return point2d_data_ptr->point;
-    }
-
     return {};
   }
 

@@ -53,10 +53,7 @@ static void testPrintingPosExprObject()
     "    scene_name: None\n"
     "    body_name: None\n"
     "  }\n"
-    "  position: Point2D {\n"
-    "    x: 2\n"
-    "    y: 3\n"
-    "  }\n"
+    "  position: [2,3]\n"
     "}\n";
   assert(valueString(Any(std::move(object)))==expected_result_string);
 }

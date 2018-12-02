@@ -1,5 +1,6 @@
 PACKAGES=QtGui QtOpenGL gl glu
-CXXFLAGS=-W -Wall -pedantic -std=c++14 -I`pkg-config --cflags $(PACKAGES)` \
+CXXFLAGS=-W -Wall -Wundef \
+  -pedantic -std=c++14 -I`pkg-config --cflags $(PACKAGES)` \
  -D_GLIBCXX_DEBUG=1 -MD -MP -ggdb3
 
 LDFLAGS=`pkg-config --libs $(PACKAGES)`
@@ -89,36 +90,38 @@ diagramevaluation_test: diagramevaluation_test.o diagram.o diagramnode.o \
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
   linetext.o diagramnode.o diagram.o circle.o statementtext.o \
   diagramevaluation.o evaluateexpression.o diagramio.o point2d.o \
-  vector2d.o any.o printindent.o
+  vector2d.o any.o printindent.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
-  diagramnode.o statementtext.o evaluateexpression.o
+  diagramnode.o statementtext.o evaluateexpression.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 linetext_test: linetext_test.o linetext.o stringutil.o evaluateexpression.o \
-  any.o printindent.o
+  any.o printindent.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 statementtext_test: statementtext_test.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramnode_test: diagramnode_test.o diagramnode.o linetext.o stringutil.o \
-  statementtext.o evaluateexpression.o
+  statementtext.o evaluateexpression.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
-  statementtext.o diagramevaluation.o evaluateexpression.o any.o printindent.o
+  statementtext.o diagramevaluation.o evaluateexpression.o any.o \
+  printindent.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
-  linetext.o statementtext.o stringutil.o evaluateexpression.o makediagram.o
+  linetext.o statementtext.o stringutil.o evaluateexpression.o makediagram.o \
+  maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
   statementtext.o stringutil.o diagramevaluation.o defaultdiagrams.o \
   diagramio.o wrapperutil.o evaluateexpression.o makediagram.o any.o \
-  printindent.o
+  printindent.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scene_test: scene_test.o scene.o generatename.o
@@ -160,7 +163,7 @@ treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
   statementtext.o stringutil.o fakediagrameditorwindows.o \
   evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o \
-  diagrameditorwindow.o printindent.o
+  diagrameditorwindow.o printindent.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
@@ -186,7 +189,7 @@ qtdiagrameditorwindow_manualtest: qtdiagrameditorwindow_manualtest.o \
   qtmenu.o draw.o diagram.o diagramevaluation.o diagramnode.o circle.o \
   qtslot.o moc_qtslot.o linetext.o statementtext.o stringutil.o \
   qtdiagrameditorwindow.o evaluateexpression.o point2d.o vector2d.o \
-  diagrameditorwindow.o any.o printindent.o
+  diagrameditorwindow.o any.o printindent.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
