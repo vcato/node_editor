@@ -663,6 +663,34 @@ static void testChangingLocalPositionDiagram()
 }
 
 
+static void testChangingPosExprDiagram()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Scene &scene = world.addScene();
+  Scene::Body &body = scene.addBody();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link.set(&scene,&body);
+
+  charmapper.apply();
+  assert(body.position.x(scene.displayFrame())==0);
+
+  Diagram &diagram = pos_expr.diagram;
+  NodeIndex global_position_node_index =
+    diagramNodeIndex(diagram,"global_position");
+  diagram.setNodeText(global_position_node_index,"[10,20]");
+  WorldWrapper world_wrapper(world);
+
+  notifyDiagramChanged(
+    world_wrapper,
+    "Charmapper1|Motion Pass|Pos Expr"
+  );
+
+  auto body_x = body.position.x(scene.displayFrame());
+  assert(body_x==10);
+}
+
 }
 
 
@@ -802,5 +830,6 @@ int main()
     tests::testRemovingACharmapper();
     tests::testChangingGlobalPositionDiagram();
     tests::testChangingLocalPositionDiagram();
+    tests::testChangingPosExprDiagram();
   }
 }
