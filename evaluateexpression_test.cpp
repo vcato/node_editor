@@ -428,6 +428,7 @@ int main()
   testInvalidExpression("[1,2] + [3,4,5]");
   testInvalidExpression("[1,2] + 5");
   testInvalidExpression("[1,2] +");
+  testInvalidExpression("1.x");
   test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
   testInvalidExpression("[1,2] - 3");
   testInvalidExpression("[1,2] - [3]");

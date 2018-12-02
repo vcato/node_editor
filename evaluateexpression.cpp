@@ -357,7 +357,7 @@ Optional<Any>
   }
 
   if (!first_term.isObject()) {
-    assert(false);
+    return {};
   }
 
   return first_term.asObject().maybeMember(member_name);
