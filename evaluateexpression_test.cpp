@@ -222,10 +222,10 @@ static void testPosExpr2()
       assert(false); // needs test
     }
 
-    Optional<Any> maybeMember(const std::string &member_name) override
+    Any member(const std::string &member_name) const override
     {
       if (member_name=="body1") {
-        return {bodyObject(body1_link)};
+        return bodyObject(body1_link);
       }
 
       assert(false);
@@ -233,7 +233,7 @@ static void testPosExpr2()
 
     std::vector<std::string> memberNames() const override
     {
-      assert(false); // needs test
+      return {"body1"};
     }
 
     BodyLink body1_link;
@@ -279,22 +279,21 @@ static void testCallingMemberFunctionWithNoArguments()
       assert(false); // needs test
     }
 
-    Optional<Any> maybeMember(const std::string &member_name) override
+    Any member(const std::string &member_name) const override
     {
       if (member_name=="f") {
         auto f = [](const vector<Any> &) -> Optional<Any> { return {5}; };
         Function::FunctionMember f_member(f);
         return Any(Function{f_member});
       }
-      else {
-        cerr << "member_name: " << member_name << "\n";
-        assert(false);
-      }
+
+      cerr << "member_name: " << member_name << "\n";
+      assert(false);
     }
 
     std::vector<std::string> memberNames() const override
     {
-      assert(false); // needs test
+      return {"f"};
     }
   };
 
@@ -322,7 +321,7 @@ static void testCallingMemberFunctionWithArgument()
       assert(false); // needs test
     }
 
-    Optional<Any> maybeMember(const std::string &member_name) override
+    Any member(const std::string &member_name) const override
     {
       if (member_name=="f") {
         auto f = [](const vector<Any> &arg) -> Optional<Any> {
@@ -333,15 +332,14 @@ static void testCallingMemberFunctionWithArgument()
         Function::FunctionMember f_member(f);
         return Any(Function{f_member});
       }
-      else {
-        cerr << "member_name: " << member_name << "\n";
-        assert(false);
-      }
+
+      cerr << "member_name: " << member_name << "\n";
+      assert(false);
     }
 
     std::vector<std::string> memberNames() const override
     {
-      assert(false); // needs test
+      return {"f"};
     }
   };
 

@@ -170,12 +170,13 @@ int main()
         assert(false); // needs test
       }
 
-      Optional<Any> maybeMember(const std::string &member_name) override
+      Any member(const std::string &member_name) const override
       {
         if (member_name=="f") {
           auto f = [](const vector<Any> &) -> Optional<Any> { return {3}; };
-          return {Function{f}};
+          return Function{f};
         }
+
         cerr << "member_name: " << member_name << "\n";
         assert(false);
       }
@@ -187,7 +188,7 @@ int main()
 
       std::vector<std::string> memberNames() const override
       {
-        assert(false); // needs test
+        return {"f"};
       }
     };
 

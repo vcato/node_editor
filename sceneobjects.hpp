@@ -15,7 +15,7 @@ struct BodyObjectData : Object::Data {
     assert(false); // needs test
   }
 
-  Optional<Any> maybeMember(const std::string &member_name) override;
+  Any member(const std::string &member_name) const override;
 
   ~BodyObjectData() override {}
 

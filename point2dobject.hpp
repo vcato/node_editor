@@ -12,17 +12,17 @@ struct Point2DObjectData : Object::Data {
     assert(false);
   }
 
-  Optional<Any> maybeMember(const std::string &member_name) override
+  Any member(const std::string &member_name) const override
   {
     if (member_name=="x") {
-      return {point.x};
+      return point.x;
     }
 
     if (member_name=="y") {
-      return {point.y};
+      return point.y;
     }
 
-    return {};
+    assert(false);
   }
 
   virtual Point2DObjectData *clone()
@@ -32,7 +32,7 @@ struct Point2DObjectData : Object::Data {
 
   std::vector<std::string> memberNames() const override
   {
-    assert(false); // needs test
+    return {"x","y"};
   }
 };
 

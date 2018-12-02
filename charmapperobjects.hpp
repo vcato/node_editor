@@ -22,7 +22,7 @@ struct BodyLinkObjectData : Object::Data, BodyLink {
     return "BodyLink";
   }
 
-  Optional<Any> maybeMember(const std::string &member_name) override
+  Any member(const std::string &member_name) const override
   {
     if (member_name=="scene_name") {
       if (hasValue()) {
@@ -62,7 +62,7 @@ struct PosExprObjectData : Object::Data, PosExprData {
 
   std::string typeName() const override
   {
-    assert(false);
+    return "PosExpr";
   }
 
   PosExprObjectData *clone() override
@@ -70,14 +70,25 @@ struct PosExprObjectData : Object::Data, PosExprData {
     return new PosExprObjectData(*this);
   }
 
-  Optional<Any> maybeMember(const std::string &/*member_name*/) override
+  Any member(const std::string &member_name) const override
   {
-    assert(false);
+    if (member_name=="body") {
+      Object body_link_object(std::make_unique<BodyLinkObjectData>(body_link));
+      body_link_object.data();
+      return {Any(std::move(body_link_object))};
+    }
+
+    if (member_name=="position") {
+      assert(false);
+    }
+    else {
+      assert(false);
+    }
   }
 
   std::vector<std::string> memberNames() const override
   {
-    assert(false); // needs test
+    return {"body","position"};
   }
 };
 

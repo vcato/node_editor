@@ -19,7 +19,7 @@ static void testObject()
       assert(false);
     }
 
-    Optional<Any> maybeMember(const string &/*member_name*/) override
+    Any member(const string &/*member_name*/) const override
     {
       assert(false);
     }

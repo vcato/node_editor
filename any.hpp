@@ -5,6 +5,7 @@
 #include <vector>
 #include <iosfwd>
 #include <functional>
+#include <algorithm>
 #include <map>
 #include <memory>
 #include "printonany.hpp"
@@ -38,16 +39,15 @@ struct Object {
   struct Data {
     virtual Data *clone() = 0;
     virtual std::string typeName() const = 0;
-    virtual Optional<Any> maybeMember(const std::string &member_name) = 0;
+    virtual Any member(const std::string &member_name) const = 0;
     virtual std::vector<std::string> memberNames() const = 0;
     virtual ~Data() {}
   };
 
-  std::unique_ptr<Data> data_ptr;
-
   Object(std::unique_ptr<Data> data_ptr_arg)
   : data_ptr(std::move(data_ptr_arg))
   {
+    assert(data_ptr);
   }
 
   Object(const Object &arg)
@@ -55,11 +55,17 @@ struct Object {
   {
   }
 
-  inline Optional<Any> maybeMember(const std::string &member_name) const;
-
   ~Object()
   {
   }
+
+  const Data &data() const
+  {
+    assert(data_ptr);
+    return *data_ptr;
+  }
+
+  inline Optional<Any> maybeMember(const std::string &member_name) const;
 
   Object &operator=(const Object &/*arg*/)
   {
@@ -74,6 +80,9 @@ struct Object {
   }
 
   inline void printOn(std::ostream &stream) const;
+
+  private:
+    std::unique_ptr<Data> data_ptr;
 };
 
 
@@ -247,7 +256,7 @@ inline void Object::printOn(std::ostream &stream) const
   // We need a way to handle indentation
   for (const auto &member_name : data_ptr->memberNames()) {
     stream << "  " << member_name << ": ";
-    const Any &member_value = *data_ptr->maybeMember(member_name);
+    Any member_value = data_ptr->member(member_name);
     ::printOn(stream,member_value);
     stream << "\n";
   }
@@ -256,10 +265,21 @@ inline void Object::printOn(std::ostream &stream) const
 }
 
 
+template <typename T>
+inline bool contains(const std::vector<T> &container,const T &value)
+{
+  return std::find(container.begin(),container.end(),value)!=container.end();
+}
+
+
 inline Optional<Any> Object::maybeMember(const std::string &member_name) const
 {
   assert(data_ptr);
-  return data_ptr->maybeMember(member_name);
+  if (!contains(data_ptr->memberNames(),member_name)) {
+    return {};
+  }
+
+  return data_ptr->member(member_name);
 }
 
 

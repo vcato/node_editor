@@ -15,7 +15,7 @@ Object bodyObject(BodyLink body_link)
 }
 
 
-Optional<Any> BodyObjectData::maybeMember(const std::string &member_name)
+Any BodyObjectData::member(const std::string &member_name) const
 {
   if (member_name=="globalVec") {
     return {

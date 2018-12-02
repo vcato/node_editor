@@ -25,7 +25,7 @@ Class posExprClass()
           }
 
           auto body_object_data_ptr =
-            dynamic_cast<BodyObjectData*>(value.asObject().data_ptr.get());
+            dynamic_cast<const BodyObjectData*>(&value.asObject().data());
 
           if (!body_object_data_ptr) {
             assert(false);
@@ -76,8 +76,8 @@ Optional<PosExprData> maybePosExpr(const Any &result)
     return {};
   }
 
-  PosExprObjectData *pos_expr_object_data_ptr =
-    dynamic_cast<PosExprObjectData*>(result.asObject().data_ptr.get());
+  const PosExprObjectData *pos_expr_object_data_ptr =
+    dynamic_cast<const PosExprObjectData*>(&result.asObject().data());
 
   if (!pos_expr_object_data_ptr) {
     return {};
