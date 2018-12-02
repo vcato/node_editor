@@ -9,16 +9,8 @@ struct BodyObjectData : Object::Data {
   }
 
   Data *clone() override { return new BodyObjectData(*this); }
-
-  std::string typeName() const override
-  {
-    return "Body";
-  }
-
+  std::string typeName() const override { return "Body"; }
   Any member(const std::string &member_name) const override;
-
-  ~BodyObjectData() override {}
-
   std::vector<std::string> memberNames() const override;
 
   BodyLink body_link;
