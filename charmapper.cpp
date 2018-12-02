@@ -197,6 +197,7 @@ void Charmapper::apply()
           makePoint2DObject(local_position);
         executor.environment["global_position"] =
           makePoint2DObject(global_position);
+
         evaluateDiagram(diagram,executor);
         Optional<PosExprData> maybe_pos_expr =
           maybePosExpr(executor.return_value);
