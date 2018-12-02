@@ -26,6 +26,12 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
     evaluateExpressionStartingWithTerm(
       Optional<Any> maybe_first_term
     ) const;
+  Optional<Any> evaluateAddition(const Any &first_term) const;
+  Optional<Any> evaluateSubtraction(const Any &first_term) const;
+  Optional<Any> evaluateMemberExpression(const Any &first_term) const;
+  Optional<Any> evaluatePostfixExpression() const;
+  Optional<Any>
+    evaluatePostfixExpressionStartingWith(const Any &first_term) const;
   Optional<Any> parseObjectConstuction(const Class &) const;
 };
 }
@@ -75,7 +81,7 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
     const Any& value = input_values[input_index];
     ++input_index;
     parser.skipChar();
-    return evaluateExpressionStartingWithTerm(value);
+    return value;
   }
 
   if (parser.peekChar()=='[') {
@@ -224,6 +230,155 @@ Optional<Any>
 
 
 Optional<Any>
+  ExpressionEvaluator::evaluatePostfixExpression() const
+{
+  Optional<Any> maybe_first_term = evaluatePrimaryExpression();
+
+  if (!maybe_first_term) {
+    return {};
+  }
+
+  return evaluatePostfixExpressionStartingWith(*maybe_first_term);
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluateAddition(const Any &first_term) const
+{
+  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+
+  if (!maybe_second_term) {
+    return {};
+  }
+
+  const Any &second_term = *maybe_second_term;
+
+  if (first_term.isFloat() && second_term.isFloat()) {
+    return {first_term.asFloat() + second_term.asFloat()};
+  }
+
+  if (!first_term.isVector() || !second_term.isVector()) {
+    return {};
+  }
+
+  const vector<Any> &first_vector = first_term.asVector();
+  const vector<Any> &second_vector = second_term.asVector();
+
+  if (first_vector.size()!=second_vector.size()) {
+    return {};
+  }
+
+  auto n = first_vector.size();
+  vector<Any> result;
+
+  for (decltype(n) i=0; i!=n; ++i) {
+    if (!first_vector[i].isFloat()) {
+      return {};
+    }
+
+    if (!second_vector[i].isFloat()) {
+      return {};
+    }
+
+    float first_value = first_vector[i].asFloat();
+    float second_value = second_vector[i].asFloat();
+
+    result.push_back(first_value + second_value);
+  }
+
+  return {std::move(result)};
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluateSubtraction(const Any &first_term) const
+{
+  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+
+  if (!maybe_second_term) {
+    return {};
+  }
+
+  const Any &second_term = *maybe_second_term;
+
+  if (first_term.isFloat() && second_term.isFloat()) {
+    return Any(first_term.asFloat() - second_term.asFloat());
+  }
+
+  if (!first_term.isVector() || !second_term.isVector()) {
+    return {};
+  }
+
+  const vector<Any> &first_vector = first_term.asVector();
+  const vector<Any> &second_vector = second_term.asVector();
+
+  if (first_vector.size()!=second_vector.size()) {
+    return {};
+  }
+
+  auto n = first_vector.size();
+  vector<Any> result;
+
+  for (decltype(n) i=0; i!=n; ++i) {
+    if (!first_vector[i].isFloat()) {
+      return {};
+    }
+
+    if (!second_vector[i].isFloat()) {
+      return {};
+    }
+
+    float first_value = first_vector[i].asFloat();
+    float second_value = second_vector[i].asFloat();
+
+    result.push_back(first_value - second_value);
+  }
+
+  return {std::move(result)};
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluateMemberExpression(const Any &first_term) const
+{
+  string member_name;
+  parser.getIdentifier(member_name);
+
+  if (Optional<Point2D> maybe_point2d = maybePoint2D(first_term)) {
+    if (member_name=="x") {
+      return Any(maybe_point2d->x);
+    }
+
+    if (member_name=="y") {
+      return Any(maybe_point2d->y);
+    }
+
+    return {};
+  }
+
+  if (!first_term.isObject()) {
+    assert(false);
+  }
+
+  return first_term.asObject().maybeMember(member_name);
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluatePostfixExpressionStartingWith(
+    const Any &first_term
+  ) const
+{
+  if (parser.peekChar()=='.') {
+    parser.skipChar();
+    return evaluateMemberExpression(first_term);
+  }
+
+  return first_term;
+}
+
+
+Optional<Any>
   ExpressionEvaluator::evaluateExpressionStartingWithTerm(
     Optional<Any> maybe_first_term
   ) const
@@ -286,102 +441,18 @@ Optional<Any>
 
   if (parser.peekChar()=='+') {
     parser.skipChar();
-
-    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
-
-    if (!maybe_second_term) {
-      return {};
-    }
-
-    const Any &second_term = *maybe_second_term;
-
-    if (first_term.isFloat() && second_term.isFloat()) {
-      return {first_term.asFloat() + second_term.asFloat()};
-    }
-
-    if (!first_term.isVector() || !second_term.isVector()) {
-      return {};
-    }
-
-    const vector<Any> &first_vector = first_term.asVector();
-    const vector<Any> &second_vector = second_term.asVector();
-
-    if (first_vector.size()!=second_vector.size()) {
-      return {};
-    }
-
-    auto n = first_vector.size();
-    vector<Any> result;
-
-    for (decltype(n) i=0; i!=n; ++i) {
-      if (!first_vector[i].isFloat()) {
-        return {};
-      }
-
-      if (!second_vector[i].isFloat()) {
-        return {};
-      }
-
-      float first_value = first_vector[i].asFloat();
-      float second_value = second_vector[i].asFloat();
-
-      result.push_back(first_value + second_value);
-    }
-
-    return {std::move(result)};
+    return evaluateExpressionStartingWithTerm(evaluateAddition(first_term));
   }
 
   if (parser.peekChar()=='-') {
     parser.skipChar();
-
-    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
-
-    if (!maybe_second_term) {
-      return {};
-    }
-
-    const Any &second_term = *maybe_second_term;
-
-    if (first_term.isFloat() && second_term.isFloat()) {
-      return Any(first_term.asFloat() - second_term.asFloat());
-    }
-
-    if (!first_term.isVector() || !second_term.isVector()) {
-      return {};
-    }
-
-    const vector<Any> &first_vector = first_term.asVector();
-    const vector<Any> &second_vector = second_term.asVector();
-
-    if (first_vector.size()!=second_vector.size()) {
-      return {};
-    }
-
-    auto n = first_vector.size();
-    vector<Any> result;
-
-    for (decltype(n) i=0; i!=n; ++i) {
-      if (!first_vector[i].isFloat()) {
-        return {};
-      }
-
-      if (!second_vector[i].isFloat()) {
-        return {};
-      }
-
-      float first_value = first_vector[i].asFloat();
-      float second_value = second_vector[i].asFloat();
-
-      result.push_back(first_value - second_value);
-    }
-
-    return {std::move(result)};
+    return evaluateExpressionStartingWithTerm(evaluateSubtraction(first_term));
   }
 
   if (parser.peekChar()=='*') {
     parser.skipChar();
 
-    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
+    Optional<Any> maybe_second_term = evaluatePostfixExpression();
 
     if (!maybe_second_term) {
       return {};
@@ -416,7 +487,7 @@ Optional<Any>
   if (parser.peekChar()=='/') {
     parser.skipChar();
 
-    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
+    Optional<Any> maybe_second_term = evaluatePostfixExpression();
 
     if (!maybe_second_term) {
       return {};
@@ -450,37 +521,13 @@ Optional<Any>
     return {};
   }
 
-  if (parser.peekChar()=='.') {
-    parser.skipChar();
-    string member_name;
-    parser.getIdentifier(member_name);
-
-    if (Optional<Point2D> maybe_point2d = maybePoint2D(first_term)) {
-      if (member_name=="x") {
-        return Any(maybe_point2d->x);
-      }
-
-      if (member_name=="y") {
-        return Any(maybe_point2d->y);
-      }
-
-      return {};
-    }
-
-    if (!first_term.isObject()) {
-      assert(false);
-    }
-
-    return first_term.asObject().maybeMember(member_name);
-  }
-
-  return first_term;
+  return evaluatePostfixExpressionStartingWith(first_term);
 }
 
 
 Optional<Any> ExpressionEvaluator::evaluateExpression() const
 {
-  return evaluateExpressionStartingWithTerm(evaluatePrimaryExpression());
+  return evaluateExpressionStartingWithTerm(evaluatePostfixExpression());
 }
 
 

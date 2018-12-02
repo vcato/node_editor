@@ -42,6 +42,12 @@ static vector<Any> makeVector(Any a,Any b)
 }
 
 
+static vector<Any> makeVector(float a,float b)
+{
+  return vector<Any>{a,b};
+}
+
+
 static Optional<Any>
   evaluateStringWithTester(const string &arg,Tester &tester)
 {
@@ -142,6 +148,30 @@ static void testAddingInputs()
   const Any& result = *maybe_result;
   assert(result.isFloat());
   assert(result==3);
+}
+
+
+static void testSubtractingInputs()
+{
+  string text = "$-$+[0,10]";
+
+  int index = 0;
+  StringParser parser(text,index);
+  Tester tester;
+  tester.input_values = {makeVector(48,0),makeVector(0,0)};
+  int input_index = 0;
+  ExpressionEvaluatorData data{
+    parser,
+    tester.input_values,
+    input_index,
+    tester.error_stream,
+    tester.environment
+  };
+
+  Optional<Any> maybe_result = evaluateExpression(data);
+  assert(maybe_result);
+  const Any& result = *maybe_result;
+  assert(result==makeVector(48,10));
 }
 
 
@@ -385,6 +415,8 @@ int main()
   test("[1,2] + [3,4]",makeVector(4,6));
   test("[1,2] - [3,5]",makeVector(-2,-3));
   test("2-3",-1);
+  test("2+3-1",4);
+  test("[1,2]-[3,4]+[5,6]",makeVector(3,4));
   test("2*3",6);
   test("2*[1,2]",makeVector(2,4));
   test("[1,2]*2",makeVector(2,4));
@@ -407,6 +439,7 @@ int main()
   testInvalidExpression("([1,2] + [2,3]");
   testInvalidExpression("[[],2]/2");
   testAddingInputs();
+  testSubtractingInputs();
   testIdentifier();
   testPosExpr();
   testPoint2DMembers();
