@@ -25,7 +25,7 @@ qtdiagrameditorwindow_manualtest
 mainwindow_test
 treeeditor_test
 optional_test
-diagramevaluation_test
+evaluatediagram_test
 evaluateexpression_test
 wrapperstate_test
 charmapperobjects_test

@@ -1,4 +1,4 @@
-#include "diagramevaluation.hpp"
+#include "evaluatediagram.hpp"
 
 #include <cassert>
 #include <sstream>

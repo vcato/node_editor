@@ -3,7 +3,7 @@
 #include <iostream>
 #include "defaultdiagrams.hpp"
 #include "removefrom.hpp"
-#include "diagramevaluation.hpp"
+#include "evaluatediagram.hpp"
 #include "streamexecutor.hpp"
 #include "diagramexecutor.hpp"
 #include "diagramio.hpp"

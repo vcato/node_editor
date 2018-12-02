@@ -2,7 +2,7 @@
 
 #include <sstream>
 #include <iostream>
-#include "diagramevaluation.hpp"
+#include "evaluatediagram.hpp"
 #include "diagramexecutor.hpp"
 #include "defaultdiagrams.hpp"
 #include "makediagram.hpp"

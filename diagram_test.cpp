@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <sstream>
-#include "diagramevaluation.hpp"
+#include "evaluatediagram.hpp"
 #include "streamexecutor.hpp"
 
 
