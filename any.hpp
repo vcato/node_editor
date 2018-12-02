@@ -106,6 +106,7 @@ struct AnyPolicy {
     enum Type {
       void_type,
       float_type,
+      string_type,
       vector_type,
       object_type,
       class_ptr_type,
@@ -130,6 +131,12 @@ struct AnyPolicy {
     : _type(float_type)
     {
       createObject(_value.float_value,arg);
+    }
+
+    AnyPolicy(const std::string &arg)
+    : _type(string_type)
+    {
+      createObject(_value.string_value,arg);
     }
 
     AnyPolicy(std::vector<Any> &&arg)
@@ -159,6 +166,7 @@ struct AnyPolicy {
     bool isVoid() const { return _type==void_type; }
     bool isVector() const { return _type==vector_type; }
     bool isFloat() const { return _type==float_type; }
+    bool isString() const { return _type==string_type; }
     bool isObject() const { return _type==object_type; }
     bool isClassPtr() const { return _type==class_ptr_type; }
     bool isFunction() const { return _type==function_type; }
@@ -168,6 +176,7 @@ struct AnyPolicy {
       switch (_type) {
         case void_type: return "void";
         case vector_type: return "vector";
+        case string_type: return "string";
         case float_type: return "float";
         case object_type: return "object";
         case class_ptr_type: return "class_ptr";
@@ -188,6 +197,12 @@ struct AnyPolicy {
     {
       assert(_type==float_type);
       return _value.float_value;
+    }
+
+    const std::string &asString() const
+    {
+      assert(_type==string_type);
+      return _value.string_value;
     }
 
     const std::vector<Any> &asVector() const
@@ -218,6 +233,7 @@ struct AnyPolicy {
     union Value {
       Void void_value;
       float float_value;
+      std::string string_value;
       std::vector<Any> vector_value;
       Object object_value;
       Class *class_ptr_value;
@@ -233,6 +249,7 @@ struct AnyPolicy {
       switch (t) {
         case float_type:  return v(&Value::float_value);
         case void_type:   return v(&Value::void_value);
+        case string_type: return v(&Value::string_value);
         case vector_type: return v(&Value::vector_value);
         case object_type: return v(&Value::object_value);
         case class_ptr_type: return v(&Value::class_ptr_value);
@@ -284,6 +301,14 @@ template <>
 inline void printOn(std::ostream &stream,const Any::Void &,int /*indent_level*/)
 {
   stream << "None";
+}
+
+
+template <>
+inline void
+  printOn(std::ostream &stream,const std::string &arg,int /*indent_level*/)
+{
+  stream << '"' << arg << '"';
 }
 
 

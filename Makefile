@@ -68,7 +68,7 @@ moc_%.cpp: %.hpp
 optional_test: optional_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-any_test: any_test.o
+any_test: any_test.o any.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapperobjects_test: charmapperobjects_test.o charmapperobjects.o \

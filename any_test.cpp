@@ -1,9 +1,22 @@
 #include "any.hpp"
 
+#include <sstream>
+
 
 using std::string;
 using std::vector;
 using std::ostream;
+
+
+static void testString()
+{
+  Any a = Any("test");
+  assert(a.isString());
+  assert(a.asString()=="test");
+
+  std::ostringstream stream;
+  stream << a;
+}
 
 
 static void testObject()
@@ -79,6 +92,7 @@ static void testMemoryLeak1()
 
 int main()
 {
+  testString();
   testObject();
   testClass();
   testFunction();
