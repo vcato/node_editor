@@ -634,6 +634,14 @@ static NodeIndex diagramNodeIndex(const Diagram &diagram,const string &text)
 }
 
 
+static void applyCharmapper(Charmapper &charmapper)
+{
+  DiagramExecutionContext
+    context{/*show_stream*/cerr,/*error_stream*/cerr};
+  charmapper.apply(context);
+}
+
+
 static void testChangingLocalPositionDiagram()
 {
   FakeWorld world;
@@ -647,7 +655,8 @@ static void testChangingLocalPositionDiagram()
   pos_expr.global_position.fromBody().local_position.x.value = 1;
   pos_expr.global_position.fromBody().local_position.y.value = 2;
 
-  charmapper.apply();
+  applyCharmapper(charmapper);
+
   assert(body.position.x(scene.displayFrame())==1);
 
   Diagram &diagram =
@@ -673,7 +682,7 @@ static void testChangingPosExprDiagram()
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link.set(&scene,&body);
 
-  charmapper.apply();
+  applyCharmapper(charmapper);
   assert(body.position.x(scene.displayFrame())==0);
 
   Diagram &diagram = pos_expr.diagram;

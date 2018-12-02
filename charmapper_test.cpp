@@ -6,6 +6,14 @@ using std::cerr;
 using std::string;
 
 
+static void applyCharmapper(Charmapper &charmapper)
+{
+  DiagramExecutionContext
+    context{/*show_stream*/cerr,/*error_stream*/cerr};
+  charmapper.apply(context);
+}
+
+
 static void testWithTargetBody()
 {
   Charmapper charmapper;
@@ -15,7 +23,7 @@ static void testWithTargetBody()
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link.set(&scene,&body);
   pos_expr.global_position.components().x.value = 15;
-  charmapper.apply();
+  applyCharmapper(charmapper);
   Scene::VarValue result = body.position.x(scene.displayFrame());
   assert(result==15);
 }
@@ -28,7 +36,7 @@ static void testWithoutTargetBody()
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.global_position.components().x.value = 15;
-  charmapper.apply();
+  applyCharmapper(charmapper);
 }
 
 
@@ -44,7 +52,7 @@ static void testWithFrame()
   pos_expr.global_position.components().x.value = 15;
 
   body.position.x.set(scene.backgroundFrame(),0);
-  charmapper.apply();
+  applyCharmapper(charmapper);
   assert(body.position.x(scene.displayFrame()) == 15);
 }
 
@@ -64,7 +72,7 @@ static void testFromSourceBody()
 
   setBodyPosition(body2,scene.displayFrame(),Point2D(15,16));
 
-  charmapper.apply();
+  applyCharmapper(charmapper);
 
   assert(bodyPosition(body1,scene.displayFrame())==Point2D(15,16));
 }
@@ -87,7 +95,7 @@ static void testFromSourceBodyWithLocalOffset()
 
   setBodyPosition(body2,scene.displayFrame(),Point2D(15,16));
 
-  charmapper.apply();
+  applyCharmapper(charmapper);
 
   Point2D body1_position = bodyPosition(body1,scene.displayFrame());
 
@@ -111,7 +119,7 @@ static void testFromSourceBodyWithLocalOffsetAndNoSourceBody()
 
   setBodyPosition(body2,scene.displayFrame(),Point2D(15,16));
 
-  charmapper.apply();
+  applyCharmapper(charmapper);
 
   assert(bodyPosition(body1,scene.displayFrame())==Point2D(1,2));
 }
@@ -132,7 +140,7 @@ static void testTargetLocalOffset()
   pos_expr.global_position.components().x.value = 1;
   pos_expr.global_position.components().y.value = 2;
 
-  charmapper.apply();
+  applyCharmapper(charmapper);
 
   Point2D final_position = bodyPosition(body1,scene.displayFrame());
   Point2D expected_position = Point2D(1-10,2-20);
@@ -167,7 +175,7 @@ static void testGlobalPositionDiagram(const string &node_text,float expected_x)
   Diagram &diagram = pos_expr.global_position.diagram;
   clearDiagram(diagram);
   diagram.addNode(node_text);
-  charmapper.apply();
+  applyCharmapper(charmapper);
   assert(body1.position.x(scene.displayFrame())==expected_x);
 }
 

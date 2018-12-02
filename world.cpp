@@ -128,7 +128,9 @@ void World::applyCharmaps()
 
   forEachCharmapperMember(
     [&](CharmapperMember &charmapper_member){
-      charmapper_member.charmapper.apply();
+      DiagramExecutionContext
+        context{/*show_stream*/cerr,/*error_stream*/cerr};
+      charmapper_member.charmapper.apply(context);
     }
   );
 

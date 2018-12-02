@@ -1,12 +1,6 @@
 #include "executor.hpp"
 #include "environment.hpp"
-
-
-struct DiagramExecutionContext {
-  std::ostream &show_stream;
-  std::ostream &error_stream;
-  Environment *parent_environment_ptr = nullptr;
-};
+#include "diagramexecutioncontext.hpp"
 
 
 struct DiagramExecutor : Executor {

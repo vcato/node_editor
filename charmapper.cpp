@@ -140,7 +140,7 @@ static void
 }
 
 
-void Charmapper::apply()
+void Charmapper::apply(const DiagramExecutionContext &context)
 {
   int n_passes = nPasses();
 
@@ -158,8 +158,6 @@ void Charmapper::apply()
 
         if (expr.global_position.isComponents()) {
           Diagram &diagram = expr.global_position.diagram;
-          DiagramExecutionContext
-            context{/*show_stream*/cerr,/*error_stream*/cerr};
           DiagramExecutor executor(context);
           Point2D parameters = makePoint2D(expr.global_position.components());
           executor.environment["x"] = parameters.x;
@@ -176,8 +174,6 @@ void Charmapper::apply()
           }
 
           Diagram &diagram = from_body_data.local_position.diagram;
-          DiagramExecutionContext
-            context{/*show_stream*/cerr,/*error_stream*/cerr};
           DiagramExecutor executor(context);
           float x_param = from_body_data.local_position.x.value;
           float y_param = from_body_data.local_position.y.value;
@@ -192,8 +188,6 @@ void Charmapper::apply()
         }
 
         Diagram &diagram = expr.diagram;
-        DiagramExecutionContext
-          context{/*show_stream*/cerr,/*error_stream*/cerr};
         DiagramExecutor executor(context);
         Class pos_expr_class = posExprClass();
         executor.environment["PosExpr"] = &pos_expr_class;

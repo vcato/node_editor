@@ -193,7 +193,9 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
     // This may not be sufficient.  It would probably be better to
     // call world.applyCharmaps().  Need an example of where this doesn't
     // work.
-    charmapper_member.charmapper.apply();
+    DiagramExecutionContext
+      context{/*show_stream*/cerr,/*error_stream*/cerr};
+    charmapper_member.charmapper.apply(context);
   }
 
   virtual void visitScene(World::SceneMember &) const
