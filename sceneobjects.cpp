@@ -2,6 +2,7 @@
 
 #include "maybepoint2d.hpp"
 #include "globalvec.hpp"
+#include "point2dobject.hpp"
 
 
 using std::cerr;
@@ -9,15 +10,9 @@ using std::vector;
 using std::make_unique;
 
 
-Object bodyObject(BodyLink body_link)
-{
-  return Object(make_unique<BodyObjectData>(body_link));
-}
-
-
 std::vector<std::string> BodyObjectData::memberNames() const
 {
-  return {"globalVec"};
+  return {"globalVec","pos"};
 }
 
 
@@ -47,6 +42,24 @@ Any BodyObjectData::member(const std::string &member_name) const
     };
   }
 
+  if (member_name=="pos") {
+    Point2D body_position =
+      bodyPosition(body_link.body(),body_link.scene().displayFrame());
+    return makePoint2DObject(body_position);
+  }
+
   cerr << "member_name: " << member_name << "\n";
   assert(false);
+}
+
+
+Object makeBodyObject(BodyLink body_link)
+{
+  return Object(make_unique<BodyObjectData>(body_link));
+}
+
+
+Object makeSceneObject(Scene &scene)
+{
+  return Object(make_unique<SceneObjectData>(scene));
 }

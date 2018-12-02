@@ -17,7 +17,7 @@ struct BodyObjectData : Object::Data {
 };
 
 
-extern Object bodyObject(BodyLink body_link);
+extern Object makeBodyObject(BodyLink body_link);
 
 
 struct SceneObjectData : Object::Data {
@@ -39,7 +39,7 @@ struct SceneObjectData : Object::Data {
     for (auto i=n_bodies*0; i!=n_bodies; ++i) {
       Scene::Body &body = scene.body(i);
       if (body.name==member_name) {
-        return bodyObject(BodyLink(&scene,&body));
+        return makeBodyObject(BodyLink(&scene,&body));
       }
     }
 
@@ -61,3 +61,6 @@ struct SceneObjectData : Object::Data {
 
   Scene &scene;
 };
+
+
+extern Object makeSceneObject(Scene &scene);

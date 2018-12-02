@@ -3,6 +3,7 @@
 #include <iostream>
 #include "worldwrapper.hpp"
 #include "generatename.hpp"
+#include "sceneobjects.hpp"
 
 using std::make_unique;
 using std::unique_ptr;
@@ -126,10 +127,20 @@ void World::applyCharmaps()
     scene_member.scene.displayFrame() = scene_member.scene.backgroundFrame();
   });
 
+  Environment environment;
+
+  // for each scene, add a scene object to the environment
+  forEachSceneMember(
+    [&](World::SceneMember &scene_member){
+      environment[scene_member.name] = makeSceneObject(scene_member.scene);
+    }
+  );
+
+  DiagramExecutionContext
+    context{/*show_stream*/cerr,/*error_stream*/cerr,&environment};
+
   forEachCharmapperMember(
     [&](CharmapperMember &charmapper_member){
-      DiagramExecutionContext
-        context{/*show_stream*/cerr,/*error_stream*/cerr};
       charmapper_member.charmapper.apply(context);
     }
   );

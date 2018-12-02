@@ -32,7 +32,7 @@ static void
     evaluateLineText(line.text,input_values,executor,line_error_stream);
 
 #if 0
-  cerr << "Evaluating line " << line.text << "\n";
+  cerr << "Evaluated line " << line.text << "\n";
   cerr << "input_values: ";
   printOn(cerr,input_values,0);
   cerr << "\n";

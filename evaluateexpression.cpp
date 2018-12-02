@@ -170,8 +170,6 @@ Optional<Any>
       the_class.make_object_function(named_parameters);
 
     if (!maybe_object) {
-      // We got an error trying to create the object with the given
-      // parameters.  We need a way for the error to be reported.
       return {};
     }
 

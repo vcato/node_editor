@@ -52,7 +52,13 @@ Point2DMap Scene::newPositionMap()
 
 auto Scene::addBody() -> Body &
 {
-  return addBody(newBodyName(),newPositionMap());
+  return addBody(newBodyName());
+}
+
+
+auto Scene::addBody(const std::string &name) -> Body &
+{
+  return addBody(name,newPositionMap());
 }
 
 

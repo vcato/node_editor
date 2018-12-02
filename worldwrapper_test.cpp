@@ -700,6 +700,36 @@ static void testChangingPosExprDiagram()
   assert(body_x==10);
 }
 
+
+static void testPosExprDiagramThatReferencesAScene()
+{
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Scene &scene = world.addScene();
+  Scene::Body &body1 = scene.addBody("body1");
+  Scene::Body &body2 = scene.addBody("body2");
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link.set(&scene,&body1);
+  setBodyPosition(body2,scene.backgroundFrame(),Point2D(10,20));
+
+  applyCharmapper(charmapper);
+  assert(body1.position.x(scene.displayFrame())==0);
+
+  Diagram diagram;
+  diagram.addNode("return PosExpr(body=target_body,pos=Scene1.body2.pos)");
+  pos_expr.diagram = diagram;
+  WorldWrapper world_wrapper(world);
+
+  notifyDiagramChanged(
+    world_wrapper,
+    "Charmapper1|Motion Pass|Pos Expr"
+  );
+
+  auto body_x = body1.position.x(scene.displayFrame());
+  assert(body_x==10);
+}
+
 }
 
 
@@ -840,5 +870,6 @@ int main()
     tests::testChangingGlobalPositionDiagram();
     tests::testChangingLocalPositionDiagram();
     tests::testChangingPosExprDiagram();
+    tests::testPosExprDiagramThatReferencesAScene();
   }
 }

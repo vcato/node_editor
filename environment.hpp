@@ -28,6 +28,10 @@ inline Optional<Any>
   auto iter = environment.map.find(name);
 
   if (iter==environment.map.end()) {
+    if (environment.parent_environment_ptr) {
+      return variableValue(name,*environment.parent_environment_ptr);
+    }
+
     return {};
   }
 

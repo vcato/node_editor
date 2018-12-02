@@ -191,7 +191,7 @@ void Charmapper::apply(const DiagramExecutionContext &context)
         DiagramExecutor executor(context);
         Class pos_expr_class = posExprClass();
         executor.environment["PosExpr"] = &pos_expr_class;
-        executor.environment["target_body"] = bodyObject(target_body_link);
+        executor.environment["target_body"] = makeBodyObject(target_body_link);
         Point2D local_position = makePoint2D(expr.local_position);
         executor.environment["local_position"] =
           makePoint2DObject(local_position);
@@ -199,6 +199,7 @@ void Charmapper::apply(const DiagramExecutionContext &context)
           makePoint2DObject(global_position);
 
         evaluateDiagram(diagram,executor);
+
         Optional<PosExprData> maybe_pos_expr =
           maybePosExpr(executor.return_value);
 
@@ -208,7 +209,7 @@ void Charmapper::apply(const DiagramExecutionContext &context)
           );
         }
         else {
-          cerr << "pos expr diagram failed\n";
+          context.error_stream << "pos expr diagram failed\n";
         }
       }
     }

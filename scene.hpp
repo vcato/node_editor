@@ -22,6 +22,7 @@ class Scene {
 
     int nBodies() const { return bodies().size(); }
     Body &addBody();
+    Body &addBody(const std::string &name);
     Body &addBody(const std::string &name,const Point2DMap &position_map);
     Body& addChildBodyTo(Body &parent);
     void removeChildBodyFrom(Body &parent,int child_index);

@@ -73,7 +73,8 @@ any_test: any_test.o any.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapperobjects_test: charmapperobjects_test.o charmapperobjects.o \
-  sceneobjects.o maybepoint2d.o point2dobject.o globalvec.o any.o printindent.o
+  sceneobjects.o maybepoint2d.o point2dobject.o globalvec.o any.o \
+  printindent.o scene.o generatename.o point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o \
@@ -94,7 +95,8 @@ diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
-  diagramnode.o statementtext.o evaluateexpression.o maybepoint2d.o
+  diagramnode.o statementtext.o evaluateexpression.o maybepoint2d.o \
+  any.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 linetext_test: linetext_test.o linetext.o stringutil.o evaluateexpression.o \
@@ -105,7 +107,7 @@ statementtext_test: statementtext_test.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramnode_test: diagramnode_test.o diagramnode.o linetext.o stringutil.o \
-  statementtext.o evaluateexpression.o maybepoint2d.o
+  statementtext.o evaluateexpression.o maybepoint2d.o any.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
@@ -115,7 +117,7 @@ diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
 
 diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
   linetext.o statementtext.o stringutil.o evaluateexpression.o makediagram.o \
-  maybepoint2d.o
+  maybepoint2d.o any.o printindent.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
@@ -163,7 +165,7 @@ treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
   statementtext.o stringutil.o fakediagrameditorwindows.o \
   evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o \
-  diagrameditorwindow.o printindent.o maybepoint2d.o
+  diagrameditorwindow.o printindent.o maybepoint2d.o any.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
