@@ -2,19 +2,22 @@
 #include "environment.hpp"
 
 
+struct DiagramExecutionContext {
+  std::ostream &show_stream;
+  std::ostream &error_stream;
+  Environment *parent_environment_ptr = nullptr;
+};
+
+
 struct DiagramExecutor : Executor {
   Any return_value;
   std::ostream &show_stream;
   std::ostream &error_stream;
 
-  DiagramExecutor(
-    std::ostream &show_stream_arg,
-    std::ostream &error_stream_arg,
-    Environment *parent_environment_ptr = nullptr
-  )
-  : Executor(parent_environment_ptr),
-    show_stream(show_stream_arg),
-    error_stream(error_stream_arg)
+  DiagramExecutor(const DiagramExecutionContext &context)
+  : Executor(context.parent_environment_ptr),
+    show_stream(context.show_stream),
+    error_stream(context.error_stream)
   {
   }
 
