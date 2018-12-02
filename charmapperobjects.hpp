@@ -70,21 +70,7 @@ struct PosExprObjectData : Object::Data, PosExprData {
     return new PosExprObjectData(*this);
   }
 
-  Any member(const std::string &member_name) const override
-  {
-    if (member_name=="body") {
-      Object body_link_object(std::make_unique<BodyLinkObjectData>(body_link));
-      body_link_object.data();
-      return {Any(std::move(body_link_object))};
-    }
-
-    if (member_name=="position") {
-      assert(false);
-    }
-    else {
-      assert(false);
-    }
-  }
+  Any member(const std::string &member_name) const override;
 
   std::vector<std::string> memberNames() const override
   {

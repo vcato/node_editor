@@ -3,9 +3,9 @@
 
 
 struct Point2DObjectData : Object::Data {
-  Point2D &point;
+  Point2D point;
 
-  Point2DObjectData(Point2D &point_arg) : point(point_arg) { }
+  Point2DObjectData(const Point2D &point_arg) : point(point_arg) { }
 
   std::string typeName() const override
   {
@@ -37,4 +37,4 @@ struct Point2DObjectData : Object::Data {
 };
 
 
-extern Object makePoint2DObject(Point2D &point);
+extern Object makePoint2DObject(const Point2D &point);

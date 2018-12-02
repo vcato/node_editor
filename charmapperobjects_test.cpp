@@ -45,7 +45,7 @@ static void printOn2(std::ostream &stream,const Object &object)
   // We need a way to handle indentation
   for (const auto &member_name : data.memberNames()) {
     stream << "  " << member_name << ": ";
-    Any member_value = *data.maybeMember(member_name);
+    Any member_value = data.member(member_name);
     ::printOn(stream,member_value);
     stream << "\n";
   }

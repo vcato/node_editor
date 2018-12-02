@@ -2,6 +2,7 @@
 
 #include "sceneobjects.hpp"
 #include "maybepoint2d.hpp"
+#include "point2dobject.hpp"
 
 using std::string;
 using std::cerr;
@@ -86,4 +87,20 @@ Optional<PosExprData> maybePosExpr(const Any &result)
   PosExprData pos_expr = *pos_expr_object_data_ptr;
 
   return pos_expr;
+}
+
+
+Any PosExprObjectData::member(const std::string &member_name) const
+{
+  if (member_name=="body") {
+    Object body_link_object(std::make_unique<BodyLinkObjectData>(body_link));
+    body_link_object.data();
+    return Any(std::move(body_link_object));
+  }
+
+  if (member_name=="position") {
+    return makePoint2DObject(position);
+  }
+
+  assert(false);
 }
