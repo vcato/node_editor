@@ -554,12 +554,16 @@ static void testCreatingABodyWithAnAveragePosition()
   int return_node = diagram_editor.userAddsANodeWithText("return $");
   diagram_editor.userConnects(divide_node,0,return_node,0);
 
-  tree_editor.userChangesNumberValue("Scene1|Body-1|position|x",2);
-  tree_editor.userChangesNumberValue("Scene1|Body-2|position|x",4);
+  tree_editor.userChangesNumberValue("Scene1|background_frame|0",2);
+  tree_editor.userChangesNumberValue("Scene1|background_frame|2",4);
 
   FakeWorld &world = tester.world;;
-  Scene::Body &body3 = world.sceneMember(0).scene.bodies()[2];
   Scene::Frame &frame = world.sceneMember(0).scene.displayFrame();
+  Scene::Body &body1 = world.sceneMember(0).scene.bodies()[0];
+  assert(body1.position.x(frame)==2);
+  Scene::Body &body2 = world.sceneMember(0).scene.bodies()[1];
+  assert(body2.position.x(frame)==4);
+  Scene::Body &body3 = world.sceneMember(0).scene.bodies()[2];
   assert(body3.position.x(frame)==3);
 }
 #endif
@@ -575,5 +579,5 @@ int main()
   testRemovingAPosExpr();
   testCancellingSaveProject();
   testCancellingOpenProject();
-  // testCreatingABodyWithAnAveragePosition();
+  //testCreatingABodyWithAnAveragePosition();
 }
