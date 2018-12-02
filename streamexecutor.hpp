@@ -24,18 +24,18 @@ struct StreamExecutor : Executor {
 
   void print(const std::vector<Any> &value)
   {
-    printOn(stream,value);
+    printOn(stream,value,/*indent_level*/0);
   }
 
   void print(const Any &value)
   {
-    printOn(stream,value);
+    printOn(stream,value,/*indent_level*/0);
   }
 
   void executeReturn(const Any& arg) override
   {
     std::cerr << "return ";
-    printOn(std::cerr,arg);
+    printOn(std::cerr,arg,/*indent_level*/0);
     std::cerr << "\n";
   }
 

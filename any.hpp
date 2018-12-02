@@ -79,7 +79,7 @@ struct Object {
     return true;
   }
 
-  inline void printOn(std::ostream &stream) const;
+  void printOn(std::ostream &stream,int indent_level) const;
 
   private:
     std::unique_ptr<Data> data_ptr;
@@ -247,24 +247,6 @@ struct AnyPolicy {
 };
 
 
-inline void Object::printOn(std::ostream &stream) const
-{
-  assert(data_ptr);
-
-  stream << data_ptr->typeName() << " {\n";
-
-  // We need a way to handle indentation
-  for (const auto &member_name : data_ptr->memberNames()) {
-    stream << "  " << member_name << ": ";
-    Any member_value = data_ptr->member(member_name);
-    ::printOn(stream,member_value);
-    stream << "\n";
-  }
-
-  stream << "}";
-}
-
-
 template <typename T>
 inline bool contains(const std::vector<T> &container,const T &value)
 {
@@ -292,33 +274,35 @@ inline Optional<Any>
 
 
 template <>
-inline void printOn(std::ostream &stream,const float &arg)
+inline void printOn(std::ostream &stream,const float &arg,int /*indent_level*/)
 {
   stream << arg;
 }
 
+
 template <>
-inline void printOn(std::ostream &stream,const Any::Void &)
+inline void printOn(std::ostream &stream,const Any::Void &,int /*indent_level*/)
 {
   stream << "None";
 }
 
 
 template <>
-inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
+inline void
+  printOn(std::ostream &stream,const std::vector<Any> &arg,int indent_level)
 {
   stream << "[";
 
   auto iter = arg.begin();
 
   if (iter!=arg.end()) {
-    printOn(stream,*iter);
+    printOn(stream,*iter,indent_level);
     ++iter;
   }
 
   while (iter!=arg.end()) {
     stream << ",";
-    printOn(stream,*iter);
+    printOn(stream,*iter,indent_level);
     ++iter;
   }
 
@@ -327,14 +311,14 @@ inline void printOn(std::ostream &stream,const std::vector<Any> &arg)
 
 
 template <>
-inline void printOn(std::ostream &stream,const Object &object)
+inline void printOn(std::ostream &stream,const Object &object,int indent_level)
 {
-  object.printOn(stream);
+  object.printOn(stream,indent_level);
 }
 
 
 template <>
-inline void printOn(std::ostream &stream,const Function &)
+inline void printOn(std::ostream &stream,const Function &,int /*indent_level*/)
 {
   stream << "Function()\n";
   assert(false);
@@ -342,7 +326,7 @@ inline void printOn(std::ostream &stream,const Function &)
 
 
 template <>
-inline void printOn(std::ostream &,Class *const &)
+inline void printOn(std::ostream &,Class *const &,int /*indent_level*/)
 {
   assert(false);
 }
@@ -351,7 +335,7 @@ inline void printOn(std::ostream &,Class *const &)
 inline std::ostream& operator<<(std::ostream &stream,const Any &arg)
 {
   // This printOn() is defined in basicvariant.hpp
-  printOn(stream,arg);
+  printOn(stream,arg,/*indent_level*/0);
   return stream;
 }
 

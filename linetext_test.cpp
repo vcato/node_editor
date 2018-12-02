@@ -53,7 +53,7 @@ struct FakeExecutor : Executor {
   void executeReturn(const Any& arg) override
   {
     execution_stream << "return(";
-    printOn(execution_stream,arg);
+    printOn(execution_stream,arg,/*indent_level*/0);
     execution_stream << ")\n";
   }
 

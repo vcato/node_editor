@@ -9,7 +9,7 @@ struct Point2DObjectData : Object::Data {
 
   std::string typeName() const override
   {
-    assert(false);
+    return "Point2D";
   }
 
   Any member(const std::string &member_name) const override
