@@ -242,13 +242,17 @@ inline void Object::printOn(std::ostream &stream) const
 {
   assert(data_ptr);
 
+  stream << data_ptr->typeName() << " {\n";
+
   // We need a way to handle indentation
   for (const auto &member_name : data_ptr->memberNames()) {
-    assert(false); // needs test
-    stream << member_name << ": ";
+    stream << "  " << member_name << ": ";
     const Any &member_value = *data_ptr->maybeMember(member_name);
     ::printOn(stream,member_value);
+    stream << "\n";
   }
+
+  stream << "}";
 }
 
 
@@ -276,7 +280,7 @@ inline void printOn(std::ostream &stream,const float &arg)
 template <>
 inline void printOn(std::ostream &stream,const Any::Void &)
 {
-  stream << "void()";
+  stream << "None";
 }
 
 
