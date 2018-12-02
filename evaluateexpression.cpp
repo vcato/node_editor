@@ -160,7 +160,6 @@ Optional<Any>
 Optional<Any>
   ExpressionEvaluator::parseObjectConstuction(const Class &the_class) const
 {
-  // Need to extract this to a separate function.
   assert(parser.peekChar()=='(');
   parser.skipChar();
   map<string,Any> named_parameters;
@@ -189,7 +188,9 @@ Optional<Any>
         Optional<Any> value = evaluateExpression();
 
         if (!value) {
-          assert(false);
+          // This is the case where we got an error evaluating the
+          // expression used to generate the value for the parameter.
+          return {};
         }
 
         named_parameters[parameter_name] = std::move(*value);

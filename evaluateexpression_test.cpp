@@ -204,22 +204,6 @@ static void testIdentifier()
 }
 
 
-static void testPosExpr()
-{
-  Class pos_expr_class = posExprClass();
-
-  {
-    Tester tester;
-
-    tester.environment["PosExpr"] = &pos_expr_class;
-    Optional<Any> maybe_result =
-      evaluateStringWithTester("PosExpr()",tester);
-    // This fails because the body parameter is required.
-    assert(!maybe_result);
-  }
-}
-
-
 static Optional<PosExprData>
   evaluatePosExprExpression(
     const string &expr_string,
@@ -237,7 +221,7 @@ static Optional<PosExprData>
 }
 
 
-static void testPosExpr2()
+static void testPosExpr()
 {
   Class pos_expr_class = posExprClass();
   int x_var_index = 0;
@@ -256,6 +240,30 @@ static void testPosExpr2()
   PosExprData pos_expr = *maybe_pos_expr;
   assert(pos_expr.body_link==BodyLink(&scene,&body1));
   assert(pos_expr.position==Point2D(0,0));
+}
+
+
+static void testPosExprWithNoParameters()
+{
+  Class pos_expr_class = posExprClass();
+  Tester tester;
+  tester.environment["PosExpr"] = &pos_expr_class;
+  Optional<Any> maybe_result =
+    evaluateStringWithTester("PosExpr()",tester);
+  // This fails because the body parameter is required.
+  assert(!maybe_result);
+}
+
+
+static void testPosExprWithBadBody()
+{
+  Class pos_expr_class = posExprClass();
+  Tester tester;
+  tester.environment["PosExpr"] = &pos_expr_class;
+  Optional<Any> maybe_result =
+    evaluateStringWithTester("PosExpr(body=[,])",tester);
+  // This fails because the body parameter isn't parsable.
+  assert(!maybe_result);
 }
 
 
@@ -412,9 +420,10 @@ int main()
   testSubtractingInputs();
   testIdentifier();
   testPosExpr();
+  testPosExprWithNoParameters();
+  testPosExprWithBadBody();
   testPoint2DMembers();
   testCallingUnknownFunction();
   testCallingMemberFunctionWithNoArguments();
   testCallingMemberFunctionWithArgument();
-  testPosExpr2();
 }

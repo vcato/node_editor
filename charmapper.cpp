@@ -152,6 +152,7 @@ void Charmapper::apply()
       auto &expr = pass.expr(i);
       BodyLink &target_body_link = expr.target_body_link;
 
+      // The diagram generates a PosExpr object, which requires a target body.
       if (target_body_link.hasValue()) {
         Point2D global_position(0,0);
 
@@ -186,9 +187,6 @@ void Charmapper::apply()
           assert(false);
         }
 
-        // I'm thinking this is roughly how it should work.  To support
-        // this.  We'll need to introduce class and object types into
-        // the Any type.
         Diagram &diagram = expr.diagram;
         DiagramExecutor executor(/*show_stream*/cerr,/*error_stream*/cerr);
         Class pos_expr_class = posExprClass();
