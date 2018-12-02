@@ -300,4 +300,6 @@ it should give an error.
 ---
 Need to rename diagramevaluation.cpp to evaluatediagram.cpp
 ---
-We can edit the PosExpr diagram, but the changes aren't visible immediately.
+We have a commented-out test in mainwindow_test.cpp:
+  testCreatingABodyWithAnAveragePosition();
+  We can't handle Scene1:Body1 syntax.
