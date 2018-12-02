@@ -383,6 +383,8 @@ int main()
   test("[]",makeVector());
   test("[[],2]",makeVector(makeVector(),2));
   test("[1,2] + [3,4]",makeVector(4,6));
+  test("[1,2] - [3,5]",makeVector(-2,-3));
+  test("2-3",-1);
   test("2*3",6);
   test("2*[1,2]",makeVector(2,4));
   test("[1,2]*2",makeVector(2,4));
@@ -395,6 +397,10 @@ int main()
   testInvalidExpression("[1,2] + 5");
   testInvalidExpression("[1,2] +");
   test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
+  testInvalidExpression("[1,2] - 3");
+  testInvalidExpression("[1,2] - [3]");
+  testInvalidExpression("[1,2] - [[],3]");
+  testInvalidExpression("[[],2] - [3,3]");
   testInvalidExpression("([1,2] + [2,3])/[]");
   testInvalidExpression("([1,2] + [2,3])/");
   testInvalidExpression("([[],2] + [2,3])/2");

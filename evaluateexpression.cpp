@@ -331,6 +331,53 @@ Optional<Any>
     return {std::move(result)};
   }
 
+  if (parser.peekChar()=='-') {
+    parser.skipChar();
+
+    Optional<Any> maybe_second_term = evaluatePrimaryExpression();
+
+    if (!maybe_second_term) {
+      return {};
+    }
+
+    const Any &second_term = *maybe_second_term;
+
+    if (first_term.isFloat() && second_term.isFloat()) {
+      return Any(first_term.asFloat() - second_term.asFloat());
+    }
+
+    if (!first_term.isVector() || !second_term.isVector()) {
+      return {};
+    }
+
+    const vector<Any> &first_vector = first_term.asVector();
+    const vector<Any> &second_vector = second_term.asVector();
+
+    if (first_vector.size()!=second_vector.size()) {
+      return {};
+    }
+
+    auto n = first_vector.size();
+    vector<Any> result;
+
+    for (decltype(n) i=0; i!=n; ++i) {
+      if (!first_vector[i].isFloat()) {
+        return {};
+      }
+
+      if (!second_vector[i].isFloat()) {
+        return {};
+      }
+
+      float first_value = first_vector[i].asFloat();
+      float second_value = second_vector[i].asFloat();
+
+      result.push_back(first_value - second_value);
+    }
+
+    return {std::move(result)};
+  }
+
   if (parser.peekChar()=='*') {
     parser.skipChar();
 
