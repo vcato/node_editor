@@ -14,9 +14,6 @@
 #include "globalvec.hpp"
 
 
-#define USE_POS_EXPR_DIAGRAM 0
-
-
 using std::make_unique;
 using std::cerr;
 using std::vector;
@@ -189,22 +186,6 @@ void Charmapper::apply()
           assert(false);
         }
 
-#if !USE_POS_EXPR_DIAGRAM
-        // local_position * body_global_position = desired_global_position;
-        // local_position * body_global_rot + body_global_trans =
-        //   desired_global_position
-        // body_global_trans =
-        //   desired_global_position - local_position*body_global_rot;
-        // body_global_trans =
-        //   desired_global_position - globalVec(local_position);
-        Vector2D local_offset = makePoint2D(expr.local_position)-Point2D(0,0);
-        Vector2D globalized_local_offset =
-          globalVec(target_body_link,local_offset);
-        Point2D new_position =
-          global_position - globalized_local_offset;
-
-        setDisplayedBodyPosition(target_body_link,new_position);
-#else
         // I'm thinking this is roughly how it should work.  To support
         // this.  We'll need to introduce class and object types into
         // the Any type.
@@ -230,7 +211,6 @@ void Charmapper::apply()
         else {
           cerr << "pos expr diagram failed\n";
         }
-#endif
       }
     }
   }

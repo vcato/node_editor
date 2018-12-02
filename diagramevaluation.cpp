@@ -31,6 +31,14 @@ static void
   Optional<Any> maybe_output_value =
     evaluateLineText(line.text,input_values,executor,line_error_stream);
 
+#if 0
+  cerr << "Evaluating line " << line.text << "\n";
+  cerr << "input_values: ";
+  printOn(cerr,input_values,0);
+  cerr << "\n";
+  cerr << "result: " << maybe_output_value << "\n";
+#endif
+
   if (output_index>=0) {
     if (maybe_output_value) {
       diagram_state.node_output_values[node_index][output_index] =

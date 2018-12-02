@@ -132,8 +132,6 @@ static void testTargetLocalOffset()
   pos_expr.global_position.components().x.value = 1;
   pos_expr.global_position.components().y.value = 2;
 
-  // This test is failing due to some expression evaluation problem.
-  // Need to figure out exactly where it is failing.
   charmapper.apply();
 
   Point2D final_position = bodyPosition(body1,scene.displayFrame());
