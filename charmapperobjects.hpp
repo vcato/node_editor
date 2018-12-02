@@ -22,34 +22,9 @@ struct BodyLinkObjectData : Object::Data, BodyLink {
     return "BodyLink";
   }
 
-  Any member(const std::string &member_name) const override
-  {
-    if (member_name=="scene_name") {
-      if (hasValue()) {
-        assert(false);
-      }
-      else {
-        return Any();
-      }
-    }
+  Any member(const std::string &member_name) const override;
 
-    if (member_name=="body_name") {
-      if (hasValue()) {
-        assert(false);
-      }
-      else {
-        return Any();
-      }
-    }
-
-    std::cerr << "member_name: " << member_name << "\n";
-    assert(false); // needs test
-  }
-
-  virtual std::vector<std::string> memberNames() const
-  {
-    return {"scene_name","body_name"};
-  }
+  std::vector<std::string> memberNames() const override;
 };
 
 

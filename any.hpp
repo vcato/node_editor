@@ -346,7 +346,6 @@ template <>
 inline void printOn(std::ostream &stream,const Function &,int /*indent_level*/)
 {
   stream << "Function()\n";
-  assert(false);
 }
 
 

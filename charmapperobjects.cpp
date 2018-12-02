@@ -1,5 +1,6 @@
 #include "charmapperobjects.hpp"
 
+#include <sstream>
 #include "sceneobjects.hpp"
 #include "maybepoint2d.hpp"
 #include "point2dobject.hpp"
@@ -103,4 +104,37 @@ Any PosExprObjectData::member(const std::string &member_name) const
   }
 
   assert(false);
+}
+
+
+std::vector<std::string> BodyLinkObjectData::memberNames() const
+{
+  return {"scene_name","body_name"};
+}
+
+
+Any BodyLinkObjectData::member(const std::string &member_name) const
+{
+  if (member_name=="scene_name") {
+    if (hasValue()) {
+      std::ostringstream stream;
+      stream << "Scene(" << &scene() << ")";
+      return Any(stream.str());
+    }
+    else {
+      return Any();
+    }
+  }
+
+  if (member_name=="body_name") {
+    if (hasValue()) {
+      return body().name;
+    }
+    else {
+      return Any();
+    }
+  }
+
+  std::cerr << "member_name: " << member_name << "\n";
+  assert(false); // needs test
 }

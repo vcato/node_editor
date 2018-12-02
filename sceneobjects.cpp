@@ -15,6 +15,12 @@ Object bodyObject(BodyLink body_link)
 }
 
 
+std::vector<std::string> BodyObjectData::memberNames() const
+{
+  return {"globalVec"};
+}
+
+
 Any BodyObjectData::member(const std::string &member_name) const
 {
   if (member_name=="globalVec") {

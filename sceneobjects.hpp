@@ -12,17 +12,14 @@ struct BodyObjectData : Object::Data {
 
   std::string typeName() const override
   {
-    assert(false); // needs test
+    return "Body";
   }
 
   Any member(const std::string &member_name) const override;
 
   ~BodyObjectData() override {}
 
-  std::vector<std::string> memberNames() const override
-  {
-    assert(false); // needs test
-  }
+  std::vector<std::string> memberNames() const override;
 
   BodyLink body_link;
 };
