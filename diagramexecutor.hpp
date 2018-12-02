@@ -9,9 +9,11 @@ struct DiagramExecutor : Executor {
 
   DiagramExecutor(
     std::ostream &show_stream_arg,
-    std::ostream &error_stream_arg
+    std::ostream &error_stream_arg,
+    Environment *parent_environment_ptr = nullptr
   )
-  : show_stream(show_stream_arg),
+  : Executor(parent_environment_ptr),
+    show_stream(show_stream_arg),
     error_stream(error_stream_arg)
   {
   }

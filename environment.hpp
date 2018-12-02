@@ -10,8 +10,8 @@ struct Environment {
   std::map<std::string,Any> map;
   Environment *parent_environment_ptr;
 
-  Environment()
-  : parent_environment_ptr(nullptr)
+  Environment(Environment* parent_environment_ptr_arg = nullptr)
+  : parent_environment_ptr(parent_environment_ptr_arg)
   {
   }
 

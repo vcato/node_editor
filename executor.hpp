@@ -13,6 +13,11 @@ struct Executor {
   virtual void executeReturn(const Any&) = 0;
   virtual std::ostream& errorStream() = 0;
 
+  Executor(Environment *parent_environment_ptr)
+  : environment(parent_environment_ptr)
+  {
+  }
+
   Optional<Any> variableValue(const std::string &name) const
   {
     return ::variableValue(name,environment);

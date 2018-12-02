@@ -7,7 +7,9 @@ struct StreamExecutor : Executor {
   std::ostream &error_stream;
 
   StreamExecutor(std::ostream &stream_arg,std::ostream &error_stream_arg)
-  : stream(stream_arg), error_stream(error_stream_arg)
+  : Executor(/*parent_environment_ptr*/0),
+    stream(stream_arg),
+    error_stream(error_stream_arg)
   {
   }
 

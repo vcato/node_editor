@@ -46,6 +46,11 @@ namespace {
 struct FakeExecutor : Executor {
   ostringstream execution_stream;
 
+  FakeExecutor()
+  : Executor(/*parent_environment_ptr*/nullptr)
+  {
+  }
+
   void executeShow(const Any&) override
   {
   }
