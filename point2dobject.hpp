@@ -7,6 +7,11 @@ struct Point2DObjectData : Object::Data {
 
   Point2DObjectData(Point2D &point_arg) : point(point_arg) { }
 
+  std::string typeName() const override
+  {
+    assert(false);
+  }
+
   Optional<Any> maybeMember(const std::string &member_name) override
   {
     if (member_name=="x") {

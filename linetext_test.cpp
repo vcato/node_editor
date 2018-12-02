@@ -165,6 +165,11 @@ int main()
     struct TestObjectData : Object::Data {
       virtual Data *clone() { return new auto(*this); }
 
+      std::string typeName() const override
+      {
+        assert(false); // needs test
+      }
+
       Optional<Any> maybeMember(const std::string &member_name) override
       {
         if (member_name=="f") {

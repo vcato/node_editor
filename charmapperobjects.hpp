@@ -16,6 +16,11 @@ struct PosExprObjectData : Object::Data, PosExprData {
   {
   }
 
+  std::string typeName() const override
+  {
+    assert(false);
+  }
+
   PosExprObjectData *clone() override
   {
     return new PosExprObjectData(*this);

@@ -37,9 +37,9 @@ struct Class {
 struct Object {
   struct Data {
     virtual Data *clone() = 0;
+    virtual std::string typeName() const = 0;
     virtual Optional<Any> maybeMember(const std::string &member_name) = 0;
     virtual std::vector<std::string> memberNames() const = 0;
-
     virtual ~Data() {}
   };
 

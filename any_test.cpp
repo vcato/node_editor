@@ -14,6 +14,11 @@ static void testObject()
       return new Data(*this);
     }
 
+    std::string typeName() const override
+    {
+      assert(false);
+    }
+
     Optional<Any> maybeMember(const string &/*member_name*/) override
     {
       assert(false);

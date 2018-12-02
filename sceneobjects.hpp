@@ -10,6 +10,11 @@ struct BodyObjectData : Object::Data {
 
   Data *clone() override { return new BodyObjectData(*this); }
 
+  std::string typeName() const override
+  {
+    assert(false); // needs test
+  }
+
   Optional<Any> maybeMember(const std::string &member_name) override;
 
   ~BodyObjectData() override {}
