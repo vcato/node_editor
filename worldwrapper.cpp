@@ -148,20 +148,22 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
   const int member_index;
   const Wrapper::TreeObserver &tree_observer;
   const SceneList &scene_list;
+  World &world;
 
   NotifyCharmapperVisitor(
     int member_index_arg,
     const Wrapper::TreeObserver &operation_handler_arg,
-    const SceneList &scene_list_arg
+    const SceneList &scene_list_arg,
+    World &world_arg
   )
   : member_index(member_index_arg),
     tree_observer(operation_handler_arg),
-    scene_list(scene_list_arg)
+    scene_list(scene_list_arg),
+    world(world_arg)
   {
   }
 
-  virtual void
-    visitCharmapper(World::CharmapperMember &charmapper_member) const
+  virtual void visitCharmapper(World::CharmapperMember &charmapper_member) const
   {
     struct Callbacks : CharmapperWrapper::Callbacks {
       Callbacks(const SceneList &scene_list_arg)
@@ -190,12 +192,7 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
       charmapper_member.name
     ).handleSceneChange(tree_observer,{member_index});
 
-    // This may not be sufficient.  It would probably be better to
-    // call world.applyCharmaps().  Need an example of where this doesn't
-    // work.
-    DiagramExecutionContext
-      context{/*show_stream*/cerr,/*error_stream*/cerr};
-    charmapper_member.charmapper.apply(context);
+    world.applyCharmaps();
   }
 
   virtual void visitScene(World::SceneMember &) const
@@ -216,7 +213,7 @@ static void
   WorldSceneList scene_list(world);
 
   for (int member_index=0; member_index!=n_members; ++member_index) {
-    NotifyCharmapperVisitor visitor(member_index,tree_observer,scene_list);
+    NotifyCharmapperVisitor visitor(member_index,tree_observer,scene_list,world);
     world.visitMember(member_index,visitor);
   }
 }

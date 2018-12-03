@@ -10,6 +10,7 @@ using std::unique_ptr;
 using std::cerr;
 using std::function;
 using std::string;
+using std::vector;
 using Member = World::Member;
 using CharmapperMember = World::CharmapperMember;
 using SceneMember = World::SceneMember;
@@ -121,7 +122,27 @@ void
 }
 
 
+vector<Charmapper*> World::allCharmapPtrs()
+{
+  vector<Charmapper *> charmapper_ptrs;
+
+  forEachCharmapperMember(
+    [&](CharmapperMember &charmapper_member){
+      charmapper_ptrs.push_back(&charmapper_member.charmapper);
+    }
+  );
+
+  return charmapper_ptrs;
+}
+
+
 void World::applyCharmaps()
+{
+  applyCharmaps(allCharmapPtrs());
+}
+
+
+void World::applyCharmaps(const vector<Charmapper*> &charmapper_ptrs)
 {
   forEachSceneMember([&](SceneMember &scene_member){
     scene_member.scene.displayFrame() = scene_member.scene.backgroundFrame();
@@ -139,11 +160,10 @@ void World::applyCharmaps()
   DiagramExecutionContext
     context{/*show_stream*/cerr,/*error_stream*/cerr,&environment};
 
-  forEachCharmapperMember(
-    [&](CharmapperMember &charmapper_member){
-      charmapper_member.charmapper.apply(context);
-    }
-  );
+  for (auto charmapper_ptr : charmapper_ptrs) {
+    assert(charmapper_ptr);
+    charmapper_ptr->apply(context);
+  }
 
   forEachSceneMember([&](const SceneMember &scene_member){
     if (scene_member.scene_window_ptr) {

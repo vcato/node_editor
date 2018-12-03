@@ -230,6 +230,7 @@ static void testPrintingCharmapperState()
 
 
 namespace scene_and_charmapper_tests {
+
 static void testAddingABodyToTheScene()
 {
   // Create a world with a charmapper and a scene.

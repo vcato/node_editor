@@ -345,14 +345,14 @@ inline void printOn(std::ostream &stream,const Object &object,int indent_level)
 template <>
 inline void printOn(std::ostream &stream,const Function &,int /*indent_level*/)
 {
-  stream << "Function()\n";
+  stream << "Function()";
 }
 
 
 template <>
-inline void printOn(std::ostream &,Class *const &,int /*indent_level*/)
+inline void printOn(std::ostream &stream,Class *const &,int /*indent_level*/)
 {
-  assert(false);
+  stream << "Class()\n";
 }
 
 

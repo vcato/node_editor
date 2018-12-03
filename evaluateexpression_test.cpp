@@ -230,6 +230,7 @@ static void testPosExpr()
   Scene::FloatMap x_map(x_var_index), y_map(y_var_index);
   Scene::Point2DMap body1_position_map{x_map,y_map};
   Scene::Body &body1 = scene.addBody("body1",body1_position_map);
+  scene.displayFrame() = Scene::Frame(2);
   Tester tester;
   Environment &environment = tester.environment;
   environment["PosExpr"] = &pos_expr_class;
@@ -281,10 +282,7 @@ static void testCallingMemberFunctionWithNoArguments()
   struct TestObjectData : Object::Data {
     Data *clone() override { return new auto(*this); }
 
-    std::string typeName() const override
-    {
-      assert(false); // needs test
-    }
+    std::string typeName() const override { return "Test"; }
 
     Any member(const std::string &member_name) const override
     {

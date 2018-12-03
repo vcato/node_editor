@@ -30,7 +30,7 @@ struct SceneObjectData : Object::Data {
 
   std::string typeName() const override
   {
-    assert(false); // needs test
+    return "Scene";
   }
 
   Any member(const std::string &member_name) const override

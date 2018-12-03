@@ -370,7 +370,13 @@ Optional<Any>
 {
   if (parser.peekChar()=='.') {
     parser.skipChar();
-    return evaluateMemberExpression(first_term);
+    Optional<Any> maybe_member = evaluateMemberExpression(first_term);
+
+    if (!maybe_member) {
+      return {};
+    }
+
+    return evaluatePostfixExpressionStartingWith(*maybe_member);
   }
 
   return first_term;

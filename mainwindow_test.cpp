@@ -121,6 +121,11 @@ struct FakeTreeEditor : TreeEditor {
     userChangesNumberValue(makePath(world(),path_string),new_value);
   }
 
+  void userChangesComboBoxIndex(const string &path_string,int new_value)
+  {
+    setEnumerationIndex(makePath(world(),path_string),new_value);
+  }
+
   int itemChildCount(const TreePath &parent_path) const override
   {
     return itemFromPath(root,parent_path).children.size();
@@ -519,7 +524,6 @@ static void testCancellingOpenProject()
 }
 
 
-#if 0
 static void testCreatingABodyWithAnAveragePosition()
 {
   Tester tester;
@@ -536,6 +540,12 @@ static void testCreatingABodyWithAnAveragePosition()
   tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass","Add Pos Expr"
   );
+
+  tree_editor.userChangesComboBoxIndex(
+    "Charmapper1|Motion Pass|Pos Expr|Target Body",
+    3 /* this should be Scene1:Body3 */
+  );
+
   tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass|Pos Expr|Global Position","Edit Diagram..."
   );
@@ -543,9 +553,9 @@ static void testCreatingABodyWithAnAveragePosition()
   FakeDiagramEditor &diagram_editor =
     tree_editor.diagram_editor_windows[0]->diagram_editor;
   int body1_node_index =
-    diagram_editor.userAddsANodeWithText("Scene1:Body1.position");
+    diagram_editor.userAddsANodeWithText("Scene1.Body1.pos");
   int body2_node_index =
-    diagram_editor.userAddsANodeWithText("Scene1:Body2.position");
+    diagram_editor.userAddsANodeWithText("Scene1.Body2.pos");
   int add_node = diagram_editor.userAddsANodeWithText("$+$");
   diagram_editor.userConnects(body1_node_index,0,add_node,0);
   diagram_editor.userConnects(body2_node_index,0,add_node,1);
@@ -566,7 +576,6 @@ static void testCreatingABodyWithAnAveragePosition()
   Scene::Body &body3 = world.sceneMember(0).scene.bodies()[2];
   assert(body3.position.x(frame)==3);
 }
-#endif
 
 
 int main()
@@ -579,5 +588,5 @@ int main()
   testRemovingAPosExpr();
   testCancellingSaveProject();
   testCancellingOpenProject();
-  //testCreatingABodyWithAnAveragePosition();
+  testCreatingABodyWithAnAveragePosition();
 }
