@@ -1,10 +1,12 @@
 world {
   scene1 {
     background_frame {
-      0: 23
+      0: 0
       1: 0
       2: 0
       3: 0
+      4: 0
+      5: 0
     }
     body {
       name: "Body1"
@@ -20,11 +22,18 @@ world {
         y_variable: 3
       }
     }
+    body {
+      name: "Body3"
+      position_map {
+        x_variable: 4
+        y_variable: 5
+      }
+    }
   }
   charmapper1 {
     motion_pass {
       pos_expr {
-        target_body: scene1:body2
+        target_body: scene1:body3
         local_position {
           x: 0
           y: 0
@@ -32,7 +41,7 @@ world {
         global_position: from_body {
           source_body: scene1:body1
           local_position {
-            x: 25
+            x: 1
             y: 0
           }
         }
