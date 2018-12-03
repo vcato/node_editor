@@ -64,7 +64,7 @@ auto Scene::addBody(const std::string &name) -> Body &
 
 Body &Scene::addBody(const std::string &name,const Point2DMap &position_map)
 {
-  return bodies().createChild(Body(name,position_map));
+  return bodies().createChild(Body(name,position_map,/*parent_ptr*/&root_body));
 }
 
 
@@ -134,4 +134,23 @@ Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame)
   auto y = body.position.y(frame);
 
   return Point2D(x,y);
+}
+
+
+Point2D
+  globalPos(
+    const Scene::Body &body,
+    const Point2D &local,
+    const Scene::Frame &frame
+  )
+{
+  if (body.parentPtr()) {
+    return
+      globalPos(*body.parentPtr(),Point2D(0,0),frame) +
+      (bodyPosition(body,frame) - Point2D(0,0)) +
+      (local - Point2D(0,0));
+  }
+  else {
+    return bodyPosition(body,frame) + (local - Point2D(0,0));
+  }
 }

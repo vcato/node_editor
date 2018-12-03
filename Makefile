@@ -126,7 +126,7 @@ wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
   printindent.o maybepoint2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-scene_test: scene_test.o scene.o generatename.o
+scene_test: scene_test.o scene.o generatename.o point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \

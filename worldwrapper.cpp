@@ -16,21 +16,6 @@ using std::function;
 using Body = Scene::Body;
 
 
-template <typename Bodies,typename Body>
-static void
-  forEachBody(
-    Bodies &bodies,
-    const std::function<void(Body &)> &f
-  )
-{
-  int n_bodies = bodies.size();
-
-  for (int i=0; i!=n_bodies; ++i) {
-    f(bodies[i]);
-    forEachBody(bodies[i].children,f);
-  }
-}
-
 template <typename Scene,typename Body>
 static void
   forEachBodyInScene(

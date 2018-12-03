@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <cassert>
+#include <functional>
 #include "point2d.hpp"
 #include "ignore.hpp"
 
@@ -16,6 +17,8 @@ class Scene {
     struct Point2DMap;
     using VarIndex = int;
     using VarValue = float;
+
+    static VarIndex noVarIndex() { return -1; }
 
     Scene();
     ~Scene();
@@ -56,6 +59,7 @@ class Scene {
 
       VarValue operator()(const Frame &frame) const
       {
+        if (var_index==noVarIndex()) return 0;
         return frame.var_values[var_index];
       }
 
@@ -93,6 +97,21 @@ class Scene {
         {
           assert(body_ptrs[index]);
           return *body_ptrs[index];
+        }
+
+        template <typename Bodies,typename Body>
+        friend void
+          forEachBody(
+            Bodies &bodies,
+            const std::function<void(Body &)> &f
+          )
+        {
+          int n_bodies = bodies.size();
+
+          for (int i=0; i!=n_bodies; ++i) {
+            f(bodies[i]);
+            forEachChild(bodies[i],f);
+          }
         }
 
         struct const_iterator {
@@ -144,24 +163,57 @@ class Scene {
     class Body {
       public:
         explicit
-          Body(const std::string &name_arg,const Point2DMap &position_arg)
+          Body(
+            const std::string &name_arg,
+            const Point2DMap &position_arg,
+            Body *parent_ptr_arg
+          )
         : position(position_arg),
-          name(name_arg)
+          name(name_arg),
+          parent_ptr(parent_ptr_arg)
         {
         }
 
         Point2DMap position;
-        Bodies children;
         std::string name;
 
         int nChildren() const { return children.size(); }
 
+        Body &child(int child_index)
+        {
+          return children[child_index];
+        }
+
+        const Bodies &allChildren() const
+        {
+          return children;
+        }
+
+        Body *parentPtr() const
+        {
+          return parent_ptr;
+        }
+
+        template <typename Body>
+        friend void
+          forEachChild(
+            Body &body,
+            const std::function<void(Body &)> &f
+          )
+        {
+          forEachBody(body.children,f);
+        }
+
       private:
+        Bodies children;
+        Body *parent_ptr;
+
         friend class Scene;
 
         Body& addChild(const std::string &name,const Point2DMap &position_map)
         {
-          return children.createChild(Body(name,position_map));
+          return
+            children.createChild(Body(name,position_map,/*parent_ptr*/this));
         }
 
         void removeChild(int child_index)
@@ -179,7 +231,7 @@ class Scene {
 
   private:
     int n_frame_variables = 0;
-    Body root_body = Body("",{0,0});
+    Body root_body = Body("",{noVarIndex(),noVarIndex()},/*parent_ptr*/nullptr);
     Frame background_frame;
     Frame display_frame;
 
@@ -198,5 +250,12 @@ extern void
   );
 
 extern Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame);
+
+extern Point2D
+  globalPos(
+    const Scene::Body &body,
+    const Point2D &local,
+    const Scene::Frame &frame
+  );
 
 #endif /* SCENE_HPP_ */

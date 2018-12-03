@@ -41,7 +41,7 @@ static void
     drawLine(p3,p4);
     drawLine(p4,p1);
     ignore(body);
-    drawBodies(body.children,global_position,frame);
+    drawBodies(body.allChildren(),global_position,frame);
   }
 }
 

@@ -174,7 +174,7 @@ static void testAddingBodies()
 
   assert(scene.nBodies()==1);
   assert(scene.bodies()[0].nChildren()==1);
-  assert(scene.bodies()[0].children[0].nChildren()==1);
+  assert(scene.bodies()[0].allChildren()[0].nChildren()==1);
 
   string body_index_str = std::to_string(body_index);
   string commands = stream.str();

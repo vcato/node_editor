@@ -11,6 +11,7 @@
 #include "charmapperobjects.hpp"
 #include "point2dobject.hpp"
 
+#define ADD_TEST 0
 
 using std::vector;
 using std::cerr;
@@ -359,6 +360,20 @@ static void testCallingMemberFunctionWithArgument()
 }
 
 
+#if ADD_TEST
+static void testBodyPositionWithLocal()
+{
+  Tester tester;
+  Scene scene;
+  Scene::Body &body = scene.addBody("body");
+  scene.displayFrame() = Scene::Frame(2);
+  tester.environment["body"] = makeBodyObject(BodyLink(&scene,&body));
+  Optional<Any> maybe_result =
+    evaluateStringWithTester("body.pos([1,2])",tester);
+}
+#endif
+
+
 static void testPoint2DMembers()
 {
   Point2D point(1.5,2.5);
@@ -424,4 +439,7 @@ int main()
   testCallingUnknownFunction();
   testCallingMemberFunctionWithNoArguments();
   testCallingMemberFunctionWithArgument();
+#if ADD_TEST
+  testBodyPositionWithLocal();
+#endif
 }

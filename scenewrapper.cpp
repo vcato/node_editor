@@ -269,7 +269,7 @@ struct BodyWrapper : VoidWrapper {
     parent_body(parent_body_arg),
     body_index(body_index_arg),
     depth(depth_arg),
-    body(parent_body_arg.children[body_index_arg]),
+    body(parent_body_arg.child(body_index_arg)),
     wrapper_data(wrapper_data_arg)
   {
   }

@@ -55,7 +55,7 @@ static void
     stream << "Y: " << body.position.y(frame);
     new_y_item.label = stream.str();
   }
-  addBodiesTo(new_body_item,body.children,frame);
+  addBodiesTo(new_body_item,body.allChildren(),frame);
 }
 
 
@@ -118,7 +118,7 @@ static bool
       return true;
     }
 
-    if (makePath(path,bodies[i].children,depth+1,body,/*offset*/1)) {
+    if (makePath(path,bodies[i].allChildren(),depth+1,body,/*offset*/1)) {
       return true;
     }
 

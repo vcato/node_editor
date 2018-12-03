@@ -315,3 +315,6 @@ function to be used as a value by calling it with no parameters.
 
 Maybe it would be best to first switch to using body.pos() to mean
 the origin.  We can implement the other notation later if desired.
+
+Need to turn on scene_objects.cpp USE_POS_FUNCTION
+Need to turn on evaluateexpression_test.cpp ADD_TEST
