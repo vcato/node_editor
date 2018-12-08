@@ -3,9 +3,7 @@
 #include "maybepoint2d.hpp"
 #include "globalvec.hpp"
 #include "point2dobject.hpp"
-
-
-#define USE_POS_FUNCTION 0
+#include "useposfunction.hpp"
 
 
 using std::cerr;
@@ -55,7 +53,12 @@ Any BodyObjectData::member(const std::string &member_name) const
       Function{
         [body_link=body_link](const vector<Any> &parameters) -> Optional<Any> {
           if (parameters.size()==0) {
-            Point2D result = globalPos(body_link,/*local*/Point2D(0,0));;
+            Point2D result =
+              globalPos(
+                body_link.body(),
+                /*local*/Point2D(0,0),
+                body_link.scene().displayFrame()
+              );
             return makePoint2DObject(result);
           }
 

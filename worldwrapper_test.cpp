@@ -11,6 +11,7 @@
 #include "wrapperstate.hpp"
 #include "scenewrapper.hpp"
 #include "stringutil.hpp"
+#include "useposfunction.hpp"
 
 
 using std::string;
@@ -718,7 +719,11 @@ static void testPosExprDiagramThatReferencesAScene()
   assert(body1.position.x(scene.displayFrame())==0);
 
   Diagram diagram;
+#if !USE_POS_FUNCTION
   diagram.addNode("return PosExpr(body=target_body,pos=Scene1.body2.pos)");
+#else
+  diagram.addNode("return PosExpr(body=target_body,pos=Scene1.body2.pos())");
+#endif
   pos_expr.diagram = diagram;
   WorldWrapper world_wrapper(world);
 
