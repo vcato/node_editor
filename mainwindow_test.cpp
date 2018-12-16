@@ -553,9 +553,9 @@ static void testCreatingABodyWithAnAveragePosition()
   FakeDiagramEditor &diagram_editor =
     tree_editor.diagram_editor_windows[0]->diagram_editor;
   int body1_node_index =
-    diagram_editor.userAddsANodeWithText("Scene1.Body1.pos");
+    diagram_editor.userAddsANodeWithText("Scene1.Body1.pos()");
   int body2_node_index =
-    diagram_editor.userAddsANodeWithText("Scene1.Body2.pos");
+    diagram_editor.userAddsANodeWithText("Scene1.Body2.pos()");
   int add_node = diagram_editor.userAddsANodeWithText("$+$");
   diagram_editor.userConnects(body1_node_index,0,add_node,0);
   diagram_editor.userConnects(body2_node_index,0,add_node,1);
@@ -567,13 +567,17 @@ static void testCreatingABodyWithAnAveragePosition()
   tree_editor.userChangesNumberValue("Scene1|background_frame|0",2);
   tree_editor.userChangesNumberValue("Scene1|background_frame|2",4);
 
-  FakeWorld &world = tester.world;;
+  FakeWorld &world = tester.world;
   Scene::Frame &frame = world.sceneMember(0).scene.displayFrame();
   Scene::Body &body1 = world.sceneMember(0).scene.bodies()[0];
   assert(body1.position.x(frame)==2);
   Scene::Body &body2 = world.sceneMember(0).scene.bodies()[1];
   assert(body2.position.x(frame)==4);
+
   Scene::Body &body3 = world.sceneMember(0).scene.bodies()[2];
+
+  // Body 3's x value should be 3, since we should be calculating it as
+  // (2+4)/2.
   assert(body3.position.x(frame)==3);
 }
 

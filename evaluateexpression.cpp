@@ -379,23 +379,6 @@ Optional<Any>
     return evaluatePostfixExpressionStartingWith(*maybe_member);
   }
 
-  return first_term;
-}
-
-
-Optional<Any>
-  ExpressionEvaluator::evaluateExpressionStartingWithTerm(
-    Optional<Any> maybe_first_term
-  ) const
-{
-  if (!maybe_first_term) {
-    return maybe_first_term;
-  }
-
-  const Any &first_term = *maybe_first_term;
-
-  parser.skipWhitespace();
-
   if (parser.peekChar()=='(') {
     if (first_term.isClassPtr()) {
       const Class *class_ptr = first_term.asClassPtr();
@@ -441,8 +424,28 @@ Optional<Any>
       }
     }
 
+    // We had [term '('], but term wasn't a class or a function.
+    // What type did it have?
+    cerr << "first_term.typeName():" << first_term.typeName() << "\n";
     assert(false);
   }
+
+  return first_term;
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluateExpressionStartingWithTerm(
+    Optional<Any> maybe_first_term
+  ) const
+{
+  if (!maybe_first_term) {
+    return maybe_first_term;
+  }
+
+  const Any &first_term = *maybe_first_term;
+
+  parser.skipWhitespace();
 
   if (parser.peekChar()=='+') {
     parser.skipChar();

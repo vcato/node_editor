@@ -100,7 +100,8 @@ nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 linetext_test: linetext_test.o linetext.o stringutil.o evaluateexpression.o \
-  any.o printindent.o maybepoint2d.o
+  any.o printindent.o maybepoint2d.o scene.o sceneobjects.o generatename.o \
+  globalvec.o point2dobject.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 statementtext_test: statementtext_test.o statementtext.o

@@ -6,6 +6,10 @@
 #include <vector>
 #include <map>
 #include "streamexecutor.hpp"
+#include "scene.hpp"
+#include "sceneobjects.hpp"
+#include "maybepoint2d.hpp"
+#include "generatename.hpp"
 
 
 using std::ostringstream;
@@ -123,6 +127,63 @@ static void
 }
 
 
+static void testCallingMethod()
+{
+  string line_text = "$.f()";
+
+  struct TestObjectData : Object::Data {
+    virtual Data *clone() { return new auto(*this); }
+
+    std::string typeName() const override
+    {
+      assert(false); // needs test
+    }
+
+    Any member(const std::string &member_name) const override
+    {
+      if (member_name=="f") {
+        auto f = [](const vector<Any> &) -> Optional<Any> { return {3}; };
+        return Function{f};
+      }
+
+      cerr << "member_name: " << member_name << "\n";
+      assert(false);
+    }
+
+    virtual void printOn(std::ostream &) const
+    {
+      assert(false);
+    }
+
+    std::vector<std::string> memberNames() const override
+    {
+      return {"f"};
+    }
+  };
+
+  FakeExecutor executor;
+  TestObjectData object_data;
+  vector<Any> input_values;
+  input_values.push_back(Object(make_unique<TestObjectData>()));
+  ostringstream error_stream;
+  Optional<Any> maybe_result =
+    evaluateLineText(line_text,input_values,executor,error_stream);
+  assert(*maybe_result==3);
+}
+
+
+static void testCallingSceneBodyPos()
+{
+  string expr = "scene.body1.pos()";
+  FakeExecutor executor;
+  Scene scene;
+  scene.addBody("body1");
+  executor.environment["scene"] = makeSceneObject(scene);
+  Optional<Any> maybe_result = testLineTextWithoutError(expr,executor);
+  assert(maybePoint2D(*maybe_result));
+}
+
+
 int main()
 {
   assert(lineTextHasInput("x=$"));
@@ -164,46 +225,7 @@ int main()
     Optional<Any> maybe_result = testLineTextWithoutError("x+6",executor);
     assert(*maybe_result==11);
   }
-  {
-    string line_text = "$.f()";
 
-    struct TestObjectData : Object::Data {
-      virtual Data *clone() { return new auto(*this); }
-
-      std::string typeName() const override
-      {
-        assert(false); // needs test
-      }
-
-      Any member(const std::string &member_name) const override
-      {
-        if (member_name=="f") {
-          auto f = [](const vector<Any> &) -> Optional<Any> { return {3}; };
-          return Function{f};
-        }
-
-        cerr << "member_name: " << member_name << "\n";
-        assert(false);
-      }
-
-      virtual void printOn(std::ostream &) const
-      {
-        assert(false);
-      }
-
-      std::vector<std::string> memberNames() const override
-      {
-        return {"f"};
-      }
-    };
-
-    FakeExecutor executor;
-    TestObjectData object_data;
-    vector<Any> input_values;
-    input_values.push_back(Object(make_unique<TestObjectData>()));
-    ostringstream error_stream;
-    Optional<Any> maybe_result =
-      evaluateLineText(line_text,input_values,executor,error_stream);
-    assert(*maybe_result==3);
-  }
+  testCallingMethod();
+  testCallingSceneBodyPos();
 }
