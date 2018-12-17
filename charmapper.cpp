@@ -14,10 +14,6 @@
 #include "globalvec.hpp"
 
 
-// For this to work, we need to handle body.pos(local) expressions.
-#define USE_FROM_BODY_DIAGRAM 0
-
-
 using std::make_unique;
 using std::cerr;
 using std::vector;
@@ -105,17 +101,6 @@ static void
 }
 
 
-#if !USE_FROM_BODY_DIAGRAM
-static Point2D displayedBodyPosition(BodyLink &source_body_link)
-{
-  Scene::Body &source_body = source_body_link.body();
-  Scene &source_scene = source_body_link.scene();
-  Scene::Frame &source_frame = source_scene.displayFrame();
-  return bodyPosition(source_body,source_frame);
-}
-#endif
-
-
 static Point2D makePoint2D(const Charmapper::GlobalPosition::ComponentsData &p)
 {
   return Point2D(p.x.value,p.y.value);
@@ -189,12 +174,6 @@ void Charmapper::apply(const DiagramExecutionContext &context)
               local_position_diagram,executor,local_position
             );
           }
-#if !USE_FROM_BODY_DIAGRAM
-          if (source_body_link.hasValue()) {
-            global_position = displayedBodyPosition(source_body_link);
-          }
-          global_position += local_position - Point2D(0,0);
-#else
           {
             DiagramExecutor executor(context);
             executor.environment["source_body"] =
@@ -207,7 +186,6 @@ void Charmapper::apply(const DiagramExecutionContext &context)
               global_position
             );
           }
-#endif
         }
         else {
           assert(false);

@@ -298,11 +298,7 @@ Probably need to unify WrapperValue and Any.
 If you don't specify a body for PosExpr() in the expression evaluation, then
 it should give an error.
 ---
-The global position diagram doesn't seem to actually work.
 If we modify the global position diagram and save the project, then the
 new diagram doesn't show up in the project.
 
 Looks like the diagrams ever never saved with the projects currently.
-
-Changing the global position diagram isn't causing the charmap to be
-reevaluated.

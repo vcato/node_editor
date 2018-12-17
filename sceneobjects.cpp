@@ -16,11 +16,18 @@ std::vector<std::string> BodyObjectData::memberNames() const
 }
 
 
+static Any makeVector(const Point2D &result_value)
+{
+  vector<Any> result;
+  result.push_back(result_value.x);
+  result.push_back(result_value.y);
+  return Any(std::move(result));
+}
+
+
 static Any
   bodyPosFunction(const BodyLink &body_link,const vector<Any> &parameters)
 {
-  cerr << "In bodyPosFunction()\n";
-
   int n_parameters = parameters.size();
 
   if (n_parameters==0) {
@@ -47,12 +54,16 @@ static Any
     assert(false);
   }
 
-  Vector2D result_value =
-    globalVec(body_link,*maybe_point2d - Point2D(0,0));
-  vector<Any> result;
-  result.push_back(result_value.x);
-  result.push_back(result_value.y);
-  return Any(std::move(result));
+  const Point2D &local = *maybe_point2d;
+
+  if (!body_link.hasValue()) {
+    return makeVector(local);
+  }
+
+  const Scene::Frame &frame = body_link.scene().displayFrame();
+  const Scene::Body &body = body_link.body();
+  Point2D result_value = globalPos(body,local,frame);
+  return makeVector(result_value);
 }
 
 

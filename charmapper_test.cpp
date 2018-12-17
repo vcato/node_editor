@@ -70,11 +70,17 @@ static void testFromSourceBody()
   pos_expr.global_position.switchToFromBody();
   pos_expr.global_position.fromBody().source_body_link.set(&scene,&body2);
 
+  // This is setting the display frame.  The display frame is what
+  // is used for all calculations.  The background frame is copied
+  // to the display frame if World::applyCharmaps() is used, but we're
+  // not using that.
+
   setBodyPosition(body2,scene.displayFrame(),Point2D(15,16));
 
   applyCharmapper(charmapper);
 
-  assert(bodyPosition(body1,scene.displayFrame())==Point2D(15,16));
+  Point2D body_position = bodyPosition(body1,scene.displayFrame());
+  assert(body_position==Point2D(15,16));
 }
 
 

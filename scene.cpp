@@ -137,6 +137,8 @@ Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame)
 }
 
 
+// We have globalPos as part of the scene, but globalVec is separate.  Not
+// sure why.
 Point2D
   globalPos(
     const Scene::Body &body,
