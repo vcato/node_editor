@@ -1,17 +1,13 @@
 #include "charmapper.hpp"
 
-#include <iostream>
 #include "defaultdiagrams.hpp"
 #include "removefrom.hpp"
-#include "evaluatediagram.hpp"
-#include "streamexecutor.hpp"
 #include "diagramexecutor.hpp"
-#include "diagramio.hpp"
-#include "charmapperobjects.hpp"
+#include "evaluatediagram.hpp"
+#include "maybepoint2d.hpp"
 #include "sceneobjects.hpp"
 #include "point2dobject.hpp"
-#include "maybepoint2d.hpp"
-#include "globalvec.hpp"
+#include "charmapperobjects.hpp"
 
 
 using std::make_unique;

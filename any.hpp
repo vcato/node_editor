@@ -3,12 +3,10 @@
 
 #include <cassert>
 #include <vector>
-#include <iosfwd>
 #include <functional>
-#include <algorithm>
 #include <map>
 #include <memory>
-#include "printonany.hpp"
+#include "contains.hpp"
 #include "optional.hpp"
 #include "basicvariant.hpp"
 
@@ -35,51 +33,50 @@ struct Class {
 
 // This is the base class for dynamic objects that can hold arbitrary
 // members with dynamic values.
-struct Object {
-  struct Data {
-    virtual Data *clone() = 0;
-    virtual std::string typeName() const = 0;
-    virtual Any member(const std::string &member_name) const = 0;
-    virtual std::vector<std::string> memberNames() const = 0;
-    virtual ~Data() {}
-  };
+class Object {
+  public:
+    struct Data {
+      virtual Data *clone() = 0;
+      virtual std::string typeName() const = 0;
+      virtual Any member(const std::string &member_name) const = 0;
+      virtual std::vector<std::string> memberNames() const = 0;
+      virtual ~Data() {}
+    };
 
-  Object(std::unique_ptr<Data> data_ptr_arg)
-  : data_ptr(std::move(data_ptr_arg))
-  {
-    assert(data_ptr);
-  }
+    Object(std::unique_ptr<Data> data_ptr_arg)
+    : data_ptr(std::move(data_ptr_arg))
+    {
+      assert(data_ptr);
+    }
 
-  Object(const Object &arg)
-  : data_ptr(arg.data_ptr->clone())
-  {
-  }
+    Object(const Object &arg)
+    : data_ptr(arg.data_ptr->clone())
+    {
+    }
 
-  ~Object()
-  {
-  }
+    ~Object()
+    {
+    }
 
-  const Data &data() const
-  {
-    assert(data_ptr);
-    return *data_ptr;
-  }
+    const Data &data() const
+    {
+      assert(data_ptr);
+      return *data_ptr;
+    }
 
-  inline Optional<Any> maybeMember(const std::string &member_name) const;
+    inline Optional<Any> maybeMember(const std::string &member_name) const;
 
-  Object &operator=(const Object &/*arg*/)
-  {
-    assert(false);
-    return *this;
-  }
+    Object &operator=(const Object &/*arg*/)
+    {
+      assert(false);
+      return *this;
+    }
 
-  bool operator==(const Object &/*arg*/) const
-  {
-    // This isn't right, but I'm not sure what to do about it yet.
-    return true;
-  }
-
-  void printOn(std::ostream &stream,int indent_level) const;
+    bool operator==(const Object &/*arg*/) const
+    {
+      // This isn't right, but I'm not sure what to do about it yet.
+      return true;
+    }
 
   private:
     std::unique_ptr<Data> data_ptr;
@@ -264,13 +261,6 @@ struct AnyPolicy {
 };
 
 
-template <typename T>
-inline bool contains(const std::vector<T> &container,const T &value)
-{
-  return std::find(container.begin(),container.end(),value)!=container.end();
-}
-
-
 inline Optional<Any> Object::maybeMember(const std::string &member_name) const
 {
   assert(data_ptr);
@@ -288,80 +278,5 @@ inline Optional<Any>
   assert(function_member);
   return function_member(parameters);
 }
-
-
-template <>
-inline void printOn(std::ostream &stream,const float &arg,int /*indent_level*/)
-{
-  stream << arg;
-}
-
-
-template <>
-inline void printOn(std::ostream &stream,const Any::Void &,int /*indent_level*/)
-{
-  stream << "None";
-}
-
-
-template <>
-inline void
-  printOn(std::ostream &stream,const std::string &arg,int /*indent_level*/)
-{
-  stream << '"' << arg << '"';
-}
-
-
-template <>
-inline void
-  printOn(std::ostream &stream,const std::vector<Any> &arg,int indent_level)
-{
-  stream << "[";
-
-  auto iter = arg.begin();
-
-  if (iter!=arg.end()) {
-    printOn(stream,*iter,indent_level);
-    ++iter;
-  }
-
-  while (iter!=arg.end()) {
-    stream << ",";
-    printOn(stream,*iter,indent_level);
-    ++iter;
-  }
-
-  stream << "]";
-}
-
-
-template <>
-inline void printOn(std::ostream &stream,const Object &object,int indent_level)
-{
-  object.printOn(stream,indent_level);
-}
-
-
-template <>
-inline void printOn(std::ostream &stream,const Function &,int /*indent_level*/)
-{
-  stream << "Function()";
-}
-
-
-template <>
-inline void printOn(std::ostream &stream,Class *const &,int /*indent_level*/)
-{
-  stream << "Class()\n";
-}
-
-
-inline std::ostream& operator<<(std::ostream &stream,const Any &arg)
-{
-  // This printOn() is defined in basicvariant.hpp
-  printOn(stream,arg,/*indent_level*/0);
-  return stream;
-}
-
 
 #endif /* ANY_HPP_ */

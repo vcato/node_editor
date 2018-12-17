@@ -15,10 +15,7 @@ struct DiagramExecutor : Executor {
   {
   }
 
-  void executeShow(const Any& arg) override
-  {
-    show_stream << arg << "\n";
-  }
+  void executeShow(const Any& arg) override;
 
   void executeReturn(const Any& arg) override
   {

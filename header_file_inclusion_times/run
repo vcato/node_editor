@@ -1,11 +1,5 @@
 #!/bin/sh
-PACKAGES="QtGui QtOpenGL gl glu"
-CXXFLAGS="-I.. -W -Wall -pedantic -std=c++14 -I`pkg-config --cflags $PACKAGES` \
--D_GLIBCXX_DEBUG=1 -MD -MP -g"
 
 cat includes.txt | while read line; do
-  echo $line
-  echo $line >test.cpp
-  bash -c "time g++ $CXXFLAGS -c test.cpp"
-  rm test.o test.cpp
+  ./timeinclude "$line"
 done 2>&1 | tee results.txt

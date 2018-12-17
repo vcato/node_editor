@@ -301,4 +301,5 @@ it should give an error.
 If we modify the global position diagram and save the project, then the
 new diagram doesn't show up in the project.
 
-Looks like the diagrams ever never saved with the projects currently.
+Looks like the diagrams are never saved with the projects currently.
+Where do we save the projects?

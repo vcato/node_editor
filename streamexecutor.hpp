@@ -1,5 +1,4 @@
 #include "executor.hpp"
-#include "printonany.hpp"
 
 
 struct StreamExecutor : Executor {
@@ -24,22 +23,11 @@ struct StreamExecutor : Executor {
     stream << "\n";
   }
 
-  void print(const std::vector<Any> &value)
-  {
-    printOn(stream,value,/*indent_level*/0);
-  }
+  void print(const std::vector<Any> &value);
 
-  void print(const Any &value)
-  {
-    printOn(stream,value,/*indent_level*/0);
-  }
+  void print(const Any &value);
 
-  void executeReturn(const Any& arg) override
-  {
-    std::cerr << "return ";
-    printOn(std::cerr,arg,/*indent_level*/0);
-    std::cerr << "\n";
-  }
+  void executeReturn(const Any& arg) override;
 
   virtual std::ostream& errorStream() { return error_stream; }
 };

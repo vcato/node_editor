@@ -1,5 +1,6 @@
 #include "scenewrapper.hpp"
 
+#include <iostream>
 #include <functional>
 #include <sstream>
 #include "float.hpp"

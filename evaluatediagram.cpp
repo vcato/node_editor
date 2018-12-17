@@ -4,6 +4,7 @@
 #include <sstream>
 #include "linetext.hpp"
 #include "diagramio.hpp"
+#include "anyio.hpp"
 
 using std::ostream;
 using std::vector;

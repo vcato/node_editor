@@ -6,7 +6,6 @@
 using std::vector;
 using std::string;
 using std::function;
-using std::cerr;
 
 
 void

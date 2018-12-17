@@ -5,9 +5,11 @@
 #include <vector>
 #include <cassert>
 #include <functional>
-#include "diagram.hpp"
 #include "treepath.hpp"
 #include "wrapperstate.hpp"
+
+
+class Diagram;
 
 
 struct Wrapper;

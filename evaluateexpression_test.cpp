@@ -10,6 +10,7 @@
 #include "sceneobjects.hpp"
 #include "charmapperobjects.hpp"
 #include "point2dobject.hpp"
+#include "anyio.hpp"
 
 using std::vector;
 using std::cerr;

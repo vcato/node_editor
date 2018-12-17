@@ -3,7 +3,6 @@
 
 
 #include <utility>
-#include <iostream>
 #include "createobject.hpp"
 #include "noinittag.hpp"
 
@@ -192,18 +191,5 @@ class BasicVariant : public Policy {
       );
     }
 };
-
-
-template <typename T>
-void printOn(std::ostream &stream,const T &,int indent_level);
-
-
-template <typename Policy>
-inline void
-  printOn(std::ostream &stream,const BasicVariant<Policy> &arg,int indent_level)
-{
-  arg.visit([&](auto &arg){ printOn(stream,arg,indent_level); });
-}
-
 
 #endif /* BASICVARIANT_HPP */

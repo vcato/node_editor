@@ -10,6 +10,7 @@
 #include "sceneobjects.hpp"
 #include "maybepoint2d.hpp"
 #include "generatename.hpp"
+#include "anyio.hpp"
 
 
 using std::ostringstream;

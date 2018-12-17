@@ -1,3 +1,4 @@
+#include "../bodylink.hpp"
 #include "../wrappervalue.hpp"
 #include "../any.hpp"
 #include "../basicvariant.hpp"
@@ -9,7 +10,7 @@
 #include "../diagram.hpp"
 #include "../diagrameditor.hpp"
 #include "../diagrameditorwindow.hpp"
-#include "../diagramevaluation.hpp"
+#include "../evaluatediagram.hpp"
 #include "../diagramexecutor.hpp"
 #include "../diagramio.hpp"
 #include "../diagramnode.hpp"
@@ -31,7 +32,6 @@
 #include "../optionalpoint2d.hpp"
 #include "../ostreamvector.hpp"
 #include "../point2d.hpp"
-#include "../printonany.hpp"
 #include "../qtcombobox.hpp"
 #include "../qtdiagrameditor.hpp"
 #include "../qtdiagrameditorwindow.hpp"
@@ -70,6 +70,7 @@
 #include "../wrapper.hpp"
 #include "../wrapperstate.hpp"
 #include "../wrapperutil.hpp"
+#include "../contains.hpp"
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <QAction>

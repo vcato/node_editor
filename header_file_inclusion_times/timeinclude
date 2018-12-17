@@ -1,0 +1,10 @@
+#!/bin/sh
+PACKAGES="QtGui QtOpenGL gl glu"
+CXXFLAGS="-I.. -W -Wall -pedantic -std=c++14 -I`pkg-config --cflags $PACKAGES` \
+-D_GLIBCXX_DEBUG=1 -MD -MP -g"
+
+line="$1"
+echo "$line"
+echo "$line" >test.cpp
+bash -c "time g++ $CXXFLAGS -c test.cpp"
+rm test.o test.cpp
