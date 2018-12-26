@@ -58,11 +58,16 @@ TreeEditor &QtMainWindow::treeEditor()
 }
 
 
-string QtMainWindow::_askForSavePath()
+Optional<string> QtMainWindow::_askForSavePath()
 {
   QFileDialog file_dialog;
   QString result =
     file_dialog.getSaveFileName(this,"Save Project","projects/project.dat");
+
+  if (result=="") {
+    return {};
+  }
+
   return result.toStdString();
 }
 

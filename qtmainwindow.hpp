@@ -19,7 +19,7 @@ class QtMainWindow : public QMainWindow, public MainWindow {
     QtTreeEditor *tree_editor_ptr;
 
     TreeEditor &treeEditor() override;
-    std::string _askForSavePath() override;
+    Optional<std::string> _askForSavePath() override;
     std::string _askForOpenPath() override;
     void _showError(const std::string &message) override;
 };

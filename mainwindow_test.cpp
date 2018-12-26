@@ -209,7 +209,7 @@ namespace {
 struct FakeMainWindow : MainWindow {
   FakeTreeEditor &treeEditor() override { return tree_editor; }
 
-  std::string _askForSavePath() override
+  Optional<std::string> _askForSavePath() override
   {
     return *maybe_save_path;
   }

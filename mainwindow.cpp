@@ -45,11 +45,18 @@ void MainWindow::_openProjectPressed()
 
 void MainWindow::_saveProjectPressed()
 {
-  string path = _askForSavePath();
+  Optional<string> maybe_path = _askForSavePath();
+
+  if (!maybe_path) {
+    return;
+  }
+
+  const string &path = *maybe_path;
 
   std::ofstream stream(path);
 
   if (!stream) {
+    cerr << "Couldn't open " << path << "\n";
     return;
   }
 
