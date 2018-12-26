@@ -4,7 +4,7 @@
 
 
 struct DiagramExecutor : Executor {
-  Any return_value;
+  Optional<Any> maybe_return_value;
   std::ostream &show_stream;
   std::ostream &error_stream;
 
@@ -19,7 +19,7 @@ struct DiagramExecutor : Executor {
 
   void executeReturn(const Any& arg) override
   {
-    return_value = arg;
+    maybe_return_value = arg;
   }
 
   std::ostream& errorStream() override { return error_stream; }

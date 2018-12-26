@@ -13,6 +13,7 @@ run_unit_tests: \
   charmapperobjects_test.pass \
   evaluateexpression_test.pass \
   evaluatediagram_test.pass \
+  diagramexecutor_test.pass \
   diagrameditor_test.pass \
   nodetexteditor_test.pass \
   linetext_test.pass \
@@ -88,6 +89,11 @@ evaluatediagram_test: evaluatediagram_test.o diagram.o diagramnode.o \
   evaluatediagram.o defaultdiagrams.o diagramio.o makediagram.o \
   maybepoint2d.o point2dobject.o point2d.o any.o printindent.o contains.o \
   diagramexecutor.o anyio.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+diagramexecutor_test: diagramexecutor_test.o diagramexecutor.o anyio.o \
+  printindent.o evaluatediagram.o linetext.o diagram.o stringutil.o \
+  evaluateexpression.o diagramnode.o maybepoint2d.o contains.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \

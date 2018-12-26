@@ -117,7 +117,11 @@ static void
   )
 {
   evaluateDiagram(diagram,executor);
-  Optional<Point2D> maybe_result = maybePoint2D(executor.return_value);
+  Optional<Point2D> maybe_result;
+
+  if (executor.maybe_return_value) {
+    maybe_result = maybePoint2D(*executor.maybe_return_value);
+  }
 
   if (!maybe_result) {
     return;
@@ -200,8 +204,14 @@ void Charmapper::apply(const DiagramExecutionContext &context)
 
         evaluateDiagram(diagram,executor);
 
-        Optional<PosExprData> maybe_pos_expr =
-          maybePosExpr(executor.return_value);
+        Optional<PosExprData> maybe_pos_expr;
+
+        if (executor.maybe_return_value) {
+          maybe_pos_expr = maybePosExpr(*executor.maybe_return_value);
+        }
+        else {
+          cerr << "Diagram did not return anything\n";
+        }
 
         if (maybe_pos_expr) {
           setDisplayedBodyPosition(

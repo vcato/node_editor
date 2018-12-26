@@ -303,3 +303,5 @@ new diagram doesn't show up in the project.
 
 Looks like the diagrams are never saved with the projects currently.
 Where do we save the projects?
+---
+maybePosExpr should provide a way of reporting the problem if it fails.

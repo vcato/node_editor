@@ -264,6 +264,7 @@ struct AnyPolicy {
 inline Optional<Any> Object::maybeMember(const std::string &member_name) const
 {
   assert(data_ptr);
+
   if (!contains(data_ptr->memberNames(),member_name)) {
     return {};
   }

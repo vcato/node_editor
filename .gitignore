@@ -29,3 +29,4 @@ evaluatediagram_test
 evaluateexpression_test
 wrapperstate_test
 charmapperobjects_test
+diagramexecutor_test

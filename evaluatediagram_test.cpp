@@ -89,7 +89,7 @@ static Any
   DiagramExecutor executor(context);
   executor.environment = environment;
   evaluateDiagram(diagram,executor);
-  return std::move(executor.return_value);
+  return std::move(*executor.maybe_return_value);
 }
 
 
