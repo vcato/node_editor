@@ -54,5 +54,7 @@ struct PosExprObjectData : Object::Data, PosExprData {
 };
 
 
-extern Optional<PosExprData> maybePosExpr(const Any &);
+extern Optional<PosExprData>
+  maybePosExpr(const Any &,std::ostream &error_stream);
+
 extern Class posExprClass();

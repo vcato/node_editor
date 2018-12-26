@@ -217,7 +217,7 @@ static Optional<PosExprData>
     return {};
   }
 
-  return maybePosExpr(*maybe_result);
+  return maybePosExpr(*maybe_result,tester.error_stream);
 }
 
 

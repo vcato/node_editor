@@ -207,10 +207,11 @@ void Charmapper::apply(const DiagramExecutionContext &context)
         Optional<PosExprData> maybe_pos_expr;
 
         if (executor.maybe_return_value) {
-          maybe_pos_expr = maybePosExpr(*executor.maybe_return_value);
+          maybe_pos_expr =
+            maybePosExpr(*executor.maybe_return_value,context.error_stream);
         }
         else {
-          cerr << "Diagram did not return anything\n";
+          context.error_stream << "Diagram did not return anything\n";
         }
 
         if (maybe_pos_expr) {

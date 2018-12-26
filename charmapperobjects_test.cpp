@@ -60,8 +60,21 @@ static void testPrintingPosExprObject()
 }
 
 
+static void testMaybePosExpr()
+{
+  Any arg;
+  ostringstream error_stream;
+  Optional<PosExprData> maybe_pos_expr = maybePosExpr(arg,error_stream);
+  assert(!maybe_pos_expr);
+  string error_string = error_stream.str();
+  string expected_error_string = "not a PosExpr\n";
+  assert(error_string == expected_error_string);
+}
+
+
 int main()
 {
   testPrintingPosExprObject();
   testBodyLinkObject();
+  testMaybePosExpr();
 }

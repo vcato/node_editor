@@ -8,6 +8,7 @@
 using std::string;
 using std::cerr;
 using std::make_unique;
+using std::ostream;
 
 
 Class posExprClass()
@@ -72,9 +73,10 @@ Class posExprClass()
 }
 
 
-Optional<PosExprData> maybePosExpr(const Any &result)
+Optional<PosExprData> maybePosExpr(const Any &result,ostream &error_stream)
 {
   if (!result.isObject()) {
+    error_stream << "not a PosExpr\n";
     return {};
   }
 
