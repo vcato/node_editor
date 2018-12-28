@@ -1,10 +1,11 @@
 diagram {
   node {
     id: 1
-    position: [275,198]
-    text {
-      "[$,$]"
+    position {
+      x: 275
+      y: 198
     }
+    line: "[$,$]"
     connection {
       input_index: 0
       source_node_id: 5
@@ -18,24 +19,27 @@ diagram {
   }
   node {
     id: 2
-    position: [20,187]
-    text {
-      "x"
+    position {
+      x: 20
+      y: 187
     }
+    line: "x"
   }
   node {
     id: 3
-    position: [20,135]
-    text {
-      "y"
+    position {
+      x: 20
+      y: 135
     }
+    line: "y"
   }
   node {
     id: 4
-    position: [436,183]
-    text {
-      "return $"
+    position {
+      x: 436
+      y: 183
     }
+    line: "return $"
     connection {
       input_index: 0
       source_node_id: 1
@@ -44,10 +48,11 @@ diagram {
   }
   node {
     id: 5
-    position: [113,186]
-    text {
-      "($+$)/2"
+    position {
+      x: 113
+      y: 186
     }
+    line: "($+$)/2"
     connection {
       input_index: 0
       source_node_id: 2

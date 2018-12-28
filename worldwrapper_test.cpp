@@ -186,7 +186,10 @@ static void testPrintingState()
   ostringstream stream;
   printStateOn(stream,stateOf(wrapper));
   string text = stream.str();
-  assert(text=="world\n");
+  string expected_text =
+    "world {\n"
+    "}\n";
+  assert(text==expected_text);
 }
 
 

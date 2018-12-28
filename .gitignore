@@ -30,3 +30,5 @@ evaluateexpression_test
 wrapperstate_test
 charmapperobjects_test
 diagramexecutor_test
+diagramwrapperstate_test
+streamparser_test

@@ -11,6 +11,7 @@
 #include "maybepoint2d.hpp"
 #include "generatename.hpp"
 #include "anyio.hpp"
+#include "evaluatelinetext.hpp"
 
 
 using std::ostringstream;

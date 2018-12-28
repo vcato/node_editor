@@ -8,16 +8,11 @@
 #include "printindent.hpp"
 
 
+
 using std::istringstream;
 using std::string;
 using std::ostream;
 using std::cerr;
-
-
-static string quoted(const string &s)
-{
-  return '"' + s + '"';
-}
 
 
 namespace {
@@ -53,7 +48,7 @@ void printStateOn(ostream &stream,const WrapperState &state,int indent)
   stream << state.tag;
   state.value.visit(WrapperValuePrinter{stream});
 
-  if (state.children.empty()) {
+  if (state.children.empty() && !state.value.isVoid()) {
     stream << "\n";
   }
   else {
@@ -135,10 +130,15 @@ static void scanChildren(WrapperState &state,StreamParser &parser)
     return;
   }
 
+  parser.scanEndOfLine();
+
   for (;;) {
+    parser.beginLine();
+
     parser.scanWord();
 
     if (parser.word=="}") {
+      parser.scanEndOfLine();
       break;
     }
 
@@ -175,6 +175,8 @@ static Optional<WrapperState> scanState(StreamParser &parser)
         assert(false);
       }
     }
+
+    parser.scanEndOfLine();
 
     return state;
   }

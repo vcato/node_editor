@@ -7,6 +7,10 @@
 #include "noinittag.hpp"
 
 
+// This class defines general things that all variants have, such as
+// copy, assignment, equality and a visit() method.  The details of
+// what types are supported by the variant, how the data is stored, and
+// additional methods are defined by the provided Policy class.
 template <typename Policy>
 class BasicVariant : public Policy {
   private:

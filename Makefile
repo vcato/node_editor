@@ -20,11 +20,13 @@ run_unit_tests: \
   statementtext_test.pass \
   diagramnode_test.pass \
   diagram_test.pass \
+  streamparser_test.pass \
   diagramio_test.pass \
   wrapper_test.pass \
   scene_test.pass \
   world_test.pass \
   wrapperstate_test.pass \
+  diagramwrapperstate_test.pass \
   scenewrapper_test.pass \
   worldwrapper_test.pass \
   charmapper_test.pass \
@@ -57,7 +59,8 @@ main: main.o diagrameditor.o \
   qtscenetree.o scenetree.o sceneviewer.o wrapperutil.o evaluateexpression.o \
   wrapperstate.o makediagram.o point2d.o vector2d.o diagrameditorwindow.o \
   maybepoint2d.o charmapperobjects.o sceneobjects.o point2dobject.o \
-  globalvec.o printindent.o any.o contains.o diagramexecutor.o anyio.o
+  globalvec.o printindent.o any.o contains.o diagramexecutor.o anyio.o \
+  evaluatelinetext.o streamparser.o diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -88,18 +91,21 @@ evaluatediagram_test: evaluatediagram_test.o diagram.o diagramnode.o \
   linetext.o statementtext.o stringutil.o evaluateexpression.o \
   evaluatediagram.o defaultdiagrams.o diagramio.o makediagram.o \
   maybepoint2d.o point2dobject.o point2d.o any.o printindent.o contains.o \
-  diagramexecutor.o anyio.o
+  diagramexecutor.o anyio.o evaluatelinetext.o streamparser.o wrapperstate.o \
+  diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramexecutor_test: diagramexecutor_test.o diagramexecutor.o anyio.o \
   printindent.o evaluatediagram.o linetext.o diagram.o stringutil.o \
-  evaluateexpression.o diagramnode.o maybepoint2d.o contains.o statementtext.o
+  evaluateexpression.o diagramnode.o maybepoint2d.o contains.o \
+  statementtext.o evaluatelinetext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \
   linetext.o diagramnode.o diagram.o circle.o statementtext.o \
   evaluatediagram.o evaluateexpression.o diagramio.o point2d.o \
-  vector2d.o any.o printindent.o maybepoint2d.o contains.o anyio.o
+  vector2d.o any.o printindent.o maybepoint2d.o contains.o anyio.o \
+  evaluatelinetext.o streamparser.o wrapperstate.o diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
@@ -109,7 +115,8 @@ nodetexteditor_test: nodetexteditor_test.o linetext.o stringutil.o \
 
 linetext_test: linetext_test.o linetext.o stringutil.o evaluateexpression.o \
   any.o printindent.o maybepoint2d.o scene.o sceneobjects.o generatename.o \
-  globalvec.o point2dobject.o contains.o streamexecutor.o anyio.o
+  globalvec.o point2dobject.o contains.o streamexecutor.o anyio.o \
+  evaluatelinetext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 statementtext_test: statementtext_test.o statementtext.o
@@ -122,18 +129,24 @@ diagramnode_test: diagramnode_test.o diagramnode.o linetext.o stringutil.o \
 
 diagram_test: diagram_test.o diagram.o diagramnode.o linetext.o stringutil.o \
   statementtext.o evaluatediagram.o evaluateexpression.o any.o \
-  printindent.o maybepoint2d.o contains.o streamexecutor.o anyio.o
+  printindent.o maybepoint2d.o contains.o streamexecutor.o anyio.o \
+  evaluatelinetext.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+streamparser_test: streamparser_test.o streamparser.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramio_test: diagramio_test.o diagramio.o diagram.o diagramnode.o \
   linetext.o statementtext.o stringutil.o evaluateexpression.o makediagram.o \
-  maybepoint2d.o any.o printindent.o contains.o anyio.o
+  maybepoint2d.o any.o printindent.o contains.o anyio.o streamparser.o \
+  wrapperstate.o diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
   statementtext.o stringutil.o evaluatediagram.o defaultdiagrams.o \
   diagramio.o wrapperutil.o evaluateexpression.o makediagram.o any.o \
-  printindent.o maybepoint2d.o contains.o anyio.o
+  printindent.o maybepoint2d.o contains.o anyio.o wrapperstate.o \
+  evaluatelinetext.o streamparser.o diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scene_test: scene_test.o scene.o generatename.o point2d.o
@@ -144,15 +157,25 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
   diagramnode.o linetext.o statementtext.o stringutil.o sceneviewer.o \
   evaluatediagram.o evaluateexpression.o makediagram.o maybepoint2d.o \
   sceneobjects.o charmapperobjects.o point2dobject.o globalvec.o \
-  point2d.o any.o printindent.o contains.o diagramexecutor.o anyio.o
+  point2d.o any.o printindent.o contains.o diagramexecutor.o anyio.o \
+  evaluatelinetext.o streamparser.o wrapperstate.o diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o wrapper.o \
-  printindent.o
+  printindent.o streamparser.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
+diagramwrapperstate_test: diagramwrapperstate_test.o diagram.o diagramnode.o \
+  linetext.o statementtext.o stringutil.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+
+#diagramwrapperstate_test: diagramwrapperstate_test.o
+#	$(CXX) -o $@ $^ $(LDFLAGS)
+#
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
-  generatename.o wrapperstate.o stringutil.o wrapper.o printindent.o
+  generatename.o wrapperstate.o stringutil.o wrapper.o printindent.o \
+  streamparser.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
@@ -162,7 +185,8 @@ worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   sceneviewer.o evaluatediagram.o evaluateexpression.o wrapperstate.o \
   makediagram.o maybepoint2d.o charmapperobjects.o sceneobjects.o \
   point2dobject.o globalvec.o point2d.o printindent.o any.o contains.o \
-  diagramexecutor.o anyio.o
+  diagramexecutor.o anyio.o evaluatelinetext.o streamparser.o \
+  diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
@@ -170,7 +194,8 @@ charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
   stringutil.o generatename.o evaluatediagram.o evaluateexpression.o \
   makediagram.o maybepoint2d.o point2dobject.o charmapperobjects.o \
   sceneobjects.o globalvec.o point2d.o any.o printindent.o contains.o \
-  diagramexecutor.o anyio.o
+  diagramexecutor.o anyio.o evaluatelinetext.o streamparser.o wrapperstate.o \
+  diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
@@ -178,7 +203,7 @@ treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   statementtext.o stringutil.o fakediagrameditorwindows.o \
   evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o \
   diagrameditorwindow.o printindent.o maybepoint2d.o any.o contains.o \
-  anyio.o
+  anyio.o streamparser.o diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
@@ -191,7 +216,8 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   evaluatediagram.o evaluateexpression.o wrapperstate.o makediagram.o \
   point2d.o vector2d.o diagrameditorwindow.o maybepoint2d.o \
   charmapperobjects.o sceneobjects.o point2dobject.o globalvec.o \
-  printindent.o any.o contains.o diagramexecutor.o anyio.o
+  printindent.o any.o contains.o diagramexecutor.o anyio.o \
+  evaluatelinetext.o streamparser.o diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
@@ -205,7 +231,8 @@ qtdiagrameditorwindow_manualtest: qtdiagrameditorwindow_manualtest.o \
   qtslot.o moc_qtslot.o linetext.o statementtext.o stringutil.o \
   qtdiagrameditorwindow.o evaluateexpression.o point2d.o vector2d.o \
   diagrameditorwindow.o any.o printindent.o maybepoint2d.o contains.o \
-  anyio.o
+  anyio.o evaluatelinetext.o streamparser.o wrapperstate.o \
+  diagramwrapperstate.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:

@@ -247,20 +247,6 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
 }
 
 
-#if 0
-void TreeEditor::itemDiagramChanged(const TreePath &path)
-{
-  visitSubWrapper(
-    world(),
-    path,
-    [&](const Wrapper &wrapper){
-      wrapper.diagramChanged();
-    }
-  );
-}
-#endif
-
-
 void TreeEditor::addMainTreeItem(const TreePath &new_item_path)
 {
   visitSubWrapper(

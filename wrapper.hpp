@@ -7,6 +7,7 @@
 #include <functional>
 #include "treepath.hpp"
 #include "wrapperstate.hpp"
+#include "optional.hpp"
 
 
 class Diagram;
@@ -62,6 +63,8 @@ struct Wrapper {
   virtual Label label() const = 0;
 
   virtual void setState(const WrapperState &) const = 0;
+
+  virtual Diagram &defaultDiagram() const { assert(false); }
 };
 
 

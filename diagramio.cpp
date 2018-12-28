@@ -5,6 +5,9 @@
 #include <iostream>
 #include "streamparser.hpp"
 #include "stringutil.hpp"
+#include "wrapperstate.hpp"
+#include "optional.hpp"
+#include "diagramwrapperstate.hpp"
 
 
 using Node = DiagramNode;
@@ -15,52 +18,9 @@ using std::istringstream;
 using std::cerr;
 
 
-static void printNodeOn(ostream &stream,const Node &node,int i)
-{
-  const Point2D &pos = node.position();
-  int id = i+1;
-
-  stream << "  node {\n";
-  stream << "    id: " << id << "\n";
-  stream << "    position: [" << pos.x << "," << pos.y << "]\n";
-  stream << "    text {\n";
-
-  for (auto &line : node.lines) {
-    stream << "      \"" << line.text << "\"\n";
-  }
-
-  stream << "    }\n";
-  int n_inputs = node.inputs.size();
-
-  for (int input_index=0; input_index!=n_inputs; ++input_index) {
-    const auto &input = node.inputs[input_index];
-    NodeIndex source_node_index = input.source_node_index;
-    int source_output_index = input.source_output_index;
-
-    if (source_node_index!=nullNodeIndex()) {
-      stream << "    connection {\n";
-      stream << "      input_index: " << input_index << "\n";
-      stream << "      source_node_id: " << source_node_index + 1 << "\n";
-      stream << "      source_output_index: "
-        << source_output_index << "\n";
-      stream << "    }\n";
-    }
-  }
-
-  stream << "  }\n";
-}
-
-
 void printDiagramOn(ostream &stream,const Diagram &diagram)
 {
-  stream << "diagram {\n";
-
-  for (auto i : diagram.existingNodeIndices()) {
-    const Node &node = diagram.node(i);
-    printNodeOn(stream,node,i);
-  }
-
-  stream << "}\n";
+  printStateOn(stream,makeDiagramWrapperState(diagram));
 }
 
 
@@ -128,11 +88,11 @@ static Point2D nextPoint2DFrom(istream &stream)
 
 static string nextDoubleQuotedStringFrom(istream &stream)
 {
-  if (stream.peek()!='"') {
+  int first_char = stream.get();
+
+  if (first_char != '"') {
     assert(false);
   }
-
-  stream.get();
 
   string value;
 
@@ -156,6 +116,7 @@ struct DiagramParser : StreamParser {
 
   void scanNodeConnectionSection(Node &node)
   {
+    // Scan input_index
     scanWord();
 
     if (word!="input_index:") {
@@ -163,7 +124,9 @@ struct DiagramParser : StreamParser {
     }
 
     int input_index = nextIntFrom(stream);
+
     scanEndOfLine();
+
     int n_inputs = node.inputs.size();
 
     if (input_index>=n_inputs) {
@@ -171,6 +134,8 @@ struct DiagramParser : StreamParser {
     }
 
     Node::Input &input = node.inputs[input_index];
+
+    // Scan source_node_id
     scanWord();
 
     if (word!="source_node_id:") {
@@ -187,6 +152,9 @@ struct DiagramParser : StreamParser {
       input.source_node_index = source_node_id-1;
     }
 
+    scanEndOfLine();
+
+    // Scan source_output_index
     scanWord();
 
     if (word!="source_output_index:") {
@@ -203,6 +171,9 @@ struct DiagramParser : StreamParser {
       input.source_output_index = source_output_index;
     }
 
+    scanEndOfLine();
+
+    // Scan close brace
     scanWord();
 
     if (word!="}") {
@@ -210,6 +181,8 @@ struct DiagramParser : StreamParser {
       cerr << "word: " << word << "\n";
       assert(false);
     }
+
+    scanEndOfLine();
   }
 
   void scanNodeTextSection(Node &node)
@@ -227,6 +200,53 @@ struct DiagramParser : StreamParser {
       scanEndOfLine();
       node.lines.push_back(Node::Line(value));
     }
+  }
+
+  Optional<Point2D> maybeScanPoint2DSection()
+  {
+    Optional<int> maybe_x;
+    Optional<int> maybe_y;
+
+    bool was_successful =
+      scanSection(
+        /*line_handler*/[&](const string &tag){
+          if (tag=="x:") {
+            maybe_x = nextIntFrom(stream);
+            scanEndOfLine();
+          }
+          else if (tag=="y:") {
+            maybe_y = nextIntFrom(stream);
+            scanEndOfLine();
+          }
+          else {
+            cerr << "tag: " << tag << "\n";
+            assert(false);
+          }
+
+          return true;
+        },
+        /*section_handler*/[&](const string &/*tag*/){
+          assert(false);
+          ignoreSection();
+          return true;
+        }
+      );
+
+    if (!was_successful) {
+      return {};
+    }
+
+    if (!maybe_x) {
+      setError("Missing x");
+      return {};
+    }
+
+    if (!maybe_y) {
+      setError("Missing y");
+      return {};
+    }
+
+    return Point2D(*maybe_x,*maybe_y);
   }
 
   bool scanNodeSection(Diagram &diagram)
@@ -249,6 +269,11 @@ struct DiagramParser : StreamParser {
           if (tag=="position:") {
             node.setPosition(DiagramCoords(nextPoint2DFrom(stream)));
           }
+          else if (tag=="line:") {
+            skipWhitespace();
+            string value = nextDoubleQuotedStringFrom(stream);
+            node.lines.push_back(Node::Line(value));
+          }
 
           scanEndOfLine();
         },
@@ -263,10 +288,13 @@ struct DiagramParser : StreamParser {
             return true;
           }
 
-          if (tag=="position:") {
-            node.setPosition(DiagramCoords(nextPoint2DFrom(stream)));
-            return true;
-          }
+         if (tag=="position") {
+           Optional<Point2D> maybe_position = maybeScanPoint2DSection();
+           if (!maybe_position) {
+             return false;
+           }
+           node.setPosition(DiagramCoords(*maybe_position));
+         }
 
           return true;
         }
@@ -279,34 +307,51 @@ struct DiagramParser : StreamParser {
       const LineHandler &line_handler,
       const SectionHandler &section_handler
     )
-    {
-      for (;;) {
-        scanWord();
+  {
+    for (;;) {
+      scanWord();
 
-        if (word=="}") {
-          scanEndOfLine();
-          return true;
+      if (word=="}") {
+        scanEndOfLine();
+        return true;
+      }
+
+      if (endsWith(word,":")) {
+        line_handler(word);
+      }
+      else {
+        string tag = word;
+
+        if (!scanOpenBrace()) {
+          return false;
         }
 
-        if (endsWith(word,":")) {
-          line_handler(word);
-        }
-        else {
-          string tag = word;
-          scanWord();
-
-          if (word!="{") {
-            setError("Expected '{'");
-            return false;
-          }
-
-          scanEndOfLine();
-          if (!section_handler(tag)) {
-            return false;
-          }
+        scanEndOfLine();
+        if (!section_handler(tag)) {
+          return false;
         }
       }
     }
+  }
+
+  bool scanOpenBrace()
+  {
+    skipWhitespace();
+
+    if (stream.peek()=='\n' || stream.peek()==EOF) {
+      setError("Expected '{'");
+      return false;
+    }
+
+    scanWord();
+
+    if (word!="{") {
+      setError("Expected '{'");
+      return false;
+    }
+
+    return true;
+  }
 
   bool scanDiagram(Diagram &diagram)
   {
@@ -317,10 +362,7 @@ struct DiagramParser : StreamParser {
       return false;
     }
 
-    scanWord();
-
-    if (word!="{") {
-      setError("Expected '{'");
+    if (!scanOpenBrace()) {
       return false;
     }
 
@@ -367,6 +409,9 @@ void scanDiagramFrom(std::istream &stream,Diagram &diagram,string &error)
   DiagramParser parser(stream);
 
   if (!parser.scanDiagram(diagram)) {
-    error = parser.error;
+    std::ostringstream error_stream;
+    error_stream << "error on line " << parser.line_number << ": " <<
+      parser.error;
+    error = error_stream.str();
   }
 }

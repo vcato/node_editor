@@ -64,10 +64,11 @@ static void testWithOneNode()
     "diagram {\n"
     "  node {\n"
     "    id: 1\n"
-    "    position: [0,0]\n"
-    "    text {\n"
-    "      \"x=5\"\n"
+    "    position {\n"
+    "      x: 0\n"
+    "      y: 0\n"
     "    }\n"
+    "    line: \"x=5\"\n"
     "  }\n"
     "}\n";
   string diagram_text = makeText(d);
@@ -86,14 +87,16 @@ static void testWithTwoConnectedNodes()
   NodeIndex n2 = d.addNode("5");
   d.node(n1).setPosition({101,102});
   d.connectNodes(n2,0,n1,0);
+
   const char *expected_text =
     "diagram {\n"
     "  node {\n"
     "    id: 1\n"
-    "    position: [101,102]\n"
-    "    text {\n"
-    "      \"x=$\"\n"
+    "    position {\n"
+    "      x: 101\n"
+    "      y: 102\n"
     "    }\n"
+    "    line: \"x=$\"\n"
     "    connection {\n"
     "      input_index: 0\n"
     "      source_node_id: 2\n"
@@ -102,12 +105,14 @@ static void testWithTwoConnectedNodes()
     "  }\n"
     "  node {\n"
     "    id: 2\n"
-    "    position: [0,0]\n"
-    "    text {\n"
-    "      \"5\"\n"
+    "    position {\n"
+    "      x: 0\n"
+    "      y: 0\n"
     "    }\n"
+    "    line: \"5\"\n"
     "  }\n"
     "}\n";
+
   string diagram_text = makeText(d);
   assert(diagram_text==expected_text);
   Diagram d2 = makeDiagram(diagram_text);
@@ -160,20 +165,20 @@ static void testWithBadText()
     const char *text =
       "diagram{\n"
       "}\n";
-    testBadText(text,"Expected tag 'diagram'");
+    testBadText(text,"error on line 1: Expected tag 'diagram'");
   }
   {
     const char *text =
       "diagram\n"
       "}\n";
-    testBadText(text,"Expected '{'");
+    testBadText(text,"error on line 1: Expected '{'");
   }
   {
     const char *text =
       "diagram {\n"
       "  blah\n"
       "}\n";
-    testBadText(text,"Expected '{'");
+    testBadText(text,"error on line 2: Expected '{'");
   }
 }
 

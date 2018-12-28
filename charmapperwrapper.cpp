@@ -11,6 +11,9 @@ using Callbacks = CharmapperWrapper::Callbacks;
 using Label = CharmapperWrapper::Label;
 
 
+#define POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM 0
+
+
 template <typename T>
 static int indexOf(const T &item,const std::vector<T> &container)
 {
@@ -103,7 +106,14 @@ struct MotionPassWrapper : VoidWrapper {
 
     Diagram *diagramPtr() const override
     {
-      return &channel.diagram;
+      // Channels will have diagrams at some point, but they don't have them
+      // yet.
+      return nullptr;
+    }
+
+    WrapperState makeDiagramState() const
+    {
+      assert(false);
     }
 
     Label label() const override
@@ -137,15 +147,24 @@ struct MotionPassWrapper : VoidWrapper {
     Position &position;
     const char *label_member;
     const Callbacks &callbacks;
+#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
+    const Diagram *default_diagram_ptr;
+#endif
 
     PositionWrapper(
       Position &position_arg,
       const char *label_arg,
       const Callbacks &callbacks_arg
+#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
+      , const Diagram *default_diagram_ptr_arg
+#endif
     )
     : position(position_arg),
       label_member(label_arg),
       callbacks(callbacks_arg)
+#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
+      , default_diagram_ptr(default_diagram_ptr_arg)
+#endif
     {
     }
 
@@ -153,6 +172,14 @@ struct MotionPassWrapper : VoidWrapper {
     {
       return &position.diagram;
     }
+
+#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
+    const Diagram& defaultDiagram() const override
+    {
+      assert(default_diagram_ptr);
+      return *default_diagram_ptr;
+    }
+#endif
 
     virtual int nChildren() const
     {

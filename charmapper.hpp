@@ -34,7 +34,7 @@ class Charmapper {
 
     struct Channel {
       using Value = int;
-      Diagram diagram;
+      // We'll want to have Channels have diagrams at some point.
       Value value = 0;
     };
 

@@ -5,6 +5,7 @@
 #include "linetext.hpp"
 #include "diagramio.hpp"
 #include "anyio.hpp"
+#include "evaluatelinetext.hpp"
 
 using std::ostream;
 using std::vector;

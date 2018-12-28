@@ -30,6 +30,7 @@ struct WrapperState {
 };
 
 
+// Policy for the ScanStateResult variant.
 struct ScanStateResultPolicy {
   struct Error {
     std::string message;

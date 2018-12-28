@@ -61,3 +61,9 @@ vector<string> split(const string &text)
   }
   return result;
 }
+
+
+string quoted(const string &s)
+{
+  return '"' + s + '"';
+}
