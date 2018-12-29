@@ -308,5 +308,3 @@ is a special feature.
     * It's really up to the charmapper wrapper to understand this.  Maybe the
       charmapper wrappers are passed a function which can open a diagram
       editor.
----
-Not sure what the difference is between a statement and a line.

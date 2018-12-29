@@ -11,7 +11,6 @@ using std::string;
 using std::cerr;
 
 
-#if 1
 namespace {
 struct Parser {
   Parser(const char *text_arg)
@@ -48,7 +47,6 @@ struct Parser {
     const char *p;
 };
 }
-#endif
 
 
 static void skipGroup(Parser &parser);
