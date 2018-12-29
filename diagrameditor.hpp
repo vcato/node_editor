@@ -17,9 +17,6 @@
 #include "optional.hpp"
 
 
-#define USE_OPTIONAL_MOUSE_PRESS_POSITION 0
-
-
 using DiagramRect = TaggedRect<DiagramCoordsTag>;
 using ViewportRect = TaggedRect<ViewportCoordsTag>;
 
@@ -224,11 +221,7 @@ class DiagramEditor {
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;
     static constexpr float connector_radius = 5;
-#if !USE_OPTIONAL_MOUSE_PRESS_POSITION
     ViewportCoords mouse_press_position;
-#else
-    Optional<Point2D> maybe_mouse_press_position;
-#endif
     std::map<NodeIndex,DiagramCoords> original_node_positions;
     std::function<void()> diagram_changed_callback;
     MouseMode mouse_mode = MouseMode::none;

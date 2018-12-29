@@ -274,21 +274,10 @@ separate nodes stacked on top of each other.
 ---
 Need to be able to have multiple frames in a scene.
 ---
+Probably need to unify WrapperValue and Any.
+---
 If you add a $ before another one, then the existing connector should move
 down, so that you keep the same connection with the existing $.
 ---
-Probably need to unify WrapperValue and Any.
----
-If you don't specify a body for PosExpr() in the expression evaluation, then
-it should give an error.
----
-I wonder if diagrams should be inherent parts of wrappers, or whether it
-is a special feature.
-* Maybe we just have an Edit Diagram operation in those wrappers which
-  have diagrams.  That way, the tree editor doesn't need to have any
-  explicit knowledge of diagrams.
-  * How do we end up bringing up the diagram editor?  A charmapper wouldn't
-    know how to do that.
-    * It's really up to the charmapper wrapper to understand this.  Maybe the
-      charmapper wrappers are passed a function which can open a diagram
-      editor.
+When editing a diagram node, you should be able to click to move the
+cursor.

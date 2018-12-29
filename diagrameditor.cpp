@@ -631,11 +631,6 @@ void DiagramEditor::mouseReleasedAt(ViewportCoords mouse_release_position)
     }
   }
 
-#if USE_OPTIONAL_MOUSE_PRESS_POSITION
-  assert(maybe_mouse_press_position);
-  const ViewportCoords mouse_press_position = *maybe_mouse_press_position;
-#endif
-
   if (mouse_press_position==mouse_release_position) {
     if (!aNodeIsFocused() && !aNodeIsSelected()) {
       int new_node_index =
@@ -680,20 +675,9 @@ void
     EventModifiers modifiers
   )
 {
-#if USE_OPTIONAL_MOUSE_PRESS_POSITION
-  if (maybe_mouse_press_position) {
-    // A mouse button is already pressed.  Not sure how to handle this yet.
-    assert(false);
-  }
-#endif
-
   if (modifiers.alt_is_pressed) {
     mouse_mode = MouseMode::translate_view;
-#if USE_OPTIONAL_MOUSE_PRESS_POSITION
-    maybe_mouse_press_position = p;
-#else
     mouse_press_position = p;
-#endif
     mouse_down_view_offset = view_offset;
   }
 }
@@ -711,16 +695,7 @@ void
 
   bool shift_is_pressed = modifiers.shift_is_pressed;
 
-#if USE_OPTIONAL_MOUSE_PRESS_POSITION
-  if (maybe_mouse_press_position) {
-    // A mouse button is already pressed.  Not sure how to handle this yet.
-    assert(false);
-  }
-
-  maybe_mouse_press_position = p;
-#else
   mouse_press_position = p;
-#endif
 
   node_was_selected = false;
 
