@@ -180,7 +180,7 @@ static void testGlobalPositionDiagram(const string &node_text,float expected_x)
   pos_expr.global_position.switchToComponents();
   Diagram &diagram = pos_expr.global_position.diagram;
   clearDiagram(diagram);
-  diagram.addNode(node_text);
+  diagram.createNodeWithText(node_text);
   applyCharmapper(charmapper);
   assert(body1.position.x(scene.displayFrame())==expected_x);
 }

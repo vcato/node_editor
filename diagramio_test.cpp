@@ -60,7 +60,7 @@ static void testWithOneNodeAndUnknownSection()
 static void testWithOneNode()
 {
   Diagram d;
-  d.addNode("x=5");
+  d.createNodeWithText("x=5");
   const char *expected_text =
     "diagram {\n"
     "  node {\n"
@@ -84,8 +84,8 @@ static void testWithOneNode()
 static void testWithTwoConnectedNodes()
 {
   Diagram d;
-  NodeIndex n1 = d.addNode("x=$");
-  NodeIndex n2 = d.addNode("5");
+  NodeIndex n1 = d.createNodeWithText("x=$");
+  NodeIndex n2 = d.createNodeWithText("5");
   d.node(n1).setPosition({101,102});
   d.connectNodes(n2,0,n1,0);
 
@@ -125,9 +125,9 @@ static void testWithTwoConnectedNodes()
 static void testWithTwoConnections()
 {
   Diagram d;
-  NodeIndex n1 = d.addNode("1");
-  NodeIndex n2 = d.addNode("2");
-  NodeIndex n3 = d.addNode("$+$");
+  NodeIndex n1 = d.createNodeWithText("1");
+  NodeIndex n2 = d.createNodeWithText("2");
+  NodeIndex n3 = d.createNodeWithText("$+$");
   d.connectNodes(n1,0,n3,0);
   d.connectNodes(n2,0,n3,1);
   Diagram d2 = makeDiagram(makeText(d));
@@ -138,7 +138,7 @@ static void testWithTwoConnections()
 static void testWithMultiLineText()
 {
   Diagram d;
-  d.addNode("5\n6");
+  d.createNodeWithText("5\n6");
   Diagram d2 = makeDiagram(makeText(d));
 }
 

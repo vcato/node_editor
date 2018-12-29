@@ -17,7 +17,7 @@ class Diagram {
 
     Node *findNode(NodeIndex);
 
-    NodeIndex addNode(const std::string &text);
+    NodeIndex createNodeWithText(const std::string &text);
 
     Node &createNode(NodeIndex);
       // This creates a node with a particular index.  This is mainly useful

@@ -25,7 +25,7 @@ static void evaluateDiagram(Diagram &diagram,DiagramState &diagram_state)
 static void testEvaluation1()
 {
   Diagram diagram;
-  int node_index =  diagram.addNode("5");
+  int node_index =  diagram.createNodeWithText("5");
   DiagramState diagram_state;
   evaluateDiagram(diagram,diagram_state);
   assert(diagram_state.node_output_values[node_index][0]==5);
@@ -35,7 +35,7 @@ static void testEvaluation1()
 static void testEvaluation2()
 {
   Diagram diagram;
-  int node_index =  diagram.addNode("6");
+  int node_index =  diagram.createNodeWithText("6");
   DiagramState diagram_state;
   evaluateDiagram(diagram,diagram_state);
   assert(diagram_state.node_output_values[node_index][0]==6);
@@ -54,7 +54,7 @@ static void evaluate(Diagram &diagram,ostream &stream)
 static void testEvaluateShow()
 {
   Diagram diagram;
-  diagram.addNode("show(5)");
+  diagram.createNodeWithText("show(5)");
   ostringstream stream;
   evaluate(diagram,stream);
   string output = stream.str();
@@ -65,7 +65,7 @@ static void testEvaluateShow()
 static void testEvaluateEmpty()
 {
   Diagram diagram;
-  diagram.addNode("");
+  diagram.createNodeWithText("");
   ostringstream stream;
   evaluate(diagram,stream);
 }
@@ -74,7 +74,7 @@ static void testEvaluateEmpty()
 static void testEvaluateShowDisconnectedInput()
 {
   Diagram diagram;
-  diagram.addNode("show($)");
+  diagram.createNodeWithText("show($)");
   ostringstream stream;
   evaluate(diagram,stream);
 }
@@ -83,8 +83,8 @@ static void testEvaluateShowDisconnectedInput()
 static void testEvaluateShowConnectedInput()
 {
   Diagram diagram;
-  int n1 = diagram.addNode("5");
-  int n2 = diagram.addNode("show($)");
+  int n1 = diagram.createNodeWithText("5");
+  int n2 = diagram.createNodeWithText("show($)");
   int input_node_index = n2;
   int input_index = 0;
   int output_node_index = n1;
@@ -103,8 +103,8 @@ static void testEvaluateShowConnectedInput()
 static void testEvaluateShowConnectedInput2()
 {
   Diagram diagram;
-  int n1 = diagram.addNode("5");
-  int n2 = diagram.addNode("show($)");
+  int n1 = diagram.createNodeWithText("5");
+  int n2 = diagram.createNodeWithText("show($)");
   int input_node_index = n2;
   int input_index = 0;
   int output_node_index = n1;
@@ -122,8 +122,8 @@ static void testEvaluateShowConnectedInput2()
 static void testEvaluateAfterDeletingAnInput()
 {
   Diagram diagram;
-  int n1 = diagram.addNode("5");
-  int n2 = diagram.addNode("b=$");
+  int n1 = diagram.createNodeWithText("5");
+  int n2 = diagram.createNodeWithText("b=$");
   diagram.connectNodes(n1,0,n2,0);
   diagram.deleteNode(n1);
   assert(diagram.findNode(n2));
@@ -144,7 +144,7 @@ static void testExistingNodeIndices()
 static void testEvaluatingIncompleteVectorOverTwoLines()
 {
   Diagram diagram;
-  diagram.addNode("[1,2\n");
+  diagram.createNodeWithText("[1,2\n");
 
   ostringstream stream;
   evaluate(diagram,stream);

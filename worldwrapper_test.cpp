@@ -720,7 +720,9 @@ static void testPosExprDiagramThatReferencesAScene()
   assert(body1.position.x(scene.displayFrame())==0);
 
   Diagram diagram;
-  diagram.addNode("return PosExpr(body=target_body,pos=Scene1.body2.pos())");
+  diagram.createNodeWithText(
+    "return PosExpr(body=target_body,pos=Scene1.body2.pos())"
+  );
   pos_expr.diagram = diagram;
   WorldWrapper world_wrapper(world);
 

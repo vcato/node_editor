@@ -315,7 +315,7 @@ static void testTranslatingView()
 static void testTranslatingView2()
 {
   Diagram diagram;
-  NodeIndex node_index = diagram.addNode("test");
+  NodeIndex node_index = diagram.createNodeWithText("test");
   FakeDiagramEditor editor(diagram);
   EventModifiers modifiers;
   modifiers.alt_is_pressed = true;

@@ -132,7 +132,7 @@ static float
 static void testSimpleReturn()
 {
   Diagram diagram;
-  diagram.addNode("return [1,2]");
+  diagram.createNodeWithText("return [1,2]");
   Point2D result = evaluateDiagramReturningPoint2D(diagram);
   assert(result==Point2D(1,2));
 }
@@ -141,8 +141,8 @@ static void testSimpleReturn()
 static void testConnectedReturn()
 {
   Diagram diagram;
-  NodeIndex node1 = diagram.addNode("[1,2]");
-  NodeIndex node2 = diagram.addNode("return $");
+  NodeIndex node1 = diagram.createNodeWithText("[1,2]");
+  NodeIndex node2 = diagram.createNodeWithText("return $");
   diagram.connectNodes(node1,0,node2,0);
   Point2D result = evaluateDiagramReturningPoint2D(diagram);
   assert(result==Point2D(1,2));
@@ -152,10 +152,10 @@ static void testConnectedReturn()
 static void testBuildingVector()
 {
   Diagram diagram;
-  NodeIndex x_node = diagram.addNode("x");
-  NodeIndex y_node = diagram.addNode("y");
-  NodeIndex build_vector_node = diagram.addNode("[$,$]");
-  NodeIndex return_node = diagram.addNode("return $");
+  NodeIndex x_node = diagram.createNodeWithText("x");
+  NodeIndex y_node = diagram.createNodeWithText("y");
+  NodeIndex build_vector_node = diagram.createNodeWithText("[$,$]");
+  NodeIndex return_node = diagram.createNodeWithText("return $");
   diagram.connectNodes(x_node,0,build_vector_node,0);
   diagram.connectNodes(y_node,0,build_vector_node,1);
   diagram.connectNodes(build_vector_node,0,return_node,0);
@@ -199,7 +199,7 @@ static void testExpression()
   Diagram diagram;
   Environment environment;
   environment["x"] = 6;
-  diagram.addNode("return x+5");
+  diagram.createNodeWithText("return x+5");
   float result = evaluateDiagramReturningFloat(diagram,environment);
   assert(result==11);
 }

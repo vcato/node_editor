@@ -58,8 +58,8 @@ static void testMakingStateWithNormalDiagram()
   const char *expected_text = test_text;
 
   Diagram d;
-  NodeIndex n1 = d.addNode("return $");
-  NodeIndex n2 = d.addNode("5");
+  NodeIndex n1 = d.createNodeWithText("return $");
+  NodeIndex n2 = d.createNodeWithText("5");
   d.connectNodes(n2,0,n1,0);
   WrapperState s = makeDiagramWrapperState(d);
 

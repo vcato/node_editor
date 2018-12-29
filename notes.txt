@@ -312,5 +312,3 @@ is a special feature.
 Not sure what the difference is between a statement and a line.
 ---
 Check for ADD_TEST
----
-Rename Diagram::addNode to createNodeWithText

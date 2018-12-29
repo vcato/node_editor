@@ -193,7 +193,7 @@ static void testWithDiagram()
 
   Diagram diagram;
   Diagram default_diagram;
-  default_diagram.addNode("5");
+  default_diagram.createNodeWithText("5");
   TestWrapper2 wrapper;
   wrapper.setDiagramPtr(&diagram);
   wrapper.setDefaultDiagramPtr(&default_diagram);

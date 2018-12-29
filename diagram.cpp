@@ -66,7 +66,7 @@ void Diagram::deleteNode(NodeIndex index)
 }
 
 
-NodeIndex Diagram::addNode(const string &text)
+NodeIndex Diagram::createNodeWithText(const string &text)
 {
   NodeIndex node_index = _node_ptrs.size();
 

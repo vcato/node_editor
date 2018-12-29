@@ -123,7 +123,7 @@ int
   // The node editor keeps a pointer to a node, but Nodes may move in memory.
   assert(!aNodeIsFocused());
 
-  int node_index = diagram().addNode(text);
+  int node_index = diagram().createNodeWithText(text);
   diagram().node(node_index).header_text_object.position = position;
   return node_index;
 }
