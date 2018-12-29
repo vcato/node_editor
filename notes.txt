@@ -269,29 +269,13 @@ evaluateDiagramNodeLine() needs to handle errors better.
       whether it is an optional with no value or a void value.
 
 ---
-modified diagrams need to be saved in the project
-* I suppose we can determine whether a diagram is modified or not by
-  whether or not it comes out in the state.
----
 The lines of nodes should probably be more distinct.  Maybe they look like
 separate nodes stacked on top of each other.
 ---
 Need to be able to have multiple frames in a scene.
 ---
-The Pos Expr diagram should actually be evaluated.
----
 If you add a $ before another one, then the existing connector should move
 down, so that you keep the same connection with the existing $.
----
-There's a question of how target bodies should work.
-  * It makes sense that the target body would be in the environment, but
-    the environment is a set of Anys.  Should we expand the Any type to
-    handle target body links?  Seems like Any shouldn't be tied to that,
-    since we would effectively be tying diagrams to charmapper-specific
-    data types.  What is the alternative?
-    * We could add PosExpr to the environment.  We could evaluate it like
-      a function, and have it return some generic object type.
-    * This means we need to introduce classes and objects into the Any type.
 ---
 Probably need to unify WrapperValue and Any.
 ---

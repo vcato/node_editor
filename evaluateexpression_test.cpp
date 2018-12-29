@@ -17,7 +17,21 @@ using std::cerr;
 using std::string;
 using std::ostringstream;
 using std::make_unique;
+using std::ostream;
 
+
+
+static Class stubClass()
+{
+  auto make_object_function =
+    [&](const Class::NamedParameters &,ostream &/*error_stream*/)
+      -> Optional<Object>
+    {
+      assert(false);
+    };
+
+  return Class(make_object_function);
+}
 
 
 namespace {
@@ -268,6 +282,19 @@ static void testPosExprWithBadBody()
 }
 
 
+static void testPosExprWithUnknownParameter()
+{
+  Class pos_expr_class = posExprClass();
+  Tester tester;
+  tester.environment["PosExpr"] = &pos_expr_class;
+  Optional<Any> maybe_result =
+    evaluateStringWithTester("PosExpr(blah=5)",tester);
+  assert(!maybe_result);
+  cerr << "tester.error_stream.str(): " << tester.error_stream.str() << "\n";
+  assert(tester.error_stream.str()=="Unknown parameter 'blah'\n");
+}
+
+
 static void testCallingUnknownFunction()
 {
   string error = evaluateStringWithError("f()");
@@ -372,6 +399,21 @@ static void testBodyPositionWithLocal()
 }
 
 
+static void testObjectConstructionWithMissingComma()
+{
+  Class test_class = stubClass();
+  Tester tester;
+  Environment &environment = tester.environment;
+  environment["Stub"] = &test_class;
+  string expr_string = "Stub(x=5 6)";
+  Optional<Any> maybe_result =
+    evaluateStringWithTester(expr_string,tester);
+
+  assert(!maybe_result);
+  assert(tester.error_stream.str()=="Missing ','\n");
+}
+
+
 static void testPoint2DMembers()
 {
   Point2D point(1.5,2.5);
@@ -433,9 +475,11 @@ int main()
   testPosExpr();
   testPosExprWithNoParameters();
   testPosExprWithBadBody();
+  testPosExprWithUnknownParameter();
   testPoint2DMembers();
   testCallingUnknownFunction();
   testCallingMemberFunctionWithNoArguments();
   testCallingMemberFunctionWithArgument();
   testBodyPositionWithLocal();
+  testObjectConstructionWithMissingComma();
 }

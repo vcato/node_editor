@@ -167,7 +167,7 @@ Optional<Any>
   if (parser.peekChar()==')') {
     assert(the_class.make_object_function);
     Optional<Object> maybe_object =
-      the_class.make_object_function(named_parameters);
+      the_class.make_object_function(named_parameters,error_stream);
 
     if (!maybe_object) {
       return {};
@@ -205,8 +205,8 @@ Optional<Any>
         break;
       }
       else {
-        cerr << "parser.peekChar()='" << parser.peekChar() << "'\n";
-        assert(false);
+        error_stream << "Missing ','\n";
+        return {};
       }
     }
     else {
@@ -216,7 +216,7 @@ Optional<Any>
 
   assert(the_class.make_object_function);
   Optional<Object> maybe_object =
-    the_class.make_object_function(named_parameters);
+    the_class.make_object_function(named_parameters,error_stream);
 
   if (!maybe_object) {
     cerr << "Failed to make object\n";

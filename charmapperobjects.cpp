@@ -13,8 +13,11 @@ using std::ostream;
 
 Class posExprClass()
 {
-  auto make_pos_expr_object_function =
-    [&](const Class::NamedParameters &named_parameters) -> Optional<Object> {
+  auto make_object_function =
+    [&](
+      const Class::NamedParameters &named_parameters,
+      ostream &error_stream
+    ) -> Optional<Object> {
       BodyLink body_link;
       Optional<Point2D> maybe_position;
 
@@ -49,8 +52,8 @@ Class posExprClass()
           }
         }
         else {
-          cerr << "name: " << name << "\n";
-          assert(false);
+          error_stream << "Unknown parameter '" << name << "'\n";
+          return {};
         }
       }
 
@@ -69,7 +72,7 @@ Class posExprClass()
       return Object(make_unique<PosExprObjectData>(body_link,*maybe_position));
     };
 
-  return Class(make_pos_expr_object_function);
+  return Class(make_object_function);
 }
 
 

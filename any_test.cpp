@@ -44,9 +44,10 @@ static void testObject()
     }
   };
 
-  auto make_test_object_function = [&](const Class::NamedParameters &){
-    return Object(std::make_unique<Data>());
-  };
+  auto make_test_object_function =
+    [&](const Class::NamedParameters &,ostream &/*error_stream*/){
+      return Object(std::make_unique<Data>());
+    };
 
   Class test_class(make_test_object_function);
 
@@ -59,7 +60,9 @@ static void testObject()
 
 static void testClass()
 {
-  std::function<Object(const Class::NamedParameters &)> make_object_function;
+  using MakeObjectSignature =
+    Optional<Object>(const Class::NamedParameters &,std::ostream &error_stream);
+  std::function<MakeObjectSignature> make_object_function;
   Class c(make_object_function);
   Any a(&c);
   assert(a.isClassPtr());

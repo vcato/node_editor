@@ -18,8 +18,9 @@ using Any = BasicVariant<AnyPolicy>;
 
 struct Class {
   using NamedParameters = std::map<std::string,Any>;
-  using MakeObjectFunction =
-    std::function<Optional<Object>(const NamedParameters &)>;
+  using MakeObjectSignature =
+    Optional<Object>(const NamedParameters &,std::ostream &error_stream);
+  using MakeObjectFunction = std::function<MakeObjectSignature>;
   bool operator==(const Class &) const { return true; }
 
   Class(MakeObjectFunction make_object_function_arg)
