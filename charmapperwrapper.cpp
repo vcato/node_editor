@@ -3,15 +3,14 @@
 #include <iostream>
 #include <algorithm>
 #include "streamvector.hpp"
+#include "defaultdiagrams.hpp"
+#include "diagramwrapperstate.hpp"
 
 using std::cerr;
 using std::vector;
 using std::string;
 using Callbacks = CharmapperWrapper::Callbacks;
 using Label = CharmapperWrapper::Label;
-
-
-#define POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM 0
 
 
 template <typename T>
@@ -59,6 +58,13 @@ static void setChildren(const Wrapper &wrapper,const WrapperState &state)
           found = true;
         }
       });
+    }
+
+    if (wrapper.diagramPtr()) {
+      if (child_state.tag=="diagram") {
+        *wrapper.diagramPtr() = makeDiagramFromWrapperState(child_state);
+        found = true;
+      }
     }
 
     if (!found) {
@@ -111,11 +117,6 @@ struct MotionPassWrapper : VoidWrapper {
       return nullptr;
     }
 
-    WrapperState makeDiagramState() const
-    {
-      assert(false);
-    }
-
     Label label() const override
     {
       return label_member;
@@ -147,24 +148,18 @@ struct MotionPassWrapper : VoidWrapper {
     Position &position;
     const char *label_member;
     const Callbacks &callbacks;
-#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
     const Diagram *default_diagram_ptr;
-#endif
 
     PositionWrapper(
       Position &position_arg,
       const char *label_arg,
-      const Callbacks &callbacks_arg
-#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
-      , const Diagram *default_diagram_ptr_arg
-#endif
+      const Callbacks &callbacks_arg,
+      const Diagram *default_diagram_ptr_arg
     )
     : position(position_arg),
       label_member(label_arg),
-      callbacks(callbacks_arg)
-#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
-      , default_diagram_ptr(default_diagram_ptr_arg)
-#endif
+      callbacks(callbacks_arg),
+      default_diagram_ptr(default_diagram_ptr_arg)
     {
     }
 
@@ -173,13 +168,11 @@ struct MotionPassWrapper : VoidWrapper {
       return &position.diagram;
     }
 
-#if POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
     const Diagram& defaultDiagram() const override
     {
       assert(default_diagram_ptr);
       return *default_diagram_ptr;
     }
-#endif
 
     virtual int nChildren() const
     {
@@ -242,7 +235,8 @@ struct MotionPassWrapper : VoidWrapper {
         visitor(PositionWrapper(
           from_body_global_position.local_position,
           "Local Position",
-          callbacks
+          callbacks,
+          &from_body_global_position.defaultLocalPositionDiagram()
         ));
       }
       else {
@@ -386,6 +380,19 @@ struct MotionPassWrapper : VoidWrapper {
     Diagram *diagramPtr() const override
     {
       return &global_position.diagram;
+    }
+
+    const Diagram& defaultDiagram() const override
+    {
+      if (global_position.isComponents()) {
+        return global_position.defaultComponentsDiagram();
+      }
+
+      if (global_position.isFromBody()) {
+        return global_position.defaultFromBodyDiagram();
+      }
+
+      assert(false);
     }
 
     void diagramChanged() const override
@@ -568,6 +575,11 @@ struct MotionPassWrapper : VoidWrapper {
       return &posExpr().diagram;
     }
 
+    const Diagram &defaultDiagram() const override
+    {
+      return PosExpr::defaultDiagram();
+    }
+
     void
       executeRemoveOperation(
         const TreePath &path,
@@ -612,7 +624,12 @@ struct MotionPassWrapper : VoidWrapper {
       }
       else if (child_index==local_position_index) {
         visitor(
-          PositionWrapper(posExpr().local_position,"Local Position",callbacks)
+          PositionWrapper(
+            posExpr().local_position,
+            "Local Position",
+            callbacks,
+            &posExpr().defaultLocalPositionDiagram()
+          )
         );
       }
       else if (child_index==global_position_index) {
@@ -739,22 +756,25 @@ struct MotionPassWrapper : VoidWrapper {
     return motion_pass.nExprs();
   }
 
-  void setState(const WrapperState &state) const override
-  {
-    int child_index = 0;
-
-    for (const WrapperState &child_state : state.children) {
-      if (child_state.tag=="pos_expr") {
-        motion_pass.addPosExpr();
-        PosExprWrapper(motion_pass,child_index,callbacks).setState(child_state);
-      }
-      else {
-        assert(false);
-      }
-      ++child_index;
-    }
-  }
+  void setState(const WrapperState &state) const override;
 };
+}
+
+
+void MotionPassWrapper::setState(const WrapperState &state) const
+{
+  int child_index = 0;
+
+  for (const WrapperState &child_state : state.children) {
+    if (child_state.tag=="pos_expr") {
+      motion_pass.addPosExpr();
+      PosExprWrapper(motion_pass,child_index,callbacks).setState(child_state);
+    }
+    else {
+      assert(false);
+    }
+    ++child_index;
+  }
 }
 
 

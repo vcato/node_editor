@@ -118,20 +118,8 @@ static Optional<WrapperValue> scanValue(StreamParser &parser)
 }
 
 
-static Optional<WrapperState> scanState(StreamParser &parser);
-
-
-static void scanChildren(WrapperState &state,StreamParser &parser)
+void scanChildrenSection(WrapperState &state,StreamParser &parser)
 {
-  parser.scanWord();
-
-  if (parser.word!="{") {
-    parser.error = "Unexpected "+parser.word;
-    return;
-  }
-
-  parser.scanEndOfLine();
-
   for (;;) {
     parser.beginLine();
 
@@ -153,7 +141,24 @@ static void scanChildren(WrapperState &state,StreamParser &parser)
 }
 
 
-static Optional<WrapperState> scanState(StreamParser &parser)
+// Need a function that scans the internals of a section instead.
+static void scanChildren(WrapperState &state,StreamParser &parser)
+{
+  parser.scanWord();
+
+  if (parser.word!="{") {
+    parser.error = "Unexpected "+parser.word;
+    return;
+  }
+
+  parser.scanEndOfLine();
+
+  scanChildrenSection(state,parser);
+}
+
+
+// Can probably make this private again.
+Optional<WrapperState> scanState(StreamParser &parser)
 {
   if (endsWith(parser.word,":")) {
     string tag = withoutRight(parser.word,1);
@@ -175,8 +180,6 @@ static Optional<WrapperState> scanState(StreamParser &parser)
         assert(false);
       }
     }
-
-    parser.scanEndOfLine();
 
     return state;
   }

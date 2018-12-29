@@ -43,10 +43,11 @@ static void testWithOneNodeAndUnknownSection()
     "  }\n"
     "  node {\n"
     "    id: 1\n"
-    "    position: [0,0]\n"
-    "    text {\n"
-    "      \"x=5\"\n"
+    "    position {\n"
+    "      x: 0\n"
+    "      y: 0\n"
     "    }\n"
+    "    line: \"x=5\"\n"
     "  }\n"
     "}\n";
   Diagram d = makeDiagram(diagram_text);
@@ -171,14 +172,14 @@ static void testWithBadText()
     const char *text =
       "diagram\n"
       "}\n";
-    testBadText(text,"error on line 1: Expected '{'");
+    testBadText(text,"");
   }
   {
     const char *text =
       "diagram {\n"
       "  blah\n"
       "}\n";
-    testBadText(text,"error on line 2: Expected '{'");
+    testBadText(text,"");
   }
 }
 

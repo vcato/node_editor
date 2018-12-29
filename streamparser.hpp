@@ -1,3 +1,7 @@
+#ifndef STREAMPARSER_HPP_
+#define STREAMPARSER_HPP_
+
+
 #include <iostream>
 
 
@@ -16,3 +20,6 @@ struct StreamParser {
   void skipWhitespace();
   void beginLine();
 };
+
+
+#endif /* STREAMPARSER_HPP_ */

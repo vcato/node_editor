@@ -3,10 +3,10 @@
 #include <sstream>
 #include "wrapper.hpp"
 
-
 using std::istringstream;
 using std::ostringstream;
 using std::string;
+using std::cerr;
 
 
 namespace {
@@ -38,6 +38,15 @@ struct TestWrapper : LeafWrapper<NoOperationWrapper<EnumerationWrapper> > {
 }
 
 
+static WrapperState stateFromText(const char *text)
+{
+  istringstream stream(text);
+  ScanStateResult scan_result = scanStateFrom(stream);
+  assert(scan_result.isState());
+  return scan_result.state();
+}
+
+
 static void testPrintStateOn()
 {
   TestWrapper wrapper;
@@ -52,11 +61,7 @@ static void testPrintStateOn()
 
 static void testScanStateFromWithEnumerationValue()
 {
-  istringstream stream("test: b\n");
-  ScanStateResult result = scanStateFrom(stream);
-
-  assert(result.isState());
-  const WrapperState &state = result.state();
+  WrapperState state = stateFromText("test: b\n");
 
   assert(state.tag=="test");
   assert(state.value==WrapperValue(WrapperValue::Enumeration{"b"}));
@@ -70,11 +75,7 @@ static void testScanStateFromWithEnumerationValueAndChildren()
     "test: b {\n"
     "  x: 5\n"
     "}\n";
-  istringstream stream(text);
-  ScanStateResult result = scanStateFrom(stream);
-
-  assert(result.isState());
-  const WrapperState &state = result.state();
+  WrapperState state = stateFromText(text);
 
   assert(state.tag=="test");
   assert(state.value==WrapperValue(WrapperValue::Enumeration{"b"}));
@@ -86,11 +87,7 @@ static void testScanStateFromWithEnumerationValueAndChildren()
 
 static void testScanStateFromWithStringValue()
 {
-  istringstream stream("test: \"quoted\"\n");
-  ScanStateResult result = scanStateFrom(stream);
-
-  assert(result.isState());
-  const WrapperState &state = result.state();
+  WrapperState state = stateFromText("test: \"quoted\"\n");
 
   assert(state.tag=="test");
   assert(state.value==WrapperValue("quoted"));
@@ -104,11 +101,7 @@ static void testScanStateFromWithChildValues()
     "test {\n"
     "  a: 5\n"
     "}\n";
-  istringstream stream(text);
-  ScanStateResult result = scanStateFrom(stream);
-
-  assert(result.isState());
-  const WrapperState &state = result.state();
+  WrapperState state = stateFromText(text);
 
   assert(state.tag=="test");
   assert(state.value==WrapperValue(WrapperValue::Void{}));
@@ -142,6 +135,20 @@ static void testPrintAndScanStateWithNoChildren()
 }
 
 
+static void testScanCase1()
+{
+  const char *text =
+    "pos_expr {\n"
+    "  global_position: from_body {\n"
+    "  }\n"
+    "  diagram {\n"
+    "  }\n"
+    "}\n";
+  WrapperState state = stateFromText(text);
+  assert(state.children.size()==2);
+}
+
+
 int main()
 {
   testPrintStateOn();
@@ -150,5 +157,6 @@ int main()
   testScanStateFromWithStringValue();
   testScanStateFromWithChildValues();
   testScanStateFromWithError();
+  testScanCase1();
   testPrintAndScanStateWithNoChildren();
 }

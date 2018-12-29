@@ -76,6 +76,8 @@ class Charmapper {
         {
           visitor.visit(*this);
         }
+
+        static const Diagram& defaultLocalPositionDiagram();
       };
 
       struct ComponentsData : Data {
@@ -124,6 +126,9 @@ class Charmapper {
         assert(data_ptr);
         return *data_ptr;
       }
+
+      static const Diagram& defaultComponentsDiagram();
+      static const Diagram& defaultFromBodyDiagram();
     };
 
     struct MotionPass {
@@ -137,6 +142,9 @@ class Charmapper {
         {
           return target_body_link.hasValue();
         }
+
+        static const Diagram &defaultLocalPositionDiagram();
+        static const Diagram &defaultDiagram();
 
         Diagram diagram;
         Position local_position;

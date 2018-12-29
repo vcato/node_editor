@@ -162,20 +162,20 @@ world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o wrapper.o \
-  printindent.o streamparser.o
+  printindent.o streamparser.o diagramwrapperstate.o diagram.o diagramnode.o \
+  linetext.o statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagramwrapperstate_test: diagramwrapperstate_test.o diagram.o diagramnode.o \
-  linetext.o statementtext.o stringutil.o
+  linetext.o statementtext.o stringutil.o diagramwrapperstate.o \
+  wrapperstate.o printindent.o streamparser.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 
-#diagramwrapperstate_test: diagramwrapperstate_test.o
-#	$(CXX) -o $@ $^ $(LDFLAGS)
-#
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
   generatename.o wrapperstate.o stringutil.o wrapper.o printindent.o \
-  streamparser.o
+  streamparser.o diagramwrapperstate.o diagram.o diagramnode.o linetext.o \
+  statementtext.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \

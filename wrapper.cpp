@@ -1,6 +1,7 @@
 #include "wrapper.hpp"
 
 #include <algorithm>
+#include "diagramwrapperstate.hpp"
 
 
 using std::vector;
@@ -212,15 +213,15 @@ WrapperState stateOf(const Wrapper &wrapper)
     );
   }
 
-#if 0
   if (wrapper.diagramPtr()) {
-    WrapperState diagram_state = makeDiagramState(*wrapper.diagramPtr());
-    WrapperState default_state = makeDiagramState(wrapper.defaultDiagram());
+    WrapperState diagram_state =
+      makeDiagramWrapperState(*wrapper.diagramPtr());
+    WrapperState default_state =
+      makeDiagramWrapperState(wrapper.defaultDiagram());
     if (diagram_state != default_state) {
       result.children.push_back(diagram_state);
     }
   }
-#endif
 
   return result;
 }

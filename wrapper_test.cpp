@@ -5,8 +5,6 @@
 #include "wrapperutil.hpp"
 #include "diagram.hpp"
 
-#define ADD_TEST 0
-
 using std::string;
 using std::vector;
 using std::function;
@@ -105,15 +103,27 @@ struct TestWrapper2 : NoOperationWrapper<VoidWrapper> {
   vector<TestWrapper2> children;
   string label_member;
   Diagram *diagram_ptr = nullptr;
+  Diagram *default_diagram_ptr = nullptr;
 
   void setDiagramPtr(Diagram *arg)
   {
     diagram_ptr = arg;
   }
 
+  void setDefaultDiagramPtr(Diagram *arg)
+  {
+    default_diagram_ptr = arg;
+  }
+
   Diagram *diagramPtr() const override
   {
     return diagram_ptr;
+  }
+
+  const Diagram &defaultDiagram() const override
+  {
+    assert(default_diagram_ptr);
+    return *default_diagram_ptr;
   }
 
   int nChildren() const override
@@ -176,18 +186,21 @@ static void testWithThreeComponents()
 }
 
 
-#if ADD_TEST
 static void testWithDiagram()
 {
-  TestWrapper2 wrapper;
+  // If we have a diagram that is different than the default diagram, then
+  // we should get the diagram as part of the wrapper state.
+
   Diagram diagram;
+  Diagram default_diagram;
+  default_diagram.addNode("5");
+  TestWrapper2 wrapper;
   wrapper.setDiagramPtr(&diagram);
+  wrapper.setDefaultDiagramPtr(&default_diagram);
   WrapperState state = stateOf(wrapper);
-  printStateOn(cerr,state);
   assert(state.children.size()==1);
   assert(state.children[0].tag=="diagram");
 }
-#endif
 
 
 int main()
@@ -196,7 +209,5 @@ int main()
   testWithSingleComponent();
   testWithTwoComponents();
   testWithThreeComponents();
-#if ADD_TEST
   testWithDiagram();
-#endif
 }

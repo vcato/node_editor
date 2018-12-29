@@ -44,36 +44,70 @@ MotionPass& Charmapper::addMotionPass()
 }
 
 
+const Diagram&
+  Charmapper::GlobalPosition::defaultComponentsDiagram()
+{
+  return fromComponentsDiagram();
+}
+
+
+const Diagram &
+  Charmapper::GlobalPosition::defaultFromBodyDiagram()
+{
+  return fromBodyDiagram();
+}
+
+
 Charmapper::GlobalPosition::GlobalPosition()
-: diagram(fromComponentsDiagram()),
+: diagram(defaultComponentsDiagram()),
   global_position_ptr(std::make_unique<ComponentsData>())
 {
 }
 
 
+const Diagram&
+  Charmapper::GlobalPosition::FromBodyData::defaultLocalPositionDiagram()
+{
+  return localPositionDiagram();
+}
+
+
 Charmapper::GlobalPosition::FromBodyData::FromBodyData()
-: local_position(localPositionDiagram())
+: local_position(defaultLocalPositionDiagram())
 {
 }
 
 
 void Charmapper::GlobalPosition::switchToComponents()
 {
-  diagram = fromComponentsDiagram();
+  diagram = defaultComponentsDiagram();
   global_position_ptr = std::make_unique<ComponentsData>();
 }
 
 
 void Charmapper::GlobalPosition::switchToFromBody()
 {
-  diagram = fromBodyDiagram();
+  diagram = defaultFromBodyDiagram();
   global_position_ptr = std::make_unique<FromBodyData>();
 }
 
 
+const Diagram &Charmapper::MotionPass::PosExpr::defaultLocalPositionDiagram()
+{
+  return localPositionDiagram();
+}
+
+
+const Diagram&
+  Charmapper::MotionPass::PosExpr::defaultDiagram()
+{
+  return posExprDiagram();
+}
+
+
 Charmapper::MotionPass::PosExpr::PosExpr()
-: diagram(posExprDiagram()),
-  local_position(localPositionDiagram())
+: diagram(defaultDiagram()),
+  local_position(defaultLocalPositionDiagram())
 {
 }
 

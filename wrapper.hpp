@@ -64,7 +64,7 @@ struct Wrapper {
 
   virtual void setState(const WrapperState &) const = 0;
 
-  virtual Diagram &defaultDiagram() const { assert(false); }
+  virtual const Diagram &defaultDiagram() const { assert(false); }
 };
 
 

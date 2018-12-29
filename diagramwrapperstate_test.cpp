@@ -1,18 +1,50 @@
+#include "diagramwrapperstate.hpp"
+
+#include <iostream>
+#include <sstream>
 #include "diagram.hpp"
 #include "wrapperstate.hpp"
 
+using std::cerr;
+using std::string;
+using std::istringstream;
+using std::ostringstream;
 
-#define ADD_TEST 0
 
-
-static WrapperState makeDiagramWrapperState(const Diagram &/*diagram*/)
+static WrapperState stateFromText(const char *test_text)
 {
-  WrapperState result("diagram");
-  return result;
+  istringstream stream(test_text);
+  ScanStateResult scan_result = scanStateFrom(stream);
+  return scan_result.state();
 }
 
 
-static void testEmptyDiagram()
+static const char *test_text =
+  "diagram {\n"
+  "  node {\n"
+  "    id: 1\n"
+  "    position {\n"
+  "      x: 0\n"
+  "      y: 0\n"
+  "    }\n"
+  "    line: \"return $\"\n"
+  "    connection {\n"
+  "      input_index: 0\n"
+  "      source_node_id: 2\n"
+  "      source_output_index: 0\n"
+  "    }\n"
+  "  }\n"
+  "  node {\n"
+  "    id: 2\n"
+  "    position {\n"
+  "      x: 0\n"
+  "      y: 0\n"
+  "    }\n"
+  "    line: \"5\"\n"
+  "  }\n"
+  "}\n";
+
+static void testMakingStateWithEmptyDiagram()
 {
   Diagram d;
   WrapperState s = makeDiagramWrapperState(d);
@@ -21,26 +53,34 @@ static void testEmptyDiagram()
 }
 
 
-#if ADD_TEST
-static void testNormalDiagram()
+static void testMakingStateWithNormalDiagram()
 {
+  const char *expected_text = test_text;
+
   Diagram d;
   NodeIndex n1 = d.addNode("return $");
   NodeIndex n2 = d.addNode("5");
   d.connectNodes(n2,0,n1,0);
   WrapperState s = makeDiagramWrapperState(d);
 
-  // Check to see that the wrapper state has two nodes with the appropriate
-  // text and the nodes are connected.
-  assert(false);
+  ostringstream stream;
+  printStateOn(stream,s);
+  string text = stream.str();
+  assert(text==expected_text);
 }
-#endif
+
+
+static void testMakingDiagram()
+{
+  WrapperState state = stateFromText(test_text);
+  Diagram diagram = makeDiagramFromWrapperState(state);
+  assert(makeDiagramWrapperState(diagram)==state);
+}
 
 
 int main()
 {
-  testEmptyDiagram();
-#if ADD_TEST
-  testNormalDiagram();
-#endif
+  testMakingStateWithEmptyDiagram();
+  testMakingStateWithNormalDiagram();
+  testMakingDiagram();
 }

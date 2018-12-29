@@ -1,6 +1,6 @@
 #include "diagram.hpp"
 
-extern Diagram posExprDiagram();
-extern Diagram fromComponentsDiagram();
-extern Diagram fromBodyDiagram();
-extern Diagram localPositionDiagram();
+extern const Diagram &posExprDiagram();
+extern const Diagram &fromComponentsDiagram();
+extern const Diagram &fromBodyDiagram();
+extern const Diagram &localPositionDiagram();

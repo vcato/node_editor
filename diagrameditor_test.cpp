@@ -387,10 +387,11 @@ class ImportTester {
         "diagram {\n"
         "  node {\n"
         "    id: 1\n"
-        "    position: [275,198]\n"
-        "    text {\n"
-        "      \"5\"\n"
+        "    position {\n"
+        "      x: 275\n"
+        "      y: 198\n"
         "    }\n"
+        "    line: \"5\"\n"
         "  }\n"
         "}\n";
 

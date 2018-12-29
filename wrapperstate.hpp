@@ -7,6 +7,8 @@
 #include "basicvariant.hpp"
 #include "createobject.hpp"
 #include "wrappervalue.hpp"
+#include "optional.hpp"
+#include "streamparser.hpp"
 
 
 struct WrapperState {
@@ -26,6 +28,11 @@ struct WrapperState {
     if (value!=arg.value) return false;
     if (children!=arg.children) return false;
     return true;
+  }
+
+  bool operator!=(const WrapperState &arg) const
+  {
+    return !operator==(arg);
   }
 };
 
@@ -123,7 +130,7 @@ extern void
   printStateOn(std::ostream &stream,const WrapperState &state,int indent = 0);
 
 extern ScanStateResult scanStateFrom(std::istream &stream);
-
-
+extern Optional<WrapperState> scanState(StreamParser &parser);
+extern void scanChildrenSection(WrapperState &state,StreamParser &parser);
 
 #endif /* WRAPPERSTATE_HPP */

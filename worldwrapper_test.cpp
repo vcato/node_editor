@@ -12,7 +12,6 @@
 #include "scenewrapper.hpp"
 #include "stringutil.hpp"
 
-
 using std::string;
 using std::istringstream;
 using std::ostringstream;
@@ -832,6 +831,16 @@ static void testSettingStateWithPosExpr()
     "          local_position {\n"
     "            x: 25\n"
     "            y: 0\n"
+    "          }\n"
+    "        }\n"
+    "        diagram {\n"
+    "          node {\n"
+    "            id: 1\n"
+    "            position {\n"
+    "              x: 485\n"
+    "              y: 153\n"
+    "            }\n"
+    "            line: \"5\"\n"
     "          }\n"
     "        }\n"
     "      }\n"

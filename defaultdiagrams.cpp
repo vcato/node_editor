@@ -9,16 +9,17 @@
 using std::istringstream;
 
 
-Diagram posExprDiagram()
+const Diagram& posExprDiagram()
 {
   const char *text = R"text(
 diagram {
   node {
     id: 4
-    position: [485,153]
-    text {
-      "$-$"
+    position {
+      x: 485
+      y: 153
     }
+    line: "$-$"
     connection {
       input_index: 0
       source_node_id: 5
@@ -32,17 +33,19 @@ diagram {
   }
   node {
     id: 5
-    position: [253,176]
-    text {
-      "global_position"
+    position {
+      x: 253
+      y: 176
     }
+    line: "global_position"
   }
   node {
     id: 7
-    position: [274,108]
-    text {
-      "$.globalVec($)"
+    position {
+      x: 274
+      y: 108
     }
+    line: "$.globalVec($)"
     connection {
       input_index: 0
       source_node_id: 8
@@ -56,24 +59,27 @@ diagram {
   }
   node {
     id: 8
-    position: [33,222]
-    text {
-      "target_body"
+    position {
+      x: 33
+      y: 222
     }
+    line: "target_body"
   }
   node {
     id: 14
-    position: [39,71]
-    text {
-      "local_position"
+    position {
+      x: 39
+      y: 71
     }
+    line: "local_position"
   }
   node {
     id: 15
-    position: [579,222]
-    text {
-      "PosExpr(body=$,pos=$)"
+    position {
+      x: 579
+      y: 222
     }
+    line: "PosExpr(body=$,pos=$)"
     connection {
       input_index: 0
       source_node_id: 8
@@ -87,10 +93,11 @@ diagram {
   }
   node {
     id: 16
-    position: [929,203]
-    text {
-      "return $"
+    position {
+      x: 929
+      y: 203
     }
+    line: "return $"
     connection {
       input_index: 0
       source_node_id: 15
@@ -100,28 +107,31 @@ diagram {
 }
 )text";
 
-  return makeDiagram(text);
+  static Diagram result = makeDiagram(text);
+  return result;
 }
 
 
-Diagram fromComponentsDiagram()
+const Diagram& fromComponentsDiagram()
 {
   const char *text =
     "diagram {\n"
     "  node {\n"
     "    id: 1\n"
-    "    position: [71,280]\n"
-    "    text {\n"
-    "      \"x\"\n"
-    "      \"y\"\n"
+    "    position {\n"
+    "      x: 71\n"
+    "      y: 280\n"
     "    }\n"
+    "    line: \"x\"\n"
+    "    line: \"y\"\n"
     "  }\n"
     "  node {\n"
     "    id: 2\n"
-    "    position: [183,280]\n"
-    "    text {\n"
-    "      \"[$,$]\"\n"
+    "    position {\n"
+    "      x: 183\n"
+    "      y: 280\n"
     "    }\n"
+    "    line: \"[$,$]\"\n"
     "    connection {\n"
     "      input_index: 0\n"
     "      source_node_id: 1\n"
@@ -135,10 +145,11 @@ Diagram fromComponentsDiagram()
     "  }\n"
     "  node {\n"
     "    id: 4\n"
-    "    position: [299,264]\n"
-    "    text {\n"
-    "      \"return $\"\n"
+    "    position {\n"
+    "      x: 299\n"
+    "      y: 264\n"
     "    }\n"
+    "    line: \"return $\"\n"
     "    connection {\n"
     "      input_index: 0\n"
     "      source_node_id: 2\n"
@@ -147,20 +158,22 @@ Diagram fromComponentsDiagram()
     "  }\n"
     "}\n";
 
-  return makeDiagram(text);
+  static Diagram result = makeDiagram(text);
+  return result;
 }
 
 
-Diagram fromBodyDiagram()
+const Diagram& fromBodyDiagram()
 {
   const char *text = R"text(
 diagram {
   node {
     id: 1
-    position: [263,328]
-    text {
-      "$.pos($)"
+    position {
+      x: 263
+      y: 328
     }
+    line: "$.pos($)"
     connection {
       input_index: 0
       source_node_id: 5
@@ -174,10 +187,11 @@ diagram {
   }
   node {
     id: 4
-    position: [410,313]
-    text {
-      "return $"
+    position {
+      x: 410
+      y: 313
     }
+    line: "return $"
     connection {
       input_index: 0
       source_node_id: 1
@@ -186,31 +200,34 @@ diagram {
   }
   node {
     id: 5
-    position: [50,328]
-    text {
-      "source_body"
-      "local_position"
+    position {
+      x: 50
+      y: 328
     }
+    line: "source_body"
+    line: "local_position"
   }
 }
 )text";
 
-  return makeDiagram(text);
+  static Diagram result = makeDiagram(text);
+  return result;
 }
 
 
 
 
-Diagram localPositionDiagram()
+const Diagram &localPositionDiagram()
 {
   const char *text =
     "diagram {\n"
     "  node {\n"
     "    id: 1\n"
-    "    position: [100,180]\n"
-    "    text {\n"
-    "      \"[$,$]\"\n"
+    "    position {\n"
+    "      x: 100\n"
+    "      y: 180\n"
     "    }\n"
+    "    line: \"[$,$]\"\n"
     "    connection {\n"
     "      input_index: 0\n"
     "      source_node_id: 2\n"
@@ -224,24 +241,27 @@ Diagram localPositionDiagram()
     "  }\n"
     "  node {\n"
     "    id: 2\n"
-    "    position: [20,187]\n"
-    "    text {\n"
-    "      \"x\"\n"
+    "    position {\n"
+    "      x: 20\n"
+    "      y: 187\n"
     "    }\n"
+    "    line: \"x\"\n"
     "  }\n"
     "  node {\n"
     "    id: 3\n"
-    "    position: [20,135]\n"
-    "    text {\n"
-    "      \"y\"\n"
+    "    position {\n"
+    "      x: 20\n"
+    "      y: 135\n"
     "    }\n"
+    "    line: \"y\"\n"
     "  }\n"
     "  node {\n"
     "    id: 4\n"
-    "    position: [224,162]\n"
-    "    text {\n"
-    "      \"return $\"\n"
+    "    position {\n"
+    "      x: 224\n"
+    "      y: 162\n"
     "    }\n"
+    "    line: \"return $\"\n"
     "    connection {\n"
     "      input_index: 0\n"
     "      source_node_id: 1\n"
@@ -250,5 +270,6 @@ Diagram localPositionDiagram()
     "  }\n"
     "}\n";
 
-  return makeDiagram(text);
+  static Diagram result = makeDiagram(text);
+  return result;
 }

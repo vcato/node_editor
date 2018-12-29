@@ -309,60 +309,8 @@ is a special feature.
       charmapper wrappers are passed a function which can open a diagram
       editor.
 ---
-If we modify the global position diagram and save the project, then the
-new diagram doesn't show up in the project.
-
-Looks like the diagrams are never saved with the projects currently.
-We don't extract the diagram as part of the state.
-This is a little tricky since we don't want to include a default diagram
-in the state information, since we don't want that saved in a project.
-So it seems like we need to have state extraction be a virtual wrapper
-function, or at least have a virtual function for extracting the diagram state.
-
-We have a Wrapper::setState method, so a Wrapper::state method would seem
-appropriate.
-
-Channels have diagrams, but they seem to be empty.  Are they not being
-used?  What if we return nullptr for a ChannelWrapper diagramPtr?
-
-In the case of PositionWrapper, the diagram is passed as a parameter to
-the constructor.  To determine if the diagram is the default diagram, we
-would have to remember what was passed to the constructor.  It seems wasteful
-having two copies of the diagrams like this.  Maybe a better approach would
-be to pass a default diagram pointer to the constructor.  If we go to
-edit the diagram, then we can make a local copy that can be edited.
-
-This implies we need a way to ask for a const version of the diagram if
-we just want to use it, or a way to ask for a non-const version if we want
-to edit it.
-
-The editing process could be
-* Begin Editing
-  * Makes a local copy
-* End Editing
-  * Checks to see if the local copy matches the default and clears the local
-    copy if it matches.
-
-The only weirdness I see with that approach is if we begin editing a
-diagram and then save the project while the diagram editor is still open.
-We would end up writing the diagram even though it is the default.  However,
-we can work around that easily enough by testing to see if the diagram matches
-the default and returning a null state if so.
-
-Seems like we are going to end up with a lot of duplicated logic if we have
-each class handle the process of editing a diagram.  Instead, we could
-have a struct which contains a default diagram ptr, and a unique_ptr to the
-local diagram.  Instead of asking a wrapper for its diagram, we could ask
-it for its diagram manager and from this we could do things like editing
-and determining whether a diagram was the default.
-
-Actually, a simpler approach is probably just to pass the default diagram
-to the wrapper.
-
-To determine if a diagram is in the default state, we need to have a way to
-compare diagrams.
-* The easiest way is probably to extract the state from the diagram and
-  then compare the states.
-
-Enable #define POSITION_WRAPPER_HAS_DEFAULT_DIAGRAM
-Enable wrapper_test.cpp ADD_TEST
+Not sure what the difference is between a statement and a line.
+---
+Check for ADD_TEST
+---
+Rename Diagram::addNode to createNodeWithText
