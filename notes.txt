@@ -310,5 +310,3 @@ is a special feature.
       editor.
 ---
 Not sure what the difference is between a statement and a line.
----
-Check for ADD_TEST
