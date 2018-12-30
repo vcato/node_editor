@@ -5,7 +5,6 @@
 #include <fstream>
 #include "fakediagrameditor.hpp"
 
-
 using std::string;
 using std::cerr;
 using std::ofstream;
@@ -222,9 +221,7 @@ static void testClickingOnANode()
   FakeDiagramEditor editor(diagram);
   NodeIndex n1 = editor.userAddsANodeWithText("test");
 
-  editor.userClicksAt(
-    editor.viewportCoordsFromDiagramCoords(editor.nodeCenter(n1))
-  );
+  editor.userClicksOnNode(n1);
 
   assert(editor.nodeIsSelected(n1));
   assert(diagram.nNodes()==1);
@@ -238,9 +235,7 @@ static void testShiftSelectingMultipleNodes()
   NodeIndex n1 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,0));
   NodeIndex n2 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,100));
 
-  editor.userClicksAt(
-    editor.viewportCoordsFromDiagramCoords(editor.nodeCenter(n1))
-  );
+  editor.userClicksOnNode(n1);
 
   editor.userClicksWithShiftPressedAt(
     editor.viewportCoordsFromDiagramCoords(editor.nodeCenter(n2))
@@ -249,8 +244,10 @@ static void testShiftSelectingMultipleNodes()
   assert(editor.nSelectedNodes()==2);
   assert(editor.nodeIsSelected(n1));
   assert(editor.nodeIsSelected(n2));
+
   ViewportCoords mouse_down_position =
     editor.viewportCoordsFromDiagramCoords(editor.nodeCenter(n1));
+
   editor.userPressesMouseAt(mouse_down_position);
   assert(editor.nSelectedNodes()==2);
   ViewportCoords mouse_release_position =
@@ -435,8 +432,10 @@ static void testConnectingNodes()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
-  NodeIndex node1 = editor.userAddsANodeWithTextAt("1",DiagramCoords(0,0));
-  NodeIndex node2 = editor.userAddsANodeWithTextAt("return $",DiagramCoords(100,0));
+  NodeIndex node1 =
+    editor.userAddsANodeWithTextAt("1",DiagramCoords(0,0));
+  NodeIndex node2 =
+    editor.userAddsANodeWithTextAt("return $",DiagramCoords(100,0));
   editor.userPressesMouseAt(editor.nodeOutputPosition(node1,0));
 
   int diagram_change_count = 0;
@@ -446,6 +445,74 @@ static void testConnectingNodes()
   );
   assert(diagramHasConnection(diagram,node1,0,node2,0));
   assert(diagram_change_count==1);
+}
+
+
+static ViewportCoords centerOf(const ViewportLine &l)
+{
+  return l.start + (l.end - l.start)/2;
+}
+
+
+static void testClickingOnAFocusedNode()
+{
+  // Have a diagram with a single node.
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex node = editor.userAddsANodeWithTextAt("12",DiagramCoords(0,0));
+
+  // Click on the node to select it.
+  editor.userClicksOnNode(node);
+  assert(editor.nodeIsSelected(node));
+
+  // Click again on the node to focus it.
+  editor.userClicksOnNode(node);
+  assert(editor.aNodeIsFocused());
+
+  // Click again on the node to move the cursor.
+  NodeTextEditor::CursorPosition desired_cursor_position{/*line*/0,/*column*/1};
+  ViewportLine cursor_line =
+    editor.cursorLine(editor.focusedNodeIndex(),desired_cursor_position);
+  editor.userClicksAt(centerOf(cursor_line));
+
+  // The cursor position should have changed.
+  assert(editor.cursorPosition() == desired_cursor_position);
+  assert(editor.aNodeIsFocused());
+}
+
+
+static void testClickingOnAFocusedNode2()
+{
+  string node_text = "abcd\ne";
+
+  // Have a diagram with a single node.
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  NodeIndex node = editor.userAddsANodeWithTextAt(node_text,DiagramCoords(0,0));
+
+  // Click on the node to select it.
+  editor.userClicksOnNode(node);
+
+  // Click again on the node to focus it.
+  editor.userClicksOnNode(node);
+
+  // Click again below the d
+  using CursorPosition = NodeTextEditor::CursorPosition;
+  CursorPosition d_cursor_position{/*line*/0,/*column*/3};
+  ViewportLine cursor_line =
+    editor.cursorLine(editor.focusedNodeIndex(),d_cursor_position);
+  assert(cursor_line.start.y < cursor_line.end.y);
+  auto character_height = editor.characterHeight();
+  ViewportCoords p = cursor_line.start - Vector2D(0,character_height/2);
+
+  int old_redraw_count = editor.redraw_count;
+
+  editor.userClicksAt(editor.viewportCoordsFromDiagramCoords(p));
+
+  // The cursor position should have changed.
+  CursorPosition expected_cursor_position(/*line*/1,/*column*/1);
+  assert(editor.cursorPosition() == expected_cursor_position);
+  assert(editor.redraw_count == old_redraw_count+1);
 }
 
 
@@ -472,6 +539,8 @@ int main()
   testTranslatingView2();
   testCancellingExport();
   testConnectingNodes();
+  testClickingOnAFocusedNode();
+  testClickingOnAFocusedNode2();
 
   ImportTester().runWithEmptyDiagram();
   ImportTester().runWithBadDiagram();

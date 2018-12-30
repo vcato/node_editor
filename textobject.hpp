@@ -3,19 +3,11 @@
 
 #include <string>
 #include "point2d.hpp"
+#include "viewportcoords.hpp"
 
 
-#if 0
-using DiagramCoordsTag = void;
-using ViewportCoordsTag = void;
-#else
 struct DiagramCoordsTag;
-struct ViewportCoordsTag;
-#endif
-
-
 using DiagramCoords = TaggedPoint2D<DiagramCoordsTag>;
-using ViewportCoords = TaggedPoint2D<ViewportCoordsTag>;
 
 
 struct DiagramTextObject {

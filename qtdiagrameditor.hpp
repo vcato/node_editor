@@ -5,6 +5,7 @@
 #include <QGLWidget>
 #include "diagrameditor.hpp"
 #include "circle.hpp"
+#include "viewportline.hpp"
 
 
 class QKeyEvent;
@@ -76,17 +77,21 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawBoxedText(const DiagramTextObject &text_object,bool is_selected);
     int textHeight() const;
     int textWidth(const std::string &s) const;
-    void drawCursor(const ViewportTextObject &text_object);
-    void drawCursor(const ViewportTextObject &text_object,int column_index);
     static constexpr float node_input_radius = 5;
 
     Circle connectorCircle(NodeConnectorIndex) const;
     void drawNode(NodeIndex);
-    void paintGL() override;
 
-    void showError(const std::string &message) override;
+    void paintGL() override;
     std::string askForSavePath() override;
     std::string askForOpenPath() override;
+    void showError(const std::string &message) override;
+
+    ViewportLine
+      textObjectCursorLine(
+        const ViewportTextObject &text_object,
+        int column_index
+      ) const override;
 };
 
 #endif /* QTDIAGRAMEDITOR_HPP_ */

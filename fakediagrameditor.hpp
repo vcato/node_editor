@@ -3,6 +3,7 @@
 
 #include "diagrameditor.hpp"
 #include "optional.hpp"
+#include "viewportline.hpp"
 
 
 struct FakeDiagramEditor : DiagramEditor {
@@ -97,10 +98,20 @@ struct FakeDiagramEditor : DiagramEditor {
     text_editor.moveCursor(line,column);
   }
 
+  NodeTextEditor::CursorPosition cursorPosition() const
+  {
+    return text_editor.cursorPosition();
+  }
+
   void userClicksAt(const ViewportCoords &p)
   {
     leftMousePressedAt(p,EventModifiers());
     mouseReleasedAt(p);
+  }
+
+  void userClicksOnNode(NodeIndex n)
+  {
+    userClicksAt(viewportCoordsFromDiagramCoords(nodeCenter(n)));
   }
 
   void userClicksWithShiftPressedAt(const ViewportCoords &p)
@@ -130,6 +141,8 @@ struct FakeDiagramEditor : DiagramEditor {
     );
   }
 
+  NodeIndex focusedNodeIndex() const { return focused_node_index; }
+
   void userPressesEnter()
   {
     enterPressed();
@@ -158,16 +171,15 @@ struct FakeDiagramEditor : DiagramEditor {
   Vector2D viewOffset() const { return view_offset; }
 
   ViewportRect
-    rectAroundText(const ViewportTextObject &text_object) const override
-  {
-    // Just make all text objects fit in a 10x10 square for now.
-    ViewportCoords begin_pos =
-      viewportCoordsFromDiagramCoords(text_object.position);
-    ViewportCoords end_pos = begin_pos;
-    end_pos.x += 10;
-    end_pos.y += 10;
-    return {begin_pos,end_pos};
-  }
+    rectAroundText(const ViewportTextObject &text_object) const override;
+
+  int characterHeight() const { return 10; }
+
+  ViewportLine
+    textObjectCursorLine(
+      const ViewportTextObject &/*text_object*/,
+      int /*column_index*/
+    ) const override;
 
   std::string askForSavePath() override
   {
@@ -204,6 +216,7 @@ struct FakeDiagramEditor : DiagramEditor {
   using DiagramEditor::nSelectedNodes;
   using DiagramEditor::nodeIsSelected;
   using DiagramEditor::viewportCoordsFromDiagramCoords;
+  using DiagramEditor::cursorLine;
 };
 
 

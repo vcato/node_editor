@@ -278,6 +278,3 @@ Probably need to unify WrapperValue and Any.
 ---
 If you add a $ before another one, then the existing connector should move
 down, so that you keep the same connection with the existing $.
----
-When editing a diagram node, you should be able to click to move the
-cursor.

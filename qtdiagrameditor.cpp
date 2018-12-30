@@ -396,14 +396,31 @@ void QtDiagramEditor::drawFilledCircle(const Circle &circle)
 }
 
 
+ViewportLine
+  QtDiagramEditor::textObjectCursorLine(
+    const ViewportTextObject &text_object,
+    int column_index
+  ) const
+{
+  float cursor_height = textHeight();
+  float text_width = textWidth(text_object.text.substr(0,column_index));
+  float descent = fontMetrics().descent();
+  ViewportCoords p = text_object.position + Vector2D{text_width,-descent};
+  ViewportLine cursor_line{ p, p+Vector2D{0,cursor_height} };
+  return cursor_line;
+}
+
+
 ViewportRect
   QtDiagramEditor::rectAroundText(const ViewportTextObject &text_object) const
 {
   std::string text = text_object.text;
+
   if (text == "") {
     // We want to avoid the box collapsing down to nothing.
     text = " ";
   }
+
   auto position = text_object.position;
 
   QFontMetrics fm = fontMetrics();
@@ -419,6 +436,7 @@ ViewportRect
   auto ey = y-tl.y();
   auto begin = ViewportCoords{bx,by};
   auto end =   ViewportCoords{ex,ey};
+
   return {begin,end};
 }
 
@@ -482,25 +500,6 @@ int QtDiagramEditor::textWidth(const std::string &s) const
   return fontMetrics().width(qString(s));
 }
 
-
-void
-  QtDiagramEditor::drawCursor(
-    const ViewportTextObject &text_object,
-    int column_index
-  )
-{
-  float cursor_height = textHeight();
-  float text_width = textWidth(text_object.text.substr(0,column_index));
-  float descent = fontMetrics().descent();
-  Point2D p = text_object.position + Vector2D{text_width,-descent};
-  drawLine(p,p+Vector2D{0,cursor_height});
-}
-
-
-void QtDiagramEditor::drawCursor(const ViewportTextObject &text_object)
-{
-  drawCursor(text_object,text_object.text.length());
-}
 
 
 template <typename T>
@@ -606,11 +605,9 @@ void QtDiagramEditor::drawAll()
   }
 
   if (aNodeIsFocused()) {
-    NodeRenderInfo render_info =
-      nodeRenderInfo(node(focused_node_index));
-    int line_index = text_editor.cursorLineIndex();
-    int column_index = text_editor.cursorColumnIndex();
-    drawCursor(render_info.text_objects[line_index],column_index);
+    ViewportLine cursor_line =
+      cursorLine(focused_node_index,text_editor.cursorPosition());
+    drawLine(cursor_line.start,cursor_line.end);
   }
 
   if (!selected_node_connector_index.isNull()) {

@@ -1,6 +1,8 @@
 #include "diagrameditor.hpp"
 
 #include <cassert>
+#include <cmath>
+#include <cfloat>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -449,22 +451,36 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 }
 
 
-int DiagramEditor::indexOfNodeContaining(const ViewportCoords &p)
+bool
+  DiagramEditor::nodeContains(
+    NodeIndex node_index,
+    const ViewportCoords &p
+  ) const
+{
+  Node &node = diagram().node(node_index);
+  NodeRenderInfo render_info = nodeRenderInfo(node);
+
+  if (render_info.header_rect.contains(p)) {
+    return true;
+  }
+
+  if (render_info.body_outer_rect.contains(p)) {
+    return true;
+  }
+
+  return false;
+}
+
+
+NodeIndex DiagramEditor::indexOfNodeContaining(const ViewportCoords &p) const
 {
   for (NodeIndex i : diagram().existingNodeIndices()) {
-    Node &node = diagram().node(i);
-    NodeRenderInfo render_info = nodeRenderInfo(node);
-
-    if (render_info.header_rect.contains(p)) {
-      return i;
-    }
-
-    if (render_info.body_outer_rect.contains(p)) {
+    if (nodeContains(i,p)) {
       return i;
     }
   }
 
-  return -1;
+  return noNodeIndex();
 }
 
 
@@ -562,6 +578,47 @@ static void order(float &a,float &b)
   if (a>b) {
     std::swap(a,b);
   }
+}
+
+
+NodeTextEditor::CursorPosition
+  DiagramEditor::closestCursorPositionTo(
+    NodeIndex node_index,
+    const ViewportCoords &p
+  ) const
+{
+  NodeRenderInfo render_info = nodeRenderInfo(node(node_index));
+  int line_index = 0;
+  int n_lines = render_info.text_objects.size();
+
+  assert(n_lines!=0);
+
+  for (;line_index != n_lines; ++line_index) {
+    const ViewportTextObject &line_text_object =
+      render_info.text_objects[line_index];
+
+    ViewportRect line_rect = rectAroundText(line_text_object);
+
+    if (p.y >= line_rect.start.y && p.y <= line_rect.end.y) {
+      int best_column_index = 0;
+      int length = line_text_object.text.length();
+      float min_distance = FLT_MAX;
+
+      for (int column_index=0; column_index!=length+1; ++column_index) {
+        ViewportLine l = textObjectCursorLine(line_text_object,column_index);
+        float d = fabsf(l.start.x - p.x);
+
+        if (d < min_distance) {
+          min_distance = d;
+          best_column_index = column_index;
+        }
+      }
+
+      return {line_index,best_column_index};
+    }
+  }
+
+  assert(false);
 }
 
 
@@ -699,6 +756,16 @@ void
 
   node_was_selected = false;
 
+  if (aNodeIsFocused()) {
+    if (nodeContains(focused_node_index,p)) {
+      NodeTextEditor::CursorPosition new_position =
+        closestCursorPositionTo(focused_node_index,p);
+      text_editor.moveCursorTo(new_position);
+      redraw();
+      return;
+    }
+  }
+
   clearFocus();
 
   {
@@ -714,14 +781,21 @@ void
         if (!node_was_selected) {
           setSelectedNodeIndex(i);
         }
+        else {
+          // Focusing the selected node happens on a mouse release instead
+          // of on a mouse press since we have to handle the case where the
+          // user drags the selected node.
+        }
       }
 
       focused_node_index = -1;
       original_node_positions.clear();
+
       for (auto node_index : selected_node_indices) {
         original_node_positions[node_index] =
           node(node_index).header_text_object.position;
       }
+
       redraw();
       return;
     }
@@ -922,4 +996,29 @@ DiagramCoords
   ) const
 {
   return DiagramCoords(viewport_coords - view_offset);
+}
+
+
+ViewportLine
+  DiagramEditor::cursorLine(
+    const Node &node,
+    const NodeTextEditor::CursorPosition cursor_position
+  )
+{
+  NodeRenderInfo render_info = nodeRenderInfo(node);
+  int line_index = cursor_position.line_index;
+  int column_index = cursor_position.column_index;
+  ViewportLine cursor_line =
+    textObjectCursorLine(render_info.text_objects[line_index],column_index);
+  return cursor_line;
+}
+
+
+ViewportLine
+  DiagramEditor::cursorLine(
+    NodeIndex focused_node_index,
+    NodeTextEditor::CursorPosition cursor_position
+  )
+{
+  return cursorLine(node(focused_node_index),cursor_position);
 }

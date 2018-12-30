@@ -15,6 +15,7 @@
 #include "circle.hpp"
 #include "rect.hpp"
 #include "optional.hpp"
+#include "viewportline.hpp"
 
 
 using DiagramRect = TaggedRect<DiagramCoordsTag>;
@@ -167,6 +168,18 @@ class DiagramEditor {
         float vertical_alignment
       ) const;
 
+    ViewportLine
+      cursorLine(
+        const Node &node,
+        const NodeTextEditor::CursorPosition
+      );
+
+    ViewportLine
+      cursorLine(
+        NodeIndex focused_node_index,
+        const NodeTextEditor::CursorPosition
+      );
+
     NodeTextEditor text_editor;
     NodeConnectorIndex selected_node_connector_index =
       NodeConnectorIndex::null();
@@ -202,7 +215,12 @@ class DiagramEditor {
     ViewportRect
       nodeBodyRect(const Node &,const ViewportRect &header_rect) const;
     ViewportRect nodeHeaderRect(const DiagramTextObject &text_object) const;
-    int indexOfNodeContaining(const ViewportCoords &p);
+    bool
+      nodeContains(
+        NodeIndex node_index,
+        const ViewportCoords &p
+      ) const;
+    NodeIndex indexOfNodeContaining(const ViewportCoords &p) const;
     void clearFocus();
     void clearSelection();
     Node& focusedNode(Diagram &diagram);
@@ -210,12 +228,23 @@ class DiagramEditor {
     void notifyDiagramChanged();
     void selectNodesInRect(const ViewportRect &);
     bool nodeIsInRect(NodeIndex node_index,const ViewportRect &rect) const;
+    virtual ViewportLine
+      textObjectCursorLine(
+        const ViewportTextObject &text_object,
+        int column_index
+      ) const = 0;
 
     ViewportCoords
       alignmentPoint(
         const ViewportRect &rect,
         float horizontal_alignment,
         float vertical_alignment
+      ) const;
+
+    NodeTextEditor::CursorPosition
+      closestCursorPositionTo(
+        NodeIndex node_index,
+        const ViewportCoords &p
       ) const;
 
     std::vector<NodeIndex> selected_node_indices;

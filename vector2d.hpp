@@ -34,6 +34,13 @@ inline Vector2D operator+(const Vector2D &a,const Vector2D &b)
   return Vector2D(a.x+b.x, a.y+b.y);
 }
 
+
+inline Vector2D operator/(const Vector2D &a,float b)
+{
+  return Vector2D(a.x/b, a.y/b);
+}
+
+
 extern std::ostream& operator<<(std::ostream &,const Vector2D &v);
 
 
