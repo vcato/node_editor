@@ -82,23 +82,32 @@ static void skipGroup(Parser &parser)
 vector<int> statementLineCounts(const string &text)
 {
   vector<int> result;
-  if (text.empty()) return result;
+
+  if (text.empty()) {
+    return result;
+  }
 
   Parser parser(text.c_str());
+
   while (!parser.atEnd()) {
     int first_line_index = parser.lineIndex();
+
     for (;;) {
       if (parser.atEnd()) {
         break;
       }
+
       if (parser.nextChar()=='\n') {
         parser.skipChar();
         break;
       }
+
       skipGroup(parser);
     }
+
     int last_line_index = parser.lineIndex();
     result.push_back(last_line_index-first_line_index);
   }
+
   return result;
 }

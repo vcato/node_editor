@@ -1,14 +1,6 @@
 #include "nodetexteditor.hpp"
 
 
-void NodeTextEditor::joinLines(Node &node)
-{
-  const int cursor_line_index = cursor_position.line_index;
-  node.lines[cursor_line_index].text += node.lines[cursor_line_index+1].text;
-  node.removeLine(cursor_line_index+1);
-}
-
-
 void NodeTextEditor::deletePressed()
 {
   Node &node = this->node();
@@ -32,12 +24,11 @@ void NodeTextEditor::deletePressed()
       return;
     }
 
-    joinLines(node);
-    node.updateInputsAndOutputs();
+    node.joinLines(cursor_position);
     return;
   }
 
-  focused_text.erase(focused_text.begin()+(cursor_column_index));
+  node.deleteCharacter(cursor_position);
 }
 
 
@@ -63,13 +54,12 @@ void NodeTextEditor::backspace(Node &node)
 
     --cursor_line_index;
     cursor_column_index = node.lines[cursor_line_index].text.length();
-    joinLines(node);
-    node.updateInputsAndOutputs();
+    node.joinLines(cursor_position);
     return;
   }
 
   --cursor_column_index;
-  focused_text.erase(focused_text.begin() + cursor_column_index);
+  node.deleteCharacter(cursor_position);
 }
 
 
@@ -135,15 +125,17 @@ void NodeTextEditor::down(Node &focused_node)
 void NodeTextEditor::textTyped(Node &node,const std::string &new_text)
 {
   int &cursor_column_index = cursor_position.column_index;
-
   std::string &text = focusedText(node);
   int last_column = text.length();
+
   if (cursor_column_index>last_column) {
     cursor_column_index = last_column;
   }
-  text.insert(cursor_column_index,new_text);
-  cursor_column_index += new_text.length();
-  node.addInputsAndOutputs();
+
+  for (const char c : new_text) {
+    node.insertCharacter(cursor_position,c);
+    cursor_column_index += 1;
+  }
 }
 
 
@@ -152,26 +144,15 @@ void NodeTextEditor::enter(Node &node,Callbacks *callbacks_ptr)
   int &cursor_column_index = cursor_position.column_index;
   int &cursor_line_index = cursor_position.line_index;
 
-  {
-    std::string &text = focusedText(node);
-    node.lines.insert(
-      node.lines.begin() + cursor_line_index + 1,
-      Node::Line(text.substr(cursor_column_index))
-    );
-  }
-  {
-    std::string &text = node.lines[cursor_line_index].text;
-    node.lines[cursor_line_index].text.erase(
-      text.begin() + cursor_column_index,
-      text.end()
-    );
-  }
-  node.updateInputsAndOutputs();
-  cursor_column_index = 0;
+  node.breakLine(cursor_position);
+
   if (callbacks_ptr) {
     callbacks_ptr->lineUnfocused(cursor_line_index);
   }
+
   ++cursor_line_index;
+  cursor_column_index = 0;
+
   if (callbacks_ptr) {
     callbacks_ptr->lineFocused(cursor_line_index);
   }
@@ -192,11 +173,20 @@ void NodeTextEditor::beginEditing(Node &node)
   int &cursor_line_index = cursor_position.line_index;
 
   cursor_line_index = 0;
+
   if (node.lines.empty()) {
     cursor_column_index = 0;
   }
   else {
     cursor_column_index = node.lines[0].text.length();
   }
+
   node_ptr = &node;
+}
+
+
+void NodeTextEditor::endEditing()
+{
+  node().updateInputsAndOutputs();
+  node_ptr = 0;
 }

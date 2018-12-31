@@ -4,7 +4,6 @@
 #include "statementtext.hpp"
 #include "linetext.hpp"
 
-
 using std::vector;
 using std::string;
 using std::cerr;
@@ -83,7 +82,7 @@ string Node::joinLines(int start,int n_lines,char separator) const
 }
 
 
-void Node::addInputsAndOutputs()
+void Node::addInputs()
 {
   for (auto &line : lines) {
     int new_n_inputs = lineTextInputCount(line.text);
@@ -93,6 +92,12 @@ void Node::addInputsAndOutputs()
     }
   }
 
+  updateNInputs();
+}
+
+
+void Node::addOutputs()
+{
   size_t n_statements = statements.size();
   vector<bool> statement_output_flags = determineStatementOutputFlags();
 
@@ -104,8 +109,14 @@ void Node::addInputsAndOutputs()
 
   assert(!statements.empty());
 
-  updateNInputs();
   updateNOutputs();
+}
+
+
+void Node::addInputsAndOutputs()
+{
+  addInputs();
+  addOutputs();
 }
 
 
@@ -222,4 +233,117 @@ bool Node::isEmpty() const
 {
   if (lines.size()==1 && lines[0].text=="") return true;
   return false;
+}
+
+
+void Node::breakLine(const TextPosition &position)
+{
+  Node &node = *this;
+  const int line_index = position.line_index;
+  const int column_index = position.column_index;
+
+  {
+    std::string &text = lines[line_index].text;
+
+    node.lines.insert(
+      node.lines.begin() + line_index + 1,
+      Node::Line(text.substr(column_index))
+    );
+  }
+
+  {
+    std::string &text = node.lines[line_index].text;
+    node.lines[line_index].text.erase(
+      text.begin() + column_index,
+      text.end()
+    );
+  }
+
+  node.updateInputsAndOutputs();
+}
+
+
+void Node::joinLines(const TextPosition &position)
+{
+  Node &node = *this;
+  const int line_index = position.line_index;
+  node.lines[line_index].text += node.lines[line_index+1].text;
+  node.removeLine(line_index+1);
+  node.updateInputsAndOutputs();
+}
+
+
+int Node::inputIndexAt(const TextPosition &position) const
+{
+  int input_index = 0;
+
+  for (int i=0; i!=position.line_index; ++i) {
+    input_index += lines[i].n_inputs;
+  }
+
+  for (int j=0; j!=position.column_index; ++j) {
+    if (lines[position.line_index].text[j]=='$') {
+      ++input_index;
+    }
+  }
+
+  return input_index;
+}
+
+
+void Node::deleteCharacter(const TextPosition &position)
+{
+  std::string &text = lines[position.line_index].text;
+  const int column_index = position.column_index;
+
+  if (text[column_index] == '$') {
+    int input_index = inputIndexAt(position);
+
+    if (inputs[input_index].source_node_index != nullNodeIndex()) {
+      Input old_input = inputs[input_index];
+      inputs.erase(inputs.begin() + input_index);
+      inputs.push_back(old_input);
+    }
+    else {
+      inputs.erase(inputs.begin() + input_index);
+    }
+
+    assert(lines[position.line_index].n_inputs>0);
+    --lines[position.line_index].n_inputs;
+  }
+
+  text.erase(text.begin() + column_index);
+}
+
+
+void
+  Node::insertCharacter(
+    const TextPosition &position,
+    char c
+  )
+{
+  const int column_index = position.column_index;
+  std::string &text = lines[position.line_index].text;
+
+  if (c=='$') {
+    int input_index = inputIndexAt(position);
+
+    // Find the first unused input and move it to the new position.
+    int n_used_inputs = countInputs(*this);
+    int n_inputs = inputs.size();
+
+    if (n_inputs > n_used_inputs) {
+      Input new_input = inputs[n_used_inputs];
+      inputs.erase(inputs.begin()  + n_used_inputs);
+      inputs.insert(inputs.begin() + input_index,new_input);
+    }
+    else {
+      inputs.insert(inputs.begin() + input_index,Input());
+    }
+
+    ++lines[position.line_index].n_inputs;
+  }
+
+  text.insert(text.begin() + column_index,c);
+  addOutputs();
 }

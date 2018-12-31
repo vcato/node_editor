@@ -1,7 +1,8 @@
-#ifndef NODE2_HPP_
-#define NODE2_HPP_
+#ifndef DIAGRAMNODE_HPP_
+#define DIAGRAMNODE_HPP_
 
 #include <vector>
+#include <iostream>
 #include "textobject.hpp"
 #include "nodeindex.hpp"
 
@@ -12,12 +13,20 @@ class DiagramNode {
     struct Output;
     struct Line;
     struct Statement;
+    struct TextPosition;
     using Outputs = std::vector<Output>;
 
     std::vector<Input> inputs;
     Outputs outputs;
+
     std::vector<Line> lines;
     std::vector<Statement> statements;
+      // A statement can cross multiple lines.  i.e
+      //   return [
+      //     10,
+      //     20
+      //   ]
+
     DiagramTextObject header_text_object;
 
     void setText(const std::string &text);
@@ -34,6 +43,11 @@ class DiagramNode {
     void addInputsAndOutputs();
     bool isEmpty() const;
     std::vector<std::string> strings() const;
+
+    void joinLines(const TextPosition &);
+    void breakLine(const TextPosition &);
+    void deleteCharacter(const TextPosition &);
+    void insertCharacter(const TextPosition &,char c);
 
     struct Input {
       int source_node_index = nullNodeIndex();
@@ -63,13 +77,44 @@ class DiagramNode {
       bool has_output = false;
     };
 
+    struct TextPosition {
+      int line_index;
+      int column_index;
+
+      TextPosition(int line_index_arg,int column_index_arg)
+      : line_index(line_index_arg),
+        column_index(column_index_arg)
+      {
+      }
+
+      bool operator==(const TextPosition &arg) const
+      {
+        return line_index==arg.line_index && column_index==arg.column_index;
+      }
+
+      friend std::ostream &
+        operator<<(std::ostream &stream,const TextPosition &arg)
+      {
+        auto l = arg.line_index;
+        auto c = arg.column_index;
+        stream << "TextPosition(" << l << "," << c << ")";
+        return stream;
+      }
+    };
+
   private:
     void setNInputs(size_t arg);
     void setNOutputs(size_t arg);
     void updateNInputs();
     void updateNOutputs();
+    int inputIndexAt(const TextPosition &position) const;
+    void addInputs();
+    void addOutputs();
+
     static size_t countInputs(const DiagramNode &);
+      // Should we rename this to countUsedInputs()?
+
     static size_t countOutputs(const DiagramNode &);
 };
 
-#endif /* NODE2_HPP_ */
+#endif /* DIAGRAMNODE_HPP_ */
