@@ -302,6 +302,16 @@ static void testCallingUnknownFunction()
 }
 
 
+static void testCallingFunctionWithMissingCloseParen()
+{
+  string expression = "f(";
+
+  Tester tester;
+  tester.environment["f"] = Function();
+  evaluateStringWithTester(expression,tester);
+}
+
+
 static void testCallingMemberFunctionWithNoArguments()
 {
   string expression = "obj.f()";
@@ -478,6 +488,7 @@ int main()
   testPosExprWithUnknownParameter();
   testPoint2DMembers();
   testCallingUnknownFunction();
+  testCallingFunctionWithMissingCloseParen();
   testCallingMemberFunctionWithNoArguments();
   testCallingMemberFunctionWithArgument();
   testBodyPositionWithLocal();

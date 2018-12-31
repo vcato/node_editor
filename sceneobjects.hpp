@@ -33,18 +33,7 @@ struct SceneObjectData : Object::Data {
     return "Scene";
   }
 
-  Any member(const std::string &member_name) const override
-  {
-    auto n_bodies = scene.nBodies();
-    for (auto i=n_bodies*0; i!=n_bodies; ++i) {
-      Scene::Body &body = scene.body(i);
-      if (body.name==member_name) {
-        return makeBodyObject(BodyLink(&scene,&body));
-      }
-    }
-
-    assert(false);
-  }
+  Any member(const std::string &member_name) const override;
 
   std::vector<std::string> memberNames() const override
   {

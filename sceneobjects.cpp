@@ -10,6 +10,23 @@ using std::vector;
 using std::make_unique;
 
 
+Any SceneObjectData::member(const std::string &member_name) const
+{
+  auto n_bodies = scene.nBodies();
+
+  for (auto i=n_bodies*0; i!=n_bodies; ++i) {
+    Scene::Body &body = scene.body(i);
+
+    // This is where we check to see if we have a body in the scene.
+    if (body.name==member_name) {
+      return makeBodyObject(BodyLink(&scene,&body));
+    }
+  }
+
+  assert(false);
+}
+
+
 std::vector<std::string> BodyObjectData::memberNames() const
 {
   return {"globalVec","pos"};

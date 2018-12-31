@@ -389,6 +389,7 @@ Optional<Any>
 
     if (first_term.isFunction()) {
       parser.skipChar();
+
       if (parser.peekChar()==')') {
         vector<Any> arguments;
         Optional<Any> maybe_result = first_term.asFunction()(arguments);
@@ -406,7 +407,7 @@ Optional<Any>
         Optional<Any> maybe_first_argument = evaluateExpression();
 
         if (!maybe_first_argument) {
-          assert(false);
+          return {};
         }
 
         if (parser.peekChar()!=')') {
