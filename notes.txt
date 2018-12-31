@@ -321,12 +321,4 @@ down, so that you keep the same connection with the existing $.
           void insertCharacter(CursorPosition,char c);
           void deleteCharacter(CursorPosition);
         }
-      * The NodeTextEditor does currently know about Nodes.
----
-Should implement the delete key in the NodeTextEditor.
-The backspace key can then be
-
-  if (!cursorAtBeginning()) {
-    leftArrow();
-    deleteKey();
-  }
+      * The NodeTextEditor already knows about Nodes.
