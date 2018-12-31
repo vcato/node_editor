@@ -153,6 +153,11 @@ struct FakeDiagramEditor : DiagramEditor {
     backspacePressed();
   }
 
+  void userPressesDelete()
+  {
+    deletePressed();
+  }
+
   void userPressesEscape()
   {
     escapePressed();

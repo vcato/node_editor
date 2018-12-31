@@ -93,6 +93,7 @@ class NodeTextEditor {
     void left() { left(node()); }
     void right() { right(node()); }
     void enter(Callbacks &callbacks) { enter(node(),&callbacks); }
+    void deletePressed();
     void enter() { enter(node(),/*callbacks_ptr*/0); }
     void textTyped(const std::string &new_text) { textTyped(node(),new_text); }
 
@@ -104,6 +105,7 @@ class NodeTextEditor {
     void down(Node &focused_node);
     void textTyped(Node &node,const std::string &new_text);
     void enter(Node &node,Callbacks *callbacks_ptr);
+    void joinLines(Node &node);
 
   private:
     CursorPosition cursor_position{0,0};

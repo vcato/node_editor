@@ -91,6 +91,7 @@ void DiagramEditor::backspacePressed()
     for (NodeIndex i : selected_node_indices) {
       deleteNode(i);
     }
+
     clearSelection();
     notifyDiagramChanged();
     redraw();
@@ -100,6 +101,17 @@ void DiagramEditor::backspacePressed()
   if (aNodeIsFocused()) {
     text_editor.backspace();
     diagram().removeInvalidInputs();
+    notifyDiagramChanged();
+    redraw();
+    return;
+  }
+}
+
+
+void DiagramEditor::deletePressed()
+{
+  if (aNodeIsFocused()) {
+    text_editor.deletePressed();
     notifyDiagramChanged();
     redraw();
     return;

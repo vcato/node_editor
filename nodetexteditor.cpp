@@ -1,14 +1,58 @@
 #include "nodetexteditor.hpp"
 
 
+void NodeTextEditor::joinLines(Node &node)
+{
+  const int cursor_line_index = cursor_position.line_index;
+  node.lines[cursor_line_index].text += node.lines[cursor_line_index+1].text;
+  node.removeLine(cursor_line_index+1);
+}
+
+
+void NodeTextEditor::deletePressed()
+{
+  Node &node = this->node();
+  std::string &focused_text = focusedText(node);
+  int &cursor_column_index = cursor_position.column_index;
+  int &cursor_line_index = cursor_position.line_index;
+  int last_column_index = focused_text.length();
+
+  if (cursor_column_index > last_column_index) {
+    // The cursor_column_index can be beyond the end of the line so that
+    // if you are using the up/down arrows to move across lines, you don't
+    // lose the column you are on.  Once we try to modify a line, we
+    // adjust this virtual cursor position into a real one.
+    cursor_column_index = last_column_index;
+  }
+
+  int n_lines = node.lines.size();
+
+  if (cursor_column_index == last_column_index) {
+    if (cursor_line_index+1 == n_lines) {
+      return;
+    }
+
+    joinLines(node);
+    node.updateInputsAndOutputs();
+    return;
+  }
+
+  focused_text.erase(focused_text.begin()+(cursor_column_index));
+}
+
+
 void NodeTextEditor::backspace(Node &node)
 {
   std::string &focused_text = focusedText(node);
-  int last_column_index = focused_text.length();
   int &cursor_column_index = cursor_position.column_index;
   int &cursor_line_index = cursor_position.line_index;
+  int last_column_index = focused_text.length();
 
-  if (cursor_column_index>last_column_index) {
+  if (cursor_column_index > last_column_index) {
+    // The cursor_column_index can be beyond the end of the line so that
+    // if you are using the up/down arrows to move across lines, you don't
+    // lose the column you are on.  Once we try to modify a line, we
+    // adjust this virtual cursor position into a real one.
     cursor_column_index = last_column_index;
   }
 
@@ -16,18 +60,16 @@ void NodeTextEditor::backspace(Node &node)
     if (cursor_line_index==0) {
       return;
     }
-    cursor_column_index =
-      node.lines[cursor_line_index-1].text.length();
-    node.lines[cursor_line_index-1].text +=
-      node.lines[cursor_line_index].text;
-    node.removeLine(cursor_line_index);
+
     --cursor_line_index;
+    cursor_column_index = node.lines[cursor_line_index].text.length();
+    joinLines(node);
     node.updateInputsAndOutputs();
     return;
   }
 
-  focused_text.erase(focused_text.begin()+(cursor_column_index-1));
   --cursor_column_index;
+  focused_text.erase(focused_text.begin() + cursor_column_index);
 }
 
 

@@ -127,6 +127,21 @@ static void testChangingText4()
 }
 
 
+void testChangingText5()
+{
+  Diagram diagram;
+  FakeDiagramEditor editor(diagram);
+  int diagram_changed_count = 0;
+  editor.diagramChangedCallback() = [&](){ ++diagram_changed_count; };
+  NodeIndex n1 = editor.userAddsANodeWithText("return 10");
+  editor.userFocusesNode(n1);
+  editor.userMovesCursorTo(/*row*/0,/*column*/8);
+  diagram_changed_count = 0;
+  editor.userPressesDelete();
+  assert(diagram_changed_count==1);
+}
+
+
 static void testSettingDiagramPtr()
 {
   {
@@ -525,6 +540,7 @@ int main()
   testChangingText2();
   testChangingText3();
   testChangingText4();
+  testChangingText5();
   testSettingDiagramPtr();
   testSettingDiagramPtrWithAnEmptyFocusedNode();
   testClickingOnBackgroundTwice();

@@ -87,19 +87,28 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     backspacePressed();
     return;
   }
+
+  if (key_event_ptr->key()==Qt::Key_Delete) {
+    deletePressed();
+    return;
+  }
+
   if (key_event_ptr->key()==Qt::Key_Return) {
     enterPressed();
     return;
   }
+
   if (key_event_ptr->key()==Qt::Key_Escape) {
     escapePressed();
     return;
   }
+
   if (key_event_ptr->key()==Qt::Key_Up) {
     text_editor.up();
     update();
     return;
   }
+
   if (key_event_ptr->key()==Qt::Key_Down) {
     if (aNodeIsFocused()) {
       text_editor.down();
@@ -107,6 +116,7 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     }
     return;
   }
+
   if (key_event_ptr->key()==Qt::Key_Left) {
     if (aNodeIsFocused()) {
       text_editor.left();
@@ -114,6 +124,7 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
     }
     return;
   }
+
   if (key_event_ptr->key()==Qt::Key_Right) {
     if (aNodeIsFocused()) {
       text_editor.right();

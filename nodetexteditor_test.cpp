@@ -4,7 +4,6 @@
 #include <sstream>
 #include "linetext.hpp"
 
-
 using std::vector;
 using std::string;
 using std::cerr;
@@ -259,6 +258,37 @@ static void testEnter()
 }
 
 
+static void testDelete()
+{
+  Tester tester;
+  tester.beginEditing("ab");
+  tester.editor.moveCursor(/*line*/0,/*column*/0);
+  tester.editor.deletePressed();
+  assert(tester.node.lines[0].text == "b");
+}
+
+
+static void testDeleteWithCursorPastEndOfLine()
+{
+  Tester tester;
+  tester.beginEditing("ab\nc");
+  tester.editor.moveCursor(/*line*/0,/*column*/3);
+  assert(tester.node.nOutputs()==2);
+  tester.editor.deletePressed();
+  assert(tester.node.lines[0].text=="abc");
+  assert(tester.node.nOutputs()==1);
+}
+
+
+static void testDeleteWithCursorAtEnd()
+{
+  Tester tester;
+  tester.beginEditing("ab");
+  tester.editor.moveCursor(/*line*/0,/*column*/2);
+  tester.editor.deletePressed();
+}
+
+
 int main()
 {
   Tester().testDownWithNoText();
@@ -270,4 +300,7 @@ int main()
   Tester().testDown();
   testTextTyped();
   testEnter();
+  testDelete();
+  testDeleteWithCursorPastEndOfLine();
+  testDeleteWithCursorAtEnd();
 }

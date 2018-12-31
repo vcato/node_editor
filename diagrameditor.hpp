@@ -114,6 +114,7 @@ class DiagramEditor {
     using Node = DiagramNode;
 
     void backspacePressed();
+    void deletePressed();
     void escapePressed();
     void enterPressed();
     void textTyped(const std::string &new_text);
