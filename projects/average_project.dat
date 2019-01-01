@@ -1,0 +1,100 @@
+world {
+  scene1 {
+    background_frame {
+      0: 48
+      1: 0
+      2: 11
+      3: 57
+      4: 0
+      5: 0
+    }
+    body {
+      name: "Body1"
+      position_map {
+        x_variable: 0
+        y_variable: 1
+      }
+    }
+    body {
+      name: "Body2"
+      position_map {
+        x_variable: 2
+        y_variable: 3
+      }
+    }
+    body {
+      name: "Body3"
+      position_map {
+        x_variable: 4
+        y_variable: 5
+      }
+    }
+  }
+  charmapper1 {
+    motion_pass {
+      pos_expr {
+        target_body: scene1:body3
+        local_position {
+          x: 0
+          y: 0
+        }
+        global_position: from_body {
+          source_body: scene1:body1
+          local_position {
+            x: 1
+            y: 0
+          }
+          diagram {
+            node {
+              id: 4
+              position {
+                x: 492
+                y: 382
+              }
+              line: "return $"
+              connection {
+                input_index: 0
+                source_node_id: 9
+                source_output_index: 0
+              }
+            }
+            node {
+              id: 6
+              position {
+                x: 49
+                y: 410
+              }
+              line: "Scene1.Body1.pos()"
+            }
+            node {
+              id: 8
+              position {
+                x: 49
+                y: 355
+              }
+              line: "Scene1.Body2.pos()"
+            }
+            node {
+              id: 9
+              position {
+                x: 354
+                y: 399
+              }
+              line: "($+$)/2"
+              connection {
+                input_index: 0
+                source_node_id: 6
+                source_output_index: 0
+              }
+              connection {
+                input_index: 1
+                source_node_id: 8
+                source_output_index: 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

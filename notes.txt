@@ -274,3 +274,12 @@ Probably need to unify WrapperValue and Any.
 ---
 If you load the averaging project, the third body doesn't come up in
 the proper position initially.
+
+The charmaps are applied four times when loading the project.
+
+As part of setting the state of the charmap, we end up modifying the charmap
+which causes callbacks which cause the charmap to be applied.
+
+We need to handle this in a more sophisticated way.  Maybe we keep a set of
+charmaps that need to be applied but leave it to the top-level setState to
+actually apply them.
