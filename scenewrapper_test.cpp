@@ -14,6 +14,21 @@ using std::cerr;
 using std::vector;
 
 
+static WrapperState stateFromText(const char *text)
+{
+  istringstream stream(text);
+  ScanStateResult result = scanStateFrom(stream);
+  assert(!result.isError());
+  return result.state();
+}
+
+
+static void setWrapperStateFromText(const Wrapper &wrapper,const char *text)
+{
+  wrapper.setState(stateFromText(text));
+}
+
+
 static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
 {
   printStateOn(stream,stateOf(wrapper),indent);
@@ -247,7 +262,7 @@ static void testGettingState()
 }
 
 
-static void testBuildingFrameFromState()
+static void testSettingStateWithNonEmptyBackgroundFrame()
 {
   Scene scene;
   SceneWrapper::SceneObserver observer = ignoringObserver();
@@ -261,12 +276,7 @@ static void testBuildingFrameFromState()
     "  }\n"
     "}\n";
 
-  istringstream stream(text);
-  ScanStateResult result = scanStateFrom(stream);
-  assert(!result.isError());
-  const WrapperState &state = result.state();
-
-  wrapper.setState(state);
+  setWrapperStateFromText(wrapper,text);
 
   assert(scene.backgroundFrame().nVariables()==2);
   assert(scene.backgroundFrame().var_values[0]==1);
@@ -274,13 +284,53 @@ static void testBuildingFrameFromState()
 }
 
 
-static void testBuildingFromState()
+static void testSettingStateWithEmptyBackgroundFrame()
 {
   Scene scene;
   SceneWrapper::SceneObserver observer = unusedObserver();
   SceneWrapper wrapper(scene,&observer,"Scene");
-  WrapperState state("scene");
-  state.children.push_back(WrapperState("background_frame"));
+  const char *text =
+    "scene {\n"
+    "  background_frame {\n"
+    "  }\n"
+    "}\n";
+  WrapperState state = stateFromText(text);
+  wrapper.setState(state);
+
+  assert(stateOf(wrapper)==state);
+}
+
+
+static void testSettingStateWithTwoBodies()
+{
+  const char *text =
+    "scene {\n"
+    "  background_frame {\n"
+    "    0: 48\n"
+    "    1: 0\n"
+    "    2: 11\n"
+    "    3: 57\n"
+    "  }\n"
+    "  body {\n"
+    "    name: \"Body1\"\n"
+    "    position_map {\n"
+    "      x_variable: 0\n"
+    "      y_variable: 1\n"
+    "    }\n"
+    "  }\n"
+    "  body {\n"
+    "    name: \"Body2\"\n"
+    "    position_map {\n"
+    "      x_variable: 2\n"
+    "      y_variable: 3\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  Scene scene;
+  SceneWrapper::SceneObserver observer = ignoringObserver();
+  SceneWrapper wrapper(scene,&observer,"Scene");
+  WrapperState state = stateFromText(text);
 
   wrapper.setState(state);
 
@@ -293,6 +343,7 @@ int main()
   testHierarchy();
   testAddingBodies();
   testGettingState();
-  testBuildingFrameFromState();
-  testBuildingFromState();
+  testSettingStateWithNonEmptyBackgroundFrame();
+  testSettingStateWithEmptyBackgroundFrame();
+  testSettingStateWithTwoBodies();
 }

@@ -548,7 +548,7 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
       return;
     }
 
-    frame.setNVariables(new_state.children.size());
+    frame.setNVariables(n_state_children);
 
     for (int i=0; i!=n_state_children; ++i) {
       withChildWrapper(i,[&](const Wrapper &child_wrapper){

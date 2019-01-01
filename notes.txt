@@ -272,5 +272,5 @@ Need to be able to have multiple frames in a scene.
 ---
 Probably need to unify WrapperValue and Any.
 ---
-If you load a project which has non-zero background frame values for a
-scene, it only sets the first variable.
+If you load the averaging project, the third body doesn't come up in
+the proper position initially.

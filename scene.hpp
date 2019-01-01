@@ -46,10 +46,7 @@ class Scene {
 
       int nVariables() const { return var_values.size(); }
 
-      void setNVariables(int arg)
-      {
-        var_values.resize(arg,defaultVariableValue());
-      }
+      void setNVariables(int arg);
     };
 
     struct FloatMap {
@@ -222,7 +219,8 @@ class Scene {
         }
     };
 
-    int nFrameVariables() const { return n_frame_variables; }
+    int nFrameVariables() const { return background_frame.nVariables(); }
+
     Frame &backgroundFrame() { return background_frame; }
     const Frame &backgroundFrame() const { return background_frame; }
     const Frame &displayFrame() const { return display_frame; }
@@ -231,6 +229,12 @@ class Scene {
 
   private:
     int n_frame_variables = 0;
+      // This tells us what variable indices to use for newPositionMap().
+      // This lets us create a frame with variables beforehand and then
+      // add position maps in a second pass.  I don't think this is
+      // particulary good.  We should probably create maps that use no
+      // variables initially.
+
     Body root_body = Body("",{noVarIndex(),noVarIndex()},/*parent_ptr*/nullptr);
     Frame background_frame;
     Frame display_frame;

@@ -416,7 +416,7 @@ void
 
   int parent_item_child_count = itemChildCount(parent_path);
 
-  if (child_index!=parent_item_child_count) {
+  if (child_index != parent_item_child_count) {
     assert(false); // not implemented
   }
 
