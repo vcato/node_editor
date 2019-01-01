@@ -11,7 +11,9 @@
 int main(int argc,char** argv)
 {
   QApplication app(argc,argv);
+  SystemFiles files;
   QtMainWindow main_window;
+  main_window.setFileAccessorPtr(&files);
   QtWorld world(main_window);
   WorldWrapper world_wrapper(world);
   main_window.setWorldPtr(&world_wrapper);

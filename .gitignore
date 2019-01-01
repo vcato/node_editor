@@ -32,3 +32,4 @@ charmapperobjects_test
 diagramexecutor_test
 diagramwrapperstate_test
 streamparser_test
+fileaccessor_test

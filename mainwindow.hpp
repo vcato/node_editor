@@ -1,9 +1,11 @@
 #include "treeeditor.hpp"
+#include "fileaccessor.hpp"
 
 
 class MainWindow {
   public:
     void setWorldPtr(Wrapper *);
+    void setFileAccessorPtr(FileAccessor *);
 
   protected:
     void _openProjectPressed();
@@ -17,4 +19,6 @@ class MainWindow {
       // optional string to make it more clear that this can fail
       // (i.e. user cancels)
     virtual void _showError(const std::string &message) = 0;
+
+    FileAccessor *_file_accessor_ptr = nullptr;
 };

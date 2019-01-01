@@ -7,6 +7,7 @@
 #include "fakediagrameditor.hpp"
 #include "fakediagrameditorwindows.hpp"
 #include "faketree.hpp"
+#include "itemfrompath.hpp"
 
 using std::vector;
 using std::istringstream;
@@ -21,17 +22,22 @@ struct FakeTreeEditor : TreeEditor {
   {
   }
 
-  virtual void removeChildItems(const TreePath &/*path*/)
+  void removeChildItems(const TreePath &/*path*/) override
   {
+  }
+
+  void
+    setItemExpanded(
+      const TreePath &/*path*/,
+      bool /*new_expanded_state*/
+    ) override
+  {
+    // Our fake tree doesn't have expanded states.
   }
 
   int itemChildCount(const TreePath &parent_item) const override
   {
-    if (parent_item.size()==0) {
-      return tree.children.size();
-    }
-
-    assert(false);
+    return itemFromPath(tree.root,parent_item).children.size();
   }
 
   virtual void replaceTreeItems(const TreePath &/*parent_path*/)
@@ -60,7 +66,7 @@ struct FakeTreeEditor : TreeEditor {
     ) override
   {
     if (parent_path.empty()) {
-      tree.children.emplace_back();
+      tree.root.children.emplace_back();
       return;
     }
 
@@ -299,7 +305,7 @@ static void testSettingWorldState()
   assert(!scan_result.isError());
   const WrapperState &state = scan_result.state();
   editor.setWorldState(state);
-  assert(!editor.tree.children.empty());
+  assert(!editor.tree.root.children.empty());
 }
 
 

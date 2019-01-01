@@ -7,6 +7,7 @@
 
 struct Wrapper;
 
+
 struct TreeEditor {
   public:
     void setWorldPtr(Wrapper *arg) { world_ptr = arg; }
@@ -37,6 +38,8 @@ struct TreeEditor {
 
     virtual void removeTreeItem(const TreePath &path) = 0;
     virtual void removeChildItems(const TreePath &path) = 0;
+    virtual void
+      setItemExpanded(const TreePath &path,bool new_expanded_state) = 0;
 
   private:
     struct CreateChildItemVisitor;
@@ -92,6 +95,8 @@ struct TreeEditor {
     void notifyItemsOfDiagramChange(Diagram &diagram_that_changed);
     void addMainTreeItem(const TreePath &new_item_path);
     void replaceTreeItems(const TreePath &parent_path);
+    void collapseBranch(const TreePath &path);
+    void collapseChildren(const TreePath &path);
 };
 
 #endif /* TREEEDITOR_HPP_ */

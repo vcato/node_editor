@@ -86,6 +86,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
 
     void removeTreeItem(const TreePath &path) override;
     void removeChildItems(const TreePath &path) override;
+    void setItemExpanded(const TreePath &path,bool new_expanded_state) override;
 
     void
       handleComboBoxItemIndexChanged(

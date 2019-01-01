@@ -9,6 +9,8 @@
 
 using std::cerr;
 using std::string;
+using std::unique_ptr;
+using std::istream;
 
 
 void MainWindow::setWorldPtr(Wrapper *world_ptr_arg)
@@ -25,12 +27,16 @@ void MainWindow::_openProjectPressed()
     return;
   }
 
-  std::ifstream stream(path);
+  assert(_file_accessor_ptr);
+  unique_ptr<istream> maybe_stream =
+    _file_accessor_ptr->maybeOpenForRead(path);
 
-  if (!stream) {
+  if (!maybe_stream) {
     _showError("Unable to open "+path);
     return;
   }
+
+  istream &stream = *maybe_stream;
 
   ScanStateResult scan_result = scanStateFrom(stream);
 
@@ -63,4 +69,10 @@ void MainWindow::_saveProjectPressed()
   Wrapper *world_ptr = treeEditor().worldPtr();
   assert(world_ptr);
   printStateOn(stream,stateOf(*world_ptr));
+}
+
+
+void MainWindow::setFileAccessorPtr(FileAccessor *arg)
+{
+  _file_accessor_ptr = arg;
 }

@@ -9,7 +9,6 @@
 #include "fakediagrameditorwindows.hpp"
 #include "optional.hpp"
 
-
 using std::string;
 using std::vector;
 using std::cerr;
@@ -146,9 +145,19 @@ struct FakeTreeEditor : TreeEditor {
     removeChildItem(parent_item,path.back());
   }
 
-  virtual void removeChildItems(const TreePath &/*path*/)
+  void removeChildItems(const TreePath &path) override
   {
-    assert(false);
+    Item &parent_item = itemFromPath(root,path);
+    parent_item.children.clear();
+  }
+
+  void
+    setItemExpanded(
+      const TreePath &path,
+      bool new_expanded_state
+    ) override
+  {
+    itemFromPath(root,path).is_expanded = new_expanded_state;
   }
 
   virtual DiagramEditorWindow& createDiagramEditor()
@@ -313,11 +322,13 @@ namespace {
 struct Tester {
   FakeWorld world;
   WorldWrapper world_wrapper{world};
+  FakeFiles files;
   FakeMainWindow main_window;
 
   Tester()
   {
     main_window.setWorldPtr(&world_wrapper);
+    main_window.setFileAccessorPtr(&files);
   }
 };
 }
@@ -582,6 +593,36 @@ static void testCreatingABodyWithAnAveragePosition()
 }
 
 
+static void testOpeningAProject()
+{
+  const char *test_project_text =
+    "world {\n"
+    "  scene1 {\n"
+    "    background_frame {\n"
+    "      0: 48\n"
+    "      1: 0\n"
+    "    }\n"
+    "    body {\n"
+    "      name: \"Body1\"\n"
+    "      position_map {\n"
+    "        x_variable: 0\n"
+    "        y_variable: 1\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  Tester tester;
+  tester.files.store("test.dat",test_project_text);
+
+  tester.main_window.userPressesOpenProject("test.dat");
+
+  FakeTreeEditor &tree_editor = tester.main_window.tree_editor;
+  assert(!tree_editor.root.children[0].is_expanded);
+  assert(!tree_editor.root.children[0].children[0].is_expanded);
+}
+
+
 int main()
 {
   testAddingABodyToTheScene();
@@ -593,4 +634,5 @@ int main()
   testCancellingSaveProject();
   testCancellingOpenProject();
   testCreatingABodyWithAnAveragePosition();
+  testOpeningAProject();
 }

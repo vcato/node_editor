@@ -10,6 +10,7 @@ all: run_unit_tests build_manual_tests main
 run_unit_tests: \
   optional_test.pass \
   any_test.pass \
+  fileaccessor_test.pass \
   charmapperobjects_test.pass \
   evaluateexpression_test.pass \
   evaluatediagram_test.pass \
@@ -74,6 +75,9 @@ optional_test: optional_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 any_test: any_test.o any.o printindent.o anyio.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+fileaccessor_test: fileaccessor_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapperobjects_test: charmapperobjects_test.o charmapperobjects.o \

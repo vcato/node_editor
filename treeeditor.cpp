@@ -198,12 +198,31 @@ void TreeEditor::replaceTreeItems(const TreePath &parent_path)
 }
 
 
+void TreeEditor::collapseBranch(const TreePath &path)
+{
+  setItemExpanded(path,false);
+
+  collapseChildren(path);
+}
+
+
+void TreeEditor::collapseChildren(const TreePath &path)
+{
+  int n_children = itemChildCount(path);
+
+  for (int i=0; i!=n_children; ++i) {
+    collapseBranch(join(path,i));
+  }
+}
+
+
 void TreeEditor::setWorldState(const WrapperState &new_state)
 {
   Wrapper *world_ptr = worldPtr();
   assert(world_ptr);
   world_ptr->setState(new_state);
   replaceTreeItems(TreePath());
+  collapseChildren(TreePath());
 }
 
 

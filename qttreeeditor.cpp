@@ -394,3 +394,9 @@ void QtTreeEditor::selectItem(const TreePath &path)
 {
   itemFromPath(path).setSelected(true);
 }
+
+
+void QtTreeEditor::setItemExpanded(const TreePath &path,bool new_expanded_state)
+{
+  itemFromPath(path).setExpanded(new_expanded_state);
+}
