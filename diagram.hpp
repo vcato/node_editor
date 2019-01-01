@@ -17,6 +17,7 @@ class Diagram {
 
     Node *findNode(NodeIndex);
 
+    NodeIndex createNode();
     NodeIndex createNodeWithText(const std::string &text);
 
     Node &createNode(NodeIndex);
@@ -45,6 +46,13 @@ class Diagram {
     void removeInvalidInputs();
 
     std::vector<NodeIndex> existingNodeIndices() const;
+
+    NodeIndex createDuplicateOfNode(NodeIndex n);
+
+    std::vector<NodeIndex>
+      duplicateNodes(
+        const std::vector<NodeIndex> &indices_of_nodes_to_duplicate
+      );
 
   private:
     std::vector<std::unique_ptr<Node>> _node_ptrs;

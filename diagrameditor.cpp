@@ -762,8 +762,6 @@ void
     return;
   }
 
-  bool shift_is_pressed = modifiers.shift_is_pressed;
-
   mouse_press_position = p;
 
   node_was_selected = false;
@@ -786,7 +784,7 @@ void
     if (i>=0) {
       node_was_selected = nodeIsSelected(i);
 
-      if (shift_is_pressed) {
+      if (modifiers.shift_is_pressed) {
         alsoSelectNode(i);
       }
       else {
@@ -798,6 +796,12 @@ void
           // of on a mouse press since we have to handle the case where the
           // user drags the selected node.
         }
+      }
+
+      if (modifiers.ctrl_is_pressed) {
+        vector<NodeIndex> new_node_indices =
+          diagram().duplicateNodes(selected_node_indices);
+        selected_node_indices = new_node_indices;
       }
 
       focused_node_index = -1;

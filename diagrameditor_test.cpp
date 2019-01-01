@@ -531,6 +531,24 @@ static void testClickingOnAFocusedNode2()
 }
 
 
+static void testCopyingANodeByCtrlDrag()
+{
+  Diagram diagram;
+  NodeIndex n = diagram.createNodeWithText("5");
+
+  FakeDiagramEditor editor(diagram);
+  ViewportCoords press_position = editor.viewportCoordsForCenterOfNode(n);
+  ViewportCoords release_position = press_position + Vector2D(0,-20);
+
+  editor.userCtrlPressesLeftMouseAt(press_position);
+
+  editor.userMovesMouseTo(release_position);
+  editor.userReleasesMouseAt(release_position);
+
+  assert(diagram.nExistingNodes()==2);
+}
+
+
 int main()
 {
   test1();
@@ -557,6 +575,7 @@ int main()
   testConnectingNodes();
   testClickingOnAFocusedNode();
   testClickingOnAFocusedNode2();
+  testCopyingANodeByCtrlDrag();
 
   ImportTester().runWithEmptyDiagram();
   ImportTester().runWithBadDiagram();

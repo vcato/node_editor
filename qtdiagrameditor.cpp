@@ -166,9 +166,12 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
   ViewportCoords p = screenToViewportCoords(event.x(),event.y());
 
   if (event.button()==Qt::LeftButton) {
-    bool shift_is_pressed = event.modifiers().testFlag(Qt::ShiftModifier);
+    Qt::KeyboardModifiers qt_modifiers = event.modifiers();
     EventModifiers modifiers;
-    modifiers.shift_is_pressed = shift_is_pressed;
+
+    modifiers.shift_is_pressed = qt_modifiers.testFlag(Qt::ShiftModifier);
+    modifiers.ctrl_is_pressed = qt_modifiers.testFlag(Qt::ControlModifier);
+
     leftMousePressedAt(p,modifiers);
   }
   else if (event.button()==Qt::RightButton) {

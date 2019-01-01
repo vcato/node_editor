@@ -24,6 +24,7 @@ using ViewportRect = TaggedRect<ViewportCoordsTag>;
 
 struct EventModifiers {
   bool shift_is_pressed = false;
+  bool ctrl_is_pressed = false;
   bool alt_is_pressed = false;
 };
 

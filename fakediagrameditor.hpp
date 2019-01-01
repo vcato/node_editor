@@ -103,6 +103,18 @@ struct FakeDiagramEditor : DiagramEditor {
     return text_editor.cursorPosition();
   }
 
+  static EventModifiers ctrlModifier()
+  {
+    EventModifiers result;
+    result.ctrl_is_pressed = true;
+    return result;
+  }
+
+  void userCtrlPressesLeftMouseAt(const ViewportCoords &p)
+  {
+    leftMousePressedAt(p,ctrlModifier());
+  }
+
   void userClicksAt(const ViewportCoords &p)
   {
     leftMousePressedAt(p,EventModifiers());
@@ -112,6 +124,11 @@ struct FakeDiagramEditor : DiagramEditor {
   void userClicksOnNode(NodeIndex n)
   {
     userClicksAt(viewportCoordsFromDiagramCoords(nodeCenter(n)));
+  }
+
+  ViewportCoords viewportCoordsForCenterOfNode(NodeIndex n)
+  {
+    return viewportCoordsFromDiagramCoords(nodeCenter(n));
   }
 
   void userClicksWithShiftPressedAt(const ViewportCoords &p)

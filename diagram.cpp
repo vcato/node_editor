@@ -66,14 +66,23 @@ void Diagram::deleteNode(NodeIndex index)
 }
 
 
-NodeIndex Diagram::createNodeWithText(const string &text)
+NodeIndex Diagram::createNode()
 {
   NodeIndex node_index = _node_ptrs.size();
 
   _node_ptrs.emplace_back(make_unique<Node>());
-  Node &node = this->node(node_index);
-  node.setText(text);
-  node.header_text_object.text = "";
+
+  assert(node(node_index).header_text_object.text == "");
+
+  return node_index;
+}
+
+
+NodeIndex Diagram::createNodeWithText(const string &text)
+{
+  NodeIndex node_index = createNode();
+
+  node(node_index).setText(text);
 
   return node_index;
 }
@@ -184,4 +193,29 @@ int Diagram::nExistingNodes() const
 int Diagram::nNodes() const
 {
   return _node_ptrs.size();
+}
+
+
+NodeIndex Diagram::createDuplicateOfNode(NodeIndex n)
+{
+  NodeIndex new_node_index = createNode();
+  node(new_node_index) = node(n);
+  return new_node_index;
+}
+
+
+vector<NodeIndex>
+  Diagram::duplicateNodes(
+    const vector<NodeIndex> &indices_of_nodes_to_duplicate
+  )
+{
+  vector<NodeIndex> new_node_indices;
+
+  for (NodeIndex index_of_node_to_duplicate : indices_of_nodes_to_duplicate) {
+    NodeIndex new_node_index =
+      createDuplicateOfNode(index_of_node_to_duplicate);
+    new_node_indices.push_back(new_node_index);
+  }
+
+  return new_node_indices;
 }
