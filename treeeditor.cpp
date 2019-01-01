@@ -374,7 +374,7 @@ void TreeEditor::removeDiagramEditors(const TreePath &path)
   for (auto window_ptr : windows_to_close) {
     assert(window_ptr);
 
-    window_ptr->close_callback = nullptr;
+    window_ptr->closeCallback() = nullptr;
       // Make sure we don't get a callback
 
     window_ptr->forceClose();
@@ -389,7 +389,7 @@ void TreeEditor::openDiagramEditor(const TreePath &path)
   window.setDiagramPtr(diagramPtr(world(),path));
   diagram_editor_window_ptrs.push_back(&window);
 
-  window.close_callback = [&]{ diagramEditorClosed(window); };
+  window.closeCallback() = [&]{ diagramEditorClosed(window); };
   window.diagramChangedCallback() = [&]{ diagramChanged(window); };
 }
 

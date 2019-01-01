@@ -9,7 +9,7 @@ class DiagramEditorWindow {
     void setDiagramPtr(Diagram *arg);
     Diagram *diagramPtr() { return diagramEditor().diagramPtr(); }
 
-    std::function<void()> close_callback;
+    std::function<void()> &closeCallback() { return close_callback; }
     std::function<void()> &diagramChangedCallback();
     virtual void forceClose() = 0;
 
@@ -18,6 +18,7 @@ class DiagramEditorWindow {
 
   private:
     virtual DiagramEditor &diagramEditor() = 0;
+    std::function<void()> close_callback;
 };
 
 #endif /* DIAGRAMEDITORWINDOW_HPP */
