@@ -123,7 +123,10 @@ void DiagramEditor::escapePressed()
 {
   if (!aNodeIsFocused()) return;
 
+  NodeIndex previously_focused_node = focused_node_index;
   clearFocus();
+  selectNode(previously_focused_node);
+
   redraw();
 }
 

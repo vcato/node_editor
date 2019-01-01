@@ -190,7 +190,7 @@ static void testClickingOnBackgroundTwice()
 }
 
 
-static void testEscape()
+static void testEscapeWithAFocusedEmptyNode()
 {
   Diagram diagram;
   FakeDiagramEditor editor(diagram);
@@ -201,6 +201,18 @@ static void testEscape()
   assert(!editor.aNodeIsFocused());
   assert(diagram.nExistingNodes()==0);
   assert(editor.redraw_count==n_redraws+1);
+}
+
+
+static void testEscapeWithAFocusedNonEmptyNode()
+{
+  Diagram diagram;
+  NodeIndex n = diagram.createNodeWithText("12");
+  FakeDiagramEditor editor(diagram);
+  editor.userFocusesNode(n);
+  editor.userPressesEscape();
+  assert(!editor.aNodeIsFocused());
+  assert(editor.nodeIsSelected(n));
 }
 
 
@@ -562,7 +574,8 @@ int main()
   testSettingDiagramPtr();
   testSettingDiagramPtrWithAnEmptyFocusedNode();
   testClickingOnBackgroundTwice();
-  testEscape();
+  testEscapeWithAFocusedEmptyNode();
+  testEscapeWithAFocusedNonEmptyNode();
   testTypingInNode();
   testRenderInfo();
   testClickingOnANode();

@@ -272,6 +272,5 @@ Need to be able to have multiple frames in a scene.
 ---
 Probably need to unify WrapperValue and Any.
 ---
-Need to be able to copy diagram nodes by ctrl-dragging.
-
-* The copy will have the same inputs but no outputs.
+If you load a project which has non-zero background frame values for a
+scene, it only sets the first variable.
