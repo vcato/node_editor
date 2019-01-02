@@ -23,8 +23,10 @@ class World {
     Scene& addScene();
     void removeMember(int member_index);
     int nMembers() const { return world_members.size(); }
+
     void applyCharmaps();
     void applyCharmaps(const std::vector<Charmapper*> &);
+
     CharmapperMember &charmapperMember(int member_index);
     SceneMember &sceneMember(int member_index);
 

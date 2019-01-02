@@ -9,8 +9,8 @@
 #include "wrapperstate.hpp"
 #include "optional.hpp"
 
-
 class Diagram;
+class DiagramState;
 
 
 struct Wrapper;

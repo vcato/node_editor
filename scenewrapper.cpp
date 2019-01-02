@@ -29,21 +29,21 @@ struct WrapperData {
 
 namespace {
 struct StubTreeObserver : Wrapper::TreeObserver {
-  virtual void itemAdded(const TreePath &)
+  void itemAdded(const TreePath &) override
   {
     assert(false);
   }
 
-  virtual void itemReplaced(const TreePath &)
+  void itemReplaced(const TreePath &) override
   {
     assert(false);
   }
 
-  virtual void enumarationValuesChanged(const TreePath &) const
+  void enumarationValuesChanged(const TreePath &) const override
   {
   }
 
-  virtual void itemRemoved(const TreePath &)
+  void itemRemoved(const TreePath &) override
   {
     assert(false);
   }

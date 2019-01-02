@@ -1,7 +1,6 @@
 #ifndef DIAGRAMEXECUTIONCONTEXT_HPP_
 #define DIAGRAMEXECUTIONCONTEXT_HPP_
 
-
 #include "environment.hpp"
 
 

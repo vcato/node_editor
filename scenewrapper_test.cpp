@@ -135,22 +135,22 @@ static void
     {
     }
 
-    virtual void itemAdded(const TreePath &path)
+    void itemAdded(const TreePath &path) override
     {
       stream << "addItem: path=" << path << "\n";
     }
 
-    virtual void itemReplaced(const TreePath &)
+    void itemReplaced(const TreePath &) override
     {
       assert(false);
     }
 
-    virtual void enumarationValuesChanged(const TreePath &) const
+    void enumarationValuesChanged(const TreePath &) const override
     {
       assert(false);
     }
 
-    virtual void itemRemoved(const TreePath &)
+    void itemRemoved(const TreePath &) override
     {
       assert(false);
     }

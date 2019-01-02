@@ -80,6 +80,12 @@ static void
 }
 
 
+void TreeEditor::setWorldPtr(Wrapper *arg)
+{
+  world_ptr = arg;
+}
+
+
 Wrapper &TreeEditor::world()
 {
   assert(world_ptr);
@@ -107,22 +113,22 @@ struct TreeEditor::TreeObserver : ::TreeObserver {
   {
   }
 
-  virtual void itemAdded(const TreePath &path)
+  void itemAdded(const TreePath &path) override
   {
     tree_editor.addTreeItem(path);
   }
 
-  virtual void itemReplaced(const TreePath &path)
+  void itemReplaced(const TreePath &path) override
   {
     tree_editor.replaceTreeItems(path);
   }
 
-  virtual void enumarationValuesChanged(const TreePath &path) const
+  void enumarationValuesChanged(const TreePath &path) const override
   {
     tree_editor.changeEnumerationValues(path);
   }
 
-  virtual void itemRemoved(const TreePath &path)
+  void itemRemoved(const TreePath &path) override
   {
     tree_editor.removeTreeItem(path);
     tree_editor.removeDiagramEditors(path);

@@ -12,22 +12,22 @@ struct StreamExecutor : Executor {
   {
   }
 
-  void print(float value)
-  {
-    stream << value;
-  }
-
   void executeShow(const Any& value) override
   {
     print(value);
     stream << "\n";
   }
 
+  void executeReturn(const Any& arg) override;
+
+  void print(float value)
+  {
+    stream << value;
+  }
+
   void print(const std::vector<Any> &value);
 
   void print(const Any &value);
-
-  void executeReturn(const Any& arg) override;
 
   virtual std::ostream& errorStream() { return error_stream; }
 };

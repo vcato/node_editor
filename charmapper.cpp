@@ -150,7 +150,9 @@ static void
     Point2D &new_position
   )
 {
-  evaluateDiagram(diagram,executor);
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,executor,diagram_state);
+
   Optional<Point2D> maybe_result;
 
   if (executor.maybe_return_value) {
@@ -236,7 +238,10 @@ void Charmapper::apply(const DiagramExecutionContext &context)
         executor.environment["global_position"] =
           makePoint2DObject(global_position);
 
-        evaluateDiagram(diagram,executor);
+        {
+          DiagramState diagram_state;
+          evaluateDiagram(diagram,executor,diagram_state);
+        }
 
         Optional<PosExprData> maybe_pos_expr;
 

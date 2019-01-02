@@ -10,7 +10,7 @@ struct Wrapper;
 
 struct TreeEditor {
   public:
-    void setWorldPtr(Wrapper *arg) { world_ptr = arg; }
+    void setWorldPtr(Wrapper *arg);
     Wrapper *worldPtr() const { return world_ptr; }
     int nDiagramEditorWindows() const;
     void setWorldState(const WrapperState &);

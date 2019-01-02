@@ -43,11 +43,40 @@ static void
 }
 
 
+namespace {
+struct TreeObserverStub : Wrapper::TreeObserver {
+  void itemAdded(const TreePath &) override
+  {
+    assert(false);
+  }
+
+  void itemReplaced(const TreePath &) override
+  {
+    assert(false);
+  }
+
+  void itemRemoved(const TreePath &) override
+  {
+    assert(false);
+  }
+
+  void enumarationValuesChanged(const TreePath &) const override
+  {
+    assert(false);
+  }
+};
+}
+
+
 static void notifyDiagramChanged(Wrapper &wrapper,const string &path_string)
 {
   TreePath path = makePath(wrapper,path_string);
+
   WrapperVisitor visitor =
-    [](const Wrapper &sub_wrapper){ sub_wrapper.diagramChanged(); };
+    [&](const Wrapper &sub_wrapper){
+      sub_wrapper.diagramChanged();
+    };
+
   visitSubWrapper(wrapper,path,visitor);
 }
 
@@ -61,22 +90,22 @@ struct FakeTreeObserver : Wrapper::TreeObserver {
   {
   }
 
-  virtual void itemAdded(const TreePath &path)
+  void itemAdded(const TreePath &path) override
   {
     command_stream << "addItem(" << path << ")\n";
   }
 
-  virtual void itemReplaced(const TreePath &)
+  void itemReplaced(const TreePath &) override
   {
     assert(false);
   }
 
-  virtual void enumarationValuesChanged(const TreePath &path) const
+  void enumarationValuesChanged(const TreePath &path) const override
   {
     command_stream << "changeEnumerationValues(" << path << ")\n";
   }
 
-  virtual void itemRemoved(const TreePath &path)
+  void itemRemoved(const TreePath &path) override
   {
     command_stream << "removeItem(" << path << ")\n";
   }
@@ -137,31 +166,6 @@ struct FakeWorld : World {
   SceneWindow& createSceneViewerWindow(SceneMember &) override
   {
     return scene_window;
-  }
-};
-}
-
-
-namespace {
-struct TreeObserverStub : Wrapper::TreeObserver {
-  void itemAdded(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemReplaced(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemRemoved(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void enumarationValuesChanged(const TreePath &) const override
-  {
-    assert(false);
   }
 };
 }

@@ -209,13 +209,14 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   World &world;
   const WrapperVisitor &visitor;
   const int member_index;
-  std::function<void()> charmap_changed_function;
+
+  std::function<void()> &charmap_changed_function;
 
   ChildWrapperVisitor(
     World &world_arg,
     const std::function<void(const Wrapper&)> &visitor_arg,
     int member_index_arg,
-    const std::function<void()> &charmap_changed_function_arg
+    std::function<void()> &charmap_changed_function_arg
   )
   : world(world_arg),
     visitor(visitor_arg),
@@ -232,23 +233,26 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       Charmapper &charmapper;
       World &world;
       const int member_index;
+      std::function<void()> &charmap_changed_function;
 
       Callbacks(
         const CharmapperWrapper::SceneList &scene_list,
         Charmapper &charmapper_arg,
         World &world_arg,
-        int member_index_arg
+        int member_index_arg,
+        std::function<void()> &charmap_changed_function_arg
       )
       : CharmapperWrapper::Callbacks(scene_list),
         charmapper(charmapper_arg),
         world(world_arg),
-        member_index(member_index_arg)
+        member_index(member_index_arg),
+        charmap_changed_function(charmap_changed_function_arg)
       {
       }
 
       virtual void notifyCharmapChanged() const
       {
-        world.applyCharmaps();
+        charmap_changed_function();
       }
 
       virtual void removeCharmapper() const
@@ -257,7 +261,14 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       }
     };
 
-    Callbacks callbacks{scene_list,member.charmapper,world,member_index};
+    Callbacks
+      callbacks{
+        scene_list,
+        member.charmapper,
+        world,
+        member_index,
+        charmap_changed_function
+      };
 
     visitor(
       CharmapperWrapper{
@@ -369,10 +380,17 @@ void
   ) const
 {
   int member_index = child_index;
-  auto charmap_changed_function =
-    [&world = this->world](){ world.applyCharmaps(); };
+  function<void()> charmap_changed_function =
+    [&world = this->world](){
+      world.applyCharmaps();
+    };
   ChildWrapperVisitor
-    wrapper_visitor(world,visitor,member_index,charmap_changed_function);
+    wrapper_visitor(
+      world,
+      visitor,
+      member_index,
+      charmap_changed_function
+    );
 
   world.visitMember(member_index,wrapper_visitor);
 }
@@ -410,9 +428,14 @@ void WorldWrapper::setState(const WrapperState &state) const
       int member_index = child_index;
       // Defer applying charmaps as they are changing, since the time
       // will be wasted on these intermediary changes.
-      auto charmap_changed_function = [](){};
+      function<void()> charmap_changed_function = [](){};
       ChildWrapperVisitor
-        wrapper_visitor(world,visitor,member_index,charmap_changed_function);
+        wrapper_visitor(
+          world,
+          visitor,
+          member_index,
+          charmap_changed_function
+        );
 
       world.visitMember(member_index,wrapper_visitor);
     }
@@ -424,6 +447,5 @@ void WorldWrapper::setState(const WrapperState &state) const
     ++child_index;
   }
 
-  // Now apply any charmaps since we deferred applying the changes before.
   world.applyCharmaps();
 }
