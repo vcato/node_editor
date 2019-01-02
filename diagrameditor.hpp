@@ -16,6 +16,7 @@
 #include "rect.hpp"
 #include "optional.hpp"
 #include "viewportline.hpp"
+#include "diagramstate.hpp"
 
 
 using DiagramRect = TaggedRect<DiagramCoordsTag>;
@@ -108,6 +109,7 @@ class DiagramEditor {
   public:
     DiagramEditor();
     void setDiagramPtr(Diagram *);
+    void setDiagramState(const DiagramState &);
     Diagram *diagramPtr() const;
     std::function<void()> &diagramChangedCallback();
 
@@ -186,6 +188,7 @@ class DiagramEditor {
     NodeConnectorIndex selected_node_connector_index =
       NodeConnectorIndex::null();
     Diagram *diagram_ptr;
+    DiagramState diagram_state;
     NodeIndex focused_node_index = noNodeIndex();
     Point2D temp_source_pos;
     Optional<ViewportRect> maybe_selection_rectangle;

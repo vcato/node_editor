@@ -369,7 +369,8 @@ void
   ) const
 {
   int member_index = child_index;
-  auto charmap_changed_function = [&world = this->world](){ world.applyCharmaps(); };
+  auto charmap_changed_function =
+    [&world = this->world](){ world.applyCharmaps(); };
   ChildWrapperVisitor
     wrapper_visitor(world,visitor,member_index,charmap_changed_function);
 

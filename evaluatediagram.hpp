@@ -1,10 +1,6 @@
 #include "diagram.hpp"
 #include "executor.hpp"
-
-
-struct DiagramState {
-  std::vector<std::vector<Any>> node_output_values;
-};
+#include "diagramstate.hpp"
 
 
 extern void evaluateDiagram(const Diagram &,Executor &);

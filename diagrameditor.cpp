@@ -40,6 +40,12 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 }
 
 
+void DiagramEditor::setDiagramState(const DiagramState &arg)
+{
+  diagram_state = arg;
+}
+
+
 Diagram* DiagramEditor::diagramPtr() const
 {
   return diagram_ptr;

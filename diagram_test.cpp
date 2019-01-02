@@ -28,7 +28,7 @@ static void testEvaluation1()
   int node_index =  diagram.createNodeWithText("5");
   DiagramState diagram_state;
   evaluateDiagram(diagram,diagram_state);
-  assert(diagram_state.node_output_values[node_index][0]==5);
+  assert(diagram_state.node_states[node_index].output_values[0]==5);
 }
 
 
@@ -38,7 +38,7 @@ static void testEvaluation2()
   int node_index =  diagram.createNodeWithText("6");
   DiagramState diagram_state;
   evaluateDiagram(diagram,diagram_state);
-  assert(diagram_state.node_output_values[node_index][0]==6);
+  assert(diagram_state.node_states[node_index].output_values[0]==6);
 }
 
 

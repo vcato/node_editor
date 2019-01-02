@@ -41,9 +41,12 @@ static void
   cerr << "result: " << maybe_output_value << "\n";
 #endif
 
+  diagram_state.node_states[node_index].line_errors[line_index] =
+    line_error_stream.str();
+
   if (output_index>=0) {
     if (maybe_output_value) {
-      diagram_state.node_output_values[node_index][output_index] =
+      diagram_state.node_states[node_index].output_values[output_index] =
         *maybe_output_value;
     }
     else {
@@ -95,17 +98,28 @@ static void
   int next_output_index = 0;
   int next_input_index = 0;
   int n_outputs = node.nOutputs();
-  diagram_state.node_output_values[node_index].resize(n_outputs);
+  int n_lines = node.nLines();
+  DiagramState::NodeState &node_state = diagram_state.node_states[node_index];
+
+  assert(node_state.output_values.empty());
+  assert(node_state.line_errors.empty());
+  node_state.output_values.resize(n_outputs);
+  node_state.line_errors.resize(n_lines);
+
   vector<Any> input_values;
 
   for (int i=0; i!=n_inputs; ++i) {
     int source_node = node.inputs[i].source_node_index;
     int source_output_index = node.inputs[i].source_output_index;
     Any source_value;
+
     if (source_node>=0 && source_output_index>=0) {
       source_value =
-        diagram_state.node_output_values[source_node][source_output_index];
+        diagram_state
+        .node_states[source_node]
+        .output_values[source_output_index];
     }
+
     input_values.push_back(source_value);
   }
 
@@ -146,7 +160,7 @@ void
 {
   int n_nodes = diagram.nNodes();
   vector<bool> evaluated_flags(n_nodes,false);
-  diagram_state.node_output_values.resize(n_nodes);
+  diagram_state.node_states.resize(n_nodes);
 
   for (auto i : diagram.existingNodeIndices()) {
     updateNodeEvaluation(diagram,diagram_state,i,evaluated_flags,executor);
