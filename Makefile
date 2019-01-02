@@ -239,7 +239,7 @@ qtdiagrameditorwindow_manualtest: qtdiagrameditorwindow_manualtest.o \
   qtdiagrameditorwindow.o evaluateexpression.o point2d.o vector2d.o \
   diagrameditorwindow.o any.o printindent.o maybepoint2d.o contains.o \
   anyio.o evaluatelinetext.o streamparser.o wrapperstate.o \
-  diagramwrapperstate.o nodetexteditor.o
+  diagramwrapperstate.o nodetexteditor.o diagramexecutor.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
