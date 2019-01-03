@@ -4,6 +4,7 @@
 #include "worldwrapper.hpp"
 #include "generatename.hpp"
 #include "sceneobjects.hpp"
+#include "diagramevaluator.hpp"
 
 using std::make_unique;
 using std::unique_ptr;
@@ -160,9 +161,13 @@ void World::applyCharmaps(const vector<Charmapper*> &charmapper_ptrs)
   DiagramExecutionContext
     context{/*show_stream*/cerr,/*error_stream*/cerr,&environment};
 
+  DiagramEvaluator evaluator(context);
+    // Here, we can have a more sophisticated evaluator which remembers the
+    // DiagramState for diagrams that have observers.
+
   for (auto charmapper_ptr : charmapper_ptrs) {
     assert(charmapper_ptr);
-    charmapper_ptr->apply(context);
+    charmapper_ptr->apply(evaluator);
   }
 
   forEachSceneMember([&](const SceneMember &scene_member){

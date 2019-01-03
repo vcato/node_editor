@@ -11,6 +11,7 @@
 #include "wrapperstate.hpp"
 #include "scenewrapper.hpp"
 #include "stringutil.hpp"
+#include "diagramevaluator.hpp"
 
 using std::string;
 using std::istringstream;
@@ -645,7 +646,8 @@ static void applyCharmapper(Charmapper &charmapper)
 {
   DiagramExecutionContext
     context{/*show_stream*/cerr,/*error_stream*/cerr};
-  charmapper.apply(context);
+  DiagramEvaluator evaluator(context);
+  charmapper.apply(evaluator);
 }
 
 

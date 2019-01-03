@@ -1,6 +1,7 @@
 #include "charmapper.hpp"
 
 #include <iostream>
+#include "diagramevaluator.hpp"
 
 using std::cerr;
 using std::string;
@@ -10,7 +11,8 @@ static void applyCharmapper(Charmapper &charmapper)
 {
   DiagramExecutionContext
     context{/*show_stream*/cerr,/*error_stream*/cerr};
-  charmapper.apply(context);
+  DiagramEvaluator evaluator(context);
+  charmapper.apply(evaluator);
 }
 
 

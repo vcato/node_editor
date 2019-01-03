@@ -7,6 +7,7 @@
 #include "scene.hpp"
 #include "bodylink.hpp"
 #include "diagramexecutioncontext.hpp"
+#include "abstractdiagramevaluator.hpp"
 
 
 class Charmapper {
@@ -16,7 +17,7 @@ class Charmapper {
     Charmapper() = default;
     Charmapper(const Charmapper &) = delete;
 
-    void apply(const DiagramExecutionContext &);
+    void apply(AbstractDiagramEvaluator &evaluator);
 
     int nPasses() const { return passes.size(); }
 

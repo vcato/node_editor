@@ -8,6 +8,7 @@
 #include "sceneobjects.hpp"
 #include "point2dobject.hpp"
 #include "charmapperobjects.hpp"
+#include "diagramevaluator.hpp"
 
 
 using std::make_unique;
@@ -143,30 +144,16 @@ static Point2D makePoint2D(const Charmapper::Position &p)
 }
 
 
-static Optional<Any>
-  maybeEvaluateDiagram(
-    const Diagram &diagram,
-    const DiagramExecutionContext &context,
-    const Environment *parent_environment_ptr
-  )
-{
-  DiagramExecutor executor(context,parent_environment_ptr);
-  DiagramState diagram_state;
-  evaluateDiagram(diagram,executor,diagram_state);
-  return std::move(executor.maybe_return_value);
-}
-
-
 static void
   evaluatePoint2DDiagram(
     Diagram &diagram,
-    const DiagramExecutionContext &context,
     const Environment *parent_environment_ptr,
-    Point2D &new_position
+    Point2D &new_position,
+    AbstractDiagramEvaluator &evaluator
   )
 {
   Optional<Any> maybe_return_value =
-    maybeEvaluateDiagram(diagram,context,parent_environment_ptr);
+    evaluator.maybeEvaluate(diagram,parent_environment_ptr);
 
   if (!maybe_return_value) {
     return;
@@ -182,7 +169,7 @@ static void
 }
 
 
-void Charmapper::apply(const DiagramExecutionContext &context)
+void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
 {
   int n_passes = nPasses();
 
@@ -202,10 +189,12 @@ void Charmapper::apply(const DiagramExecutionContext &context)
           Diagram &diagram = expr.global_position.diagram;
           Point2D parameters = makePoint2D(expr.global_position.components());
 
-          Environment environment(context.parent_environment_ptr);
+          Environment environment(evaluator.context.parent_environment_ptr);
           environment["x"] = parameters.x;
           environment["y"] = parameters.y;
-          evaluatePoint2DDiagram(diagram,context,&environment,global_position);
+          evaluatePoint2DDiagram(
+            diagram,&environment,global_position,evaluator
+          );
         }
         else if (expr.global_position.isFromBody()) {
           using FromBodyData = GlobalPosition::FromBodyData;
@@ -220,24 +209,25 @@ void Charmapper::apply(const DiagramExecutionContext &context)
             float x_param = from_body_data.local_position.x.value;
             float y_param = from_body_data.local_position.y.value;
 
-            Environment environment(context.parent_environment_ptr);
+            Environment environment(evaluator.context.parent_environment_ptr);
             environment["x"] = x_param;
             environment["y"] = y_param;
 
             evaluatePoint2DDiagram(
-              local_position_diagram,context,&environment,local_position
+              local_position_diagram,&environment,local_position,
+              evaluator
             );
           }
           {
-            Environment environment(context.parent_environment_ptr);
+            Environment environment(evaluator.context.parent_environment_ptr);
             environment["source_body"] = makeBodyObject(source_body_link);
             environment["local_position"] = makePoint2DObject(local_position);
 
             evaluatePoint2DDiagram(
               expr.global_position.diagram,
-              context,
               &environment,
-              global_position
+              global_position,
+              evaluator
             );
           }
         }
@@ -249,23 +239,23 @@ void Charmapper::apply(const DiagramExecutionContext &context)
         Class pos_expr_class = posExprClass();
         Point2D local_position = makePoint2D(expr.local_position);
 
-        Environment environment(context.parent_environment_ptr);
+        Environment environment(evaluator.context.parent_environment_ptr);
         environment["PosExpr"] = &pos_expr_class;
         environment["target_body"] = makeBodyObject(target_body_link);
         environment["local_position"] = makePoint2DObject(local_position);
         environment["global_position"] = makePoint2DObject(global_position);
 
         Optional<Any> maybe_return_value =
-          maybeEvaluateDiagram(diagram,context,&environment);
+          evaluator.maybeEvaluate(diagram,&environment);
 
         Optional<PosExprData> maybe_pos_expr;
 
         if (maybe_return_value) {
           maybe_pos_expr =
-            maybePosExpr(*maybe_return_value,context.error_stream);
+            maybePosExpr(*maybe_return_value,evaluator.context.error_stream);
         }
         else {
-          context.error_stream << "Diagram did not return anything\n";
+          evaluator.context.error_stream << "Diagram did not return anything\n";
         }
 
         if (maybe_pos_expr) {
@@ -274,7 +264,7 @@ void Charmapper::apply(const DiagramExecutionContext &context)
           );
         }
         else {
-          context.error_stream << "pos expr diagram failed\n";
+          evaluator.context.error_stream << "pos expr diagram failed\n";
         }
       }
     }
