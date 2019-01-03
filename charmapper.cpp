@@ -223,17 +223,15 @@ void Charmapper::apply(const DiagramExecutionContext &context)
             Environment environment(context.parent_environment_ptr);
             environment["x"] = x_param;
             environment["y"] = y_param;
-            DiagramExecutor executor(context,&environment);
 
             evaluatePoint2DDiagram(
               local_position_diagram,context,&environment,local_position
             );
           }
           {
-            Environment environment;
+            Environment environment(context.parent_environment_ptr);
             environment["source_body"] = makeBodyObject(source_body_link);
             environment["local_position"] = makePoint2DObject(local_position);
-            DiagramExecutor executor(context,&environment);
 
             evaluatePoint2DDiagram(
               expr.global_position.diagram,
