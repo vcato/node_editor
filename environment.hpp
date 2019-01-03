@@ -8,9 +8,9 @@
 
 struct Environment {
   std::map<std::string,Any> map;
-  Environment *parent_environment_ptr;
+  const Environment *parent_environment_ptr;
 
-  Environment(Environment* parent_environment_ptr_arg = nullptr)
+  Environment(const Environment* parent_environment_ptr_arg = nullptr)
   : parent_environment_ptr(parent_environment_ptr_arg)
   {
   }
@@ -23,16 +23,18 @@ struct Environment {
 
 
 inline Optional<Any>
-  variableValue(const std::string &name,const Environment &environment)
+  variableValue(const std::string &name,const Environment *environment_ptr)
 {
+  if (!environment_ptr) {
+    return {};
+  }
+
+  const Environment &environment = *environment_ptr;
+
   auto iter = environment.map.find(name);
 
   if (iter==environment.map.end()) {
-    if (environment.parent_environment_ptr) {
-      return variableValue(name,*environment.parent_environment_ptr);
-    }
-
-    return {};
+    return variableValue(name,environment.parent_environment_ptr);
   }
 
   return iter->second;

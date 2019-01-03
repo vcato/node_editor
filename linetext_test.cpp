@@ -52,8 +52,8 @@ namespace {
 struct FakeExecutor : Executor {
   ostringstream execution_stream;
 
-  FakeExecutor()
-  : Executor(/*parent_environment_ptr*/nullptr)
+  FakeExecutor(const Environment *parent_environment_ptr_arg = nullptr)
+  : Executor(parent_environment_ptr_arg)
   {
   }
 
@@ -177,10 +177,11 @@ static void testCallingMethod()
 static void testCallingSceneBodyPos()
 {
   string expr = "scene.body1.pos()";
-  FakeExecutor executor;
   Scene scene;
   scene.addBody("body1");
-  executor.environment["scene"] = makeSceneObject(scene);
+  Environment environment;
+  environment["scene"] = makeSceneObject(scene);
+  FakeExecutor executor(&environment);
   Optional<Any> maybe_result = testLineTextWithoutError(expr,executor);
   assert(maybePoint2D(*maybe_result));
 }
@@ -216,14 +217,16 @@ int main()
   testExecution("return [1,2]","return([1,2])\n");
 
   {
-    FakeExecutor executor;
-    executor.environment["x"] = 5;
+    Environment environment;
+    environment["x"] = 5;
+    FakeExecutor executor(&environment);
     Optional<Any> maybe_result = testLineTextWithoutError("x",executor);
     assert(*maybe_result==5);
   }
   {
-    FakeExecutor executor;
-    executor.environment["x"] = 5;
+    Environment environment;
+    environment["x"] = 5;
+    FakeExecutor executor(&environment);
     Optional<Any> maybe_result = testLineTextWithoutError("x+6",executor);
     assert(*maybe_result==11);
   }

@@ -146,10 +146,13 @@ static Point2D makePoint2D(const Charmapper::Position &p)
 static void
   evaluatePoint2DDiagram(
     Diagram &diagram,
-    DiagramExecutor &executor,
+    const DiagramExecutionContext &context,
+    const Environment *parent_environment_ptr,
     Point2D &new_position
   )
 {
+  DiagramExecutor executor(context,parent_environment_ptr);
+
   DiagramState diagram_state;
   evaluateDiagram(diagram,executor,diagram_state);
 
@@ -185,11 +188,12 @@ void Charmapper::apply(const DiagramExecutionContext &context)
 
         if (expr.global_position.isComponents()) {
           Diagram &diagram = expr.global_position.diagram;
-          DiagramExecutor executor(context);
           Point2D parameters = makePoint2D(expr.global_position.components());
-          executor.environment["x"] = parameters.x;
-          executor.environment["y"] = parameters.y;
-          evaluatePoint2DDiagram(diagram,executor,global_position);
+
+          Environment environment(context.parent_environment_ptr);
+          environment["x"] = parameters.x;
+          environment["y"] = parameters.y;
+          evaluatePoint2DDiagram(diagram,context,&environment,global_position);
         }
         else if (expr.global_position.isFromBody()) {
           using FromBodyData = GlobalPosition::FromBodyData;
@@ -201,24 +205,28 @@ void Charmapper::apply(const DiagramExecutionContext &context)
             from_body_data.local_position.diagram;
           Point2D local_position(0,0);
           {
-            DiagramExecutor executor(context);
             float x_param = from_body_data.local_position.x.value;
             float y_param = from_body_data.local_position.y.value;
-            executor.environment["x"] = x_param;
-            executor.environment["y"] = y_param;
+
+            Environment environment(context.parent_environment_ptr);
+            environment["x"] = x_param;
+            environment["y"] = y_param;
+            DiagramExecutor executor(context,&environment);
+
             evaluatePoint2DDiagram(
-              local_position_diagram,executor,local_position
+              local_position_diagram,context,&environment,local_position
             );
           }
           {
-            DiagramExecutor executor(context);
-            executor.environment["source_body"] =
-              makeBodyObject(source_body_link);
-            executor.environment["local_position"] =
-              makePoint2DObject(local_position);
+            Environment environment;
+            environment["source_body"] = makeBodyObject(source_body_link);
+            environment["local_position"] = makePoint2DObject(local_position);
+            DiagramExecutor executor(context,&environment);
+
             evaluatePoint2DDiagram(
               expr.global_position.diagram,
-              executor,
+              context,
+              &environment,
               global_position
             );
           }
@@ -228,15 +236,15 @@ void Charmapper::apply(const DiagramExecutionContext &context)
         }
 
         Diagram &diagram = expr.diagram;
-        DiagramExecutor executor(context);
         Class pos_expr_class = posExprClass();
-        executor.environment["PosExpr"] = &pos_expr_class;
-        executor.environment["target_body"] = makeBodyObject(target_body_link);
         Point2D local_position = makePoint2D(expr.local_position);
-        executor.environment["local_position"] =
-          makePoint2DObject(local_position);
-        executor.environment["global_position"] =
-          makePoint2DObject(global_position);
+
+        Environment environment(context.parent_environment_ptr);
+        environment["PosExpr"] = &pos_expr_class;
+        environment["target_body"] = makeBodyObject(target_body_link);
+        environment["local_position"] = makePoint2DObject(local_position);
+        environment["global_position"] = makePoint2DObject(global_position);
+        DiagramExecutor executor(context,&environment);
 
         {
           DiagramState diagram_state;

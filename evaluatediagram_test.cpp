@@ -92,8 +92,8 @@ static Any
 {
   std::ostringstream show_stream;
   DiagramExecutionContext context{show_stream,/*error_stream*/cerr};
-  DiagramExecutor executor(context);
-  executor.environment = environment;
+  context.parent_environment_ptr = &environment;
+  DiagramExecutor executor(context,context.parent_environment_ptr);
   evaluateDiagram(diagram,executor);
   return std::move(*executor.maybe_return_value);
 }

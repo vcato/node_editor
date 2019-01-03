@@ -42,7 +42,7 @@ Optional<Any>
     const string &identifier
   ) const
 {
-  Optional<Any> maybe_value = variableValue(identifier,environment);
+  Optional<Any> maybe_value = variableValue(identifier,environment_ptr);
 
   if (!maybe_value) {
     error_stream << "Unknown name: " << identifier << "\n";

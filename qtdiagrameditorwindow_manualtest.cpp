@@ -16,7 +16,7 @@ static void handleDiagramChanged(Diagram &diagram)
   ostringstream show_stream;
   ostringstream error_stream;
   DiagramExecutionContext context = {show_stream,error_stream};
-  DiagramExecutor executor(context);
+  DiagramExecutor executor(context,context.parent_environment_ptr);
   DiagramState diagram_state;
   evaluateDiagram(diagram,executor,diagram_state);
 

@@ -7,7 +7,7 @@
 struct DiagramExecutionContext {
   std::ostream &show_stream;
   std::ostream &error_stream;
-  Environment *parent_environment_ptr = nullptr;
+  const Environment *parent_environment_ptr = nullptr;
 };
 
 

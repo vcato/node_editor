@@ -7,20 +7,20 @@
 
 
 struct Executor {
-  Environment environment;
+  const Environment *parent_environment_ptr;
 
   virtual void executeShow(const Any&) = 0;
   virtual void executeReturn(const Any&) = 0;
   virtual std::ostream& errorStream() = 0;
 
-  Executor(Environment *parent_environment_ptr)
-  : environment(parent_environment_ptr)
+  Executor(const Environment *parent_environment_ptr_arg)
+  : parent_environment_ptr(parent_environment_ptr_arg)
   {
   }
 
   Optional<Any> variableValue(const std::string &name) const
   {
-    return ::variableValue(name,environment);
+    return ::variableValue(name,parent_environment_ptr);
   }
 };
 

@@ -74,7 +74,7 @@ static Optional<Any>
     tester.input_values,
     input_index,
     tester.error_stream,
-    tester.environment
+    &tester.environment
   };
 
   string error_string = tester.error_stream.str();
@@ -96,7 +96,7 @@ static string evaluateStringWithError(const string &arg)
     tester.input_values,
     input_index,
     tester.error_stream,
-    tester.environment
+    &tester.environment
   };
 
   Optional<Any> maybe_result = evaluateExpression(data);
@@ -154,7 +154,7 @@ static void testAddingInputs()
     tester.input_values,
     input_index,
     tester.error_stream,
-    tester.environment
+    &tester.environment
   };
 
   Optional<Any> maybe_result = evaluateExpression(data);
@@ -179,7 +179,7 @@ static void testSubtractingInputs()
     tester.input_values,
     input_index,
     tester.error_stream,
-    tester.environment
+    &tester.environment
   };
 
   Optional<Any> maybe_result = evaluateExpression(data);
@@ -202,7 +202,7 @@ static void testIdentifier()
     tester.input_values,
     input_index,
     tester.error_stream,
-    tester.environment
+    &tester.environment
   };
 
   Optional<Any> maybe_result = evaluateExpression(data);

@@ -27,7 +27,7 @@ Optional<Any>
     input_values,
     input_index,
     error_stream,
-    executor.environment
+    executor.parent_environment_ptr
   };
 
   string identifier;

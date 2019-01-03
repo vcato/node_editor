@@ -11,7 +11,7 @@ static void testDiagramWithNoReturn()
   ostringstream show_stream;
   ostringstream error_stream;
   DiagramExecutionContext context = {show_stream,error_stream};
-  DiagramExecutor executor(context);
+  DiagramExecutor executor(context,context.parent_environment_ptr);
   Diagram diagram;
   evaluateDiagram(diagram,executor);
   assert(!executor.maybe_return_value);
