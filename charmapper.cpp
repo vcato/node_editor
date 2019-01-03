@@ -143,6 +143,20 @@ static Point2D makePoint2D(const Charmapper::Position &p)
 }
 
 
+static Optional<Any>
+  maybeEvaluateDiagram(
+    const Diagram &diagram,
+    const DiagramExecutionContext &context,
+    const Environment *parent_environment_ptr
+  )
+{
+  DiagramExecutor executor(context,parent_environment_ptr);
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,executor,diagram_state);
+  return std::move(executor.maybe_return_value);
+}
+
+
 static void
   evaluatePoint2DDiagram(
     Diagram &diagram,
@@ -151,16 +165,14 @@ static void
     Point2D &new_position
   )
 {
-  DiagramExecutor executor(context,parent_environment_ptr);
+  Optional<Any> maybe_return_value =
+    maybeEvaluateDiagram(diagram,context,parent_environment_ptr);
 
-  DiagramState diagram_state;
-  evaluateDiagram(diagram,executor,diagram_state);
-
-  Optional<Point2D> maybe_result;
-
-  if (executor.maybe_return_value) {
-    maybe_result = maybePoint2D(*executor.maybe_return_value);
+  if (!maybe_return_value) {
+    return;
   }
+
+  Optional<Point2D> maybe_result = maybePoint2D(*maybe_return_value);
 
   if (!maybe_result) {
     return;
@@ -244,18 +256,15 @@ void Charmapper::apply(const DiagramExecutionContext &context)
         environment["target_body"] = makeBodyObject(target_body_link);
         environment["local_position"] = makePoint2DObject(local_position);
         environment["global_position"] = makePoint2DObject(global_position);
-        DiagramExecutor executor(context,&environment);
 
-        {
-          DiagramState diagram_state;
-          evaluateDiagram(diagram,executor,diagram_state);
-        }
+        Optional<Any> maybe_return_value =
+          maybeEvaluateDiagram(diagram,context,&environment);
 
         Optional<PosExprData> maybe_pos_expr;
 
-        if (executor.maybe_return_value) {
+        if (maybe_return_value) {
           maybe_pos_expr =
-            maybePosExpr(*executor.maybe_return_value,context.error_stream);
+            maybePosExpr(*maybe_return_value,context.error_stream);
         }
         else {
           context.error_stream << "Diagram did not return anything\n";
