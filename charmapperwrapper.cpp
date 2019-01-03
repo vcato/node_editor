@@ -487,7 +487,7 @@ struct MotionPassWrapper : VoidWrapper {
         const TreePath &path_of_this
       ) const
     {
-      tree_observer.enumarationValuesChanged(path_of_this);
+      tree_observer.enumerationValuesChanged(path_of_this);
     }
 
     vector<string> enumerationNames() const override

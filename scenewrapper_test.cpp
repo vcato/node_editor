@@ -72,7 +72,7 @@ struct TreeObserverStub : Wrapper::TreeObserver {
     assert(false);
   }
 
-  void enumarationValuesChanged(const TreePath &) const override
+  void enumerationValuesChanged(const TreePath &) const override
   {
     assert(false);
   }
@@ -145,7 +145,7 @@ static void
       assert(false);
     }
 
-    void enumarationValuesChanged(const TreePath &) const override
+    void enumerationValuesChanged(const TreePath &) const override
     {
       assert(false);
     }

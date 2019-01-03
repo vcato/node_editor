@@ -28,6 +28,7 @@ run_unit_tests: \
   world_test.pass \
   wrapperstate_test.pass \
   diagramwrapperstate_test.pass \
+  observeddiagrams_test.pass \
   scenewrapper_test.pass \
   worldwrapper_test.pass \
   charmapper_test.pass \
@@ -178,6 +179,8 @@ diagramwrapperstate_test: diagramwrapperstate_test.o diagram.o diagramnode.o \
   wrapperstate.o printindent.o streamparser.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
+observeddiagrams_test: observeddiagrams_test.o observeddiagrams.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
   generatename.o wrapperstate.o stringutil.o wrapper.o printindent.o \

@@ -123,7 +123,7 @@ struct TreeEditor::TreeObserver : ::TreeObserver {
     tree_editor.replaceTreeItems(path);
   }
 
-  void enumarationValuesChanged(const TreePath &path) const override
+  void enumerationValuesChanged(const TreePath &path) const override
   {
     tree_editor.changeEnumerationValues(path);
   }
@@ -190,7 +190,7 @@ struct TreeObserverStub : TreeObserver {
   {
   }
 
-  virtual void enumarationValuesChanged(const TreePath &) const
+  virtual void enumerationValuesChanged(const TreePath &) const
   {
   }
 };

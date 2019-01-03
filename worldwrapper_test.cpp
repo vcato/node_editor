@@ -61,7 +61,7 @@ struct TreeObserverStub : Wrapper::TreeObserver {
     assert(false);
   }
 
-  void enumarationValuesChanged(const TreePath &) const override
+  void enumerationValuesChanged(const TreePath &) const override
   {
     assert(false);
   }
@@ -101,7 +101,7 @@ struct FakeTreeObserver : Wrapper::TreeObserver {
     assert(false);
   }
 
-  void enumarationValuesChanged(const TreePath &path) const override
+  void enumerationValuesChanged(const TreePath &path) const override
   {
     command_stream << "changeEnumerationValues(" << path << ")\n";
   }

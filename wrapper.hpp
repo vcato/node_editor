@@ -30,7 +30,7 @@ struct Wrapper {
     virtual void itemAdded(const TreePath &) = 0;
     virtual void itemReplaced(const TreePath &) = 0;
     virtual void itemRemoved(const TreePath &) = 0;
-    virtual void enumarationValuesChanged(const TreePath &) const = 0;
+    virtual void enumerationValuesChanged(const TreePath &) const = 0;
   };
 
   struct SubclassVisitor {

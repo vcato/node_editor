@@ -33,3 +33,4 @@ diagramexecutor_test
 diagramwrapperstate_test
 streamparser_test
 fileaccessor_test
+observeddiagrams_test
