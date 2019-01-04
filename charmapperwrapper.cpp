@@ -9,11 +9,11 @@
 using std::cerr;
 using std::vector;
 using std::string;
-using Callbacks = CharmapperWrapper::Callbacks;
+using WrapperData = CharmapperWrapper::WrapperData;
 using Label = CharmapperWrapper::Label;
 
 
-Callbacks::Callbacks(
+WrapperData::WrapperData(
   const SceneList &scene_list_arg,
   ObservedDiagrams &observed_diagrams_arg
 )
@@ -102,17 +102,17 @@ struct MotionPassWrapper : VoidWrapper {
   Charmapper &charmapper;
   MotionPass &motion_pass;
   const int pass_index;
-  const Callbacks &callbacks;
+  const WrapperData &callbacks;
 
   struct ChannelWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     Channel &channel;
     const char *label_member;
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
 
     ChannelWrapper(
       Channel &channel_arg,
       const char *label_arg,
-      const Callbacks &callbacks_arg
+      const WrapperData &callbacks_arg
     )
     : channel(channel_arg),
       label_member(label_arg),
@@ -157,13 +157,13 @@ struct MotionPassWrapper : VoidWrapper {
   struct PositionWrapper : NoOperationWrapper<VoidWrapper> {
     Position &position;
     const char *label_member;
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
     const Diagram *default_diagram_ptr;
 
     PositionWrapper(
       Position &position_arg,
       const char *label_arg,
-      const Callbacks &callbacks_arg,
+      const WrapperData &callbacks_arg,
       const Diagram *default_diagram_ptr_arg
     )
     : position(position_arg),
@@ -224,11 +224,11 @@ struct MotionPassWrapper : VoidWrapper {
 
   struct FromBodyGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
     FromBodyGlobalPositionData &from_body_global_position;
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
 
     FromBodyGlobalPositionWrapper(
       FromBodyGlobalPositionData &arg,
-      const Callbacks &callbacks_arg
+      const WrapperData &callbacks_arg
     )
     : from_body_global_position(arg),
       callbacks(callbacks_arg)
@@ -283,11 +283,11 @@ struct MotionPassWrapper : VoidWrapper {
 
   struct ComponentsGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
     ComponentsGlobalPositionData &components_global_position;
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
 
     ComponentsGlobalPositionWrapper(
       ComponentsGlobalPositionData &arg,
-      const Callbacks &callbacks_arg
+      const WrapperData &callbacks_arg
     )
     : components_global_position(arg),
       callbacks(callbacks_arg)
@@ -329,11 +329,11 @@ struct MotionPassWrapper : VoidWrapper {
 
   struct GlobalPositionWrapper : NoOperationWrapper<EnumerationWrapper> {
     GlobalPosition &global_position;
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
 
     GlobalPositionWrapper(
       GlobalPosition &global_position_arg,
-      const Callbacks &callbacks_arg
+      const WrapperData &callbacks_arg
     )
     : global_position(global_position_arg),
       callbacks(callbacks_arg)
@@ -342,11 +342,11 @@ struct MotionPassWrapper : VoidWrapper {
 
     struct ValueVisitor : GlobalPositionData::Visitor {
       const WrapperVisitor &visitor;
-      const Callbacks &callbacks;
+      const WrapperData &callbacks;
 
       ValueVisitor(
         const WrapperVisitor &visitor_arg,
-        const Callbacks &callbacks_arg
+        const WrapperData &callbacks_arg
       )
       : visitor(visitor_arg),
         callbacks(callbacks_arg)
@@ -484,14 +484,14 @@ struct MotionPassWrapper : VoidWrapper {
   };
 
   struct BodyWrapper : NoOperationWrapper<LeafWrapper<EnumerationWrapper>> {
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
     BodyLink &body_link;
     const char *label_member;
 
     BodyWrapper(
       const char *label_arg,
       BodyLink &body_link_arg,
-      const Callbacks &callbacks_arg
+      const WrapperData &callbacks_arg
     )
     : callbacks(callbacks_arg),
       body_link(body_link_arg),
@@ -572,12 +572,12 @@ struct MotionPassWrapper : VoidWrapper {
   struct PosExprWrapper : VoidWrapper {
     MotionPass &motion_pass;
     int index;
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
 
     PosExprWrapper(
       MotionPass &motion_pass_arg,
       int index_arg,
-      const Callbacks &callbacks_arg
+      const WrapperData &callbacks_arg
     )
     : motion_pass(motion_pass_arg),
       index(index_arg),
@@ -692,7 +692,7 @@ struct MotionPassWrapper : VoidWrapper {
     Charmapper &charmapper_arg,
     Charmapper::MotionPass &motion_pass_arg,
     int pass_index_arg,
-    const Callbacks &callbacks_arg
+    const WrapperData &callbacks_arg
   )
   : charmapper(charmapper_arg),
     motion_pass(motion_pass_arg),

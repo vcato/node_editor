@@ -34,7 +34,6 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 {
   clearFocus();
   clearSelection();
-  assert(!diagram_observer_ptr);
   diagram_ptr2 = arg;
   redraw();
 }
@@ -48,22 +47,33 @@ void DiagramEditor::setDiagramState(const DiagramState &arg)
 
 void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
 {
+  // When we use a DiagramObserverPtr, the DiagramEditor becomes responsible
+  // for handling the logic of updating the diagram state
+  // if the observed diagram's state changes.
+  // This function will update the diagram and the diagram state the same
+  // way a user of the public API would, so that we isolate this logic.
+
   diagram_observer_ptr = std::move(arg);
 
   if (diagram_observer_ptr) {
-    diagram_observer_ptr->diagram_state_changed_callback = []{
-      cerr << "DiagramEditor: state changed\n";
-    };
+    diagram_observer_ptr->diagram_state_changed_callback =
+      [this]{
+        cerr << "DiagramEditor: state changed\n";
+        setDiagramState(diagram_observer_ptr->observed_diagram.diagram_state);
+      };
+  }
+
+  if (diagram_observer_ptr) {
+    setDiagramPtr(&diagram_observer_ptr->observed_diagram.diagram);
+  }
+  else {
+    setDiagramPtr(nullptr);
   }
 }
 
 
 Diagram* DiagramEditor::diagramPtr() const
 {
-  if (diagram_observer_ptr) {
-    return &diagram_observer_ptr->observed_diagram.diagram;
-  }
-
   return diagram_ptr2;
 }
 

@@ -14,25 +14,28 @@ class CharmapperWrapper : public VoidWrapper {
       virtual BodyLinks allBodyLinks() const = 0;
     };
 
-    struct Callbacks {
+    // This doesn't have a good name anymore.  It's not just a set of
+    // callbacks.  Maybe WrapperData is a better name.
+    struct WrapperData {
       const SceneList &scene_list;
       ObservedDiagrams &observed_diagrams;
+
       virtual void notifyCharmapChanged() const = 0;
       virtual void removeCharmapper() const = 0;
 
-      Callbacks(
+      WrapperData(
         const SceneList &scene_list_arg,
         ObservedDiagrams &observed_diagrams_arg
       );
     };
 
     Charmapper &charmapper;
-    const Callbacks &callbacks;
+    const WrapperData &callbacks;
     std::string label_member;
 
     CharmapperWrapper(
       Charmapper &charmapper_arg,
-      const Callbacks &callbacks_arg,
+      const WrapperData &callbacks_arg,
       const std::string &label_arg
     )
     : charmapper(charmapper_arg),

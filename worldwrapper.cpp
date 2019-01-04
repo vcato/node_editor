@@ -147,12 +147,12 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
 
   virtual void visitCharmapper(World::CharmapperMember &charmapper_member) const
   {
-    struct Callbacks : CharmapperWrapper::Callbacks {
+    struct Callbacks : CharmapperWrapper::WrapperData {
       Callbacks(
         const SceneList &scene_list_arg,
         ObservedDiagrams &observed_diagrams_arg
       )
-      : CharmapperWrapper::Callbacks(scene_list_arg,observed_diagrams_arg)
+      : CharmapperWrapper::WrapperData(scene_list_arg,observed_diagrams_arg)
       {
       }
 
@@ -229,7 +229,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   {
     WorldSceneList scene_list(world);
 
-    struct Callbacks : CharmapperWrapper::Callbacks {
+    struct Callbacks : CharmapperWrapper::WrapperData {
       Charmapper &charmapper;
       World &world;
       const int member_index;
@@ -243,7 +243,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
         std::function<void()> &charmap_changed_function_arg
       )
       :
-        CharmapperWrapper::Callbacks(scene_list,world_arg.observed_diagrams),
+        CharmapperWrapper::WrapperData(scene_list,world_arg.observed_diagrams),
         charmapper(charmapper_arg),
         world(world_arg),
         member_index(member_index_arg),

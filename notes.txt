@@ -275,6 +275,17 @@ Probably need to unify WrapperValue and Any.
 Want to be able to show the errors that we got during diagram evaluation
 in the diagram editor.
 ---
+I'm thinking that it might be best to separate the DiagramState update
+logic from the diagram editor.
+
+Currently, we have
+  std::vector<DiagramEditorWindow *> TreeEditor::diagram_editor_window_ptrs;
+---
 When we open the diagram editor window, we'll need to apply the charmaps
 because we won't have captured the diagram state for those diagrams
-we weren't looking at when they were evaluated.
+we weren't looking at when they were evaluated.  The tree editor doesn't
+know how to apply the charmaps though.
+
+Maybe if we get an observer that will automatically cause a reevalulation.
+The wrappers know when an observer is asked for, so it could set a flag
+saying that the charmaps need to be reapplied.
