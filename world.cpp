@@ -94,25 +94,11 @@ void
     function<void(const SceneMember &scene)> function_to_call
   ) const
 {
-  forEachMemberOfType<SceneMember>(function_to_call);
-}
-
-
-void
-  World::forEachCharmapperMember(
-    function<void(const World::CharmapperMember &scene)> function_to_call
-  ) const
-{
-  forEachMemberOfType<CharmapperMember>(function_to_call);
-}
-
-
-void
-  World::forEachCharmapperMember(
-    function<void(World::CharmapperMember &scene)> function_to_call
-  )
-{
-  forEachMemberOfType<CharmapperMember>(function_to_call);
+  forEachMemberOfType<SceneMember>(
+    [&](const SceneMember &member,int/*member_index*/){
+      function_to_call(member);
+    }
+  );
 }
 
 
@@ -121,7 +107,33 @@ void
     function<void(World::SceneMember &scene)> function_to_call
   )
 {
-  forEachMemberOfType<SceneMember>(function_to_call);
+  forEachMemberOfType<SceneMember>(
+    [&](SceneMember &member,int/*member_index*/){
+      function_to_call(member);
+    }
+  );
+}
+
+
+void
+  World::forEachCharmapperMember(
+    function<void(const World::CharmapperMember &scene)> function_to_call
+  ) const
+{
+  forEachMemberOfType<CharmapperMember>(
+    [&](const CharmapperMember &member,int/*member_index*/){
+      function_to_call(member);
+    }
+  );
+}
+
+
+void
+  World::forEachCharmapperMember(
+    function<void(World::CharmapperMember &,int member_index)> function_to_call
+  )
+{
+  forEachMemberOfType<CharmapperMember>(function_to_call);
 }
 
 
@@ -130,7 +142,7 @@ vector<Charmapper*> World::allCharmapPtrs()
   vector<Charmapper *> charmapper_ptrs;
 
   forEachCharmapperMember(
-    [&](CharmapperMember &charmapper_member){
+    [&](CharmapperMember &charmapper_member,int /*member_index*/){
       charmapper_ptrs.push_back(&charmapper_member.charmapper);
     }
   );

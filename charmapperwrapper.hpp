@@ -14,32 +14,33 @@ class CharmapperWrapper : public VoidWrapper {
       virtual BodyLinks allBodyLinks() const = 0;
     };
 
-    // This doesn't have a good name anymore.  It's not just a set of
-    // callbacks.  Maybe WrapperData is a better name.
+    struct Callbacks {
+      virtual void notifyCharmapChanged() const = 0;
+      virtual void removeCharmapper() const = 0;
+    };
+
     struct WrapperData {
       const SceneList &scene_list;
       ObservedDiagrams &observed_diagrams;
+      Callbacks &callbacks;
 
-      virtual void notifyCharmapChanged() const = 0;
-      virtual void removeCharmapper() const = 0;
+      void notifyCharmapChanged() const { callbacks.notifyCharmapChanged(); }
+      void removeCharmapper() const { callbacks.removeCharmapper(); }
 
-      WrapperData(
-        const SceneList &scene_list_arg,
-        ObservedDiagrams &observed_diagrams_arg
-      );
+      WrapperData( const SceneList &, ObservedDiagrams &, Callbacks & );
     };
 
     Charmapper &charmapper;
-    const WrapperData &callbacks;
+    const WrapperData &wrapper_data;
     std::string label_member;
 
     CharmapperWrapper(
       Charmapper &charmapper_arg,
-      const WrapperData &callbacks_arg,
+      const WrapperData &wrapper_data_arg,
       const std::string &label_arg
     )
     : charmapper(charmapper_arg),
-      callbacks(callbacks_arg),
+      wrapper_data(wrapper_data_arg),
       label_member(label_arg)
     {
     }
@@ -62,9 +63,20 @@ class CharmapperWrapper : public VoidWrapper {
       return charmapper.nPasses();
     }
 
-    void
-      handleSceneChange(
-        const TreeObserver &,
-        const TreePath &charmapper_path
-      );
+  static void
+    handleSceneChange(
+      Charmapper &charmapper,
+      const std::string &charmapper_name,
+      const TreeObserver &tree_observer,
+      const TreePath &charmapper_path,
+      ObservedDiagrams &observed_diagrams,
+      const SceneList &scene_list
+    );
+
+  // May be able to make this private.
+  void
+    handleSceneChange(
+      const TreeObserver &,
+      const TreePath &charmapper_path
+    );
 };

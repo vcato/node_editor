@@ -127,80 +127,30 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
 }
 
 
-namespace {
-struct NotifyCharmapperVisitor : World::MemberVisitor {
-  using SceneList = CharmapperWrapper::SceneList;
-  const int member_index;
-  const Wrapper::TreeObserver &tree_observer;
-  World &world;
-
-  NotifyCharmapperVisitor(
-    int member_index_arg,
-    const Wrapper::TreeObserver &operation_handler_arg,
-    World &world_arg
-  )
-  : member_index(member_index_arg),
-    tree_observer(operation_handler_arg),
-    world(world_arg)
-  {
-  }
-
-  virtual void visitCharmapper(World::CharmapperMember &charmapper_member) const
-  {
-    struct Callbacks : CharmapperWrapper::WrapperData {
-      Callbacks(
-        const SceneList &scene_list_arg,
-        ObservedDiagrams &observed_diagrams_arg
-      )
-      : CharmapperWrapper::WrapperData(scene_list_arg,observed_diagrams_arg)
-      {
-      }
-
-      virtual void notifyCharmapChanged() const
-      {
-        // The charmap changed due to a scene change.  We don't want
-        // to cause an inifinite loop, so we don't notify the scene
-        // of the charmap change.
-      }
-
-      virtual void removeCharmapper() const
-      {
-        assert(false);
-      }
-    };
-
-    WorldSceneList scene_list2(world);
-    Callbacks callbacks{scene_list2,world.observed_diagrams};
-
-    CharmapperWrapper(
-      charmapper_member.charmapper,
-      callbacks,
-      charmapper_member.name
-    ).handleSceneChange(tree_observer,{member_index});
-
-    world.applyCharmaps();
-  }
-
-  virtual void visitScene(World::SceneMember &) const
-  {
-  }
-};
-
-}
-
-
 static void
   notifyCharmappersOfSceneChange(
     World &world,
     const Wrapper::TreeObserver &tree_observer
   )
 {
-  int n_members = world.nMembers();
+  function<void(World::CharmapperMember &,int)> handle_scene_change_function =
+    [&](World::CharmapperMember &charmapper_member,int member_index)
+  {
+    WorldSceneList scene_list(world);
 
-  for (int member_index=0; member_index!=n_members; ++member_index) {
-    NotifyCharmapperVisitor visitor(member_index,tree_observer,world);
-    world.visitMember(member_index,visitor);
-  }
+    CharmapperWrapper::handleSceneChange(
+      charmapper_member.charmapper,
+      charmapper_member.name,
+      tree_observer,
+      /*charmapper_path*/{member_index},
+      world.observed_diagrams,
+      scene_list
+    );
+
+    world.applyCharmaps();
+  };
+
+  world.forEachCharmapperMember(handle_scene_change_function);
 }
 
 
@@ -227,54 +177,72 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
   virtual void visitCharmapper(World::CharmapperMember &member) const
   {
-    WorldSceneList scene_list(world);
-
-    struct Callbacks : CharmapperWrapper::WrapperData {
+    struct CharmapperWrapperData : CharmapperWrapper::WrapperData {
       Charmapper &charmapper;
-      World &world;
-      const int member_index;
-      std::function<void()> &charmap_changed_function;
 
-      Callbacks(
+      CharmapperWrapperData(
         const CharmapperWrapper::SceneList &scene_list,
         Charmapper &charmapper_arg,
         World &world_arg,
-        int member_index_arg,
-        std::function<void()> &charmap_changed_function_arg
+        CharmapperWrapper::Callbacks &callbacks
       )
       :
-        CharmapperWrapper::WrapperData(scene_list,world_arg.observed_diagrams),
-        charmapper(charmapper_arg),
+        CharmapperWrapper::WrapperData(
+          scene_list,
+          world_arg.observed_diagrams,
+          callbacks
+        ),
+        charmapper(charmapper_arg)
+      {
+      }
+    };
+
+    struct Callbacks : CharmapperWrapper::Callbacks {
+      std::function<void()> &charmap_changed_function;
+      World &world;
+      const int member_index;
+
+      Callbacks(
+        std::function<void()> &charmap_changed_function_arg,
+        World &world_arg,
+        int member_index_arg
+      )
+      : charmap_changed_function(charmap_changed_function_arg),
         world(world_arg),
-        member_index(member_index_arg),
-        charmap_changed_function(charmap_changed_function_arg)
+        member_index(member_index_arg)
       {
       }
 
-      virtual void notifyCharmapChanged() const
+      void notifyCharmapChanged() const override
       {
         charmap_changed_function();
       }
 
-      virtual void removeCharmapper() const
+      void removeCharmapper() const override
       {
         world.removeMember(member_index);
       }
     };
 
-    Callbacks
-      callbacks{
+    WorldSceneList scene_list(world);
+    Callbacks callbacks{
+      charmap_changed_function,
+      world,
+      member_index
+    };
+
+    CharmapperWrapperData
+      wrapper_data{
         scene_list,
         member.charmapper,
         world,
-        member_index,
-        charmap_changed_function
+        callbacks
       };
 
     visitor(
       CharmapperWrapper{
         member.charmapper,
-        callbacks,
+        wrapper_data,
         member.name
       }
     );

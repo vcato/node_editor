@@ -283,7 +283,7 @@ Currently, we have
 ---
 When we open the diagram editor window, we'll need to apply the charmaps
 because we won't have captured the diagram state for those diagrams
-we weren't looking at when they were evaluated.  The tree editor doesn't
+we weren't observing when they were evaluated.  The tree editor doesn't
 know how to apply the charmaps though.
 
 Maybe if we get an observer that will automatically cause a reevalulation.

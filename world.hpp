@@ -48,7 +48,7 @@ class World {
 
     void
       forEachCharmapperMember(
-        std::function<void(CharmapperMember &)>
+        std::function<void(CharmapperMember &,int member_index)>
       );
 
     void visitMember(int child_index,const MemberVisitor &);
@@ -118,7 +118,7 @@ class World {
     template <typename TypedMember>
     void
       forEachMemberOfType(
-        std::function<void(const TypedMember &scene)> f
+        std::function<void(const TypedMember &,int member_index)> f
       ) const
     {
       int n_members = nMembers();
@@ -130,7 +130,7 @@ class World {
           dynamic_cast<const TypedMember*>(member_ptr);
 
         if (typed_member_ptr) {
-          f(*typed_member_ptr);
+          f(*typed_member_ptr,i);
         }
       }
     }
@@ -138,14 +138,17 @@ class World {
     template <typename TypedMember>
     void
       forEachMemberOfType(
-        std::function<void(TypedMember &scene)> function_to_call
+        std::function<void(TypedMember &,int member_index)> function_to_call
       )
     {
       const World &const_world = *this;
       const_world.forEachMemberOfType<TypedMember>(
-        [&](const TypedMember &const_member)
+        [&](const TypedMember &const_member,int member_index)
         {
-          function_to_call(const_cast<TypedMember&>(const_member));
+          function_to_call(
+            const_cast<TypedMember&>(const_member),
+            member_index
+          );
         }
       );
     }

@@ -15,10 +15,12 @@ using Label = CharmapperWrapper::Label;
 
 WrapperData::WrapperData(
   const SceneList &scene_list_arg,
-  ObservedDiagrams &observed_diagrams_arg
+  ObservedDiagrams &observed_diagrams_arg,
+  Callbacks &callbacks_arg
 )
 : scene_list(scene_list_arg),
-  observed_diagrams(observed_diagrams_arg)
+  observed_diagrams(observed_diagrams_arg),
+  callbacks(callbacks_arg)
 {
 }
 
@@ -845,7 +847,7 @@ void
     case 1:
       {
         tree_observer.itemRemoved(path);
-        callbacks.removeCharmapper();
+        wrapper_data.removeCharmapper();
       }
       return;
   }
@@ -864,7 +866,7 @@ void
       charmapper,
       charmapper.pass(child_index),
       child_index,
-      callbacks
+      wrapper_data
     }
   );
 }
@@ -892,10 +894,67 @@ static void
 
 void
   CharmapperWrapper::handleSceneChange(
+    Charmapper &charmapper,
+    const std::string &charmapper_name,
+    const TreeObserver &tree_observer,
+    const TreePath &charmapper_path,
+    ObservedDiagrams &observed_diagrams,
+    const SceneList &scene_list
+  )
+{
+  struct WrapperData : CharmapperWrapper::WrapperData {
+    WrapperData(
+      const SceneList &scene_list_arg,
+      ObservedDiagrams &observed_diagrams_arg,
+      Callbacks &callbacks
+    )
+    : CharmapperWrapper::WrapperData(
+        scene_list_arg,observed_diagrams_arg,callbacks
+      )
+    {
+    }
+  };
+
+  struct Callbacks : CharmapperWrapper::Callbacks {
+    void notifyCharmapChanged() const override
+    {
+      // The charmap changed due to a scene change.  We don't want
+      // to cause an inifinite loop, so we don't notify the scene
+      // of the charmap change.
+    }
+
+    virtual void removeCharmapper() const
+    {
+      assert(false);
+    }
+  };
+
+  Callbacks callbacks;
+
+  WrapperData wrapper_data{ scene_list, observed_diagrams, callbacks };
+    // We might want to make observed_diagrams be optional in the
+    // callbacks, since we don't actually need the observed diagrams to
+    // handle a scene change.
+
+  CharmapperWrapper(
+    charmapper,
+    wrapper_data,
+    charmapper_name
+  ).handleSceneChange(tree_observer,charmapper_path);
+}
+
+
+void
+  CharmapperWrapper::handleSceneChange(
     const TreeObserver &tree_observer,
     const TreePath &path_of_this
   )
 {
+  // When the scene changes, the list of bodies that are shown as options for
+  // source/target bodies needs to be updated.
+  // We call tree_observer.enumerationValuesChanged() for the appropriate
+  // paths.
+
   forEachSubWrapper(
     *this,
     path_of_this,
