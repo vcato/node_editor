@@ -1,70 +1,18 @@
 #include "observeddiagrams.hpp"
 
-#include <algorithm>
-
-using std::make_unique;
+#include <iostream>
 
 
-ObservedDiagrams::ObservedDiagram::Observer::Observer(
-  ObservedDiagram &observed_diagram_arg
-)
-: observed_diagram(observed_diagram_arg)
+using std::cerr;
+
+
+ObservedDiagrams::~ObservedDiagrams()
 {
-  observed_diagram.addObserver(*this);
+  assert(observed_diagram_map.empty());
 }
 
 
-ObservedDiagrams::ObservedDiagram::Observer::~Observer()
-{
-  observed_diagram.removeObserver(*this);
-}
-
-
-ObservedDiagrams::ObservedDiagram::ObservedDiagram(
-  Diagram &diagram_arg,ObservedDiagrams &holder_arg
-)
-: diagram(diagram_arg),
-  holder(holder_arg)
-{
-}
-
-
-void ObservedDiagrams::ObservedDiagram::notifyDiagramStateChanged()
-{
-  for (Observer *observer_ptr : observers) {
-    assert(observer_ptr);
-    observer_ptr->diagram_state_changed_callback();
-  }
-}
-
-
-void ObservedDiagrams::ObservedDiagram::addObserver(Observer &observer)
-{
-  observers.push_back(&observer);
-}
-
-
-void ObservedDiagrams::ObservedDiagram::removeObserver(Observer &observer)
-{
-  auto iter =
-    std::find(
-      observers.begin(),
-      observers.end(),
-      &observer
-    );
-
-  assert( iter != observers.end() );
-  observers.erase(iter);
-
-  if (observers.empty()) {
-    holder.notifyUnobserved(diagram);
-    // Note that the observed_diagram no longer exists here
-  }
-}
-
-
-ObservedDiagrams::DiagramObserverPtr
-  ObservedDiagrams::makeObserver(Diagram &diagram)
+DiagramObserverPtr ObservedDiagrams::makeObserver(Diagram &diagram)
 {
   auto iter = observed_diagram_map.find(&diagram);
 
@@ -76,12 +24,12 @@ ObservedDiagrams::DiagramObserverPtr
   }
 
   ObservedDiagram &observed_diagram = iter->second;
-  return make_unique<DiagramObserver>(observed_diagram);
+  return std::make_unique<DiagramObserver>(observed_diagram);
 }
 
 
-ObservedDiagrams::ObservedDiagram *
-  ObservedDiagrams::findObservedDiagramFor(Diagram &diagram)
+ObservedDiagram *
+  ObservedDiagrams::findObservedDiagramFor(const Diagram &diagram)
 {
   auto iter = observed_diagram_map.find(&diagram);
 

@@ -8,6 +8,7 @@
 #include "treepath.hpp"
 #include "wrapperstate.hpp"
 #include "optional.hpp"
+#include "observeddiagram.hpp"
 
 class Diagram;
 class DiagramState;
@@ -59,6 +60,8 @@ struct Wrapper {
 
   virtual Diagram *diagramPtr() const { return nullptr; }
   virtual void diagramChanged() const {}
+  virtual DiagramObserverPtr makeDiagramObserver() const { assert(false); }
+
   virtual void accept(const SubclassVisitor &) const = 0;
   virtual Label label() const = 0;
 

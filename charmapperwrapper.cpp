@@ -13,6 +13,16 @@ using Callbacks = CharmapperWrapper::Callbacks;
 using Label = CharmapperWrapper::Label;
 
 
+Callbacks::Callbacks(
+  const SceneList &scene_list_arg,
+  ObservedDiagrams &observed_diagrams_arg
+)
+: scene_list(scene_list_arg),
+  observed_diagrams(observed_diagrams_arg)
+{
+}
+
+
 template <typename T>
 static int indexOf(const T &item,const std::vector<T> &container)
 {
@@ -166,6 +176,11 @@ struct MotionPassWrapper : VoidWrapper {
     Diagram *diagramPtr() const override
     {
       return &position.diagram;
+    }
+
+    DiagramObserverPtr makeDiagramObserver() const override
+    {
+      return callbacks.observed_diagrams.makeObserver(position.diagram);
     }
 
     const Diagram& defaultDiagram() const override
@@ -382,6 +397,11 @@ struct MotionPassWrapper : VoidWrapper {
       return &global_position.diagram;
     }
 
+    DiagramObserverPtr makeDiagramObserver() const override
+    {
+      return callbacks.observed_diagrams.makeObserver(global_position.diagram);
+    }
+
     const Diagram& defaultDiagram() const override
     {
       if (global_position.isComponents()) {
@@ -573,6 +593,11 @@ struct MotionPassWrapper : VoidWrapper {
     Diagram *diagramPtr() const override
     {
       return &posExpr().diagram;
+    }
+
+    DiagramObserverPtr makeDiagramObserver() const override
+    {
+      return callbacks.observed_diagrams.makeObserver(posExpr().diagram);
     }
 
     const Diagram &defaultDiagram() const override

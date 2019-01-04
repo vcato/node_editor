@@ -7,6 +7,8 @@
 class DiagramEditorWindow {
   public:
     void setDiagramPtr(Diagram *arg);
+    void setDiagramObserver(DiagramObserverPtr);
+
     Diagram *diagramPtr() { return diagramEditor().diagramPtr(); }
 
     std::function<void()> &closeCallback() { return close_callback; }

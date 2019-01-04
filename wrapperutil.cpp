@@ -154,6 +154,23 @@ Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path)
 }
 
 
+DiagramObserverPtr
+  diagramObserverPtr(const Wrapper &wrapper,const TreePath &path)
+{
+  DiagramObserverPtr result;
+
+  visitSubWrapper(
+    wrapper,
+    path,
+    [&result](const Wrapper &wrapper){
+      result = wrapper.makeDiagramObserver();
+    }
+  );
+
+  return result;
+}
+
+
 static vector<string> split(const string &arg)
 {
   string rest = arg;

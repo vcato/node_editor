@@ -1,6 +1,7 @@
 #include "charmapper.hpp"
 #include "wrapper.hpp"
 #include "wrapperstate.hpp"
+#include "observeddiagrams.hpp"
 
 
 class CharmapperWrapper : public VoidWrapper {
@@ -15,13 +16,14 @@ class CharmapperWrapper : public VoidWrapper {
 
     struct Callbacks {
       const SceneList &scene_list;
+      ObservedDiagrams &observed_diagrams;
       virtual void notifyCharmapChanged() const = 0;
       virtual void removeCharmapper() const = 0;
 
-      Callbacks(const SceneList &scene_list_arg)
-      : scene_list(scene_list_arg)
-      {
-      }
+      Callbacks(
+        const SceneList &scene_list_arg,
+        ObservedDiagrams &observed_diagrams_arg
+      );
     };
 
     Charmapper &charmapper;

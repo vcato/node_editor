@@ -132,18 +132,15 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
   using SceneList = CharmapperWrapper::SceneList;
   const int member_index;
   const Wrapper::TreeObserver &tree_observer;
-  const SceneList &scene_list;
   World &world;
 
   NotifyCharmapperVisitor(
     int member_index_arg,
     const Wrapper::TreeObserver &operation_handler_arg,
-    const SceneList &scene_list_arg,
     World &world_arg
   )
   : member_index(member_index_arg),
     tree_observer(operation_handler_arg),
-    scene_list(scene_list_arg),
     world(world_arg)
   {
   }
@@ -151,8 +148,11 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
   virtual void visitCharmapper(World::CharmapperMember &charmapper_member) const
   {
     struct Callbacks : CharmapperWrapper::Callbacks {
-      Callbacks(const SceneList &scene_list_arg)
-      : CharmapperWrapper::Callbacks(scene_list_arg)
+      Callbacks(
+        const SceneList &scene_list_arg,
+        ObservedDiagrams &observed_diagrams_arg
+      )
+      : CharmapperWrapper::Callbacks(scene_list_arg,observed_diagrams_arg)
       {
       }
 
@@ -169,7 +169,8 @@ struct NotifyCharmapperVisitor : World::MemberVisitor {
       }
     };
 
-    Callbacks callbacks{scene_list};
+    WorldSceneList scene_list2(world);
+    Callbacks callbacks{scene_list2,world.observed_diagrams};
 
     CharmapperWrapper(
       charmapper_member.charmapper,
@@ -195,10 +196,9 @@ static void
   )
 {
   int n_members = world.nMembers();
-  WorldSceneList scene_list(world);
 
   for (int member_index=0; member_index!=n_members; ++member_index) {
-    NotifyCharmapperVisitor visitor(member_index,tree_observer,scene_list,world);
+    NotifyCharmapperVisitor visitor(member_index,tree_observer,world);
     world.visitMember(member_index,visitor);
   }
 }
@@ -242,7 +242,8 @@ struct ChildWrapperVisitor : World::MemberVisitor {
         int member_index_arg,
         std::function<void()> &charmap_changed_function_arg
       )
-      : CharmapperWrapper::Callbacks(scene_list),
+      :
+        CharmapperWrapper::Callbacks(scene_list,world_arg.observed_diagrams),
         charmapper(charmapper_arg),
         world(world_arg),
         member_index(member_index_arg),

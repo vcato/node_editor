@@ -26,7 +26,6 @@ inline TaggedRect<Tag> withMargin(const TaggedRect<Tag> &rect,float margin)
 
 
 DiagramEditor::DiagramEditor()
-: diagram_ptr(0)
 {
 }
 
@@ -35,7 +34,8 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 {
   clearFocus();
   clearSelection();
-  diagram_ptr = arg;
+  assert(!diagram_observer_ptr);
+  diagram_ptr2 = arg;
   redraw();
 }
 
@@ -46,9 +46,25 @@ void DiagramEditor::setDiagramState(const DiagramState &arg)
 }
 
 
+void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
+{
+  diagram_observer_ptr = std::move(arg);
+
+  if (diagram_observer_ptr) {
+    diagram_observer_ptr->diagram_state_changed_callback = []{
+      cerr << "DiagramEditor: state changed\n";
+    };
+  }
+}
+
+
 Diagram* DiagramEditor::diagramPtr() const
 {
-  return diagram_ptr;
+  if (diagram_observer_ptr) {
+    return &diagram_observer_ptr->observed_diagram.diagram;
+  }
+
+  return diagram_ptr2;
 }
 
 
@@ -767,7 +783,7 @@ void
     EventModifiers modifiers
   )
 {
-  if (!diagram_ptr) {
+  if (!diagramPtr()) {
     return;
   }
 

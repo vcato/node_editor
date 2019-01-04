@@ -8,6 +8,7 @@
 #include "fakediagrameditorwindows.hpp"
 #include "faketree.hpp"
 #include "itemfrompath.hpp"
+#include "observeddiagrams.hpp"
 
 using std::vector;
 using std::istringstream;
@@ -132,6 +133,7 @@ struct TestObject {
   string label_member;
   vector<unique_ptr<TestObject>> children;
   Diagram *diagram_ptr = nullptr;
+  ObservedDiagrams observed_diagrams;
   int *diagram_changed_count_ptr = nullptr;
 
   TestObject& createChild(const string &label)
@@ -199,6 +201,12 @@ struct TestWrapper : VoidWrapper {
   }
 
   Diagram *diagramPtr() const override { return object.diagram_ptr; }
+
+  DiagramObserverPtr makeDiagramObserver() const override
+  {
+    assert(object.diagram_ptr);
+    return object.observed_diagrams.makeObserver(*object.diagram_ptr);
+  }
 
   void diagramChanged() const override
   {

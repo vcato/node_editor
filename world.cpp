@@ -5,6 +5,8 @@
 #include "generatename.hpp"
 #include "sceneobjects.hpp"
 #include "diagramevaluator.hpp"
+#include "evaluatediagram.hpp"
+#include "diagramexecutor.hpp"
 
 using std::make_unique;
 using std::unique_ptr;
@@ -143,6 +145,65 @@ void World::applyCharmaps()
 }
 
 
+namespace {
+struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
+  ObservedDiagrams &observed_diagrams;
+
+  ObservedDiagramEvaluator(
+    const DiagramExecutionContext &context,
+    ObservedDiagrams &observed_diagrams_arg
+  )
+  : AbstractDiagramEvaluator(context),
+    observed_diagrams(observed_diagrams_arg)
+  {
+  }
+
+  Optional<Any>
+    maybeEvaluateWith(
+      DiagramState &diagram_state,
+      const Diagram &diagram,
+      const Environment *parent_environment_ptr
+    )
+  {
+    DiagramExecutor executor(context,parent_environment_ptr);
+    evaluateDiagram(diagram,executor,diagram_state);
+    return std::move(executor.maybe_return_value);
+  }
+
+  Optional<Any>
+    maybeEvaluate(
+      const Diagram &diagram,
+      const Environment *parent_environment_ptr
+    ) override
+  {
+    ObservedDiagram *maybe_observed_diagram =
+      observed_diagrams.findObservedDiagramFor(diagram);
+
+    if (!maybe_observed_diagram) {
+      DiagramState temporary_diagram_state;
+      return
+        maybeEvaluateWith(
+          temporary_diagram_state,diagram,parent_environment_ptr
+        );
+    }
+
+    ObservedDiagram &observed_diagram = *maybe_observed_diagram;
+    observed_diagram.diagram_state = DiagramState();
+
+    Optional<Any> result =
+      maybeEvaluateWith(
+        observed_diagram.diagram_state,
+        diagram,
+        parent_environment_ptr
+      );
+
+    observed_diagram.notifyDiagramStateChanged();
+    return result;
+  }
+};
+}
+
+
 void World::applyCharmaps(const vector<Charmapper*> &charmapper_ptrs)
 {
   forEachSceneMember([&](SceneMember &scene_member){
@@ -161,9 +222,7 @@ void World::applyCharmaps(const vector<Charmapper*> &charmapper_ptrs)
   DiagramExecutionContext
     context{/*show_stream*/cerr,/*error_stream*/cerr,&environment};
 
-  DiagramEvaluator evaluator(context);
-    // Here, we can have a more sophisticated evaluator which remembers the
-    // DiagramState for diagrams that have observers.
+  ObservedDiagramEvaluator evaluator(context,observed_diagrams);
 
   for (auto charmapper_ptr : charmapper_ptrs) {
     assert(charmapper_ptr);

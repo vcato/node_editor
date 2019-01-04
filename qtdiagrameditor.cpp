@@ -639,7 +639,7 @@ void QtDiagramEditor::drawAll()
 
 void QtDiagramEditor::paintGL()
 {
-  if (!diagram_ptr) {
+  if (!diagramPtr()) {
     return;
   }
 

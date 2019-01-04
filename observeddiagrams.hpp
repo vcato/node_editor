@@ -1,41 +1,21 @@
-#include "diagramstate.hpp"
+#ifndef OBSERVEDDIAGRAMS_HPP_
+#define OBSERVEDDIAGRAMS_HPP_
 
-struct Diagram;
+#include "observeddiagram.hpp"
 
-struct ObservedDiagrams {
-  struct ObservedDiagram {
-    Diagram &diagram;
-    DiagramState diagram_state;
 
-    ObservedDiagram(Diagram &diagram_arg,ObservedDiagrams &holder_arg);
-
-    void notifyDiagramStateChanged();
-
-    struct Observer {
-      ObservedDiagram &observed_diagram;
-      std::function<void()> diagram_state_changed_callback;
-
-      Observer(ObservedDiagram &observed_diagram_arg);
-      ~Observer();
-    };
-
-  private:
-    ObservedDiagrams &holder;
-    std::vector<Observer *> observers;
-
-    void addObserver(Observer &observer);
-    void removeObserver(Observer &observer);
-  };
-
-  using DiagramObserver = ObservedDiagram::Observer;
-  using DiagramObserverPtr = std::unique_ptr<DiagramObserver>;
+struct ObservedDiagrams : ObservedDiagram::Holder {
+  ~ObservedDiagrams();
 
   DiagramObserverPtr makeObserver(Diagram &diagram);
 
-  ObservedDiagram *findObservedDiagramFor(Diagram &diagram);
+  ObservedDiagram *findObservedDiagramFor(const Diagram &diagram);
 
 private:
-  std::map<Diagram *,ObservedDiagram> observed_diagram_map;
+  std::map<const Diagram *,ObservedDiagram> observed_diagram_map;
 
-  void notifyUnobserved(Diagram &diagram);
+  void notifyUnobserved(Diagram &diagram) override;
 };
+
+
+#endif /* OBSERVEDDIAGRAMS_HPP_ */

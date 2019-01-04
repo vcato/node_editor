@@ -7,6 +7,7 @@
 #include "charmapper.hpp"
 #include "scene.hpp"
 #include "scenewindow.hpp"
+#include "observeddiagrams.hpp"
 
 
 class World {
@@ -101,11 +102,14 @@ class World {
       virtual void visitScene(const SceneMember &) const = 0;
     };
 
+    ObservedDiagrams observed_diagrams;
+
   private:
     const Member* findMember(const std::string &name) const;
 
   private:
     using WorldMembers = std::vector<std::unique_ptr<Member>>;
+
     WorldMembers world_members;
 
     virtual SceneWindow& createSceneViewerWindow(SceneMember &) = 0;

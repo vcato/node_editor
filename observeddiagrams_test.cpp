@@ -3,9 +3,6 @@
 #include <cassert>
 #include "diagram.hpp"
 
-using ObservedDiagram = ObservedDiagrams::ObservedDiagram;
-using DiagramObserverPtr = ObservedDiagrams::DiagramObserverPtr;
-
 
 namespace {
 struct FakeWrapper {

@@ -274,22 +274,7 @@ Probably need to unify WrapperValue and Any.
 ---
 Want to be able to show the errors that we got during diagram evaluation
 in the diagram editor.
-
-I think what I want to do is have Charmapper keep EvaluatedDiagrams which
-have both a Diagram and a DiagramState.  Then have the Wrappers return
-EvaluatedDiagrams instead of Diagrams, and have the DiagramEditor work
-with EvaluatedDiagrams instead of Diagrams.  EvaluatedDiagrams can then
-have callbacks for when diagrams are reevaluated.  This isn't ideal because
-Charmapper now needs to keep around the extra state that it doesn't need,
-and it needs to concerned with callbacks in addition to the regular work
-it does.
-* Maybe we can deal with the state issue by not storing state if there are
-  no callbacks.
-* Maybe we can deal with the multiple-concerns issue by separating out the
-  diagram evaluation.
-  * This is kind of nice.  We can have a diagram evalutor which keeps track
-    of the extra diagram state and keeps track of the callbacks.  When it
-    is asked to evaluate a diagram, it can determine whether to keep around
-    the diagram state or not by whether there are callbacks registered.  We
-    can have a DiagramEvaluator interface so that charmapper doesn't need
-    to know about how this works internally.
+---
+When we open the diagram editor window, we'll need to apply the charmaps
+because we won't have captured the diagram state for those diagrams
+we weren't looking at when they were evaluated.

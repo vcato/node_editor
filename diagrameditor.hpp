@@ -17,7 +17,7 @@
 #include "optional.hpp"
 #include "viewportline.hpp"
 #include "diagramstate.hpp"
-
+#include "observeddiagram.hpp"
 
 using DiagramRect = TaggedRect<DiagramCoordsTag>;
 using ViewportRect = TaggedRect<ViewportCoordsTag>;
@@ -110,6 +110,7 @@ class DiagramEditor {
     DiagramEditor();
     void setDiagramPtr(Diagram *);
     void setDiagramState(const DiagramState &);
+    void setDiagramObserver(DiagramObserverPtr);
     Diagram *diagramPtr() const;
     std::function<void()> &diagramChangedCallback();
 
@@ -136,7 +137,7 @@ class DiagramEditor {
     void selectNode(NodeIndex);
     void alsoSelectNode(NodeIndex node_index);
     void focusNode(int node_index,Diagram &diagram);
-    Diagram &diagram() const { assert(diagram_ptr); return *diagram_ptr; }
+    Diagram &diagram() const { assert(diagramPtr()); return *diagramPtr(); }
     void unfocus();
     Circle nodeInputCircle(const Node &,int input_index);
     Node &node(NodeIndex arg) { return diagram().node(arg); }
@@ -187,7 +188,8 @@ class DiagramEditor {
     NodeTextEditor text_editor;
     NodeConnectorIndex selected_node_connector_index =
       NodeConnectorIndex::null();
-    Diagram *diagram_ptr;
+    Diagram *diagram_ptr2 = nullptr;
+    DiagramObserverPtr diagram_observer_ptr;
     DiagramState diagram_state;
     NodeIndex focused_node_index = noNodeIndex();
     Point2D temp_source_pos;
