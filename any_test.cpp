@@ -3,10 +3,10 @@
 #include <sstream>
 #include "anyio.hpp"
 
-
 using std::string;
 using std::vector;
 using std::ostream;
+using std::make_unique;
 
 
 static void testString()
@@ -94,6 +94,31 @@ static void testMemoryLeak1()
 }
 
 
+static void testAssigningObject()
+{
+  struct ObjectData : Object::Data {
+    Data *clone() override { return new ObjectData(*this); }
+    std::string typeName() const override { return "Test"; }
+
+    Any member(const std::string &/*member_name*/) const override
+    {
+      assert(false);
+    }
+
+    std::vector<std::string> memberNames() const override
+    {
+      assert(false);
+    }
+  };
+
+  auto object_data_ptr = make_unique<ObjectData>();
+  Any a = Object(std::move(object_data_ptr));
+
+  auto object_data_ptr2 = make_unique<ObjectData>();
+  a = Object(std::move(object_data_ptr2));
+}
+
+
 int main()
 {
   testString();
@@ -101,4 +126,5 @@ int main()
   testClass();
   testFunction();
   testMemoryLeak1();
+  testAssigningObject();
 }

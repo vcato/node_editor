@@ -67,11 +67,7 @@ class Object {
 
     inline Optional<Any> maybeMember(const std::string &member_name) const;
 
-    Object &operator=(const Object &/*arg*/)
-    {
-      assert(false);
-      return *this;
-    }
+    Object &operator=(const Object &arg);
 
     bool operator==(const Object &/*arg*/) const
     {

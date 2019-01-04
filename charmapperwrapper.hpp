@@ -23,11 +23,16 @@ class CharmapperWrapper : public VoidWrapper {
       const SceneList &scene_list;
       ObservedDiagrams &observed_diagrams;
       Callbacks &callbacks;
+      bool &diagram_observer_created;
 
       void notifyCharmapChanged() const { callbacks.notifyCharmapChanged(); }
       void removeCharmapper() const { callbacks.removeCharmapper(); }
 
-      WrapperData( const SceneList &, ObservedDiagrams &, Callbacks & );
+      DiagramObserverPtr makeDiagramObserver(Diagram &diagram) const
+      {
+        diagram_observer_created = true;
+        return observed_diagrams.makeObserver(diagram);
+      }
     };
 
     Charmapper &charmapper;

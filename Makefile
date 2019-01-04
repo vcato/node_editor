@@ -104,7 +104,7 @@ evaluatediagram_test: evaluatediagram_test.o diagram.o diagramnode.o \
 diagramexecutor_test: diagramexecutor_test.o diagramexecutor.o anyio.o \
   printindent.o evaluatediagram.o linetext.o diagram.o stringutil.o \
   evaluateexpression.o diagramnode.o maybepoint2d.o contains.o \
-  statementtext.o evaluatelinetext.o
+  statementtext.o evaluatelinetext.o any.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 diagrameditor_test: diagrameditor_test.o diagrameditor.o stringutil.o \

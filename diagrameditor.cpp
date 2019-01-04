@@ -42,6 +42,8 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 void DiagramEditor::setDiagramState(const DiagramState &arg)
 {
   diagram_state = arg;
+
+  redraw();
 }
 
 
@@ -65,9 +67,11 @@ void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
 
   if (diagram_observer_ptr) {
     setDiagramPtr(&diagram_observer_ptr->observed_diagram.diagram);
+    setDiagramState(diagram_observer_ptr->observed_diagram.diagram_state);
   }
   else {
     setDiagramPtr(nullptr);
+    setDiagramState(DiagramState());
   }
 }
 

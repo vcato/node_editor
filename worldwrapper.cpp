@@ -177,26 +177,6 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
   virtual void visitCharmapper(World::CharmapperMember &member) const
   {
-    struct CharmapperWrapperData : CharmapperWrapper::WrapperData {
-      Charmapper &charmapper;
-
-      CharmapperWrapperData(
-        const CharmapperWrapper::SceneList &scene_list,
-        Charmapper &charmapper_arg,
-        World &world_arg,
-        CharmapperWrapper::Callbacks &callbacks
-      )
-      :
-        CharmapperWrapper::WrapperData(
-          scene_list,
-          world_arg.observed_diagrams,
-          callbacks
-        ),
-        charmapper(charmapper_arg)
-      {
-      }
-    };
-
     struct Callbacks : CharmapperWrapper::Callbacks {
       std::function<void()> &charmap_changed_function;
       World &world;
@@ -230,13 +210,14 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       world,
       member_index
     };
+    bool diagram_observer_created = false;
 
-    CharmapperWrapperData
+    CharmapperWrapper::WrapperData
       wrapper_data{
         scene_list,
-        member.charmapper,
-        world,
-        callbacks
+        world.observed_diagrams,
+        callbacks,
+        diagram_observer_created
       };
 
     visitor(
@@ -246,6 +227,12 @@ struct ChildWrapperVisitor : World::MemberVisitor {
         member.name
       }
     );
+
+    if (diagram_observer_created) {
+      // If we created a diagram observer, then we need to reapply the
+      // charmaps to update the observed diagram states.
+      world.applyCharmaps();
+    }
   }
 
   virtual void visitScene(World::SceneMember &member) const

@@ -549,12 +549,15 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
   NodeRenderInfo render_info = nodeRenderInfo(node);
 
   bool is_selected = nodeIsSelected(node_index);
-  const DiagramTextObject &header_text_object = node.header_text_object;
-  drawBoxedText2(
-    viewportTextObject(header_text_object),
-    is_selected,
-    render_info.header_rect
-  );
+
+  { // Draw the header
+    const DiagramTextObject &header_text_object = node.header_text_object;
+    drawBoxedText2(
+      viewportTextObject(header_text_object),
+      is_selected,
+      render_info.header_rect
+    );
+  }
 
   Color unselected_color{0.25,0.25,0.5};
   Color selected_color{0.5,0.5,0};
@@ -569,14 +572,28 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
 
   drawRoundedRect(render_info.body_outer_rect);
 
+  // Draw the text lines
+
+  int n_lines = render_info.text_objects.size();
+
+  for (int line_index=0; line_index!=n_lines; ++line_index) {
+    const std::string &line_error =
+      diagram_state.node_states[node_index].line_errors[line_index];
+
+    if (line_error.empty()) {
+      glColor3f(1,1,1);
+    }
+    else {
+      glColor3f(1,0,0);
+    }
+
+    drawText(render_info.text_objects[line_index]);
+  }
+
   // Draw the input labels
 
   int n_inputs = node.nInputs();
   int n_outputs = node.nOutputs();
-
-  for (const auto &t : render_info.text_objects) {
-    drawText(t);
-  }
 
   // Draw the input connectors
 
@@ -645,4 +662,10 @@ void QtDiagramEditor::paintGL()
 
   begin2DDrawing(width(),height());
   drawAll();
+}
+
+
+void QtDiagramEditor::redraw()
+{
+  update();
 }

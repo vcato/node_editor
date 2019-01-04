@@ -12,6 +12,7 @@
 #include "generatename.hpp"
 #include "anyio.hpp"
 #include "evaluatelinetext.hpp"
+#include "objectdatawithfmethod.hpp"
 
 
 using std::ostringstream;
@@ -20,6 +21,8 @@ using std::vector;
 using std::cerr;
 using std::map;
 using std::make_unique;
+using std::unique_ptr;
+using std::function;
 
 
 static Any lineTextValue(const char *text,const vector<Any> &input_values)
@@ -133,40 +136,12 @@ static void testCallingMethod()
 {
   string line_text = "$.f()";
 
-  struct TestObjectData : Object::Data {
-    virtual Data *clone() { return new auto(*this); }
-
-    std::string typeName() const override
-    {
-      assert(false); // needs test
-    }
-
-    Any member(const std::string &member_name) const override
-    {
-      if (member_name=="f") {
-        auto f = [](const vector<Any> &) -> Optional<Any> { return {3}; };
-        return Function{f};
-      }
-
-      cerr << "member_name: " << member_name << "\n";
-      assert(false);
-    }
-
-    virtual void printOn(std::ostream &) const
-    {
-      assert(false);
-    }
-
-    std::vector<std::string> memberNames() const override
-    {
-      return {"f"};
-    }
-  };
-
   FakeExecutor executor;
-  TestObjectData object_data;
+  auto f = [](const vector<Any> &) -> Optional<Any> { return {3}; };
+  unique_ptr<ObjectDataWithFMethod> object_data_ptr =
+    make_unique<ObjectDataWithFMethod>(f);
   vector<Any> input_values;
-  input_values.push_back(Object(make_unique<TestObjectData>()));
+  input_values.push_back(Object(std::move(object_data_ptr)));
   ostringstream error_stream;
   Optional<Any> maybe_result =
     evaluateLineText(line_text,input_values,executor,error_stream);

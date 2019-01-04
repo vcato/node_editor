@@ -11,14 +11,16 @@
 #include "charmapperobjects.hpp"
 #include "point2dobject.hpp"
 #include "anyio.hpp"
+#include "objectdatawithfmethod.hpp"
 
 using std::vector;
 using std::cerr;
 using std::string;
 using std::ostringstream;
+using std::unique_ptr;
 using std::make_unique;
+using std::function;
 using std::ostream;
-
 
 
 static Class stubClass()
@@ -316,30 +318,12 @@ static void testCallingMemberFunctionWithNoArguments()
 {
   string expression = "obj.f()";
 
-  struct TestObjectData : Object::Data {
-    Data *clone() override { return new auto(*this); }
+  auto f = [](const vector<Any> &) -> Optional<Any> { return {5}; };
 
-    std::string typeName() const override { return "Test"; }
+  unique_ptr<ObjectDataWithFMethod> object_data_ptr =
+    make_unique<ObjectDataWithFMethod>(f);
 
-    Any member(const std::string &member_name) const override
-    {
-      if (member_name=="f") {
-        auto f = [](const vector<Any> &) -> Optional<Any> { return {5}; };
-        Function::FunctionMember f_member(f);
-        return Any(Function{f_member});
-      }
-
-      cerr << "member_name: " << member_name << "\n";
-      assert(false);
-    }
-
-    std::vector<std::string> memberNames() const override
-    {
-      return {"f"};
-    }
-  };
-
-  Any obj = Object(make_unique<TestObjectData>());
+  Any obj = Object(std::move(object_data_ptr));
 
   Tester tester;
   tester.environment["obj"] = obj;
@@ -355,38 +339,17 @@ static void testCallingMemberFunctionWithArgument()
   string expression = "$.f($)";
   Tester tester;
 
-  struct TestObjectData : Object::Data {
-    Data *clone() override { return new auto(*this); }
+  auto f =
+    [](const vector<Any> &arg) -> Optional<Any> {
+      assert(arg.size()==1);
+      return arg[0];
+    };
 
-    std::string typeName() const override
-    {
-      assert(false); // needs test
-    }
-
-    Any member(const std::string &member_name) const override
-    {
-      if (member_name=="f") {
-        auto f = [](const vector<Any> &arg) -> Optional<Any> {
-          assert(arg.size()==1);
-          return arg[0];
-        };
-
-        Function::FunctionMember f_member(f);
-        return Any(Function{f_member});
-      }
-
-      cerr << "member_name: " << member_name << "\n";
-      assert(false);
-    }
-
-    std::vector<std::string> memberNames() const override
-    {
-      return {"f"};
-    }
-  };
+  unique_ptr<ObjectDataWithFMethod> object_data_ptr =
+    make_unique<ObjectDataWithFMethod>(f);
 
   tester.input_values = {
-    Object(make_unique<TestObjectData>()),
+    Object(std::move(object_data_ptr)),
     6
   };
 

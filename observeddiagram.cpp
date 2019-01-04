@@ -29,7 +29,10 @@ void ObservedDiagram::notifyDiagramStateChanged()
 {
   for (Observer *observer_ptr : observers) {
     assert(observer_ptr);
-    observer_ptr->diagram_state_changed_callback();
+
+    if (observer_ptr->diagram_state_changed_callback) {
+      observer_ptr->diagram_state_changed_callback();
+    }
   }
 }
 

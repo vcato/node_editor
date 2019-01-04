@@ -13,18 +13,6 @@ using WrapperData = CharmapperWrapper::WrapperData;
 using Label = CharmapperWrapper::Label;
 
 
-WrapperData::WrapperData(
-  const SceneList &scene_list_arg,
-  ObservedDiagrams &observed_diagrams_arg,
-  Callbacks &callbacks_arg
-)
-: scene_list(scene_list_arg),
-  observed_diagrams(observed_diagrams_arg),
-  callbacks(callbacks_arg)
-{
-}
-
-
 template <typename T>
 static int indexOf(const T &item,const std::vector<T> &container)
 {
@@ -182,7 +170,7 @@ struct MotionPassWrapper : VoidWrapper {
 
     DiagramObserverPtr makeDiagramObserver() const override
     {
-      return callbacks.observed_diagrams.makeObserver(position.diagram);
+      return callbacks.makeDiagramObserver(position.diagram);
     }
 
     const Diagram& defaultDiagram() const override
@@ -401,7 +389,7 @@ struct MotionPassWrapper : VoidWrapper {
 
     DiagramObserverPtr makeDiagramObserver() const override
     {
-      return callbacks.observed_diagrams.makeObserver(global_position.diagram);
+      return callbacks.makeDiagramObserver(global_position.diagram);
     }
 
     const Diagram& defaultDiagram() const override
@@ -599,7 +587,7 @@ struct MotionPassWrapper : VoidWrapper {
 
     DiagramObserverPtr makeDiagramObserver() const override
     {
-      return callbacks.observed_diagrams.makeObserver(posExpr().diagram);
+      return callbacks.makeDiagramObserver(posExpr().diagram);
     }
 
     const Diagram &defaultDiagram() const override
@@ -902,19 +890,6 @@ void
     const SceneList &scene_list
   )
 {
-  struct WrapperData : CharmapperWrapper::WrapperData {
-    WrapperData(
-      const SceneList &scene_list_arg,
-      ObservedDiagrams &observed_diagrams_arg,
-      Callbacks &callbacks
-    )
-    : CharmapperWrapper::WrapperData(
-        scene_list_arg,observed_diagrams_arg,callbacks
-      )
-    {
-    }
-  };
-
   struct Callbacks : CharmapperWrapper::Callbacks {
     void notifyCharmapChanged() const override
     {
@@ -931,9 +906,15 @@ void
 
   Callbacks callbacks;
 
-  WrapperData wrapper_data{ scene_list, observed_diagrams, callbacks };
+  bool diagram_observer_created = false;
+  CharmapperWrapper::WrapperData wrapper_data{
+    scene_list,
+    observed_diagrams,
+    callbacks,
+    diagram_observer_created
+  };
     // We might want to make observed_diagrams be optional in the
-    // callbacks, since we don't actually need the observed diagrams to
+    // wrapper data, since we don't actually need the observed diagrams to
     // handle a scene change.
 
   CharmapperWrapper(
