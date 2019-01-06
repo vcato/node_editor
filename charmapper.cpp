@@ -8,8 +8,6 @@
 #include "sceneobjects.hpp"
 #include "point2dobject.hpp"
 #include "charmapperobjects.hpp"
-#include "diagramevaluator.hpp"
-
 
 using std::make_unique;
 using std::cerr;
@@ -246,7 +244,11 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
         environment["global_position"] = makePoint2DObject(global_position);
 
         Optional<Any> maybe_return_value =
-          evaluator.maybeEvaluate(diagram,&environment);
+          evaluator.maybeEvaluate(
+            diagram,
+            &environment,
+            PosExprObjectData::staticTypeName()
+          );
 
         Optional<PosExprData> maybe_pos_expr;
 

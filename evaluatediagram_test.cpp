@@ -9,9 +9,9 @@
 #include "maybepoint2d.hpp"
 #include "diagramio.hpp"
 
-
 using std::vector;
 using std::cerr;
+using std::string;
 
 
 static const char *averaging_diagram_text =
@@ -93,7 +93,7 @@ static Any
   std::ostringstream show_stream;
   DiagramExecutionContext context{show_stream,/*error_stream*/cerr};
   context.parent_environment_ptr = &environment;
-  DiagramExecutor executor(context,context.parent_environment_ptr);
+  DiagramExecutor executor(context, context.parent_environment_ptr);
   evaluateDiagram(diagram,executor);
   return std::move(*executor.maybe_return_value);
 }
@@ -205,6 +205,32 @@ static void testExpression()
 }
 
 
+static void testDiagramReturningWrongType()
+{
+  string expected_error_message = "Returning float instead of vector.\n";
+  Diagram diagram;
+  NodeIndex node_index = diagram.createNodeWithText("return 5");
+  string expected_return_type_name = Any(vector<Any>{1,2}).typeName();
+
+  std::ostringstream show_stream;
+  DiagramExecutionContext context{show_stream,/*error_stream*/cerr};
+  DiagramExecutor executor(context, /*parent_environment_ptr*/nullptr);
+  executor.optional_expected_return_type_name = expected_return_type_name;
+  DiagramState diagram_state;
+  evaluateDiagram(diagram,executor,diagram_state);
+
+  assert(!executor.maybe_return_value);
+
+  string error_message = diagram_state.node_states[node_index].line_errors[0];
+
+  if (error_message != expected_error_message) {
+    cerr << "error_message: " << error_message << "\n";
+  }
+
+  assert(error_message == expected_error_message);
+}
+
+
 int main()
 {
   testSimpleReturn();
@@ -213,4 +239,5 @@ int main()
   testLocalPositionDiagram();
   testAveragingDiagram();
   testExpression();
+  testDiagramReturningWrongType();
 }

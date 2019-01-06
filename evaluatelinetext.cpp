@@ -70,7 +70,9 @@ Optional<Any>
         return {};
       }
 
-      executor.executeReturn(*maybe_value);
+      if (!executor.tryExecuteReturn(*maybe_value,error_stream)) {
+        return Any();
+      }
 
       return Any();
     }

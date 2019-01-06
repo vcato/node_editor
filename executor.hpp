@@ -10,7 +10,8 @@ struct Executor {
   const Environment *parent_environment_ptr;
 
   virtual void executeShow(const Any&) = 0;
-  virtual void executeReturn(const Any&) = 0;
+  virtual bool tryExecuteReturn(const Any&,std::ostream &error_stream) = 0;
+
   virtual std::ostream& errorStream() = 0;
 
   Executor(const Environment *parent_environment_ptr_arg)

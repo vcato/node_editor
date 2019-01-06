@@ -4,7 +4,6 @@
 #include "worldwrapper.hpp"
 #include "generatename.hpp"
 #include "sceneobjects.hpp"
-#include "diagramevaluator.hpp"
 #include "evaluatediagram.hpp"
 #include "diagramexecutor.hpp"
 
@@ -174,10 +173,12 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
     maybeEvaluateWith(
       DiagramState &diagram_state,
       const Diagram &diagram,
-      const Environment *parent_environment_ptr
+      const Environment *parent_environment_ptr,
+      const Optional<string> &optional_expected_type_name
     )
   {
     DiagramExecutor executor(context,parent_environment_ptr);
+    executor.optional_expected_return_type_name = optional_expected_type_name;
     evaluateDiagram(diagram,executor,diagram_state);
     return std::move(executor.maybe_return_value);
   }
@@ -185,7 +186,8 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
   Optional<Any>
     maybeEvaluate(
       const Diagram &diagram,
-      const Environment *parent_environment_ptr
+      const Environment *parent_environment_ptr,
+      const Optional<string> &optional_expected_type_name
     ) override
   {
     ObservedDiagram *maybe_observed_diagram =
@@ -195,7 +197,10 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
       DiagramState temporary_diagram_state;
       return
         maybeEvaluateWith(
-          temporary_diagram_state,diagram,parent_environment_ptr
+          temporary_diagram_state,
+          diagram,
+          parent_environment_ptr,
+          optional_expected_type_name
         );
     }
 
@@ -206,7 +211,8 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
       maybeEvaluateWith(
         observed_diagram.diagram_state,
         diagram,
-        parent_environment_ptr
+        parent_environment_ptr,
+        optional_expected_type_name
       );
 
     observed_diagram.notifyDiagramStateChanged();

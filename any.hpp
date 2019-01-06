@@ -74,6 +74,8 @@ class Object {
       return *data_ptr;
     }
 
+    std::string typeName() const { return data().typeName(); }
+
     inline Optional<Any> maybeMember(const std::string &member_name) const;
 
     Object &operator=(const Object &arg);
@@ -181,7 +183,7 @@ struct AnyPolicy {
         case vector_type: return "vector";
         case string_type: return "string";
         case float_type: return "float";
-        case object_type: return "object";
+        case object_type: return asObject().typeName();
         case class_ptr_type: return "class_ptr";
         case function_type: return "function";
       }

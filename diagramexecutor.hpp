@@ -7,6 +7,7 @@ struct DiagramExecutor : Executor {
   Optional<Any> maybe_return_value;
   std::ostream &show_stream;
   std::ostream &error_stream;
+  Optional<std::string> optional_expected_return_type_name;
 
   DiagramExecutor(
     const DiagramExecutionContext &context,
@@ -19,11 +20,7 @@ struct DiagramExecutor : Executor {
   }
 
   void executeShow(const Any& arg) override;
-
-  void executeReturn(const Any& arg) override
-  {
-    maybe_return_value = arg;
-  }
+  bool tryExecuteReturn(const Any& arg, std::ostream &error_stream) override;
 
   std::ostream& errorStream() override { return error_stream; }
 };

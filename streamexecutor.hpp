@@ -18,7 +18,7 @@ struct StreamExecutor : Executor {
     stream << "\n";
   }
 
-  void executeReturn(const Any& arg) override;
+  bool tryExecuteReturn(const Any& arg,std::ostream &error_stream) override;
 
   void print(float value)
   {

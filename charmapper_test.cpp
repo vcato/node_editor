@@ -1,18 +1,20 @@
 #include "charmapper.hpp"
 
 #include <iostream>
-#include "diagramevaluator.hpp"
+#include "testdiagramevaluator.hpp"
 
 using std::cerr;
 using std::string;
+using std::map;
 
 
-static void applyCharmapper(Charmapper &charmapper)
+static map<const Diagram *,DiagramState> applyCharmapper(Charmapper &charmapper)
 {
   DiagramExecutionContext
     context{/*show_stream*/cerr,/*error_stream*/cerr};
-  DiagramEvaluator evaluator(context);
+  TestDiagramEvaluator evaluator(context);
   charmapper.apply(evaluator);
+  return evaluator.diagram_state_map;
 }
 
 
@@ -188,6 +190,38 @@ static void testGlobalPositionDiagram(const string &node_text,float expected_x)
 }
 
 
+static void testPosExprDiagramWithWrongReturnType()
+{
+  Scene scene;
+  auto &body1 = scene.addBody();
+  Charmapper charmapper;
+
+  string expected_error_message = "Returning float instead of PosExpr.\n";
+
+  auto &motion_pass = charmapper.addMotionPass();
+  auto &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link = BodyLink(&scene,&body1);
+  pos_expr.global_position.switchToComponents();
+  Diagram &diagram = pos_expr.diagram;
+  clearDiagram(diagram);
+  NodeIndex node_index = diagram.createNodeWithText("return 5");
+
+  map<const Diagram *,DiagramState> diagram_state_map =
+    applyCharmapper(charmapper);
+
+  DiagramState &diagram_state = diagram_state_map[&diagram];
+  int line_index = 0;
+  string error_message =
+    diagram_state.node_states[node_index].line_errors[line_index];
+
+  if (error_message != expected_error_message) {
+    cerr << "error_message: " << error_message << "\n";
+  }
+
+  assert(error_message == expected_error_message);
+}
+
+
 int main()
 {
   testWithTargetBody();
@@ -202,4 +236,5 @@ int main()
   testGlobalPositionDiagram("return [1,2,3]",/*expected_x*/0);
   testGlobalPositionDiagram("return [[],2]",/*expected_x*/0);
   testGlobalPositionDiagram("return [1,[]]",/*expected_x*/0);
+  testPosExprDiagramWithWrongReturnType();
 }

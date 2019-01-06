@@ -271,6 +271,3 @@ separate nodes stacked on top of each other.
 Need to be able to have multiple frames in a scene.
 ---
 Probably need to unify WrapperValue and Any.
----
-If we have a node with '5+' as the text, the error message is weird.
-  It shows "Unexpected '*'", where * is a strange character.

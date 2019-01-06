@@ -16,7 +16,8 @@ struct AbstractDiagramEvaluator {
   virtual Optional<Any>
     maybeEvaluate(
       const Diagram &diagram,
-      const Environment *parent_environment_ptr
+      const Environment *parent_environment_ptr,
+      const Optional<std::string> &optional_expected_type_name = {}
     ) = 0;
 };
 

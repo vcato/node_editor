@@ -35,9 +35,14 @@ struct PosExprObjectData : Object::Data, PosExprData {
   {
   }
 
-  std::string typeName() const override
+  static std::string staticTypeName()
   {
     return "PosExpr";
+  }
+
+  std::string typeName() const override
+  {
+    return staticTypeName();
   }
 
   PosExprObjectData *clone() override

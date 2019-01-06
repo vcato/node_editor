@@ -23,6 +23,7 @@ using std::map;
 using std::make_unique;
 using std::unique_ptr;
 using std::function;
+using std::ostream;
 
 
 static Any lineTextValue(const char *text,const vector<Any> &input_values)
@@ -64,11 +65,12 @@ struct FakeExecutor : Executor {
   {
   }
 
-  void executeReturn(const Any& arg) override
+  bool tryExecuteReturn(const Any& arg,ostream &/*error_stream*/) override
   {
     execution_stream << "return(";
     printOn(execution_stream,arg,/*indent_level*/0);
     execution_stream << ")\n";
+    return true;
   }
 
   virtual std::ostream& errorStream() override { return cerr; }
