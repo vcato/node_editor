@@ -124,6 +124,11 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
     return evaluateExpressionStartingWithIdentifier(identifier);
   }
 
+  if (parser.atEnd()) {
+    error_stream << "Unexpected end of expression.\n";
+    return {};
+  }
+
   error_stream << "Unexpected '" << parser.peekChar() << "'\n";
 
   return Optional<Any>();

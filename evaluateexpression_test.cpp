@@ -12,6 +12,7 @@
 #include "point2dobject.hpp"
 #include "anyio.hpp"
 #include "objectdatawithfmethod.hpp"
+#include "stringutil.hpp"
 
 using std::vector;
 using std::cerr;
@@ -122,6 +123,27 @@ static void testInvalidExpression(const string &expression)
   Optional<Any> maybe_result = evaluateStringWithTester(expression,tester);
   assert(!maybe_result);
   assert(tester.errorOutput()!="");
+}
+
+
+static void
+  testInvalidExpression(
+    const string &expression,
+    const string &expected_error_message
+  )
+{
+  Tester tester;
+  Optional<Any> maybe_result = evaluateStringWithTester(expression,tester);
+  assert(!maybe_result);
+  bool error_output_is_correct =
+    startsWith(tester.errorOutput(),expected_error_message);
+
+  if (!error_output_is_correct) {
+    cerr << "Error output: " << tester.errorOutput() << "\n";
+    cerr << "expected    : " << expected_error_message << "\n";
+  }
+
+  assert(error_output_is_correct);
 }
 
 
@@ -430,7 +452,7 @@ int main()
   test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
   testInvalidExpression("2*[[],2]");
   testInvalidExpression("[]*[]");
-  testInvalidExpression("2*");
+  testInvalidExpression("2*","Unexpected end of expression.");
   testInvalidExpression("[[],2] + [3,4]");
   testInvalidExpression("[1,2] + [[],4]");
   testInvalidExpression("[1,2] + [3,4,5]");

@@ -90,7 +90,7 @@ charmapperobjects_test: charmapperobjects_test.o charmapperobjects.o \
 evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o \
   maybepoint2d.o charmapperobjects.o scene.o generatename.o sceneobjects.o \
   point2dobject.o globalvec.o point2d.o any.o printindent.o contains.o \
-  anyio.o
+  anyio.o stringutil.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 evaluatediagram_test: evaluatediagram_test.o diagram.o diagramnode.o \
