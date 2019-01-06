@@ -274,3 +274,6 @@ Probably need to unify WrapperValue and Any.
 ---
 Want to be able to show the errors that we got during diagram evaluation
 in the diagram editor.
+
+I think if you put the cursor over a red line that it will show the error
+in a bubble.

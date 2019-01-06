@@ -41,6 +41,8 @@ struct Tester {
   Environment environment;
   vector<Any> input_values;
   ostringstream error_stream;
+
+  string errorOutput() const { return error_stream.str(); }
 };
 }
 
@@ -116,9 +118,12 @@ static Optional<Any> evaluateString(const string &arg)
 
 static void testInvalidExpression(const string &expression)
 {
-  Optional<Any> maybe_result = evaluateString(expression);
+  Tester tester;
+  Optional<Any> maybe_result = evaluateStringWithTester(expression,tester);
   assert(!maybe_result);
+  assert(tester.errorOutput()!="");
 }
+
 
 static void test(const string &expression,const Any &expected_result)
 {
@@ -292,7 +297,6 @@ static void testPosExprWithUnknownParameter()
   Optional<Any> maybe_result =
     evaluateStringWithTester("PosExpr(blah=5)",tester);
   assert(!maybe_result);
-  cerr << "tester.error_stream.str(): " << tester.error_stream.str() << "\n";
   assert(tester.error_stream.str()=="Unknown parameter 'blah'\n");
 }
 
@@ -423,6 +427,7 @@ int main()
   test("2*3",6);
   test("2*[1,2]",makeVector(2,4));
   test("[1,2]*2",makeVector(2,4));
+  test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
   testInvalidExpression("2*[[],2]");
   testInvalidExpression("[]*[]");
   testInvalidExpression("2*");
@@ -432,7 +437,6 @@ int main()
   testInvalidExpression("[1,2] + 5");
   testInvalidExpression("[1,2] +");
   testInvalidExpression("1.x");
-  test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
   testInvalidExpression("[1,2] - 3");
   testInvalidExpression("[1,2] - [3]");
   testInvalidExpression("[1,2] - [[],3]");

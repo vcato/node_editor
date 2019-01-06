@@ -11,68 +11,69 @@ using std::make_unique;
 using std::ostream;
 
 
-Class posExprClass()
+static Optional<Object>
+  maybeMakePosExprObject(
+    const Class::NamedParameters &named_parameters,
+    ostream &error_stream
+  )
 {
-  auto make_object_function =
-    [&](
-      const Class::NamedParameters &named_parameters,
-      ostream &error_stream
-    ) -> Optional<Object> {
-      BodyLink body_link;
-      Optional<Point2D> maybe_position;
+  BodyLink body_link;
+  Optional<Point2D> maybe_position;
 
-      for (auto &named_parameter : named_parameters) {
-        const string &name = named_parameter.first;
-        const Any &value = named_parameter.second;
+  for (auto &named_parameter : named_parameters) {
+    const string &name = named_parameter.first;
+    const Any &value = named_parameter.second;
 
-        if (name=="body") {
-          if (!value.isObject()) {
-            assert(false);
-          }
-
-          auto body_object_data_ptr =
-            dynamic_cast<const BodyObjectData*>(&value.asObject().data());
-
-          if (!body_object_data_ptr) {
-            assert(false);
-          }
-
-          body_link = body_object_data_ptr->body_link;
-          assert(body_link.hasValue());
-        }
-        else if (name=="pos") {
-          maybe_position = maybePoint2D(value);
-
-          if (!maybe_position) {
-            // This needs to give an error once we have access to the
-            // error stream.
-            cerr << "Could't make the position\n";
-            cerr << "value.type: " << value.typeName() << "\n";
-            return {};
-          }
-        }
-        else {
-          error_stream << "Unknown parameter '" << name << "'\n";
-          return {};
-        }
-      }
-
-      if (!body_link.hasValue()) {
-        // This needs to give an error, but we don't have access to the
-        // error stream.
-        cerr << "No body specified\n";
+    if (name=="body") {
+      if (!value.isObject()) {
+        error_stream << "Body parameter is not a body.\n";
         return {};
       }
 
+      auto body_object_data_ptr =
+        dynamic_cast<const BodyObjectData*>(&value.asObject().data());
 
-      if (!maybe_position) {
+      if (!body_object_data_ptr) {
         assert(false);
       }
 
-      return Object(make_unique<PosExprObjectData>(body_link,*maybe_position));
-    };
+      body_link = body_object_data_ptr->body_link;
+      assert(body_link.hasValue());
+    }
+    else if (name=="pos") {
+      maybe_position = maybePoint2D(value);
 
-  return Class(make_object_function);
+      if (!maybe_position) {
+        error_stream << "Could't make the position\n";
+        error_stream << "value.type: " << value.typeName() << "\n";
+        return {};
+      }
+    }
+    else {
+      error_stream << "Unknown parameter '" << name << "'\n";
+      return {};
+    }
+  }
+
+  if (!body_link.hasValue()) {
+    // This needs to give an error, but we don't have access to the
+    // error stream.
+    cerr << "No body specified\n";
+    return {};
+  }
+
+
+  if (!maybe_position) {
+    assert(false);
+  }
+
+  return Object(make_unique<PosExprObjectData>(body_link,*maybe_position));
+}
+
+
+Class posExprClass()
+{
+  return Class(maybeMakePosExprObject);
 }
 
 

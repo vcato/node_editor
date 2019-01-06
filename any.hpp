@@ -16,19 +16,28 @@ struct Object;
 
 using Any = BasicVariant<AnyPolicy>;
 
-struct Class {
-  using NamedParameters = std::map<std::string,Any>;
-  using MakeObjectSignature =
-    Optional<Object>(const NamedParameters &,std::ostream &error_stream);
-  using MakeObjectFunction = std::function<MakeObjectSignature>;
-  bool operator==(const Class &) const { return true; }
+class Class {
+  public:
+    using NamedParameters = std::map<std::string,Any>;
+    using MakeObjectSignature =
+      Optional<Object>(const NamedParameters &,std::ostream &error_stream);
+    using MakeObjectFunction = std::function<MakeObjectSignature>;
 
-  Class(MakeObjectFunction make_object_function_arg)
-  : make_object_function(std::move(make_object_function_arg))
-  {
-  }
+    Class(MakeObjectFunction make_object_function_arg)
+    : make_object_function(std::move(make_object_function_arg))
+    {
+    }
 
-  MakeObjectFunction make_object_function;
+    bool operator==(const Class &) const;
+
+    Optional<Object>
+      maybeMakeObject(
+        const NamedParameters &parameters,
+        std::ostream &error_stream
+      ) const;
+
+  private:
+    MakeObjectFunction make_object_function;
 };
 
 

@@ -28,6 +28,7 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
     ) const;
   Optional<Any> evaluateAddition(const Any &first_term) const;
   Optional<Any> evaluateSubtraction(const Any &first_term) const;
+  Optional<Any> evaluateDivision(const Any &first_term) const;
   Optional<Any> evaluateMemberExpression(const Any &first_term) const;
   Optional<Any> evaluatePostfixExpression() const;
   Optional<Any>
@@ -66,6 +67,7 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
     }
 
     if (parser.peekChar()!=')') {
+      error_stream << "Missing ')'\n";
       return {};
     }
 
@@ -129,12 +131,17 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
 
 
 static Optional<Any>
-  maybeScaleVector(float first_float,const vector<Any> &second_vector)
+  maybeScaleVector(
+    float first_float,
+    const vector<Any> &second_vector,
+    ostream &error_stream
+  )
 {
   vector<Any> result;
 
   for (auto &x : second_vector) {
     if (!x.isFloat()) {
+      error_stream << "Invalid vector for scalar multiplication.\n";
       return {};
     }
 
@@ -165,9 +172,8 @@ Optional<Any>
   map<string,Any> named_parameters;
 
   if (parser.peekChar()==')') {
-    assert(the_class.make_object_function);
     Optional<Object> maybe_object =
-      the_class.make_object_function(named_parameters,error_stream);
+      the_class.maybeMakeObject(named_parameters,error_stream);
 
     if (!maybe_object) {
       return {};
@@ -214,9 +220,8 @@ Optional<Any>
     }
   }
 
-  assert(the_class.make_object_function);
   Optional<Object> maybe_object =
-    the_class.make_object_function(named_parameters,error_stream);
+    the_class.maybeMakeObject(named_parameters,error_stream);
 
   if (!maybe_object) {
     cerr << "Failed to make object\n";
@@ -257,13 +262,15 @@ Optional<Any>
   }
 
   if (!first_term.isVector() || !second_term.isVector()) {
+    error_stream << "Invalid types for addition.\n";
     return {};
   }
 
   const vector<Any> &first_vector = first_term.asVector();
   const vector<Any> &second_vector = second_term.asVector();
 
-  if (first_vector.size()!=second_vector.size()) {
+  if (first_vector.size() != second_vector.size()) {
+    error_stream << "Can't add vectors of different sizes.\n";
     return {};
   }
 
@@ -271,11 +278,8 @@ Optional<Any>
   vector<Any> result;
 
   for (decltype(n) i=0; i!=n; ++i) {
-    if (!first_vector[i].isFloat()) {
-      return {};
-    }
-
-    if (!second_vector[i].isFloat()) {
+    if (!first_vector[i].isFloat() || !second_vector[i].isFloat()) {
+      error_stream << "Can't add vectors containing non-numeric values.\n";
       return {};
     }
 
@@ -305,13 +309,15 @@ Optional<Any>
   }
 
   if (!first_term.isVector() || !second_term.isVector()) {
+    error_stream << "Invalid types for subtraction.\n";
     return {};
   }
 
   const vector<Any> &first_vector = first_term.asVector();
   const vector<Any> &second_vector = second_term.asVector();
 
-  if (first_vector.size()!=second_vector.size()) {
+  if (first_vector.size() != second_vector.size()) {
+    error_stream << "Can't subtract vectors of different sizes.\n";
     return {};
   }
 
@@ -319,11 +325,8 @@ Optional<Any>
   vector<Any> result;
 
   for (decltype(n) i=0; i!=n; ++i) {
-    if (!first_vector[i].isFloat()) {
-      return {};
-    }
-
-    if (!second_vector[i].isFloat()) {
+    if (!first_vector[i].isFloat() || !second_vector[i].isFloat()) {
+      error_stream << "Can't subtract vectors containing non-numeric values.\n";
       return {};
     }
 
@@ -334,6 +337,46 @@ Optional<Any>
   }
 
   return {std::move(result)};
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluateDivision(const Any &first_term) const
+{
+  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+
+  if (!maybe_second_term) {
+    return {};
+  }
+
+  const Any &second_term = *maybe_second_term;
+
+  if (first_term.isVector() && second_term.isFloat()) {
+    const vector<Any> &first_vector = first_term.asVector();
+    float second_float = second_term.asFloat();
+    vector<Any> result;
+
+    for (auto &x : first_vector) {
+      if (!x.isFloat()) {
+        error_stream <<
+          "Can't divide a vector containing non-numeric values.\n";
+        return {};
+      }
+
+      result.push_back(x.asFloat() / second_float);
+    }
+
+    return {std::move(result)};
+  }
+  else if (first_term.isFloat() && second_term.isFloat()) {
+    return {first_term.asFloat() / second_term.asFloat()};
+  }
+  else {
+    error_stream << "Unknown operation: " << first_term.typeName() << "/" <<
+      second_term.typeName() << "\n";
+  }
+
+  return {};
 }
 
 
@@ -356,6 +399,8 @@ Optional<Any>
   }
 
   if (!first_term.isObject()) {
+    error_stream <<
+      "Attempt to get member of " << first_term.typeName() << "\n";
     return {};
   }
 
@@ -476,15 +521,26 @@ Optional<Any>
     }
 
     if (first_term.isVector() && second_term.isVector()) {
+      error_stream << "Can't multiply vectors\n";
       return {};
     }
 
     if (first_term.isFloat() && second_term.isVector()) {
-      return maybeScaleVector(first_term.asFloat(),second_term.asVector());
+      return
+        maybeScaleVector(
+          first_term.asFloat(),
+          second_term.asVector(),
+          error_stream
+        );
     }
 
     if (first_term.isVector() && second_term.isFloat()) {
-      return maybeScaleVector(second_term.asFloat(),first_term.asVector());
+      return
+        maybeScaleVector(
+          second_term.asFloat(),
+          first_term.asVector(),
+          error_stream
+        );
     }
 
     error_stream << "Unhandled multiplication: " <<
@@ -495,39 +551,7 @@ Optional<Any>
 
   if (parser.peekChar()=='/') {
     parser.skipChar();
-
-    Optional<Any> maybe_second_term = evaluatePostfixExpression();
-
-    if (!maybe_second_term) {
-      return {};
-    }
-
-    const Any &second_term = *maybe_second_term;
-
-    if (first_term.isVector() && second_term.isFloat()) {
-      const vector<Any> &first_vector = first_term.asVector();
-      float second_float = second_term.asFloat();
-      vector<Any> result;
-
-      for (auto &x : first_vector) {
-        if (!x.isFloat()) {
-          return {};
-        }
-
-        result.push_back(x.asFloat() / second_float);
-      }
-
-      return {std::move(result)};
-    }
-    else if (first_term.isFloat() && second_term.isFloat()) {
-      return {first_term.asFloat() / second_term.asFloat()};
-    }
-    else {
-      error_stream << "Unknown operation: " << first_term.typeName() << "/" <<
-        second_term.typeName() << "\n";
-    }
-
-    return {};
+    return evaluateDivision(first_term);
   }
 
   return evaluatePostfixExpressionStartingWith(first_term);

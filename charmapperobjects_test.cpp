@@ -72,9 +72,25 @@ static void testMaybePosExpr()
 }
 
 
+static void testMakingPosExprWhenBodyParameterIsNotABody()
+{
+  string expected_error_string = "Body parameter is not a body.\n";
+
+  Class::NamedParameters parameters;
+  parameters["body"] = 5;
+  ostringstream error_stream;
+  Optional<Object> maybe_object =
+    posExprClass().maybeMakeObject(parameters,error_stream);
+  assert(!maybe_object);
+  string error_string = error_stream.str();
+  assert(error_string == expected_error_string);
+}
+
+
 int main()
 {
   testPrintingPosExprObject();
   testBodyLinkObject();
   testMaybePosExpr();
+  testMakingPosExprWhenBodyParameterIsNotABody();
 }
