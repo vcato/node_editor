@@ -744,6 +744,7 @@ void DiagramEditor::mouseReleasedAt(ViewportCoords mouse_release_position)
       int new_node_index =
         addNode("",diagramCoordsFromViewportCoords(mouse_press_position));
       focusNode(new_node_index,diagram());
+      notifyDiagramChanged();
       redraw();
       return;
     }
@@ -1076,4 +1077,49 @@ ViewportLine
   )
 {
   return cursorLine(node(focused_node_index),cursor_position);
+}
+
+
+string DiagramEditor::lineError(NodeIndex node_index,int line_index) const
+{
+  return diagram_state.node_states[node_index].line_errors[line_index];
+}
+
+
+auto DiagramEditor::maybeNodeLineAt(const ViewportCoords &p) const
+  -> Optional<NodeLineIndex>
+{
+  int i = indexOfNodeContaining(p);
+
+  if (i<0) {
+    return {};
+  }
+
+  NodeTextEditor::CursorPosition new_position =
+    closestCursorPositionTo(i,p);
+
+  return NodeLineIndex{i,new_position.line_index};
+}
+
+
+Optional<string>
+  DiagramEditor::maybeToolTipTextAt(const ViewportCoords &p) const
+{
+  Optional<NodeLineIndex> maybe_node_line_index = maybeNodeLineAt(p);
+
+  if (!maybe_node_line_index) {
+    return {};
+  }
+
+  NodeIndex node_index = maybe_node_line_index->node_index;
+  int line_index = maybe_node_line_index->line_index;
+
+  string error_message = lineError(node_index,line_index);
+
+  if (!error_message.empty()) {
+    assert(error_message.back()=='\n');
+    error_message.pop_back();
+  }
+
+  return error_message;
 }

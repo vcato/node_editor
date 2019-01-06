@@ -11,9 +11,9 @@ class QtDiagramEditor;
 class QtDiagramEditorWindow : public QDialog, public DiagramEditorWindow {
   public:
     QtDiagramEditorWindow();
+    DiagramEditor &diagramEditor() override;
 
   private:
-    DiagramEditor &diagramEditor() override;
 
     QtDiagramEditor *diagram_editor_ptr = nullptr;
 

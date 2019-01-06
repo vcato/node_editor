@@ -11,7 +11,7 @@ using std::cerr;
 using std::ostringstream;
 
 
-static void handleDiagramChanged(Diagram &diagram)
+static void handleDiagramChanged(Diagram &diagram,DiagramEditor &diagram_editor)
 {
   ostringstream show_stream;
   ostringstream error_stream;
@@ -19,6 +19,7 @@ static void handleDiagramChanged(Diagram &diagram)
   DiagramExecutor executor(context,context.parent_environment_ptr);
   DiagramState diagram_state;
   evaluateDiagram(diagram,executor,diagram_state);
+  diagram_editor.setDiagramState(diagram_state);
 
   cerr << "result: " << executor.maybe_return_value << "\n";
   cerr << "Done evaluateDiagram()\n";
@@ -36,7 +37,8 @@ int main(int argc,char **argv)
   QApplication app(argc,argv);
   Diagram diagram;
   QtDiagramEditorWindow window;
-  window.diagramChangedCallback() = [&]{ handleDiagramChanged(diagram); };
+  window.diagramChangedCallback() =
+    [&]{ handleDiagramChanged(diagram,window.diagramEditor()); };
   window.setDiagramPtr(&diagram);
   window.show();
   app.exec();

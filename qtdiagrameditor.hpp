@@ -83,6 +83,8 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawNode(NodeIndex);
 
     void paintGL() override;
+    bool event(QEvent *) override;
+
     std::string askForSavePath() override;
     std::string askForOpenPath() override;
     void showError(const std::string &message) override;

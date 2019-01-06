@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QToolTip>
 #include "evaluatediagram.hpp"
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
@@ -19,6 +20,7 @@ using std::vector;
 using std::string;
 using std::ifstream;
 using std::ofstream;
+using std::ostream;
 
 
 static QString qString(const std::string &arg)
@@ -577,8 +579,7 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
   int n_lines = render_info.text_objects.size();
 
   for (int line_index=0; line_index!=n_lines; ++line_index) {
-    const std::string &line_error =
-      diagram_state.node_states[node_index].line_errors[line_index];
+    std::string line_error = lineError(node_index,line_index);
 
     if (line_error.empty()) {
       glColor3f(1,1,1);
@@ -668,4 +669,29 @@ void QtDiagramEditor::paintGL()
 void QtDiagramEditor::redraw()
 {
   update();
+}
+
+
+bool QtDiagramEditor::event(QEvent *event_ptr)
+{
+  assert(event_ptr);
+
+  if (event_ptr->type()==QEvent::ToolTip) {
+    auto help_event_ptr = static_cast<QHelpEvent*>(event_ptr);
+    QHelpEvent &help_event = *help_event_ptr;
+    QPoint pos = help_event.globalPos();
+    ViewportCoords p = screenToViewportCoords(help_event.x(),help_event.y());
+    Optional<string> maybe_tool_tip_text = maybeToolTipTextAt(p);
+
+    if (maybe_tool_tip_text) {
+      QToolTip::showText(
+        pos,
+        QString::fromStdString(*maybe_tool_tip_text),
+        this,
+        QRect(pos,pos)
+      );
+    }
+  }
+
+  return QGLWidget::event(event_ptr);
 }

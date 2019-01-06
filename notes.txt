@@ -272,8 +272,5 @@ Need to be able to have multiple frames in a scene.
 ---
 Probably need to unify WrapperValue and Any.
 ---
-Want to be able to show the errors that we got during diagram evaluation
-in the diagram editor.
-
-I think if you put the cursor over a red line that it will show the error
-in a bubble.
+If we have a node with '5+' as the text, the error message is weird.
+  It shows "Unexpected '*'", where * is a strange character.

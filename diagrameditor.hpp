@@ -117,6 +117,11 @@ class DiagramEditor {
   protected:
     using Node = DiagramNode;
 
+    struct NodeLineIndex {
+      NodeIndex node_index;
+      int line_index;
+    };
+
     void backspacePressed();
     void deletePressed();
     void escapePressed();
@@ -184,6 +189,10 @@ class DiagramEditor {
         NodeIndex focused_node_index,
         const NodeTextEditor::CursorPosition
       );
+
+    std::string lineError(NodeIndex node_index,int line_index) const;
+    Optional<NodeLineIndex> maybeNodeLineAt(const ViewportCoords &p) const;
+    Optional<std::string> maybeToolTipTextAt(const ViewportCoords &p) const;
 
     NodeTextEditor text_editor;
     NodeConnectorIndex selected_node_connector_index =
