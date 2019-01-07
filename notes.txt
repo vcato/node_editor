@@ -260,3 +260,5 @@ Need to be able to add variables.
 * Maybe add a variable pass.
 ---
 Need to be able to have multiple frames in a scene.
+* Scene background_frame should become background_motion
+* Scene should have a current frame.

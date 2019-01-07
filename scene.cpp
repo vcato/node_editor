@@ -21,6 +21,7 @@ void Scene::Frame::setNVariables(int arg)
 
 Scene::Scene()
 {
+  background_motion.frames.resize(1);
 }
 
 
@@ -43,8 +44,10 @@ void Scene::addVars(int n_vars)
 {
   n_frame_variables += n_vars;
 
-  if (background_frame.nVariables() < n_frame_variables) {
-    background_frame.setNVariables(n_frame_variables);
+  if (backgroundFrame().nVariables() < n_frame_variables) {
+    for (Frame &frame : background_motion.frames) {
+      frame.setNVariables(n_frame_variables);
+    }
   }
 
   if (display_frame.nVariables() < n_frame_variables) {

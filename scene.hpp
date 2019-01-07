@@ -49,6 +49,10 @@ class Scene {
       void setNVariables(int arg);
     };
 
+    struct Motion {
+      std::vector<Frame> frames;
+    };
+
     struct FloatMap {
       VarIndex var_index;
 
@@ -219,10 +223,18 @@ class Scene {
         }
     };
 
-    int nFrameVariables() const { return background_frame.nVariables(); }
+    int nFrameVariables() const { return backgroundFrame().nVariables(); }
 
-    Frame &backgroundFrame() { return background_frame; }
-    const Frame &backgroundFrame() const { return background_frame; }
+    Frame &backgroundFrame()
+    {
+      return background_motion.frames[current_frame_index];
+    }
+
+    const Frame &backgroundFrame() const
+    {
+      return background_motion.frames[current_frame_index];
+    }
+
     const Frame &displayFrame() const { return display_frame; }
     Frame &displayFrame() { return display_frame; }
     Body &rootBody() { return root_body; }
@@ -236,7 +248,8 @@ class Scene {
       // variables initially.
 
     Body root_body = Body("",{noVarIndex(),noVarIndex()},/*parent_ptr*/nullptr);
-    Frame background_frame;
+    Motion background_motion;
+    int current_frame_index = 0;
     Frame display_frame;
 
     std::string newBodyName() const;
