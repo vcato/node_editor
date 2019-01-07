@@ -253,21 +253,10 @@ window, and then provide a diagram that generates what we will draw.
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
 ---
-Need a way to debug expressions.
-Some pop-up text showing the error would be nice.
-
-evaluateDiagramNodeLine() needs to handle errors better.
-  * We are passing an error_stream to evaluateLineText().  If there was an
-    error, we should annotate which line it was, but currently we don't
-    have a way to differentiate between a line that has no value and
-    a line that got an error.
-    * Is that true?  it returns an optional, so the difference is between
-      whether it is an optional with no value or a void value.
-
----
 The lines of nodes should probably be more distinct.  Maybe they look like
 separate nodes stacked on top of each other.
 ---
-Need to be able to have multiple frames in a scene.
+Need to be able to add variables.
+* Maybe add a variable pass.
 ---
-Probably need to unify WrapperValue and Any.
+Need to be able to have multiple frames in a scene.

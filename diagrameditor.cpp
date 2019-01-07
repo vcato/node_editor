@@ -60,7 +60,6 @@ void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
   if (diagram_observer_ptr) {
     diagram_observer_ptr->diagram_state_changed_callback =
       [this]{
-        cerr << "DiagramEditor: state changed\n";
         setDiagramState(diagram_observer_ptr->observed_diagram.diagram_state);
       };
   }
