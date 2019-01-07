@@ -51,6 +51,11 @@ class Scene {
 
     struct Motion {
       std::vector<Frame> frames;
+
+      int nVariables() const
+      {
+        return frames[0].nVariables();
+      }
     };
 
     struct FloatMap {
@@ -233,6 +238,16 @@ class Scene {
     const Frame &backgroundFrame() const
     {
       return background_motion.frames[current_frame_index];
+    }
+
+    const Motion &backgroundMotion() const
+    {
+      return background_motion;
+    }
+
+    Motion &backgroundMotion()
+    {
+      return background_motion;
     }
 
     const Frame &displayFrame() const { return display_frame; }

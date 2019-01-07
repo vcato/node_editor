@@ -262,3 +262,5 @@ Need to be able to add variables.
 Need to be able to have multiple frames in a scene.
 * Scene background_frame should become background_motion
 * Scene should have a current frame.
+---
+Need to handle setting the world state when it already has members.

@@ -575,8 +575,9 @@ static void testCreatingABodyWithAnAveragePosition()
   int return_node = diagram_editor.userAddsANodeWithText("return $");
   diagram_editor.userConnects(divide_node,0,return_node,0);
 
-  tree_editor.userChangesNumberValue("Scene1|background_frame|0",2);
-  tree_editor.userChangesNumberValue("Scene1|background_frame|2",4);
+  string background_frame_path = "Scene1|background_motion|0";
+  tree_editor.userChangesNumberValue(background_frame_path + "|0",2);
+  tree_editor.userChangesNumberValue(background_frame_path + "|2",4);
 
   FakeWorld &world = tester.world;
   Scene::Frame &frame = world.sceneMember(0).scene.displayFrame();
@@ -598,9 +599,11 @@ static void testOpeningAProject()
   const char *test_project_text =
     "world {\n"
     "  scene1 {\n"
-    "    background_frame {\n"
-    "      0: 48\n"
-    "      1: 0\n"
+    "    background_motion {\n"
+    "      0 {\n"
+    "        0: 48\n"
+    "        1: 0\n"
+    "      }\n"
     "    }\n"
     "    body {\n"
     "      name: \"Body1\"\n"

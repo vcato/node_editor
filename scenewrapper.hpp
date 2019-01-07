@@ -48,10 +48,11 @@ struct SceneWrapper : VoidWrapper {
 
   private:
     struct FrameWrapper;
+    struct MotionWrapper;
 
     void
-      withBackgroundFrameWrapper(
-        const std::function<void(const FrameWrapper &)> &
+      withBackgroundMotionWrapper(
+        const std::function<void(const MotionWrapper &)> &
       ) const;
 
     void

@@ -442,6 +442,8 @@ void
   int parent_item_child_count = itemChildCount(parent_path);
 
   if (child_index != parent_item_child_count) {
+    cerr << "child_index: " << child_index << "\n";
+    cerr << "parent_item_child_count: " << parent_item_child_count << "\n";
     assert(false); // not implemented
   }
 

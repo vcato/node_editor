@@ -262,9 +262,10 @@ static void testAddingABodyToTheScene()
   executeAddBodyFunction2(world_wrapper,scene_path,tree_observer);
 
   string command_string = command_stream.str();
+  string background_frame_path = "1,0,0";
   string expected_command_string =
-    "addItem([1,0,0])\n"
-    "addItem([1,0,1])\n"
+    "addItem([" + background_frame_path + ",0])\n"
+    "addItem([" + background_frame_path + ",1])\n"
     "addItem([1,1])\n"
     "changeEnumerationValues([0,0,0,0])\n"
     "changeEnumerationValues([0,0,0,2,0])\n";
@@ -294,9 +295,10 @@ static void testAddingABodyToABody()
   executeOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
 
   string command_string = command_stream.str();
+  string background_frame_path = "0,0,0";
   string expected_command_string =
-    "addItem([0,0,2])\n"
-    "addItem([0,0,3])\n"
+    "addItem([" + background_frame_path + ",2])\n"
+    "addItem([" + background_frame_path + ",3])\n"
     "addItem([0,1,2])\n";
 
   if (command_string!=expected_command_string) {
@@ -805,11 +807,13 @@ static void testSettingStateWithPosExpr()
   const char *text =
     "world {\n"
     "  scene1 {\n"
-    "    background_frame {\n"
-    "      0: 23\n"
-    "      1: 0\n"
-    "      2: 0\n"
-    "      3: 0\n"
+    "    background_motion {\n"
+    "      0 {\n"
+    "        0: 23\n"
+    "        1: 0\n"
+    "        2: 0\n"
+    "        3: 0\n"
+    "      }\n"
     "    }\n"
     "    body {\n"
     "      name: \"Body1\"\n"

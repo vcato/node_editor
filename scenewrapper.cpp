@@ -5,7 +5,6 @@
 #include <sstream>
 #include "float.hpp"
 
-
 using std::cerr;
 using std::vector;
 using std::string;
@@ -14,6 +13,7 @@ using std::ostream;
 using Callbacks = SceneWrapper::SceneObserver;
 using Point2DMap = Scene::Point2DMap;
 using Frame = Scene::Frame;
+using Motion = Scene::Motion;
 using FloatMap = Scene::FloatMap;
 using Label = SceneWrapper::Label;
 
@@ -22,7 +22,7 @@ namespace {
 struct WrapperData {
   Scene &scene;
   const Callbacks &callbacks;
-  Frame &frame;
+  Motion &motion;
 };
 }
 
@@ -75,7 +75,7 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
   void setValue(int arg) const override
   {
-    if (arg<0 || arg>=wrapper_data.frame.nVariables()) {
+    if (arg<0 || arg>=wrapper_data.motion.nVariables()) {
       return;
     }
 
@@ -346,6 +346,9 @@ vector<string> BodyWrapper::operationNames() const
 }
 
 
+static const int background_motion_index = 0;
+
+
 void
   BodyWrapper::executeAddBody(
     const TreePath &path,
@@ -362,7 +365,8 @@ void
     TreePath scene_path = path;
 
     scene_path.erase(scene_path.end()-depth,scene_path.end());
-    TreePath background_frame_path = join(scene_path,0);
+    TreePath background_frame_path =
+      join(join(scene_path,background_motion_index),0);
 
     for (int i=old_n_vars; i!=new_n_vars; ++i) {
       TreePath var_path = join(background_frame_path,i);
@@ -466,7 +470,8 @@ void
 
   if (new_n_vars!=old_n_vars) {
     assert(new_n_vars>old_n_vars);
-    TreePath background_frame_path = join(scene_path,0);
+    TreePath background_frame_path =
+      join(join(scene_path,background_motion_index),0);
 
     for (int i=old_n_vars; i!=new_n_vars; ++i) {
       TreePath var_path = join(background_frame_path,i);
@@ -508,12 +513,7 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
     const char *label,
     Frame &frame_arg,
     WrapperData &wrapper_data_arg
-  )
-  : label_member(label),
-    frame(frame_arg),
-    wrapper_data(wrapper_data_arg)
-  {
-  }
+  );
 
   int nChildren() const override
   {
@@ -539,44 +539,124 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
     );
   }
 
-  void setState(const WrapperState &new_state) const override
-  {
-    int n_state_children = new_state.children.size();
-
-    if (frame.nVariables()==0 && n_state_children==0) {
-      // This should be able to be removed now
-      return;
-    }
-
-    frame.setNVariables(n_state_children);
-
-    for (int i=0; i!=n_state_children; ++i) {
-      withChildWrapper(i,[&](const Wrapper &child_wrapper){
-        child_wrapper.setState(new_state.children[i]);
-      });
-    }
-  }
+  void setState(const WrapperState &new_state) const override;
 };
 
 
+SceneWrapper::FrameWrapper::FrameWrapper(
+  const char *label,
+  Frame &frame_arg,
+  WrapperData &wrapper_data_arg
+)
+: label_member(label),
+  frame(frame_arg),
+  wrapper_data(wrapper_data_arg)
+{
+}
+
+
 void
-  SceneWrapper::withBackgroundFrameWrapper(
-    const std::function<void(const FrameWrapper &)> &visitor
+  SceneWrapper::FrameWrapper::setState(
+    const WrapperState &new_state
   ) const
 {
-  WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
+  int n_state_children = new_state.children.size();
+
+  if (frame.nVariables()==0 && n_state_children==0) {
+    // This should be able to be removed now
+    return;
+  }
+
+  frame.setNVariables(n_state_children);
+
+  for (int i=0; i!=n_state_children; ++i) {
+    withChildWrapper(i,[&](const Wrapper &child_wrapper){
+      child_wrapper.setState(new_state.children[i]);
+    });
+  }
+}
+
+
+struct SceneWrapper::MotionWrapper : NoOperationWrapper<VoidWrapper> {
+  MotionWrapper(
+    const char *label,
+    Motion &motion,
+    WrapperData &
+  );
+
+  int nChildren() const override
+  {
+    return motion.frames.size();
+  }
+
+  void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const override
+  {
+    if (child_index==0) {
+      visitor(FrameWrapper("0",motion.frames[0],wrapper_data));
+      return;
+    }
+
+    assert(false);
+  }
+
+  Label label() const override { return label_member; }
+
+  void setState(const WrapperState &) const override;
+
+  string label_member;
+  Motion &motion;
+  WrapperData &wrapper_data;
+};
+
+
+SceneWrapper::MotionWrapper::MotionWrapper(
+  const char *label,
+  Motion &motion_arg,
+  WrapperData &wrapper_data_arg
+)
+: label_member(label),
+  motion(motion_arg),
+  wrapper_data(wrapper_data_arg)
+{
+}
+
+
+void
+  SceneWrapper::MotionWrapper::setState(
+    const WrapperState &new_state
+  ) const
+{
+  int n_state_children = new_state.children.size();
+
+  motion.frames.resize(n_state_children);
+
+  for (int i=0; i!=n_state_children; ++i) {
+    withChildWrapper(i,[&](const Wrapper &child_wrapper){
+      child_wrapper.setState(new_state.children[i]);
+      });
+  }
+}
+
+
+void
+  SceneWrapper::withBackgroundMotionWrapper(
+    const std::function<void(const MotionWrapper &)> &visitor
+  ) const
+{
+  WrapperData wrapper_data = {scene,callbacks,scene.backgroundMotion()};
 
   visitor(
-    FrameWrapper(
-      "background_frame",
-      scene.backgroundFrame(),
+    MotionWrapper(
+      "background_motion",
+      scene.backgroundMotion(),
       wrapper_data
     )
   );
 }
-
-
-static const int background_frame_index = 0;
 
 
 void
@@ -585,10 +665,11 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
 
-  if (child_index==background_frame_index) {
-    withBackgroundFrameWrapper(visitor);
+  WrapperData wrapper_data = {scene,callbacks,scene.backgroundMotion()};
+
+  if (child_index==background_motion_index) {
+    withBackgroundMotionWrapper(visitor);
     return;
   }
 
@@ -626,14 +707,15 @@ void SceneWrapper::setState(const WrapperState &state) const
     assert(false);
   }
 
-  WrapperData wrapper_data = {scene,callbacks,scene.backgroundFrame()};
+  WrapperData wrapper_data = {scene,callbacks,scene.backgroundMotion()};
+
   int body_index = 0;
 
   for (const WrapperState &child_state : state.children) {
-    if (child_state.tag=="background_frame") {
-      withBackgroundFrameWrapper(
-        [&](const FrameWrapper &frame_wrapper){
-          frame_wrapper.setState(child_state);
+    if (child_state.tag=="background_motion") {
+      withBackgroundMotionWrapper(
+        [&](const MotionWrapper &motion_wrapper){
+          motion_wrapper.setState(child_state);
         }
       );
     }
@@ -647,8 +729,7 @@ void SceneWrapper::setState(const WrapperState &state) const
       ++body_index;
     }
     else {
-      cerr << "child_state.tag: " << child_state.tag << "\n";
-      assert(false);
+      cerr << "SceneWrapper::setState: unknown tag " << child_state.tag << "\n";
     }
   }
 }

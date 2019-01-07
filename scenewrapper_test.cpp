@@ -93,11 +93,13 @@ static void testHierarchy()
 
   auto expected_output =
     "scene {\n"
-    "  background_frame {\n"
-    "    0: 0\n"
-    "    1: 0\n"
-    "    2: 0\n"
-    "    3: 0\n"
+    "  background_motion {\n"
+    "    0 {\n"
+    "      0: 0\n"
+    "      1: 0\n"
+    "      2: 0\n"
+    "      3: 0\n"
+    "    }\n"
     "  }\n"
     "  body {\n"
     "    name: \"Body1\"\n"
@@ -192,16 +194,17 @@ static void testAddingBodies()
   assert(scene.bodies()[0].allChildren()[0].nChildren()==1);
 
   string body_index_str = std::to_string(body_index);
+  string background_frame_path = "0,0";
   string commands = stream.str();
   string expected_commands =
-    "addItem: path=[0,0]\n"
-    "addItem: path=[0,1]\n"
+    "addItem: path=[" + background_frame_path + ",0]\n"
+    "addItem: path=[" + background_frame_path + ",1]\n"
     "addItem: path=[1]\n"
-    "addItem: path=[0,2]\n"
-    "addItem: path=[0,3]\n"
+    "addItem: path=[" + background_frame_path + ",2]\n"
+    "addItem: path=[" + background_frame_path + ",3]\n"
     "addItem: path=[1," + body_index_str + "]\n"
-    "addItem: path=[0,4]\n"
-    "addItem: path=[0,5]\n"
+    "addItem: path=[" + background_frame_path + ",4]\n"
+    "addItem: path=[" + background_frame_path + ",5]\n"
     "addItem: path=[1," + body_index_str + "," + body_index_str + "]\n";
 
   if (commands!=expected_commands) {
@@ -231,11 +234,13 @@ static void testGettingState()
 
   auto expected_output =
     "scene {\n"
-    "  background_frame {\n"
-    "    0: 0\n"
-    "    1: 0\n"
-    "    2: 0\n"
-    "    3: 0\n"
+    "  background_motion {\n"
+    "    0 {\n"
+    "      0: 0\n"
+    "      1: 0\n"
+    "      2: 0\n"
+    "      3: 0\n"
+    "    }\n"
     "  }\n"
     "  body {\n"
     "    name: \"Body1\"\n"
@@ -270,9 +275,11 @@ static void testSettingStateWithNonEmptyBackgroundFrame()
 
   const char *text =
     "scene {\n"
-    "  background_frame {\n"
-    "    0: 1\n"
-    "    1: 3\n"
+    "  background_motion {\n"
+    "    0 {\n"
+    "      0: 1\n"
+    "      1: 3\n"
+    "    }\n"
     "  }\n"
     "}\n";
 
@@ -291,7 +298,9 @@ static void testSettingStateWithEmptyBackgroundFrame()
   SceneWrapper wrapper(scene,&observer,"Scene");
   const char *text =
     "scene {\n"
-    "  background_frame {\n"
+    "  background_motion {\n"
+    "    0 {\n"
+    "    }\n"
     "  }\n"
     "}\n";
   WrapperState state = stateFromText(text);
@@ -305,11 +314,13 @@ static void testSettingStateWithTwoBodies()
 {
   const char *text =
     "scene {\n"
-    "  background_frame {\n"
-    "    0: 48\n"
-    "    1: 0\n"
-    "    2: 11\n"
-    "    3: 57\n"
+    "  background_motion {\n"
+    "    0 {\n"
+    "      0: 48\n"
+    "      1: 0\n"
+    "      2: 11\n"
+    "      3: 57\n"
+    "    }\n"
     "  }\n"
     "  body {\n"
     "    name: \"Body1\"\n"

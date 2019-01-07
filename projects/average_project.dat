@@ -1,12 +1,14 @@
 world {
   scene1 {
-    background_frame {
-      0: 48
-      1: 0
-      2: 11
-      3: 57
-      4: 0
-      5: 0
+    background_motion {
+      0 {
+        0: 48
+        1: 0
+        2: 11
+        3: 57
+        4: 0
+        5: 0
+      }
     }
     body {
       name: "Body1"
