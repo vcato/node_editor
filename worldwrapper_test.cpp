@@ -172,6 +172,16 @@ struct FakeWorld : World {
 }
 
 
+static WrapperState stateFromText(const string &text)
+{
+  istringstream stream(text);
+  ScanStateResult scan_result = scanStateFrom(stream);
+  assert(scan_result.isState());
+  const WrapperState &state = scan_result.state();
+  return state;
+}
+
+
 static void testAddingACharmapper()
 {
   FakeWorld world;
@@ -859,14 +869,41 @@ static void testSettingStateWithPosExpr()
     "    }\n"
     "  }\n"
     "}\n";
-  istringstream stream(text);
-  ScanStateResult scan_result = scanStateFrom(stream);
-  assert(scan_result.isState());
-  const WrapperState &state = scan_result.state();
+
+  WrapperState state = stateFromText(text);
   FakeWorld world;
   WorldWrapper wrapper(world);
   wrapper.setState(state);
   assert(stateOf(wrapper)==state);
+}
+
+
+static void testSettingStateTwice()
+{
+  const char *text =
+    "world {\n"
+    "  scene1 {\n"
+    "    background_motion {\n"
+    "      0 {\n"
+    "        0: 23\n"
+    "        1: 0\n"
+    "      }\n"
+    "    }\n"
+    "    body {\n"
+    "      name: \"Body1\"\n"
+    "      position_map {\n"
+    "        x_variable: 0\n"
+    "        y_variable: 1\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  FakeWorld world;
+  WorldWrapper wrapper(world);
+  WrapperState state = stateFromText(text);
+  wrapper.setState(state);
+  wrapper.setState(state);
 }
 
 
@@ -880,6 +917,7 @@ int main()
   testSettingStateWithSceneWithBody();
   testSettingStateWithCharmapper();
   testSettingStateWithPosExpr();
+  testSettingStateTwice();
 
   {
     namespace tests = scene_and_charmapper_tests;

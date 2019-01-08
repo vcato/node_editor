@@ -354,12 +354,9 @@ void
 
 void WorldWrapper::setState(const WrapperState &state) const
 {
-  if (world.nMembers()==0 && state.children.empty()) {
-    return;
-  }
-
-  if (world.nMembers()!=0) {
-    assert(false);
+  for (int member_index=world.nMembers(); member_index>0;) {
+    --member_index;
+    world.removeMember(member_index);
   }
 
   int child_index = 0;
