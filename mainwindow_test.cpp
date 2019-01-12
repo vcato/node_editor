@@ -309,10 +309,19 @@ struct FakeSceneWindow : SceneWindow {
 namespace {
 struct FakeWorld : World {
   FakeSceneWindow scene_window;
+  bool window_is_created = false;
 
-  virtual SceneWindow& createSceneViewerWindow(SceneMember &)
+  SceneWindow& createSceneViewerWindow(SceneMember &) override
   {
+    assert(!window_is_created);
+    window_is_created = true;
     return scene_window;
+  }
+
+  void destroySceneViewerWindow(SceneWindow &) override
+  {
+    assert(window_is_created);
+    window_is_created = false;
   }
 };
 }

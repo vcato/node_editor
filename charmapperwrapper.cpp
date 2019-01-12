@@ -495,10 +495,7 @@ struct MotionPassWrapper : VoidWrapper {
       handleSceneChange(
         const Wrapper::TreeObserver &tree_observer,
         const TreePath &path_of_this
-      ) const
-    {
-      tree_observer.enumerationValuesChanged(path_of_this);
-    }
+      ) const;
 
     vector<string> enumerationNames() const override
     {
@@ -773,6 +770,33 @@ struct MotionPassWrapper : VoidWrapper {
 
   void setState(const WrapperState &state) const override;
 };
+}
+
+
+void
+  MotionPassWrapper::BodyWrapper::handleSceneChange(
+    const Wrapper::TreeObserver &tree_observer,
+    const TreePath &path_of_this
+  ) const
+{
+  // This works right now, but it isn't very good.  The body_link
+  // could be pointing to a scene which no longer exists, and comparing
+  // a dangling pointer isn't valid.  I think we need to have
+  // scene-being-removed and body-being-removed callbacks so we can
+  // handle this properly.
+  bool found = false;
+
+  for (auto &one_body_link : callbacks.scene_list.allBodyLinks()) {
+    if (one_body_link == body_link) {
+      found = true;
+    }
+  }
+
+  if (!found) {
+    body_link.clear();
+  }
+
+  tree_observer.enumerationValuesChanged(path_of_this);
 }
 
 

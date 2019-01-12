@@ -18,3 +18,10 @@ SceneWindow& QtWorld::createSceneViewerWindow(SceneMember &)
 
   return window;
 }
+
+
+void QtWorld::destroySceneViewerWindow(SceneWindow &window)
+{
+  auto &qt_window = dynamic_cast<QtSceneWindow&>(window);
+  delete &qt_window;
+}

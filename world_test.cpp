@@ -51,10 +51,20 @@ struct FakeWorld : World {
   }
 
   Window &window;
+  bool window_is_created = false;
 
-  virtual SceneWindow& createSceneViewerWindow(SceneMember &)
+  SceneWindow& createSceneViewerWindow(SceneMember &) override
   {
+    assert(!window_is_created);
+    window_is_created = true;
     return window;
+  }
+
+  void destroySceneViewerWindow(SceneWindow &window_arg) override
+  {
+    assert(window_is_created);
+    window_is_created = false;
+    assert(&window_arg == &window);
   }
 };
 }

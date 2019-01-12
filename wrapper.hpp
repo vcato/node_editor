@@ -32,6 +32,9 @@ struct Wrapper {
     virtual void itemReplaced(const TreePath &) = 0;
     virtual void itemRemoved(const TreePath &) = 0;
     virtual void enumerationValuesChanged(const TreePath &) const = 0;
+      // This is somewhat out of place.  Maybe it is best to just treat
+      // the item as being replaced if we need to change the enumeration
+      // values.
   };
 
   struct SubclassVisitor {

@@ -12,11 +12,13 @@ struct SceneWrapper : VoidWrapper {
       std::function<void(const Scene::Body&)>;
     using RemovedBodyFunc =
       std::function<void(const Wrapper::TreeObserver &)>;
+    using RemoveFunc = std::function<void(const Wrapper::TreeObserver &)>;
 
     ChangedFunc changed_func;
     BodyAddedFunc body_added_func;
     RemovingBodyFunc removing_body_func;
     RemovedBodyFunc removed_body_func;
+    RemoveFunc remove_func;
 
     SceneObserver(ChangedFunc func_arg) : changed_func(std::move(func_arg)) { }
   };
@@ -57,6 +59,12 @@ struct SceneWrapper : VoidWrapper {
 
     void
       executeAddBody(
+        const TreePath &scene_path,
+        TreeObserver &tree_observer
+      ) const;
+
+    void
+      executeRemove(
         const TreePath &scene_path,
         TreeObserver &tree_observer
       ) const;

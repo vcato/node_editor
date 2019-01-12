@@ -279,5 +279,12 @@ SceneMember &World::sceneMember(int index)
 
 void World::removeMember(int index)
 {
+  Member *member_ptr = world_members[index].get();
+
+  if (auto scene_member_ptr = dynamic_cast<SceneMember*>(member_ptr)) {
+    assert(scene_member_ptr->scene_window_ptr);
+    destroySceneViewerWindow(*scene_member_ptr->scene_window_ptr);
+  }
+
   world_members.erase(world_members.begin() + index);
 }

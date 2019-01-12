@@ -8,4 +8,6 @@ struct QtWorld : World {
 
   QtWorld(QtMainWindow &main_window_arg);
   SceneWindow& createSceneViewerWindow(SceneMember &) override;
+
+  void destroySceneViewerWindow(SceneWindow &window) override;
 };

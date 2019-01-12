@@ -163,10 +163,20 @@ struct FakeSceneWindow : SceneWindow {
 namespace {
 struct FakeWorld : World {
   FakeSceneWindow scene_window;
+  bool window_is_created = false;
 
   SceneWindow& createSceneViewerWindow(SceneMember &) override
   {
+    assert(!window_is_created);
+    window_is_created = true;
     return scene_window;
+  }
+
+  void destroySceneViewerWindow(SceneWindow &window_arg) override
+  {
+    assert(window_is_created);
+    window_is_created = false;
+    assert(&window_arg == &scene_window);
   }
 };
 }
@@ -548,10 +558,12 @@ static void testRemovingABodyFromTheScene()
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  /*Charmapper::MotionPass::PosExpr &pos_expr =*/ motion_pass.addPosExpr();
+  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
 
   Scene &scene = world.addScene();
-  scene.addBody();
+  Scene::Body &body = scene.addBody();
+  pos_expr.target_body_link = BodyLink(&scene,&body);
+
   WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
   TreePath body_path = join(scene_path,SceneWrapper::firstBodyIndex());
@@ -565,14 +577,18 @@ static void testRemovingABodyFromTheScene()
   string expected_command_string =
     "removeItem([1,1])\n"
     "changeEnumerationValues([0,0,0,0])\n"
+      // If the enumeration values are changed, the index might need to
+      // change as well.  Maybe the new index should be part of the
+      // changeEnumerationValues method.
     ;
 
-  if (command_string!=expected_command_string) {
+  if (command_string != expected_command_string) {
     cerr << "command_string:\n";
     cerr << command_string << "\n";
   }
 
-  assert(command_string==expected_command_string);
+  assert(command_string == expected_command_string);
+  assert(!pos_expr.target_body_link.hasValue());
 }
 
 
@@ -607,6 +623,23 @@ static void testRemovingACharmapper()
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
   executeOperation(world_wrapper,"Charmapper1","Remove",tree_observer);
+  assert(world.nMembers()==0);
+  string expected_command_string = "removeItem([0])\n";
+  string command_string = command_stream.str();
+  assert(command_string==expected_command_string);
+}
+
+
+static void testRemovingAScene()
+{
+  FakeWorld world;
+  world.addScene();
+  // assert(world.scene_viewer_windows.size()==1);
+
+  WorldWrapper world_wrapper(world);
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+  executeOperation(world_wrapper,"Scene1","Remove",tree_observer);
   assert(world.nMembers()==0);
   string expected_command_string = "removeItem([0])\n";
   string command_string = command_stream.str();
@@ -930,6 +963,7 @@ int main()
     tests::testRemovingABodyFromTheScene();
     tests::testRemovingAPosExprFromAMotionPass();
     tests::testRemovingACharmapper();
+    tests::testRemovingAScene();
     tests::testChangingGlobalPositionDiagram();
     tests::testChangingLocalPositionDiagram();
     tests::testChangingPosExprDiagram();

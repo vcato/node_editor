@@ -10,6 +10,7 @@
 #include "observeddiagrams.hpp"
 
 
+
 class World {
   public:
     struct MemberVisitor;
@@ -113,6 +114,7 @@ class World {
     WorldMembers world_members;
 
     virtual SceneWindow& createSceneViewerWindow(SceneMember &) = 0;
+    virtual void destroySceneViewerWindow(SceneWindow &) = 0;
     std::string generateMemberName(const std::string &prefix) const;
 
     template <typename TypedMember>

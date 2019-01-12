@@ -270,26 +270,32 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       };
 
     auto removing_body_func = [&](const Scene::Body &body)
-      {
-        if (member.scene_window_ptr) {
-          member.scene_window_ptr->notifyRemovingBody(body);
-        }
-      };
+    {
+      if (member.scene_window_ptr) {
+        member.scene_window_ptr->notifyRemovingBody(body);
+      }
+    };
 
-    auto removed_body_func =
-      [&](const Wrapper::TreeObserver &tree_observer)
-      {
-        notifyCharmappersOfSceneChange(world,tree_observer);
+    auto removed_body_func = [&](const Wrapper::TreeObserver &tree_observer)
+    {
+      notifyCharmappersOfSceneChange(world,tree_observer);
 
-        if (member.scene_window_ptr) {
-          member.scene_window_ptr->notifySceneChanged();
-        }
-      };
+      if (member.scene_window_ptr) {
+        member.scene_window_ptr->notifySceneChanged();
+      }
+    };
+
+    auto remove_func = [&](const Wrapper::TreeObserver &tree_observer)
+    {
+      world.removeMember(member_index);
+      notifyCharmappersOfSceneChange(world,tree_observer);
+    };
 
     SceneWrapper::SceneObserver callbacks(changed_func);
     callbacks.body_added_func = body_added_func;
     callbacks.removing_body_func = removing_body_func;
     callbacks.removed_body_func = removed_body_func;
+    callbacks.remove_func = remove_func;
     visitor(SceneWrapper{member.scene,&callbacks,member.name});
   }
 };

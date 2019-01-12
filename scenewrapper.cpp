@@ -452,7 +452,7 @@ SceneWrapper::SceneWrapper(
 
 std::vector<std::string> SceneWrapper::operationNames() const
 {
-  return {"Add Body"};
+  return {"Add Body","Remove"};
 }
 
 
@@ -488,6 +488,17 @@ void
 
 
 void
+  SceneWrapper::executeRemove(
+    const TreePath &scene_path,
+    TreeObserver &tree_observer
+  ) const
+{
+  tree_observer.itemRemoved(scene_path);
+  callbacks.remove_func(tree_observer);
+}
+
+
+void
   SceneWrapper::executeOperation(
     int operation_index,
     const TreePath &scene_path,
@@ -497,6 +508,9 @@ void
   switch (operation_index) {
     case 0:
       executeAddBody(scene_path,tree_observer);
+      return;
+    case 1:
+      executeRemove(scene_path,tree_observer);
       return;
   }
 
