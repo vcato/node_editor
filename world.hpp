@@ -17,13 +17,14 @@ class World {
     struct ConstMemberVisitor;
     struct SceneMember;
     struct CharmapperMember;
+    struct Member;
 
     World();
     ~World();
 
     Charmapper& addCharmapper();
     Scene& addScene();
-    void removeMember(int member_index);
+    std::unique_ptr<Member> removeMember(int member_index);
     int nMembers() const { return world_members.size(); }
 
     void applyCharmaps();

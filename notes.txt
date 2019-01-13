@@ -271,8 +271,3 @@ Need to handle setting the world state when it already has members.
     index.
     * We'd like to have the index change so that it still reflects the
       same body it used to if it still exists, or set it to none otherwise.
----
-MotionPassWrapper::BodyWrapper::handleSceneChange needs to be better.
-* We need to be able to handle removing a body or a scene differently.
-  * We want to make sure that we don't have any pointers to a scene or
-    a body before we delete it.

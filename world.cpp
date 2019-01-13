@@ -277,7 +277,7 @@ SceneMember &World::sceneMember(int index)
 }
 
 
-void World::removeMember(int index)
+unique_ptr<Member> World::removeMember(int index)
 {
   Member *member_ptr = world_members[index].get();
 
@@ -286,5 +286,7 @@ void World::removeMember(int index)
     destroySceneViewerWindow(*scene_member_ptr->scene_window_ptr);
   }
 
+  unique_ptr<Member> unique_member_ptr = std::move(world_members[index]);
   world_members.erase(world_members.begin() + index);
+  return unique_member_ptr;
 }

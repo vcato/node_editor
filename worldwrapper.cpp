@@ -13,6 +13,7 @@ using std::map;
 using std::string;
 using std::ostringstream;
 using std::function;
+using std::unique_ptr;
 using Body = Scene::Body;
 
 
@@ -287,8 +288,17 @@ struct ChildWrapperVisitor : World::MemberVisitor {
 
     auto remove_func = [&](Wrapper::TreeObserver &tree_observer)
     {
-      world.removeMember(member_index);
+      unique_ptr<World::Member> removed_member_ptr =
+        world.removeMember(member_index);
+      // Holding on to the unique_ptr to the member until the
+      // end of scope to give a chance for any pointers to the member
+      // in the charmappers to be changed.
+
       notifyCharmappersOfSceneChange(world,tree_observer);
+
+      removed_member_ptr.release();
+        // Presumably there is nothing pointing to the scene anymore
+        // so we can destroy the member.
     };
 
     SceneWrapper::SceneObserver callbacks(changed_func);
