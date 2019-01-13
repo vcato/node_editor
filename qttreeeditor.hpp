@@ -16,7 +16,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void prepareMenuSlot(const QPoint &pos);
 
   private:
-    QtTreeEditor &treeEditor() { return *this; }
     QTreeWidgetItem &itemFromPath(const TreePath &path) const;
     TreePath itemPath(QTreeWidgetItem &item);
     void buildPath(TreePath &path,QTreeWidgetItem &item);

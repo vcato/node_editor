@@ -283,7 +283,7 @@ std::vector<int> QtTreeEditor::itemPath(QTreeWidgetItem &item)
 
 void QtTreeEditor::removeChildItems(const TreePath &path)
 {
-  QTreeWidgetItem &item = treeEditor().itemFromPath(path);
+  QTreeWidgetItem &item = itemFromPath(path);
 
   while (item.childCount()>0) {
     item.removeChild(item.child(item.childCount()-1));
@@ -309,7 +309,7 @@ void
 
 QTreeWidgetItem* QtTreeEditor::findSelectedItem()
 {
-  QList<QTreeWidgetItem*> items = treeEditor().selectedItems();
+  QList<QTreeWidgetItem*> items = selectedItems();
 
   if (items.size()!=1) {
     return nullptr;
@@ -369,7 +369,7 @@ DiagramEditorWindow& QtTreeEditor::createDiagramEditor()
 
 void QtTreeEditor::prepareMenu(const QPoint &pos)
 {
-  QtTreeEditor &tree_editor = treeEditor();
+  QtTreeEditor &tree_editor = *this;
   QTreeWidgetItem *widget_item_ptr = tree_editor.itemAt(pos);
   TreePath path;
 
