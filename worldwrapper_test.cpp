@@ -60,11 +60,6 @@ struct TreeObserverStub : Wrapper::TreeObserver {
   {
     assert(false);
   }
-
-  void enumerationValuesChanged(const TreePath &) const override
-  {
-    assert(false);
-  }
 };
 }
 
@@ -96,14 +91,9 @@ struct FakeTreeObserver : Wrapper::TreeObserver {
     command_stream << "addItem(" << path << ")\n";
   }
 
-  void itemReplaced(const TreePath &) override
+  void itemReplaced(const TreePath &path) override
   {
-    assert(false);
-  }
-
-  void enumerationValuesChanged(const TreePath &path) const override
-  {
-    command_stream << "changeEnumerationValues(" << path << ")\n";
+    command_stream << "itemReplaced(" << path << ")\n";
   }
 
   void itemRemoved(const TreePath &path) override
@@ -287,8 +277,8 @@ static void testAddingABodyToTheScene()
     "addItem([" + background_frame_path + ",0])\n"
     "addItem([" + background_frame_path + ",1])\n"
     "addItem([1,1])\n"
-    "changeEnumerationValues([0,0,0,0])\n"
-    "changeEnumerationValues([0,0,0,2,0])\n";
+    "itemReplaced([0,0,0,0])\n"
+    "itemReplaced([0,0,0,2,0])\n";
 
   if (command_string!=expected_command_string) {
     cerr << "command_string:\n";
@@ -576,10 +566,7 @@ static void testRemovingABodyFromTheScene()
   string command_string = command_stream.str();
   string expected_command_string =
     "removeItem([1,1])\n"
-    "changeEnumerationValues([0,0,0,0])\n"
-      // If the enumeration values are changed, the index might need to
-      // change as well.  Maybe the new index should be part of the
-      // changeEnumerationValues method.
+    "itemReplaced([0,0,0,0])\n"
     ;
 
   if (command_string != expected_command_string) {
@@ -633,16 +620,29 @@ static void testRemovingACharmapper()
 static void testRemovingAScene()
 {
   FakeWorld world;
-  world.addScene();
-  // assert(world.scene_viewer_windows.size()==1);
+  Scene &scene = world.addScene();
+  scene.addBody();
+
+  Charmapper &charmapper = world.addCharmapper();
+  Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
+  motion_pass.addPosExpr();
 
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
   executeOperation(world_wrapper,"Scene1","Remove",tree_observer);
-  assert(world.nMembers()==0);
-  string expected_command_string = "removeItem([0])\n";
+  assert(world.nMembers()==1);
+  string expected_command_string =
+    "removeItem([0])\n"
+    "itemReplaced([0,0,0,0])\n"
+    ;
   string command_string = command_stream.str();
+
+  if (command_string != expected_command_string) {
+    cerr << "command_string: " << command_string << "\n";
+    cerr << "expected_command_string: " << expected_command_string << "\n";
+  }
+
   assert(command_string==expected_command_string);
 }
 

@@ -5,7 +5,6 @@
 #include "streamvector.hpp"
 #include "removefrom.hpp"
 
-
 using std::vector;
 using std::string;
 using std::cerr;
@@ -21,27 +20,32 @@ static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
 struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   TreeEditor &tree_editor;
   const TreePath &parent_path;
+  const TreePath &new_item_path;
   bool &created;
 
   CreateChildItemVisitor(
     TreeEditor &tree_editor_arg,
     const TreePath &parent_path_arg,
+    const TreePath &new_item_path_arg,
     bool &created_arg
   )
   : tree_editor(tree_editor_arg),
     parent_path(parent_path_arg),
+    new_item_path(new_item_path_arg),
     created(created_arg)
   {
   }
 
   void operator()(const VoidWrapper &wrapper) const override
   {
-    tree_editor.createVoidItem(parent_path,wrapper.label());
+    tree_editor.createVoidItem(parent_path,new_item_path,wrapper.label());
     created = true;
   }
 
   void operator()(const NumericWrapper &wrapper) const override
   {
+    // Need to make this handle inserting as well.
+    assert(new_item_path.back() == tree_editor.itemChildCount(parent_path));
     tree_editor.createNumericItem(parent_path,wrapper.label(),wrapper.value());
     created = true;
   }
@@ -50,6 +54,7 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   {
     tree_editor.createEnumerationItem(
       parent_path,
+      new_item_path,
       wrapper.label(),
       comboBoxItems(wrapper),
       wrapper.value()
@@ -59,6 +64,8 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
 
   void operator()(const StringWrapper &wrapper) const override
   {
+    // Need to make this handle inserting as well.
+    assert(new_item_path.back() == tree_editor.itemChildCount(parent_path));
     tree_editor.createStringItem(parent_path,wrapper.label(),wrapper.value());
     created = true;
   }
@@ -82,7 +89,9 @@ static void
 
 void TreeEditor::setWorldPtr(Wrapper *arg)
 {
+  removeChildItems(TreePath());
   world_ptr = arg;
+  addChildTreeItems(TreePath());
 }
 
 
@@ -115,17 +124,13 @@ struct TreeEditor::TreeObserver : ::TreeObserver {
 
   void itemAdded(const TreePath &path) override
   {
-    tree_editor.addTreeItem(path);
+    tree_editor.createTreeItem(path);
   }
 
   void itemReplaced(const TreePath &path) override
   {
-    tree_editor.replaceTreeItems(path);
-  }
-
-  void enumerationValuesChanged(const TreePath &path) const override
-  {
-    tree_editor.changeEnumerationValues(path);
+    tree_editor.removeTreeItem(path);
+    tree_editor.createTreeItem(path);
   }
 
   void itemRemoved(const TreePath &path) override
@@ -197,7 +202,7 @@ struct TreeObserverStub : TreeObserver {
 }
 
 
-void TreeEditor::replaceTreeItems(const TreePath &parent_path)
+void TreeEditor::replaceChildTreeItems(const TreePath &parent_path)
 {
   removeChildItems(parent_path);
   addChildTreeItems(parent_path);
@@ -227,7 +232,7 @@ void TreeEditor::setWorldState(const WrapperState &new_state)
   Wrapper *world_ptr = worldPtr();
   assert(world_ptr);
   world_ptr->setState(new_state);
-  replaceTreeItems(TreePath());
+  replaceChildTreeItems(TreePath());
   collapseChildren(TreePath());
 }
 
@@ -284,7 +289,7 @@ void TreeEditor::addMainTreeItem(const TreePath &new_item_path)
 }
 
 
-void TreeEditor::addTreeItem(const TreePath &new_item_path)
+void TreeEditor::createTreeItem(const TreePath &new_item_path)
 {
   addMainTreeItem(new_item_path);
   addChildTreeItems(new_item_path);
@@ -307,7 +312,7 @@ void TreeEditor::addChildTreeItems(const TreePath &parent_path)
   int n_children = nChildren(world(),parent_path);
 
   for (int i=0; i!=n_children; ++i) {
-    addTreeItem(join(parent_path,i));
+    createTreeItem(join(parent_path,i));
   }
 }
 
@@ -437,19 +442,11 @@ void
   )
 {
   TreePath parent_path = parentPath(new_item_path);
-  TreeItemIndex child_index = new_item_path.back();
-
-  int parent_item_child_count = itemChildCount(parent_path);
-
-  if (child_index != parent_item_child_count) {
-    cerr << "child_index: " << child_index << "\n";
-    cerr << "parent_item_child_count: " << parent_item_child_count << "\n";
-    assert(false); // not implemented
-  }
 
   bool created = false;
 
-  CreateChildItemVisitor create_child_item_visitor(*this,parent_path,created);
+  CreateChildItemVisitor
+    create_child_item_visitor(*this,parent_path,new_item_path,created);
 
   wrapper.accept(create_child_item_visitor);
 

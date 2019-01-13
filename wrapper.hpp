@@ -22,7 +22,6 @@ struct EnumerationWrapper;
 
 using WrapperVisitor = std::function<void(const Wrapper &)>;
 
-
 struct Wrapper {
   using OperationName = std::string;
   using Label = std::string;
@@ -31,10 +30,6 @@ struct Wrapper {
     virtual void itemAdded(const TreePath &) = 0;
     virtual void itemReplaced(const TreePath &) = 0;
     virtual void itemRemoved(const TreePath &) = 0;
-    virtual void enumerationValuesChanged(const TreePath &) const = 0;
-      // This is somewhat out of place.  Maybe it is best to just treat
-      // the item as being replaced if we need to change the enumeration
-      // values.
   };
 
   struct SubclassVisitor {

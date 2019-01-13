@@ -9,22 +9,65 @@
 #include "faketree.hpp"
 #include "itemfrompath.hpp"
 #include "observeddiagrams.hpp"
+#include "ostreamvector.hpp"
 
 using std::vector;
 using std::istringstream;
 using std::string;
 using std::unique_ptr;
 using std::make_unique;
+using std::cerr;
+
+
+template <typename T>
+static void removeIndexFrom(vector<T> &container,size_t index)
+{
+  container.erase(container.begin() + index);
+}
+
+
+template <typename T>
+static T& insertItemIn(vector<T> &container,size_t index)
+{
+  container.emplace(container.begin() + index);
+  FakeTree::Item &new_item = container[index];
+  return new_item;
+}
+
+
+static void
+  createItem(
+    FakeTree &tree,
+    const TreePath &new_item_path,
+    const string &label
+  )
+{
+  TreePath parent_path = parentPath(new_item_path);
+  FakeTree::Item &parent_item = itemFromPath(tree.root, parent_path);
+  int new_item_index = new_item_path.back();
+  FakeTree::Item &new_item =
+    insertItemIn(parent_item.children,new_item_index);
+  new_item.label = label;
+}
 
 
 namespace {
 struct FakeTreeEditor : TreeEditor {
-  void removeTreeItem(const TreePath &/*path*/) override
+  void removeTreeItem(const TreePath &path) override
   {
+    FakeTree::Item &parent_item = itemFromPath(tree.root, parentPath(path));
+    removeIndexFrom(parent_item.children, path.back());
   }
 
-  void removeChildItems(const TreePath &/*path*/) override
+  void removeChildItems(const TreePath &path) override
   {
+    if (path.empty()) {
+      tree.root.children.clear();
+      return;
+    }
+
+    cerr << "path: " << path << "\n";
+    assert(false);
   }
 
   void
@@ -38,7 +81,7 @@ struct FakeTreeEditor : TreeEditor {
 
   int itemChildCount(const TreePath &parent_item) const override
   {
-    return itemFromPath(tree.root,parent_item).children.size();
+    return itemFromPath(tree.root, parent_item).children.size();
   }
 
   virtual void replaceTreeItems(const TreePath &/*parent_path*/)
@@ -62,16 +105,12 @@ struct FakeTreeEditor : TreeEditor {
 
   void
     createVoidItem(
-      const TreePath &parent_path,
-      const std::string & /*label*/
+      const TreePath &,
+      const TreePath &new_item_path,
+      const std::string &label
     ) override
   {
-    if (parent_path.empty()) {
-      tree.root.children.emplace_back();
-      return;
-    }
-
-    assert(false);
+    createItem(tree,new_item_path,label);
   }
 
   void
@@ -86,13 +125,15 @@ struct FakeTreeEditor : TreeEditor {
 
   void
     createEnumerationItem(
-      const TreePath &/*parent_path*/,
-      const std::string &/*label*/,
+      const TreePath &parent_path,
+      const TreePath &new_item_path,
+      const std::string &label,
       const std::vector<std::string> &/*options*/,
       int /*value*/
     ) override
   {
-    assert(false);
+    assert(parentPath(new_item_path) == parent_path);
+    createItem(tree,new_item_path,label);
   }
 
   void
@@ -127,14 +168,62 @@ struct FakeTreeEditor : TreeEditor {
 }
 
 
+#if 0
+namespace {
+struct VoidTestValue {
+  static TestValueType type() const { return void_; }
+};
+}
+
+
+namespace {
+struct EnumerationTestValue {
+  static TestValueType type() const { return enumeration; }
+}
+}
+
+
+namespace {
+struct TestValue {
+  struct Data {
+    virtual Type type() const = 0;
+  };
+
+  template <typename T>
+  struct BasicData : Data {
+    T value;
+
+    Type type() const override { return value.type(); }
+  };
+
+  unique_ptr<Data> data_ptr;
+
+  template <typename T>
+  TestValue(const T &arg)
+  : data_ptr(make_unique<BasicData<T>>(arg))
+  {
+  }
+};
+}
+#endif
+
+
 namespace {
 struct TestObject {
+  enum class ValueType {
+    void_,
+    enumeration
+  };
+
   TestObject *parent_ptr = nullptr;
   string label_member;
   vector<unique_ptr<TestObject>> children;
   Diagram *diagram_ptr = nullptr;
   ObservedDiagrams observed_diagrams;
   int *diagram_changed_count_ptr = nullptr;
+  ValueType value_type = ValueType::void_;
+  vector<string> enumeration_names;
+  int enumeration_index = 0;
 
   TestObject& createChild(const string &label)
   {
@@ -149,33 +238,33 @@ struct TestObject {
 
 
 namespace {
-struct TestWrapper : VoidWrapper {
-  TestWrapper(TestObject &object_arg)
+template <typename BaseType>
+struct BasicTestWrapper : BaseType {
+  using Label = typename BaseType::Label;
+  using OperationName = typename BaseType::OperationName;
+
+  BasicTestWrapper(TestObject &object_arg)
   : object(object_arg)
   {
   }
 
-  TestWrapper(const TestWrapper &) = delete;
+  BasicTestWrapper(const BasicTestWrapper &) = delete;
 
-  virtual Label label() const
+  Label label() const override
   {
     return object.label_member;
   }
 
-  virtual int nChildren() const
+  int nChildren() const override
   {
     return object.children.size();
   }
 
-  virtual void
+  void
     withChildWrapper(
       int child_index,
       const WrapperVisitor &visitor
-    ) const
-  {
-    assert(object.children[child_index]);
-    visitor(TestWrapper(*object.children[child_index]));
-  }
+    ) const override;
 
   TestObject& createChild(const string &label)
   {
@@ -184,7 +273,7 @@ struct TestWrapper : VoidWrapper {
 
   virtual std::vector<OperationName> operationNames() const
   {
-    return {"Remove"};
+    return {"Remove","Replace"};
   }
 
   virtual void
@@ -194,10 +283,21 @@ struct TestWrapper : VoidWrapper {
       TreeObserver &handler
     ) const
   {
-    assert(operation_index==0);
-    assert(object.parent_ptr);
-    handler.itemRemoved(path);
-    removeFrom(object.parent_ptr->children,&object);
+    if (operation_index==0) {
+      assert(object.parent_ptr);
+      handler.itemRemoved(path);
+      removeFrom(object.parent_ptr->children,&object);
+      return;
+    }
+
+    if (operation_index==1) {
+      object.label_member = "c";
+      handler.itemReplaced(path);
+      return;
+    }
+
+    cerr << "operation_index: " << operation_index << "\n";
+    assert(false);
   }
 
   Diagram *diagramPtr() const override { return object.diagram_ptr; }
@@ -228,6 +328,58 @@ struct TestWrapper : VoidWrapper {
 
   TestObject &object;
 };
+}
+
+typedef BasicTestWrapper<VoidWrapper> TestWrapper;
+
+struct VoidTestWrapper : BasicTestWrapper<VoidWrapper> {
+  using BasicTestWrapper<VoidWrapper>::BasicTestWrapper;
+};
+
+
+struct EnumerationTestWrapper : BasicTestWrapper<EnumerationWrapper> {
+  using BasicTestWrapper<EnumerationWrapper>::BasicTestWrapper;
+
+  std::vector<std::string> enumerationNames() const override
+  {
+    return object.enumeration_names;
+  }
+
+  void
+    setValue(
+      const TreePath &,
+      Index,
+      TreeObserver &
+    ) const override
+  {
+    assert(false);
+  }
+
+  Index value() const override
+  {
+    return object.enumeration_index;
+  }
+};
+
+
+
+template <typename BaseType>
+void
+  BasicTestWrapper<BaseType>::withChildWrapper(
+    int child_index,
+    const WrapperVisitor &visitor
+  ) const
+{
+  assert(object.children[child_index]);
+  if (
+    object.children[child_index]->value_type==TestObject::ValueType::void_) {
+
+    visitor(VoidTestWrapper(*object.children[child_index]));
+  }
+  else {
+    // This needs to be a different type of TestWrapper
+    visitor(EnumerationTestWrapper(*object.children[child_index]));
+  }
 }
 
 
@@ -317,6 +469,66 @@ static void testSettingWorldState()
 }
 
 
+static void testReplacingAVoidItem()
+{
+  // Create a test object
+  // root
+  //   a
+  //   b
+  TestObject object;
+  object.createChild("a");
+  object.createChild("b");
+
+  // Create a tree editor
+  FakeTreeEditor tree_editor;
+
+  // Set the world wrapper on the tree editor.
+  TestWrapper wrapper(object);
+  tree_editor.setWorldPtr(&wrapper);
+
+  assert(tree_editor.tree.root.children.size()==2);
+
+  // Execute an operation which replaces item a
+  tree_editor.userSelectsContextMenuItem("a","Replace");
+
+  // Check that the item is replaced.
+  assert(tree_editor.tree.root.children.size() == 2);
+  assert(tree_editor.tree.root.children[0].label == "c");
+}
+
+
+static void testReplacingAnEnumerationItem()
+{
+  // Create a test object
+  // root
+  //   a
+  //   b
+  TestObject object;
+  TestObject &a = object.createChild("a");
+  object.createChild("b");
+
+  a.value_type = TestObject::ValueType::enumeration;
+  a.enumeration_names = {"x","y","z"};
+  a.enumeration_index = 0;
+
+  // Create a tree editor
+  FakeTreeEditor tree_editor;
+
+  // Set the world wrapper on the tree editor.
+  TestWrapper wrapper(object);
+  tree_editor.setWorldPtr(&wrapper);
+
+  assert(tree_editor.tree.root.children.size()==2);
+
+  // Execute an operation which replaces item a
+  tree_editor.userSelectsContextMenuItem("a","Replace");
+
+  // Check that the item is replaced.
+  assert(tree_editor.tree.root.children.size() == 2);
+  assert(tree_editor.tree.root.children[0].label == "c");
+}
+
+
 int main()
 {
   testEditingDiagramThenClosingTheDiagramEditorWindow();
@@ -324,4 +536,6 @@ int main()
   testEditingChildDiagramThenRemovingItem();
   testEditingDiagramNotifiesWrapper();
   testSettingWorldState();
+  testReplacingAVoidItem();
+  testReplacingAnEnumerationItem();
 }

@@ -33,6 +33,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void
       createVoidItem(
         const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label
       ) override;
 
@@ -46,6 +47,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void
       createEnumerationItem(
         const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label,
         const std::vector<std::string> &options,
         int value
@@ -63,6 +65,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     QTreeWidgetItem&
       createComboBoxItem(
         QTreeWidgetItem &parent_item,
+        int index,
         const std::string &label,
         const std::vector<std::string> &enumeration_names,
         int value

@@ -36,11 +36,6 @@ struct StubTreeObserver : Wrapper::TreeObserver {
 
   void itemReplaced(const TreePath &) override
   {
-    assert(false);
-  }
-
-  void enumerationValuesChanged(const TreePath &) const override
-  {
   }
 
   void itemRemoved(const TreePath &) override

@@ -79,10 +79,12 @@ QTreeWidgetItem&
 void
   QtTreeEditor::createVoidItem(
     const TreePath &parent_path,
+    const TreePath &new_item_path,
     const string &label
   )
 {
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  assert(new_item_path.back() == parent_item.childCount());
   createChildItem(parent_item,label);
 }
 
@@ -102,13 +104,15 @@ void
 void
   QtTreeEditor::createEnumerationItem(
     const TreePath &parent_path,
+    const TreePath &new_item_path,
     const string &label,
     const vector<string> &options,
     int value
   )
 {
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  createComboBoxItem(parent_item,label,options,value);
+  int index = new_item_path.back();
+  createComboBoxItem(parent_item,index,label,options,value);
 }
 
 
@@ -156,12 +160,13 @@ struct QtComboBoxTreeItemWidget : QWidget {
 QTreeWidgetItem&
   QtTreeEditor::createComboBoxItem(
     QTreeWidgetItem &parent_item,
+    int index,
     const std::string &label,
     const std::vector<std::string> &enumeration_names,
     int value
   )
 {
-  QTreeWidgetItem &item = ::createChildItem(parent_item);
+  QTreeWidgetItem &item = ::insertChildItem(parent_item,index);
   QtComboBoxTreeItemWidget *widget_ptr =
     new QtComboBoxTreeItemWidget(label);
   QtComboBox &combo_box = widget_ptr->comboBox();

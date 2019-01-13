@@ -130,7 +130,7 @@ struct WorldSceneList : CharmapperWrapper::SceneList {
 static void
   notifyCharmappersOfSceneChange(
     World &world,
-    const Wrapper::TreeObserver &tree_observer
+    Wrapper::TreeObserver &tree_observer
   )
 {
   function<void(World::CharmapperMember &,int)> handle_scene_change_function =
@@ -239,7 +239,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   {
     auto changed_func =
       [&,&world=world]
-      (const Wrapper::TreeObserver &tree_observer)
+      (Wrapper::TreeObserver &tree_observer)
       {
 	// Update the body comboboxes in the charmappers.
 	// This doesn't work because the wrappers don't necessarily exist
@@ -259,7 +259,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
     auto body_added_func =
       [&](
         const Scene::Body &body,
-        const Wrapper::TreeObserver &tree_observer
+        Wrapper::TreeObserver &tree_observer
       )
       {
         notifyCharmappersOfSceneChange(world,tree_observer);
@@ -276,7 +276,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       }
     };
 
-    auto removed_body_func = [&](const Wrapper::TreeObserver &tree_observer)
+    auto removed_body_func = [&](Wrapper::TreeObserver &tree_observer)
     {
       notifyCharmappersOfSceneChange(world,tree_observer);
 
@@ -285,7 +285,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
       }
     };
 
-    auto remove_func = [&](const Wrapper::TreeObserver &tree_observer)
+    auto remove_func = [&](Wrapper::TreeObserver &tree_observer)
     {
       world.removeMember(member_index);
       notifyCharmappersOfSceneChange(world,tree_observer);

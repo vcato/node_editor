@@ -30,7 +30,8 @@ struct TreeEditor {
     void executeOperation(const TreePath &,int operation_index);
     void stringItemValueChanged(const TreePath &path,const std::string &value);
     void numberItemValueChanged(const TreePath &path,int value);
-    void addTreeItem(const TreePath &new_item_path);
+
+    void createTreeItem(const TreePath &new_item_path);
     void addChildTreeItems(const TreePath &parent_path);
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
@@ -65,6 +66,7 @@ struct TreeEditor {
     virtual void
       createVoidItem(
         const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label
       ) = 0;
 
@@ -78,6 +80,7 @@ struct TreeEditor {
     virtual void
       createEnumerationItem(
         const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label,
         const std::vector<std::string> &options,
         int value
@@ -94,7 +97,7 @@ struct TreeEditor {
     void diagramChanged(DiagramEditorWindow &window);
     void notifyItemsOfDiagramChange(Diagram &diagram_that_changed);
     void addMainTreeItem(const TreePath &new_item_path);
-    void replaceTreeItems(const TreePath &parent_path);
+    void replaceChildTreeItems(const TreePath &parent_path);
     void collapseBranch(const TreePath &path);
     void collapseChildren(const TreePath &path);
 };

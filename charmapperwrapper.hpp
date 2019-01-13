@@ -72,7 +72,7 @@ class CharmapperWrapper : public VoidWrapper {
     handleSceneChange(
       Charmapper &charmapper,
       const std::string &charmapper_name,
-      const TreeObserver &tree_observer,
+      TreeObserver &tree_observer,
       const TreePath &charmapper_path,
       ObservedDiagrams &observed_diagrams,
       const SceneList &scene_list
@@ -81,7 +81,7 @@ class CharmapperWrapper : public VoidWrapper {
   // May be able to make this private.
   void
     handleSceneChange(
-      const TreeObserver &,
+      TreeObserver &,
       const TreePath &charmapper_path
     );
 };

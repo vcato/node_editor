@@ -5,14 +5,14 @@
 
 struct SceneWrapper : VoidWrapper {
   struct SceneObserver {
-    using ChangedFunc = std::function<void(const Wrapper::TreeObserver &)>;
+    using ChangedFunc = std::function<void(Wrapper::TreeObserver &)>;
     using BodyAddedFunc =
-      std::function<void(const Scene::Body&,const Wrapper::TreeObserver &)>;
+      std::function<void(const Scene::Body&,Wrapper::TreeObserver &)>;
+    using RemovedBodyFunc =
+      std::function<void(Wrapper::TreeObserver &)>;
+    using RemoveFunc = std::function<void(Wrapper::TreeObserver &)>;
     using RemovingBodyFunc =
       std::function<void(const Scene::Body&)>;
-    using RemovedBodyFunc =
-      std::function<void(const Wrapper::TreeObserver &)>;
-    using RemoveFunc = std::function<void(const Wrapper::TreeObserver &)>;
 
     ChangedFunc changed_func;
     BodyAddedFunc body_added_func;

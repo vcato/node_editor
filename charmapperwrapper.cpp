@@ -493,7 +493,7 @@ struct MotionPassWrapper : VoidWrapper {
 
     void
       handleSceneChange(
-        const Wrapper::TreeObserver &tree_observer,
+        Wrapper::TreeObserver &tree_observer,
         const TreePath &path_of_this
       ) const;
 
@@ -775,7 +775,7 @@ struct MotionPassWrapper : VoidWrapper {
 
 void
   MotionPassWrapper::BodyWrapper::handleSceneChange(
-    const Wrapper::TreeObserver &tree_observer,
+    Wrapper::TreeObserver &tree_observer,
     const TreePath &path_of_this
   ) const
 {
@@ -796,7 +796,7 @@ void
     body_link.clear();
   }
 
-  tree_observer.enumerationValuesChanged(path_of_this);
+  tree_observer.itemReplaced(path_of_this);
 }
 
 
@@ -908,7 +908,7 @@ void
   CharmapperWrapper::handleSceneChange(
     Charmapper &charmapper,
     const std::string &charmapper_name,
-    const TreeObserver &tree_observer,
+    TreeObserver &tree_observer,
     const TreePath &charmapper_path,
     ObservedDiagrams &observed_diagrams,
     const SceneList &scene_list
@@ -951,7 +951,7 @@ void
 
 void
   CharmapperWrapper::handleSceneChange(
-    const TreeObserver &tree_observer,
+    TreeObserver &tree_observer,
     const TreePath &path_of_this
   )
 {

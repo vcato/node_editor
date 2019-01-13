@@ -276,6 +276,11 @@ MotionPassWrapper::BodyWrapper::handleSceneChange needs to be better.
 * We need to be able to handle removing a body or a scene differently.
   * We want to make sure that we don't have any pointers to a scene or
     a body before we delete it.
-
-Wrapper::TreeObserver::enumerationValuesChanged() is probably unnecessary
-* we could just treat the item as being replaced.
+---
+Seems like we should separate the value part of the wrapper from the label
+and the diagram so we can more easily handle different types of values
+without having to have different types of wrappers.
+---
+Need to make these methods handle insertion:
+* TreeEditor::CreateChildItemVisitor::operator()(const NumericWrapper &)
+* TreeEditor::CreateChildItemVisitor::operator()(const StringWrapper &)
