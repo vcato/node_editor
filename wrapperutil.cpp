@@ -278,7 +278,7 @@ TreePath makePath(const Wrapper &wrapper,const string &path_string)
 
 
 void
-  executeOperation(
+  executeWrapperOperation(
     const Wrapper &wrapper,
     const string &path_string,
     const string &operation_name,

@@ -18,6 +18,15 @@ using FloatMap = Scene::FloatMap;
 using Label = SceneWrapper::Label;
 
 
+template <typename T>
+static string str(const T &arg)
+{
+  ostringstream stream;
+  stream << arg;
+  return stream.str();
+}
+
+
 namespace {
 struct WrapperData {
   Scene &scene;
@@ -519,7 +528,7 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
   WrapperData &wrapper_data;
 
   FrameWrapper(
-    const char *label,
+    const string &label,
     Frame &frame_arg,
     WrapperData &wrapper_data_arg
   );
@@ -553,7 +562,7 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
 
 
 SceneWrapper::FrameWrapper::FrameWrapper(
-  const char *label,
+  const string &label,
   Frame &frame_arg,
   WrapperData &wrapper_data_arg
 )
@@ -586,7 +595,7 @@ void
 }
 
 
-struct SceneWrapper::MotionWrapper : NoOperationWrapper<VoidWrapper> {
+struct SceneWrapper::MotionWrapper : VoidWrapper {
   MotionWrapper(
     const char *label,
     Motion &motion,
@@ -604,17 +613,45 @@ struct SceneWrapper::MotionWrapper : NoOperationWrapper<VoidWrapper> {
       const WrapperVisitor &visitor
     ) const override
   {
-    if (child_index==0) {
-      visitor(FrameWrapper("0",motion.frames[0],wrapper_data));
-      return;
-    }
+    string frame_name = str(child_index);
 
-    assert(false);
+    visitor(FrameWrapper(frame_name,motion.frames[child_index],wrapper_data));
   }
 
   Label label() const override { return label_member; }
 
   void setState(const WrapperState &) const override;
+
+  std::vector<OperationName> operationNames() const override
+  {
+    return {"Add Frame"};
+  }
+
+  void
+    executeAddFrameOperation(
+      const TreePath &motion_path,
+      TreeObserver &observer
+    ) const
+  {
+    int frame_index = motion.nFrames();
+    motion.addFrame();
+    observer.itemAdded(join(motion_path,frame_index));
+  }
+
+  void
+    executeOperation(
+      int operation_index,
+      const TreePath &path,
+      TreeObserver &observer
+    ) const override
+  {
+    if (operation_index == 0) {
+      executeAddFrameOperation(path,observer);
+    }
+    else {
+      assert(false);
+    }
+  }
 
   string label_member;
   Motion &motion;

@@ -259,15 +259,4 @@ separate nodes stacked on top of each other.
 Need to be able to add variables.
 * Maybe add a variable pass.
 ---
-Need to be able to have multiple frames in a scene.
-* Scene background_frame should become background_motion
-* Scene should have a current frame.
----
-Need to handle setting the world state when it already has members.
-* If we remove a scene and there are charmappers, then the charmappers should
-  be updated to not show the removed scene's bodies as possible bodies.
-* How do we handle the case of bodies being removed?
-  * We can update the list of bodies, but we also need to update the
-    index.
-    * We'd like to have the index change so that it still reflects the
-      same body it used to if it still exists, or set it to none otherwise.
+Need to be able to change the current frame of a scene.

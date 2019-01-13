@@ -52,9 +52,17 @@ class Scene {
     struct Motion {
       std::vector<Frame> frames;
 
+      int nFrames() const { return frames.size(); }
+
       int nVariables() const
       {
         return frames[0].nVariables();
+      }
+
+      void addFrame()
+      {
+        frames.emplace_back();
+        frames.back().setNVariables(nVariables());
       }
     };
 

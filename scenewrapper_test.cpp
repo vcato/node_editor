@@ -59,7 +59,6 @@ namespace {
 struct TreeObserverStub : Wrapper::TreeObserver {
   void itemAdded(const TreePath &) override
   {
-    assert(false);
   }
 
   void itemReplaced(const TreePath &) override

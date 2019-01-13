@@ -45,10 +45,9 @@ static void
 
 
 namespace {
-struct TreeObserverStub : Wrapper::TreeObserver {
+struct StubTreeObserver : Wrapper::TreeObserver {
   void itemAdded(const TreePath &) override
   {
-    assert(false);
   }
 
   void itemReplaced(const TreePath &) override
@@ -182,6 +181,16 @@ static WrapperState stateFromText(const string &text)
 }
 
 
+static string textOfWrapper(const Wrapper &wrapper)
+{
+  ostringstream stream;
+  WrapperState state = stateOf(wrapper);
+  printStateOn(stream,state);
+  string text = stream.str();
+  return text;
+}
+
+
 static void testAddingACharmapper()
 {
   FakeWorld world;
@@ -197,9 +206,7 @@ static void testPrintingState()
 {
   FakeWorld world;
   WorldWrapper wrapper(world);
-  ostringstream stream;
-  printStateOn(stream,stateOf(wrapper));
-  string text = stream.str();
+  string text = textOfWrapper(wrapper);
   string expected_text =
     "world {\n"
     "}\n";
@@ -214,11 +221,9 @@ static void testPrintingCharmapperState()
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   /*Charmapper::MotionPass::PosExpr &pos_expr =*/ motion_pass.addPosExpr();
   WorldWrapper wrapper(world);
-  ostringstream stream;
-  WrapperState state = stateOf(wrapper);
-  assert(state.children.size()==1);
-  printStateOn(stream,state);
-  string text = stream.str();
+
+  string text = textOfWrapper(wrapper);
+
   const char *expected_text =
     "world {\n"
     "  charmapper1 {\n"
@@ -302,7 +307,7 @@ static void testAddingABodyToABody()
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
 
-  executeOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
+  executeWrapperOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
 
   string command_string = command_stream.str();
   string background_frame_path = "0,0,0";
@@ -589,7 +594,7 @@ static void testRemovingAPosExprFromAMotionPass()
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
 
-  executeOperation(
+  executeWrapperOperation(
     world_wrapper,
     "Charmapper1|Motion Pass|Pos Expr","Remove",
     tree_observer
@@ -609,7 +614,7 @@ static void testRemovingACharmapper()
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
-  executeOperation(world_wrapper,"Charmapper1","Remove",tree_observer);
+  executeWrapperOperation(world_wrapper,"Charmapper1","Remove",tree_observer);
   assert(world.nMembers()==0);
   string expected_command_string = "removeItem([0])\n";
   string command_string = command_stream.str();
@@ -630,7 +635,7 @@ static void testRemovingAScene()
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
-  executeOperation(world_wrapper,"Scene1","Remove",tree_observer);
+  executeWrapperOperation(world_wrapper,"Scene1","Remove",tree_observer);
   assert(world.nMembers()==1);
   string expected_command_string =
     "removeItem([0])\n"
@@ -794,7 +799,7 @@ static void testSettingEmptyState()
   FakeWorld world;
   WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
-  TreeObserverStub tree_observer;
+  StubTreeObserver tree_observer;
   wrapper.setState(state);
   assert(world.nMembers()==0);
 }
@@ -940,6 +945,64 @@ static void testSettingStateTwice()
 }
 
 
+static void testAddingAFrameToTheScene()
+{
+  const char *text =
+    "world {\n"
+    "  scene1 {\n"
+    "    background_motion {\n"
+    "      0 {\n"
+    "        0: 23\n"
+    "        1: 0\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  FakeWorld world;
+  WorldWrapper wrapper(world);
+  WrapperState state = stateFromText(text);
+  wrapper.setState(state);
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+
+  executeWrapperOperation(
+    wrapper,"Scene1|background_motion","Add Frame",tree_observer
+  );
+
+  string resulting_text = textOfWrapper(wrapper);
+
+  string expected_text =
+    "world {\n"
+    "  scene1 {\n"
+    "    background_motion {\n"
+    "      0 {\n"
+    "        0: 23\n"
+    "        1: 0\n"
+    "      }\n"
+    "      1 {\n"
+    "        0: 0\n"
+    "        1: 0\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  if (resulting_text != expected_text) {
+    cerr << "resulting_text: " << resulting_text << "\n";
+  }
+
+  assert(resulting_text == expected_text);
+
+  string expected_commands =
+    "addItem([0,0,1])\n";
+
+  string commands = command_stream.str();
+
+  assert(commands == expected_commands);
+}
+
+
 int main()
 {
   testAddingACharmapper();
@@ -951,6 +1014,7 @@ int main()
   testSettingStateWithCharmapper();
   testSettingStateWithPosExpr();
   testSettingStateTwice();
+  testAddingAFrameToTheScene();
 
   {
     namespace tests = scene_and_charmapper_tests;

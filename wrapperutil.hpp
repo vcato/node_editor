@@ -34,7 +34,7 @@ extern void
   );
 
 extern void
-  executeOperation(
+  executeWrapperOperation(
     const Wrapper &wrapper,
     const std::string &path_string,
     const std::string &operation_name,
