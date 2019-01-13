@@ -65,21 +65,19 @@ struct TreeEditor {
 
     virtual void
       createVoidItem(
-        const TreePath &parent_path,
         const TreePath &new_item_path,
         const std::string &label
       ) = 0;
 
     virtual void
       createNumericItem(
-        const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label,
         const NumericValue value
       ) = 0;
 
     virtual void
       createEnumerationItem(
-        const TreePath &parent_path,
         const TreePath &new_item_path,
         const std::string &label,
         const std::vector<std::string> &options,
@@ -88,7 +86,7 @@ struct TreeEditor {
 
     virtual void
       createStringItem(
-        const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label,
         const std::string &value
       ) = 0;

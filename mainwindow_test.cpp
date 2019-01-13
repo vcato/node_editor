@@ -167,11 +167,11 @@ struct FakeTreeEditor : TreeEditor {
 
   void
     createVoidItem(
-      const TreePath &parent_path,
       const TreePath &new_item_path,
       const std::string & /*label*/
     ) override
   {
+    TreePath parent_path = parentPath(new_item_path);
     Item &parent_item = itemFromPath(root,parent_path);
     int n_children = parent_item.children.size();
     assert(new_item_path.back() == n_children);
@@ -180,24 +180,27 @@ struct FakeTreeEditor : TreeEditor {
 
   void
     createNumericItem(
-      const TreePath & parent_path,
+      const TreePath &new_item_path,
       const std::string & /*label*/,
       const NumericValue /*value*/
     ) override
   {
+    TreePath parent_path = parentPath(new_item_path);
     Item &parent_item = itemFromPath(root,parent_path);
+    int n_children = parent_item.children.size();
+    assert(new_item_path.back() == n_children);
     insertChildItem(parent_item,parent_item.children.size());
   }
 
   void
     createEnumerationItem(
-      const TreePath &parent_path,
       const TreePath &new_item_path,
       const std::string &/*label*/,
       const std::vector<std::string> &/*options*/,
       int /*value*/
     ) override
   {
+    TreePath parent_path = parentPath(new_item_path);
     assert(new_item_path.back() == itemChildCount(parent_path));
     Item &parent_item = itemFromPath(root,parent_path);
     insertChildItem(parent_item,parent_item.children.size());
@@ -205,11 +208,13 @@ struct FakeTreeEditor : TreeEditor {
 
   void
     createStringItem(
-      const TreePath &parent_path,
+      const TreePath &new_item_path,
       const std::string &/*label*/,
       const std::string &/*value*/
     ) override
   {
+    TreePath parent_path = parentPath(new_item_path);
+    assert(new_item_path.back() == itemChildCount(parent_path));
     Item &parent_item = itemFromPath(root,parent_path);
     insertChildItem(parent_item,parent_item.children.size());
   }

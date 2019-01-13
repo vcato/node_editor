@@ -19,18 +19,15 @@ static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
 
 struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   TreeEditor &tree_editor;
-  const TreePath &parent_path;
   const TreePath &new_item_path;
   bool &created;
 
   CreateChildItemVisitor(
     TreeEditor &tree_editor_arg,
-    const TreePath &parent_path_arg,
     const TreePath &new_item_path_arg,
     bool &created_arg
   )
   : tree_editor(tree_editor_arg),
-    parent_path(parent_path_arg),
     new_item_path(new_item_path_arg),
     created(created_arg)
   {
@@ -38,22 +35,23 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
 
   void operator()(const VoidWrapper &wrapper) const override
   {
-    tree_editor.createVoidItem(parent_path,new_item_path,wrapper.label());
+    tree_editor.createVoidItem(new_item_path,wrapper.label());
     created = true;
   }
 
   void operator()(const NumericWrapper &wrapper) const override
   {
-    // Need to make this handle inserting as well.
-    assert(new_item_path.back() == tree_editor.itemChildCount(parent_path));
-    tree_editor.createNumericItem(parent_path,wrapper.label(),wrapper.value());
+    tree_editor.createNumericItem(
+      new_item_path,
+      wrapper.label(),
+      wrapper.value()
+    );
     created = true;
   }
 
   void operator()(const EnumerationWrapper &wrapper) const override
   {
     tree_editor.createEnumerationItem(
-      parent_path,
       new_item_path,
       wrapper.label(),
       comboBoxItems(wrapper),
@@ -64,9 +62,9 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
 
   void operator()(const StringWrapper &wrapper) const override
   {
-    // Need to make this handle inserting as well.
-    assert(new_item_path.back() == tree_editor.itemChildCount(parent_path));
-    tree_editor.createStringItem(parent_path,wrapper.label(),wrapper.value());
+    tree_editor.createStringItem(
+      new_item_path,wrapper.label(),wrapper.value()
+    );
     created = true;
   }
 };
@@ -441,17 +439,15 @@ void
     const Wrapper &wrapper
   )
 {
-  TreePath parent_path = parentPath(new_item_path);
-
   bool created = false;
 
   CreateChildItemVisitor
-    create_child_item_visitor(*this,parent_path,new_item_path,created);
+    create_child_item_visitor(*this,new_item_path,created);
 
   wrapper.accept(create_child_item_visitor);
 
   if (!created) {
-    cerr << "No item created for parent " << parent_path << "\n";
+    cerr << "No item created for " << new_item_path << "\n";
     assert(created);
   }
 }

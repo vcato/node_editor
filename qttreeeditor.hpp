@@ -31,21 +31,19 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
 
     void
       createVoidItem(
-        const TreePath &parent_path,
         const TreePath &new_item_path,
         const std::string &label
       ) override;
 
     void
       createNumericItem(
-        const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label,
         const NumericValue value
       ) override;
 
     void
       createEnumerationItem(
-        const TreePath &parent_path,
         const TreePath &new_item_path,
         const std::string &label,
         const std::vector<std::string> &options,
@@ -54,7 +52,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
 
     void
       createStringItem(
-        const TreePath &parent_path,
+        const TreePath &new_item_path,
         const std::string &label,
         const std::string &value
       ) override;

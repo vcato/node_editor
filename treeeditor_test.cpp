@@ -105,7 +105,6 @@ struct FakeTreeEditor : TreeEditor {
 
   void
     createVoidItem(
-      const TreePath &,
       const TreePath &new_item_path,
       const std::string &label
     ) override
@@ -115,35 +114,33 @@ struct FakeTreeEditor : TreeEditor {
 
   void
     createNumericItem(
-      const TreePath & /*parent_path*/,
-      const std::string & /*label*/,
+      const TreePath &new_item_path,
+      const std::string & label,
       const NumericValue /*value*/
     ) override
   {
-    assert(false);
+    createItem(tree,new_item_path,label);
   }
 
   void
     createEnumerationItem(
-      const TreePath &parent_path,
       const TreePath &new_item_path,
       const std::string &label,
       const std::vector<std::string> &/*options*/,
       int /*value*/
     ) override
   {
-    assert(parentPath(new_item_path) == parent_path);
     createItem(tree,new_item_path,label);
   }
 
   void
     createStringItem(
-      const TreePath &/*parent_path*/,
-      const std::string &/*label*/,
+      const TreePath &new_item_path,
+      const std::string &label,
       const std::string &/*value*/
     ) override
   {
-    assert(false);
+    createItem(tree,new_item_path,label);
   }
 
   void
@@ -212,7 +209,9 @@ namespace {
 struct TestObject {
   enum class ValueType {
     void_,
-    enumeration
+    enumeration,
+    numeric,
+    string
   };
 
   TestObject *parent_ptr = nullptr;
@@ -224,6 +223,8 @@ struct TestObject {
   ValueType value_type = ValueType::void_;
   vector<string> enumeration_names;
   int enumeration_index = 0;
+  NumericValue numeric_value = 0;
+  string string_value = "";
 
   TestObject& createChild(const string &label)
   {
@@ -332,11 +333,15 @@ struct BasicTestWrapper : BaseType {
 
 typedef BasicTestWrapper<VoidWrapper> TestWrapper;
 
+
+namespace {
 struct VoidTestWrapper : BasicTestWrapper<VoidWrapper> {
   using BasicTestWrapper<VoidWrapper>::BasicTestWrapper;
 };
+}
 
 
+namespace {
 struct EnumerationTestWrapper : BasicTestWrapper<EnumerationWrapper> {
   using BasicTestWrapper<EnumerationWrapper>::BasicTestWrapper;
 
@@ -360,7 +365,34 @@ struct EnumerationTestWrapper : BasicTestWrapper<EnumerationWrapper> {
     return object.enumeration_index;
   }
 };
+}
 
+
+namespace {
+struct NumericTestWrapper : BasicTestWrapper<NumericWrapper> {
+  using BasicTestWrapper<NumericWrapper>::BasicTestWrapper;
+
+  void setValue(Value) const override { assert(false); }
+  Value value() const override { return object.numeric_value; }
+};
+}
+
+
+namespace {
+struct StringTestWrapper : BasicTestWrapper<StringWrapper> {
+  using BasicTestWrapper<StringWrapper>::BasicTestWrapper;
+
+  Value value() const override
+  {
+    return object.string_value;
+  }
+
+  void setValue(const Value &) const override
+  {
+    assert(false);
+  }
+};
+}
 
 
 template <typename BaseType>
@@ -370,15 +402,24 @@ void
     const WrapperVisitor &visitor
   ) const
 {
-  assert(object.children[child_index]);
-  if (
-    object.children[child_index]->value_type==TestObject::ValueType::void_) {
+  TestObject *child_ptr = object.children[child_index].get();
 
-    visitor(VoidTestWrapper(*object.children[child_index]));
-  }
-  else {
-    // This needs to be a different type of TestWrapper
-    visitor(EnumerationTestWrapper(*object.children[child_index]));
+  assert(child_ptr);
+  TestObject &child = *child_ptr;
+
+  switch (child.value_type) {
+    case TestObject::ValueType::void_:
+      visitor(VoidTestWrapper(child));
+      break;
+    case TestObject::ValueType::enumeration:
+      visitor(EnumerationTestWrapper(child));
+      break;
+    case TestObject::ValueType::numeric:
+      visitor(NumericTestWrapper(child));
+      break;
+    case TestObject::ValueType::string:
+      visitor(StringTestWrapper(child));
+      break;
   }
 }
 
@@ -469,15 +510,34 @@ static void testSettingWorldState()
 }
 
 
-static void testReplacingAVoidItem()
+static void testReplacingAnItem(TestObject::ValueType value_type)
 {
   // Create a test object
   // root
   //   a
   //   b
   TestObject object;
-  object.createChild("a");
+  TestObject &a = object.createChild("a");
   object.createChild("b");
+
+  switch (value_type) {
+    case TestObject::ValueType::void_:
+      a.value_type = TestObject::ValueType::void_;
+      break;
+    case TestObject::ValueType::enumeration:
+      a.value_type = TestObject::ValueType::enumeration;
+      a.enumeration_names = {"x","y","z"};
+      a.enumeration_index = 0;
+      break;
+    case TestObject::ValueType::numeric:
+      a.value_type = TestObject::ValueType::numeric;
+      a.numeric_value = 5.5;
+      break;
+    case TestObject::ValueType::string:
+      a.value_type = TestObject::ValueType::string;
+      a.string_value = "test";
+      break;
+  }
 
   // Create a tree editor
   FakeTreeEditor tree_editor;
@@ -497,35 +557,27 @@ static void testReplacingAVoidItem()
 }
 
 
+static void testReplacingAVoidItem()
+{
+  testReplacingAnItem(TestObject::ValueType::void_);
+}
+
+
 static void testReplacingAnEnumerationItem()
 {
-  // Create a test object
-  // root
-  //   a
-  //   b
-  TestObject object;
-  TestObject &a = object.createChild("a");
-  object.createChild("b");
+  testReplacingAnItem(TestObject::ValueType::enumeration);
+}
 
-  a.value_type = TestObject::ValueType::enumeration;
-  a.enumeration_names = {"x","y","z"};
-  a.enumeration_index = 0;
 
-  // Create a tree editor
-  FakeTreeEditor tree_editor;
+static void testReplacingANumericItem()
+{
+  testReplacingAnItem(TestObject::ValueType::numeric);
+}
 
-  // Set the world wrapper on the tree editor.
-  TestWrapper wrapper(object);
-  tree_editor.setWorldPtr(&wrapper);
 
-  assert(tree_editor.tree.root.children.size()==2);
-
-  // Execute an operation which replaces item a
-  tree_editor.userSelectsContextMenuItem("a","Replace");
-
-  // Check that the item is replaced.
-  assert(tree_editor.tree.root.children.size() == 2);
-  assert(tree_editor.tree.root.children[0].label == "c");
+static void testReplacingAStringItem()
+{
+  testReplacingAnItem(TestObject::ValueType::string);
 }
 
 
@@ -538,4 +590,6 @@ int main()
   testSettingWorldState();
   testReplacingAVoidItem();
   testReplacingAnEnumerationItem();
+  testReplacingANumericItem();
+  testReplacingAStringItem();
 }

@@ -78,11 +78,11 @@ QTreeWidgetItem&
 
 void
   QtTreeEditor::createVoidItem(
-    const TreePath &parent_path,
     const TreePath &new_item_path,
     const string &label
   )
 {
+  TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   assert(new_item_path.back() == parent_item.childCount());
   createChildItem(parent_item,label);
@@ -91,25 +91,27 @@ void
 
 void
   QtTreeEditor::createNumericItem(
-    const TreePath &parent_path,
+    const TreePath &new_item_path,
     const string &label,
     const NumericValue value
   )
 {
+  TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  assert(new_item_path.back() == parent_item.childCount());
   createSpinBoxItem(parent_item,label,value);
 }
 
 
 void
   QtTreeEditor::createEnumerationItem(
-    const TreePath &parent_path,
     const TreePath &new_item_path,
     const string &label,
     const vector<string> &options,
     int value
   )
 {
+  TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   int index = new_item_path.back();
   createComboBoxItem(parent_item,index,label,options,value);
@@ -118,12 +120,14 @@ void
 
 void
   QtTreeEditor::createStringItem(
-    const TreePath &parent_path,
+    const TreePath &new_item_path,
     const string &label,
     const string &value
   )
 {
+  TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  assert(new_item_path.back() == parent_item.childCount());
   createLineEditItem(parent_item,label,value);
 }
 
