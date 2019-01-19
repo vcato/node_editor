@@ -156,6 +156,25 @@ static void
 
 
 namespace {
+struct StubTreeObserver : Wrapper::TreeObserver {
+  void itemAdded(const TreePath &) override
+  {
+    assert(false);
+  }
+
+  void itemReplaced(const TreePath &) override
+  {
+  }
+
+  void itemRemoved(const TreePath &) override
+  {
+    assert(false);
+  }
+};
+}
+
+
+namespace {
 struct ChildWrapperVisitor : World::MemberVisitor {
   World &world;
   const WrapperVisitor &visitor;
@@ -239,21 +258,23 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   virtual void visitScene(World::SceneMember &member) const
   {
     auto changed_func =
-      [&,&world=world]
-      (Wrapper::TreeObserver &tree_observer)
+      [&,&world=world]()
       {
-	// Update the body comboboxes in the charmappers.
-	// This doesn't work because the wrappers don't necessarily exist
-	// when the function is executed.
+        // Update the body comboboxes in the charmappers.
+        // This doesn't work because the wrappers don't necessarily exist
+        // when the function is executed.
 
-	member.scene.displayFrame() = member.scene.backgroundFrame();
+        member.scene.displayFrame() = member.scene.backgroundFrame();
 
-	notifyCharmappersOfSceneChange(world,tree_observer);
+        // Applying the charmappers could modify the scenes, but we don't
+        // want an infinite recursion, so we use a StubTreeObserver here.
+        StubTreeObserver stub_tree_observer;
+        notifyCharmappersOfSceneChange(world,stub_tree_observer);
 
-	// Notify the scene window after notifying charmapper
-	if (member.scene_window_ptr) {
-	  member.scene_window_ptr->notifySceneChanged();
-	}
+        // Notify the scene window after notifying charmapper
+        if (member.scene_window_ptr) {
+          member.scene_window_ptr->notifySceneChanged();
+        }
       };
 
     // We also need to get an tree observer

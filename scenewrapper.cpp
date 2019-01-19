@@ -32,25 +32,6 @@ struct WrapperData {
 
 
 namespace {
-struct StubTreeObserver : Wrapper::TreeObserver {
-  void itemAdded(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemReplaced(const TreePath &) override
-  {
-  }
-
-  void itemRemoved(const TreePath &) override
-  {
-    assert(false);
-  }
-};
-}
-
-
-namespace {
 struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   const char *label_member;
   Scene::FloatMap &map;
@@ -79,8 +60,7 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     }
 
     map.var_index = arg;
-    StubTreeObserver tree_observer;
-    wrapper_data.callbacks.changed_func(tree_observer);
+    wrapper_data.callbacks.changed_func();
   }
 
   Value value() const override
@@ -125,8 +105,7 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   void setValue(int arg) const override
   {
     value_ref = arg;
-    StubTreeObserver tree_observer;
-    wrapper_data.callbacks.changed_func(tree_observer);
+    wrapper_data.callbacks.changed_func();
   }
 
   virtual Value value() const { return value_ref; }
@@ -233,8 +212,7 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   void setValue(const string &arg) const
   {
     name = arg;
-    StubTreeObserver tree_observer;
-    wrapper_data.callbacks.changed_func(tree_observer);
+    wrapper_data.callbacks.changed_func();
   }
 
   void setState(const WrapperState &) const override

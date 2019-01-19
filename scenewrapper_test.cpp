@@ -40,9 +40,7 @@ static SceneWrapper::SceneObserver unusedObserver()
 {
   return
     SceneWrapper::SceneObserver(
-      [](const Wrapper::TreeObserver &){
-        assert(false);
-      }
+      [](){ assert(false); }
     );
 }
 
@@ -51,7 +49,7 @@ static SceneWrapper::SceneObserver ignoringObserver()
 {
   return
     SceneWrapper::SceneObserver(
-      /*changed_func*/ [](const Wrapper::TreeObserver &){}
+      /*changed_func*/ [](){}
     );
 }
 
@@ -171,7 +169,7 @@ static void
 static void testAddingBodies()
 {
   Scene scene;
-  SceneWrapper::SceneObserver notify([](const Wrapper::TreeObserver &){});
+  SceneWrapper::SceneObserver notify([](){});
   SceneWrapper scene_wrapper(scene,&notify,"Scene");
   ostringstream stream;
 
@@ -220,7 +218,7 @@ static void testGettingState()
 {
   Scene scene;
   SceneWrapper::SceneObserver notify(
-    [](const Wrapper::TreeObserver &){ assert(false); }
+    [](){ assert(false); }
   );
   Scene::Body &body = scene.addBody();
   scene.addChildBodyTo(body);

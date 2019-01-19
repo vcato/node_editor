@@ -32,7 +32,7 @@ class SceneWrapper : public VoidWrapper {
     static int firstBodyChildIndex() { return 2; }
 
     struct SceneObserver {
-      using ChangedFunc = std::function<void(Wrapper::TreeObserver &)>;
+      using ChangedFunc = std::function<void()>;
       using BodyAddedFunc =
         std::function<void(const Scene::Body&,Wrapper::TreeObserver &)>;
       using RemovedBodyFunc =
