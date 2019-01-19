@@ -8,6 +8,7 @@
 #include "wrapperutil.hpp"
 #include "fakediagrameditorwindows.hpp"
 #include "optional.hpp"
+#include "scenewrapper.hpp"
 
 using std::string;
 using std::vector;
@@ -488,7 +489,7 @@ static void testRemovingABody()
   FakeMainWindow &main_window = tester.main_window;
   FakeTreeEditor &tree_editor = main_window.tree_editor;
   FakeSceneWindow &scene_window = world.scene_window;
-  size_t n_scene_properties = 1;
+  size_t n_scene_properties = SceneWrapper::firstBodyChildIndex();
 
   // User executes Add Scene in the tree editor.
   tree_editor.userSelectsContextMenuItem("Add Scene");

@@ -15,14 +15,14 @@ class Scene {
     struct Bodies;
     struct Frame;
     struct Point2DMap;
+    struct Motion;
     using VarIndex = int;
     using VarValue = float;
-
-    static VarIndex noVarIndex() { return -1; }
 
     Scene();
     ~Scene();
 
+    static VarIndex noVarIndex() { return -1; }
     int nBodies() const { return bodies().size(); }
     Body &addBody();
     Body &addBody(const std::string &name);
@@ -33,8 +33,17 @@ class Scene {
     Bodies &bodies() { return root_body.children; }
     Body &body(int index) { return bodies()[index]; }
     Frame makeFrame() const;
+    int nFrameVariables() const { return backgroundFrame().nVariables(); }
+    Frame &backgroundFrame();
+    const Frame &backgroundFrame() const;
+    const Motion &backgroundMotion() const;
+    Motion &backgroundMotion() { return background_motion; }
+    const Frame &displayFrame() const { return display_frame; }
+    Frame &displayFrame() { return display_frame; }
+    Body &rootBody() { return root_body; }
+    int currentFrameIndex() const { return current_frame_index; }
+    void setCurrentFrameIndex(int arg) { current_frame_index = arg; }
 
-  public:
     struct Frame {
       std::vector<float> var_values;
       static float defaultVariableValue() { return 0; }
@@ -235,32 +244,6 @@ class Scene {
           children.remove(child_index);
         }
     };
-
-    int nFrameVariables() const { return backgroundFrame().nVariables(); }
-
-    Frame &backgroundFrame()
-    {
-      return background_motion.frames[current_frame_index];
-    }
-
-    const Frame &backgroundFrame() const
-    {
-      return background_motion.frames[current_frame_index];
-    }
-
-    const Motion &backgroundMotion() const
-    {
-      return background_motion;
-    }
-
-    Motion &backgroundMotion()
-    {
-      return background_motion;
-    }
-
-    const Frame &displayFrame() const { return display_frame; }
-    Frame &displayFrame() { return display_frame; }
-    Body &rootBody() { return root_body; }
 
   private:
     int n_frame_variables = 0;

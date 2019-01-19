@@ -3,69 +3,60 @@
 #include "wrapperstate.hpp"
 
 
-struct SceneWrapper : VoidWrapper {
-  struct SceneObserver {
-    using ChangedFunc = std::function<void(Wrapper::TreeObserver &)>;
-    using BodyAddedFunc =
-      std::function<void(const Scene::Body&,Wrapper::TreeObserver &)>;
-    using RemovedBodyFunc =
-      std::function<void(Wrapper::TreeObserver &)>;
-    using RemoveFunc = std::function<void(Wrapper::TreeObserver &)>;
-    using RemovingBodyFunc =
-      std::function<void(const Scene::Body&)>;
+class SceneWrapper : public VoidWrapper {
+  public:
+    struct SceneObserver;
 
-    ChangedFunc changed_func;
-    BodyAddedFunc body_added_func;
-    RemovingBodyFunc removing_body_func;
-    RemovedBodyFunc removed_body_func;
-    RemoveFunc remove_func;
+    SceneWrapper(
+      Scene &scene_arg,
+      const SceneObserver* notify_ptr,
+      const std::string &label
+    );
 
-    SceneObserver(ChangedFunc func_arg) : changed_func(std::move(func_arg)) { }
-  };
+    std::vector<OperationName> operationNames() const override;
 
-  Scene &scene;
-  const SceneObserver &callbacks;
-  Label label_member;
+    void
+      executeOperation(
+        int operation_index,
+        const TreePath &path,
+        TreeObserver &
+      ) const override;
 
-  SceneWrapper(
-    Scene &scene_arg,
-    const SceneObserver* notify_ptr,
-    const std::string &label
-  );
+    void setState(const WrapperState &) const override;
+    void
+      withChildWrapper(int child_index,const WrapperVisitor &) const override;
+    Label label() const override;
+    int nChildren() const override;
 
-  std::vector<OperationName> operationNames() const;
+    static int currentFrameChildIndex() { return 1; }
+    static int firstBodyChildIndex() { return 2; }
 
-  void
-    executeOperation(
-      int operation_index,
-      const TreePath &path,
-      TreeObserver &
-    ) const override;
+    struct SceneObserver {
+      using ChangedFunc = std::function<void(Wrapper::TreeObserver &)>;
+      using BodyAddedFunc =
+        std::function<void(const Scene::Body&,Wrapper::TreeObserver &)>;
+      using RemovedBodyFunc =
+        std::function<void(Wrapper::TreeObserver &)>;
+      using RemoveFunc = std::function<void(Wrapper::TreeObserver &)>;
+      using RemovingBodyFunc =
+        std::function<void(const Scene::Body&)>;
 
-  void setState(const WrapperState &) const override;
-  void withChildWrapper(int child_index,const WrapperVisitor &) const;
-  Label label() const override;
-  int nChildren() const override;
-  static int firstBodyIndex() { return 1; }
+      ChangedFunc changed_func;
+      BodyAddedFunc body_added_func;
+      RemovingBodyFunc removing_body_func;
+      RemovedBodyFunc removed_body_func;
+      RemoveFunc remove_func;
+
+      SceneObserver(ChangedFunc func_arg)
+      : changed_func(std::move(func_arg))
+      {
+      }
+    };
 
   private:
-    struct FrameWrapper;
-    struct MotionWrapper;
+    struct Impl;
 
-    void
-      withBackgroundMotionWrapper(
-        const std::function<void(const MotionWrapper &)> &
-      ) const;
-
-    void
-      executeAddBody(
-        const TreePath &scene_path,
-        TreeObserver &tree_observer
-      ) const;
-
-    void
-      executeRemove(
-        const TreePath &scene_path,
-        TreeObserver &tree_observer
-      ) const;
+    Scene &scene;
+    const SceneObserver &callbacks;
+    Label label_member;
 };

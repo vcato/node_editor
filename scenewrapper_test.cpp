@@ -5,6 +5,7 @@
 #include "wrapperutil.hpp"
 #include "basicvariant.hpp"
 #include "wrapperstate.hpp"
+#include "makestr.hpp"
 
 using std::istringstream;
 using std::ostringstream;
@@ -95,6 +96,7 @@ static void testHierarchy()
     "      3: 0\n"
     "    }\n"
     "  }\n"
+    "  current_frame: 0\n"
     "  body {\n"
     "    name: \"Body1\"\n"
     "    position_map {\n"
@@ -170,31 +172,38 @@ static void testAddingBodies()
 {
   Scene scene;
   SceneWrapper::SceneObserver notify([](const Wrapper::TreeObserver &){});
-  SceneWrapper wrapper(scene,&notify,"Scene");
+  SceneWrapper scene_wrapper(scene,&notify,"Scene");
   ostringstream stream;
 
   int body_index = 2;
-  addBodyTo(wrapper,{},stream);
-  addBodyTo(wrapper,{1},stream);
-  addBodyTo(wrapper,{1,body_index},stream);
+  int scene_first_body_child_index = SceneWrapper::firstBodyChildIndex();
+
+  TreePath scene_path = {};
+  TreePath background_frame_path = {0,0};
+  TreePath first_body_path = {scene_first_body_child_index};
+  TreePath first_child_body_path = {scene_first_body_child_index,body_index};
+  TreePath first_grandchild_body_path = {
+    scene_first_body_child_index,body_index,body_index
+  };
+  addBodyTo(scene_wrapper,scene_path,stream);
+  addBodyTo(scene_wrapper,first_body_path,stream);
+  addBodyTo(scene_wrapper,first_child_body_path,stream);
 
   assert(scene.nBodies()==1);
   assert(scene.bodies()[0].nChildren()==1);
   assert(scene.bodies()[0].allChildren()[0].nChildren()==1);
 
-  string body_index_str = std::to_string(body_index);
-  string background_frame_path = "0,0";
   string commands = stream.str();
   string expected_commands =
-    "addItem: path=[" + background_frame_path + ",0]\n"
-    "addItem: path=[" + background_frame_path + ",1]\n"
-    "addItem: path=[1]\n"
-    "addItem: path=[" + background_frame_path + ",2]\n"
-    "addItem: path=[" + background_frame_path + ",3]\n"
-    "addItem: path=[1," + body_index_str + "]\n"
-    "addItem: path=[" + background_frame_path + ",4]\n"
-    "addItem: path=[" + background_frame_path + ",5]\n"
-    "addItem: path=[1," + body_index_str + "," + body_index_str + "]\n";
+    "addItem: path=" + makeStr(join(background_frame_path,0)) + "\n"
+    "addItem: path=" + makeStr(join(background_frame_path,1)) + "\n"
+    "addItem: path=" + makeStr(first_body_path)               + "\n"
+    "addItem: path=" + makeStr(join(background_frame_path,2)) + "\n"
+    "addItem: path=" + makeStr(join(background_frame_path,3)) + "\n"
+    "addItem: path=" + makeStr(first_child_body_path)         + "\n"
+    "addItem: path=" + makeStr(join(background_frame_path,4)) + "\n"
+    "addItem: path=" + makeStr(join(background_frame_path,5)) + "\n"
+    "addItem: path=" + makeStr(first_grandchild_body_path)    + "\n";
 
   if (commands!=expected_commands) {
     cerr << "commands:\n";
@@ -231,6 +240,7 @@ static void testGettingState()
     "      3: 0\n"
     "    }\n"
     "  }\n"
+    "  current_frame: 0\n"
     "  body {\n"
     "    name: \"Body1\"\n"
     "    position_map {\n"
@@ -291,6 +301,7 @@ static void testSettingStateWithEmptyBackgroundFrame()
     "    0 {\n"
     "    }\n"
     "  }\n"
+    "  current_frame: 0\n"
     "}\n";
   WrapperState state = stateFromText(text);
   wrapper.setState(state);
@@ -311,6 +322,7 @@ static void testSettingStateWithTwoBodies()
     "      3: 57\n"
     "    }\n"
     "  }\n"
+    "  current_frame: 0\n"
     "  body {\n"
     "    name: \"Body1\"\n"
     "    position_map {\n"

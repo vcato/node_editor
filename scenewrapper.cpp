@@ -4,6 +4,7 @@
 #include <functional>
 #include <sstream>
 #include "float.hpp"
+#include "makestr.hpp"
 
 using std::cerr;
 using std::vector;
@@ -18,13 +19,7 @@ using FloatMap = Scene::FloatMap;
 using Label = SceneWrapper::Label;
 
 
-template <typename T>
-static string str(const T &arg)
-{
-  ostringstream stream;
-  stream << arg;
-  return stream.str();
-}
+static const int background_motion_index = 0;
 
 
 namespace {
@@ -109,12 +104,12 @@ namespace {
 struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   const char *label_member;
   float &value_ref;
-  WrapperData wrapper_data;
+  const WrapperData &wrapper_data;
 
   FloatWrapper(
     const char *label,
     float &value_arg,
-    WrapperData &wrapper_data_arg
+    const WrapperData &wrapper_data_arg
   )
   : label_member(label),
     value_ref(value_arg),
@@ -152,12 +147,12 @@ namespace {
 struct Point2DMapWrapper : NoOperationWrapper<VoidWrapper> {
   const char *label_member;
   Point2DMap &point;
-  WrapperData wrapper_data;
+  const WrapperData &wrapper_data;
 
   Point2DMapWrapper(
     const char *label_arg,
     Point2DMap &point_arg,
-    WrapperData wrapper_data_arg
+    const WrapperData &wrapper_data_arg
   )
   : label_member(label_arg),
     point(point_arg),
@@ -215,7 +210,7 @@ namespace {
 struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   const char *label_member;
   std::string &name;
-  WrapperData wrapper_data;
+  const WrapperData &wrapper_data;
 
   NameWrapper(
     const char *label,
@@ -257,7 +252,7 @@ struct BodyWrapper : VoidWrapper {
   int body_index;
   int depth;
   Scene::Body &body;
-  WrapperData wrapper_data;
+  const WrapperData &wrapper_data;
   static int nBodyAttributes() { return 2; }
 
   static const int name_index = 0;
@@ -267,7 +262,7 @@ struct BodyWrapper : VoidWrapper {
     Scene &scene_arg,
     Scene::Body &parent_body_arg,
     int body_index_arg,
-    WrapperData wrapper_data_arg,
+    const WrapperData &wrapper_data_arg,
     int depth_arg
   )
   : scene(scene_arg),
@@ -348,9 +343,6 @@ vector<string> BodyWrapper::operationNames() const
 {
   return {"Add Body","Remove"};
 }
-
-
-static const int background_motion_index = 0;
 
 
 void
@@ -460,77 +452,16 @@ std::vector<std::string> SceneWrapper::operationNames() const
 }
 
 
-void
-  SceneWrapper::executeAddBody(
-    const TreePath &scene_path,
-    TreeObserver &tree_observer
-  ) const
-{
-  int index = scene.nBodies();
-  Frame &frame = scene.backgroundFrame();
-  int old_n_vars = frame.nVariables();
-  Scene::Body &new_body = scene.addBody();
-  int new_n_vars = frame.nVariables();
-
-  if (new_n_vars!=old_n_vars) {
-    assert(new_n_vars>old_n_vars);
-    TreePath background_frame_path =
-      join(join(scene_path,background_motion_index),0);
-
-    for (int i=old_n_vars; i!=new_n_vars; ++i) {
-      TreePath var_path = join(background_frame_path,i);
-      tree_observer.itemAdded(var_path);
-    }
-  }
-
-  tree_observer.itemAdded(join(scene_path,index+firstBodyIndex()));
-
-  if (callbacks.body_added_func) {
-    callbacks.body_added_func(new_body,tree_observer);
-  }
-}
-
-
-void
-  SceneWrapper::executeRemove(
-    const TreePath &scene_path,
-    TreeObserver &tree_observer
-  ) const
-{
-  tree_observer.itemRemoved(scene_path);
-  callbacks.remove_func(tree_observer);
-}
-
-
-void
-  SceneWrapper::executeOperation(
-    int operation_index,
-    const TreePath &scene_path,
-    TreeObserver &tree_observer
-  ) const
-{
-  switch (operation_index) {
-    case 0:
-      executeAddBody(scene_path,tree_observer);
-      return;
-    case 1:
-      executeRemove(scene_path,tree_observer);
-      return;
-  }
-
-  assert(false);
-}
-
-
-struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
+namespace {
+struct FrameWrapper : NoOperationWrapper<VoidWrapper> {
   string label_member;
   Frame &frame;
-  WrapperData &wrapper_data;
+  const WrapperData &wrapper_data;
 
   FrameWrapper(
     const string &label,
     Frame &frame_arg,
-    WrapperData &wrapper_data_arg
+    const WrapperData &wrapper_data_arg
   );
 
   int nChildren() const override
@@ -559,47 +490,15 @@ struct SceneWrapper::FrameWrapper : NoOperationWrapper<VoidWrapper> {
 
   void setState(const WrapperState &new_state) const override;
 };
-
-
-SceneWrapper::FrameWrapper::FrameWrapper(
-  const string &label,
-  Frame &frame_arg,
-  WrapperData &wrapper_data_arg
-)
-: label_member(label),
-  frame(frame_arg),
-  wrapper_data(wrapper_data_arg)
-{
 }
 
 
-void
-  SceneWrapper::FrameWrapper::setState(
-    const WrapperState &new_state
-  ) const
-{
-  int n_state_children = new_state.children.size();
-
-  if (frame.nVariables()==0 && n_state_children==0) {
-    // This should be able to be removed now
-    return;
-  }
-
-  frame.setNVariables(n_state_children);
-
-  for (int i=0; i!=n_state_children; ++i) {
-    withChildWrapper(i,[&](const Wrapper &child_wrapper){
-      child_wrapper.setState(new_state.children[i]);
-    });
-  }
-}
-
-
-struct SceneWrapper::MotionWrapper : VoidWrapper {
+namespace {
+struct MotionWrapper : VoidWrapper {
   MotionWrapper(
     const char *label,
     Motion &motion,
-    WrapperData &
+    const WrapperData &
   );
 
   int nChildren() const override
@@ -613,7 +512,7 @@ struct SceneWrapper::MotionWrapper : VoidWrapper {
       const WrapperVisitor &visitor
     ) const override
   {
-    string frame_name = str(child_index);
+    string frame_name = makeStr(child_index);
 
     visitor(FrameWrapper(frame_name,motion.frames[child_index],wrapper_data));
   }
@@ -655,14 +554,151 @@ struct SceneWrapper::MotionWrapper : VoidWrapper {
 
   string label_member;
   Motion &motion;
-  WrapperData &wrapper_data;
+  const WrapperData &wrapper_data;
+};
+}
+
+
+struct SceneWrapper::Impl {
+  static WrapperData makeWrapperData(const SceneWrapper &scene_wrapper)
+  {
+    return {
+      scene_wrapper.scene,
+      scene_wrapper.callbacks,
+      scene_wrapper.scene.backgroundMotion()
+    };
+  }
+
+  static void
+    withBackgroundMotionWrapper(
+      const SceneWrapper &scene_wrapper,
+      const std::function<void(const MotionWrapper &)> &visitor
+    )
+  {
+    visitor(
+      MotionWrapper(
+        "background_motion",
+        scene_wrapper.scene.backgroundMotion(),
+        makeWrapperData(scene_wrapper)
+      )
+    );
+  }
+
+  static void
+    executeAddBody(
+      const SceneWrapper &scene_wrapper,
+      const TreePath &scene_path,
+      TreeObserver &tree_observer
+    );
+
+  static void
+    executeRemove(
+      const SceneWrapper &scene_wrapper,
+      const TreePath &scene_path,
+      TreeObserver &tree_observer
+    );
 };
 
 
-SceneWrapper::MotionWrapper::MotionWrapper(
+void
+  SceneWrapper::Impl::executeAddBody(
+    const SceneWrapper &scene_wrapper,
+    const TreePath &scene_path,
+    TreeObserver &tree_observer
+  )
+{
+  Scene &scene = scene_wrapper.scene;
+  const Callbacks &callbacks = scene_wrapper.callbacks;
+  int index = scene.nBodies();
+  Frame &frame = scene.backgroundFrame();
+  int old_n_vars = frame.nVariables();
+  Scene::Body &new_body = scene.addBody();
+  int new_n_vars = frame.nVariables();
+
+  if (new_n_vars!=old_n_vars) {
+    assert(new_n_vars>old_n_vars);
+    TreePath background_frame_path =
+      join(join(scene_path,background_motion_index),0);
+
+    for (int i=old_n_vars; i!=new_n_vars; ++i) {
+      TreePath var_path = join(background_frame_path,i);
+      tree_observer.itemAdded(var_path);
+    }
+  }
+
+  tree_observer.itemAdded(join(scene_path,index+firstBodyChildIndex()));
+
+  if (callbacks.body_added_func) {
+    callbacks.body_added_func(new_body,tree_observer);
+  }
+}
+
+
+void
+  SceneWrapper::Impl::executeRemove(
+    const SceneWrapper &scene_wrapper,
+    const TreePath &scene_path,
+    TreeObserver &tree_observer
+  )
+{
+  tree_observer.itemRemoved(scene_path);
+  scene_wrapper.callbacks.remove_func(tree_observer);
+}
+
+
+void
+  SceneWrapper::executeOperation(
+    int operation_index,
+    const TreePath &scene_path,
+    TreeObserver &tree_observer
+  ) const
+{
+  switch (operation_index) {
+    case 0:
+      Impl::executeAddBody(*this,scene_path,tree_observer);
+      return;
+    case 1:
+      Impl::executeRemove(*this,scene_path,tree_observer);
+      return;
+  }
+
+  assert(false);
+}
+
+
+FrameWrapper::FrameWrapper(
+  const string &label,
+  Frame &frame_arg,
+  const WrapperData &wrapper_data_arg
+)
+: label_member(label),
+  frame(frame_arg),
+  wrapper_data(wrapper_data_arg)
+{
+}
+
+
+void
+  FrameWrapper::setState(
+    const WrapperState &new_state
+  ) const
+{
+  int n_state_children = new_state.children.size();
+
+  frame.setNVariables(n_state_children);
+
+  for (int i=0; i!=n_state_children; ++i) {
+    withChildWrapper(i,[&](const Wrapper &child_wrapper){
+      child_wrapper.setState(new_state.children[i]);
+    });
+  }
+}
+
+
+MotionWrapper::MotionWrapper(
   const char *label,
   Motion &motion_arg,
-  WrapperData &wrapper_data_arg
+  const WrapperData &wrapper_data_arg
 )
 : label_member(label),
   motion(motion_arg),
@@ -671,10 +707,7 @@ SceneWrapper::MotionWrapper::MotionWrapper(
 }
 
 
-void
-  SceneWrapper::MotionWrapper::setState(
-    const WrapperState &new_state
-  ) const
+void MotionWrapper::setState(const WrapperState &new_state) const
 {
   int n_state_children = new_state.children.size();
 
@@ -688,20 +721,32 @@ void
 }
 
 
-void
-  SceneWrapper::withBackgroundMotionWrapper(
-    const std::function<void(const MotionWrapper &)> &visitor
-  ) const
-{
-  WrapperData wrapper_data = {scene,callbacks,scene.backgroundMotion()};
+namespace {
+struct CurrentFrameWrapper : LeafWrapper<NoOperationWrapper<NumericWrapper>> {
+  const WrapperData &wrapper_data;
 
-  visitor(
-    MotionWrapper(
-      "background_motion",
-      scene.backgroundMotion(),
-      wrapper_data
-    )
-  );
+  CurrentFrameWrapper(const WrapperData &wrapper_data_arg)
+  : wrapper_data(wrapper_data_arg)
+  {
+  }
+
+  Label label() const override { return "current_frame"; }
+
+  void setState(const WrapperState &state) const override
+  {
+    setValue(state.value.asNumeric());
+  }
+
+  void setValue(Value arg) const override
+  {
+    wrapper_data.scene.setCurrentFrameIndex(arg);
+  }
+
+  Value value() const override
+  {
+    return wrapper_data.scene.currentFrameIndex();
+  }
+};
 }
 
 
@@ -712,10 +757,13 @@ void
   ) const
 {
 
-  WrapperData wrapper_data = {scene,callbacks,scene.backgroundMotion()};
-
   if (child_index==background_motion_index) {
-    withBackgroundMotionWrapper(visitor);
+    Impl::withBackgroundMotionWrapper(*this,visitor);
+    return;
+  }
+
+  if (child_index == currentFrameChildIndex()) {
+    visitor( CurrentFrameWrapper(Impl::makeWrapperData(*this)) );
     return;
   }
 
@@ -723,8 +771,8 @@ void
     BodyWrapper{
       scene,
       scene.rootBody(),
-      child_index - firstBodyIndex(),
-      wrapper_data,
+      child_index - firstBodyChildIndex(),
+      Impl::makeWrapperData(*this),
       /*depth*/1
     }
   );
@@ -733,7 +781,7 @@ void
 
 int SceneWrapper::nChildren() const
 {
-  return 1 + scene.nBodies();
+  return firstBodyChildIndex() + scene.nBodies();
 }
 
 
@@ -759,11 +807,15 @@ void SceneWrapper::setState(const WrapperState &state) const
 
   for (const WrapperState &child_state : state.children) {
     if (child_state.tag=="background_motion") {
-      withBackgroundMotionWrapper(
+      Impl::withBackgroundMotionWrapper(
+        *this,
         [&](const MotionWrapper &motion_wrapper){
           motion_wrapper.setState(child_state);
         }
       );
+    }
+    else if (child_state.tag == "current_frame") {
+      CurrentFrameWrapper(Impl::makeWrapperData(*this)).setState(child_state);
     }
     else if (child_state.tag=="body") {
       scene.addBody();

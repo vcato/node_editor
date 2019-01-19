@@ -259,4 +259,5 @@ separate nodes stacked on top of each other.
 Need to be able to add variables.
 * Maybe add a variable pass.
 ---
-Need to be able to change the current frame of a scene.
+If you change the current frame of the scene, it should cause the charmappers
+to be applied.

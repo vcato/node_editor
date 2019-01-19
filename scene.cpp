@@ -11,6 +11,7 @@ using std::function;
 using Frame = Scene::Frame;
 using Point2DMap = Scene::Point2DMap;
 using Body = Scene::Body;
+using Motion = Scene::Motion;
 
 
 void Scene::Frame::setNVariables(int arg)
@@ -135,6 +136,24 @@ Scene::Bodies::Bodies(const Bodies &arg)
 Frame Scene::makeFrame() const
 {
   return Frame(nFrameVariables());
+}
+
+
+Frame &Scene::backgroundFrame()
+{
+  return background_motion.frames[current_frame_index];
+}
+
+
+const Frame &Scene::backgroundFrame() const
+{
+  return background_motion.frames[current_frame_index];
+}
+
+
+const Motion &Scene::backgroundMotion() const
+{
+  return background_motion;
 }
 
 

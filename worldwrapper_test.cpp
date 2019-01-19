@@ -12,6 +12,7 @@
 #include "scenewrapper.hpp"
 #include "stringutil.hpp"
 #include "testdiagramevaluator.hpp"
+#include "makestr.hpp"
 
 using std::string;
 using std::istringstream;
@@ -277,17 +278,22 @@ static void testAddingABodyToTheScene()
   executeAddBodyFunction2(world_wrapper,scene_path,tree_observer);
 
   string command_string = command_stream.str();
-  string background_frame_path = "1,0,0";
+  TreePath background_frame_path = join(join(scene_path,0),0);
+  TreePath first_body_path =
+    join(scene_path,SceneWrapper::firstBodyChildIndex());
+
   string expected_command_string =
-    "addItem([" + background_frame_path + ",0])\n"
-    "addItem([" + background_frame_path + ",1])\n"
-    "addItem([1,1])\n"
+    "addItem(" + makeStr(join(background_frame_path,0)) + ")\n"
+    "addItem(" + makeStr(join(background_frame_path,1)) + ")\n"
+    "addItem(" + makeStr(first_body_path) + ")\n"
     "itemReplaced([0,0,0,0])\n"
     "itemReplaced([0,0,0,2,0])\n";
 
   if (command_string!=expected_command_string) {
     cerr << "command_string:\n";
     cerr << command_string << "\n";
+    cerr << "expected_command_string:\n";
+    cerr << expected_command_string << "\n";
   }
 
   assert(command_string==expected_command_string);
@@ -302,23 +308,32 @@ static void testAddingABodyToABody()
   Scene &scene = world.addScene();
   scene.addBody();
   WorldWrapper world_wrapper(world);
-  TreePath scene_path = {0};
 
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
 
   executeWrapperOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
 
+  TreePath scene_path = {0};
+  TreePath background_motion_path = join(scene_path,0);
+  TreePath background_frame_path = join(background_motion_path,0);
+  TreePath first_body_path =
+    join(scene_path,SceneWrapper::firstBodyChildIndex());
+
   string command_string = command_stream.str();
-  string background_frame_path = "0,0,0";
+
   string expected_command_string =
-    "addItem([" + background_frame_path + ",2])\n"
-    "addItem([" + background_frame_path + ",3])\n"
-    "addItem([0,1,2])\n";
+    // Adding two variables to the background frame
+    "addItem(" + makeStr(join(background_frame_path,2)) + ")\n"
+    "addItem(" + makeStr(join(background_frame_path,3)) + ")\n"
+    // Adding the body
+    "addItem(" + makeStr(join(first_body_path,2)) + ")\n";
 
   if (command_string!=expected_command_string) {
     cerr << "command_string:\n";
     cerr << command_string << "\n";
+    cerr << "expected_command_string:\n";
+    cerr << expected_command_string << "\n";
   }
 
   assert(command_string==expected_command_string);
@@ -561,7 +576,7 @@ static void testRemovingABodyFromTheScene()
 
   WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
-  TreePath body_path = join(scene_path,SceneWrapper::firstBodyIndex());
+  TreePath body_path = join(scene_path,SceneWrapper::firstBodyChildIndex());
 
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
@@ -570,13 +585,15 @@ static void testRemovingABodyFromTheScene()
 
   string command_string = command_stream.str();
   string expected_command_string =
-    "removeItem([1,1])\n"
+    "removeItem(" + makeStr(body_path) + ")\n"
     "itemReplaced([0,0,0,0])\n"
     ;
 
   if (command_string != expected_command_string) {
     cerr << "command_string:\n";
     cerr << command_string << "\n";
+    cerr << "expected_command_string:\n";
+    cerr << expected_command_string << "\n";
   }
 
   assert(command_string == expected_command_string);
@@ -863,6 +880,7 @@ static void testSettingStateWithPosExpr()
     "        3: 0\n"
     "      }\n"
     "    }\n"
+    "    current_frame: 0\n"
     "    body {\n"
     "      name: \"Body1\"\n"
     "      position_map {\n"
@@ -985,6 +1003,7 @@ static void testAddingAFrameToTheScene()
     "        1: 0\n"
     "      }\n"
     "    }\n"
+    "    current_frame: 0\n"
     "  }\n"
     "}\n";
 
