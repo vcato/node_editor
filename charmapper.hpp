@@ -12,24 +12,23 @@
 
 class Charmapper {
   public:
+    struct Pass;
     struct MotionPass;
+    struct VariablePass;
 
     Charmapper() = default;
     Charmapper(const Charmapper &) = delete;
 
     void apply(AbstractDiagramEvaluator &evaluator);
-
     int nPasses() const { return passes.size(); }
-
-    MotionPass &pass(int pass_index)
-    {
-      assert(passes[pass_index]);
-      return *passes[pass_index];
-    }
-
+    MotionPass *maybeMotionPass(int pass_index);
+    VariablePass *maybeVariablePass(int pass_index);
+    const VariablePass *maybeVariablePass(int pass_index) const;
+    const MotionPass *maybeMotionPass(int pass_index) const;
+    MotionPass &motionPass(int pass_index);
     MotionPass& addMotionPass();
-
     void removePass(int pass_index);
+    void insertVariablePass(int pass_index);
 
   public:
 
@@ -132,7 +131,11 @@ class Charmapper {
       static const Diagram& defaultFromBodyDiagram();
     };
 
-    struct MotionPass {
+    struct Pass {
+      virtual ~Pass() = default;
+    };
+
+    struct MotionPass : Pass {
       MotionPass();
       MotionPass(const MotionPass &) = delete;
       
@@ -170,8 +173,11 @@ class Charmapper {
 
     };
 
+    struct VariablePass : Pass {
+    };
+
   private:
-    std::vector<std::unique_ptr<MotionPass>> passes;
+    std::vector<std::unique_ptr<Pass>> passes;
 };
 
 #endif /* CHARMAPPER_HPP_ */

@@ -14,6 +14,8 @@
 #include "testdiagramevaluator.hpp"
 #include "makestr.hpp"
 
+#define ADD_TEST 0
+
 using std::string;
 using std::istringstream;
 using std::ostringstream;
@@ -438,7 +440,7 @@ static void testChangingTheTargetBody()
     executeOperation2(world_wrapper,path,"Add Pos Expr",tree_observer);
   }
 
-  Charmapper::MotionPass::PosExpr &pos_expr = charmapper.pass(0).expr(0);
+  Charmapper::MotionPass::PosExpr &pos_expr = charmapper.motionPass(0).expr(0);
 
   {
     TreePath path =
@@ -477,7 +479,8 @@ static void testChangingTheTargetBody()
 }
 
 
-static void setValue(const Wrapper &wrapper,const string &path_string,int value)
+static void
+  setWrapperValue(const Wrapper &wrapper,const string &path_string,int value)
 {
   TreePath path = makePath(wrapper,path_string);
 
@@ -489,6 +492,27 @@ static void setValue(const Wrapper &wrapper,const string &path_string,int value)
     }
   );
 }
+
+
+#if ADD_TEST
+static void
+  setWrapperValue(
+    const Wrapper &wrapper,
+    const string &path_string,
+    const string &value
+  )
+{
+  TreePath path = makePath(wrapper,path_string);
+
+  visitStringSubWrapper(
+    wrapper,
+    path,
+    [&](const StringWrapper &string_wrapper){
+      string_wrapper.setValue(value);
+    }
+  );
+}
+#endif
 
 
 namespace scene_and_charmapper_tests {
@@ -503,11 +527,12 @@ static void testUsingCharmapperToMoveABody()
   Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link = BodyLink(&scene,&body);
   WorldWrapper wrapper(world);
-  auto &components = charmapper.pass(0).expr(0).global_position.components();
+  auto &components =
+    charmapper.motionPass(0).expr(0).global_position.components();
   string global_position_path =
     "Charmapper1|Motion Pass|Pos Expr|Global Position";
 
-  setValue(wrapper,global_position_path + "|X",15);
+  setWrapperValue(wrapper,global_position_path + "|X",15);
   assert(components.x.value==15);
   assert(body.position.x(scene.displayFrame())==15);
 
@@ -515,7 +540,7 @@ static void testUsingCharmapperToMoveABody()
     world.scene_window.viewer_member.command_stream.str();
   assert(scene_viewer_commands=="redrawScene()\n");
 
-  setValue(wrapper,global_position_path + "|Y",20);
+  setWrapperValue(wrapper,global_position_path + "|Y",20);
   assert(components.y.value==20);
   assert(body.position.y(scene.displayFrame())==20);
 }
@@ -545,7 +570,12 @@ static void testWithTwoCharmappers()
 
   WorldWrapper wrapper(world);
 
-  setValue(wrapper,"Charmapper1|Motion Pass|Pos Expr|Global Position|X",3);
+  setWrapperValue(
+    wrapper,
+    "Charmapper1|Motion Pass|Pos Expr|Global Position|X",
+    3
+  );
+
   assert(pos_expr1.global_position.components().x.value==3);
 
   // Make sure both charmaps still have an effect after changing a value
@@ -818,11 +848,80 @@ static void testSettingCurrentFrameIndexToAnInvalidValue()
 
   WorldWrapper world_wrapper(world);
 
-  setValue(world_wrapper,"Scene1|current_frame",1);
+  setWrapperValue(world_wrapper,"Scene1|current_frame",1);
 
   // Invalid frame should have been ignored.
   assert(scene.currentFrameIndex() == 0);
 }
+
+
+#if ADD_TEST
+static void testUsingACharmapperVariable()
+{
+  using MotionPass = Charmapper::MotionPass;
+  using Body = Scene::Body;
+
+  FakeWorld world;
+  Scene &scene = world.addScene();
+  Body &body = scene.addBody("body1");
+  Charmapper &charmapper = world.addCharmapper();
+  MotionPass &motion_pass = charmapper.addMotionPass();
+  motion_pass.addPosExpr();
+
+  WorldWrapper world_wrapper(world);
+
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer(command_stream);
+
+  executeWrapperOperation(
+    world_wrapper,
+    "Charmapper1|Motion Pass",
+    "Insert Variable Pass",
+    tree_observer
+  );
+
+  executeWrapperOperation(
+    world_wrapper,
+    "Charmapper1|Variable Pass",
+    "Add Variable",
+    tree_observer
+  );
+
+  setWrapperValue(
+    world_wrapper,
+    "Charmapper1|Variable Pass|var|name",
+    "body_x"
+  );
+
+  {
+    Diagram *pos_x_diagram_ptr =
+      wrapperDiagramPtr(
+        world_wrapper,
+        "Charmapper1|Motion Pass|Pos Expr|Global Position|x"
+      );
+
+    assert(pos_x_diagram_ptr);
+    Diagram &pos_x_diagram = *pos_x_diagram_ptr;
+
+    Diagram new_diagram;
+    new_diagram.createNodeWithText("return body_x");
+    pos_x_diagram = new_diagram;
+
+    notifyDiagramChanged(
+      world_wrapper,
+      "Charmapper1|Motion Pass|Pos Expr|Global Position|x"
+    );
+  }
+
+  setWrapperValue(
+    world_wrapper,
+    "Charmapper1|Variable Pass|body_x",
+    20
+  );
+
+  assert(bodyPosition(body,scene.displayFrame()).x == 2);
+}
+#endif
 
 }
 
@@ -1068,5 +1167,8 @@ int main()
     tests::testChangingPosExprDiagram();
     tests::testPosExprDiagramThatReferencesAScene();
     tests::testSettingCurrentFrameIndexToAnInvalidValue();
+#if ADD_TEST
+    tests::testUsingACharmapperVariable();
+#endif
   }
 }

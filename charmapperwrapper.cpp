@@ -556,124 +556,7 @@ struct MotionPassWrapper : VoidWrapper {
     }
   };
 
-  struct PosExprWrapper : VoidWrapper {
-    MotionPass &motion_pass;
-    int index;
-    const WrapperData &callbacks;
-
-    PosExprWrapper(
-      MotionPass &motion_pass_arg,
-      int index_arg,
-      const WrapperData &callbacks_arg
-    )
-    : motion_pass(motion_pass_arg),
-      index(index_arg),
-      callbacks(callbacks_arg)
-    {
-    }
-
-    PosExpr &posExpr() const
-    {
-      return motion_pass.expr(index);
-    }
-
-    Diagram *diagramPtr() const override
-    {
-      return &posExpr().diagram;
-    }
-
-    DiagramObserverPtr makeDiagramObserver() const override
-    {
-      return callbacks.makeDiagramObserver(posExpr().diagram);
-    }
-
-    const Diagram &defaultDiagram() const override
-    {
-      return PosExpr::defaultDiagram();
-    }
-
-    void
-      executeRemoveOperation(
-        const TreePath &path,
-        TreeObserver &tree_observer
-      ) const
-    {
-      tree_observer.itemRemoved(path);
-      motion_pass.removePosExpr(index);
-    }
-
-    virtual std::vector<OperationName> operationNames() const
-    {
-      return {"Remove"};
-    }
-
-    virtual void
-      executeOperation(
-        int operation_index,
-        const TreePath &path,
-        TreeObserver &tree_observer
-      ) const
-    {
-      if (operation_index==0) {
-        executeRemoveOperation(path,tree_observer);
-        return;
-      }
-
-      assert(false);
-    }
-
-    static const int target_body_index = 0;
-    static const int local_position_index = 1;
-    static const int global_position_index = 2;
-
-    void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
-    {
-      if (child_index==target_body_index) {
-        // Target body
-        visitor(
-          BodyWrapper("Target Body",posExpr().target_body_link,callbacks)
-        );
-      }
-      else if (child_index==local_position_index) {
-        visitor(
-          PositionWrapper(
-            posExpr().local_position,
-            "Local Position",
-            callbacks,
-            &posExpr().defaultLocalPositionDiagram()
-          )
-        );
-      }
-      else if (child_index==global_position_index) {
-        visitor(
-          GlobalPositionWrapper(posExpr().global_position,callbacks)
-        );
-      }
-      else {
-        assert(false);
-      }
-    }
-
-    virtual Label label() const
-    {
-      return "Pos Expr";
-    }
-
-    virtual int nChildren() const
-    {
-      return 3;
-    }
-
-    void setState(const WrapperState &state) const override
-    {
-      setChildren(*this,state);
-    }
-
-    void diagramChanged() const override
-    {
-      callbacks.notifyCharmapChanged();
-    }
-  };
+  struct PosExprWrapper;
 
   MotionPassWrapper(
     Charmapper &charmapper_arg,
@@ -699,6 +582,11 @@ struct MotionPassWrapper : VoidWrapper {
     tree_observer.itemAdded(join(path,index));
   }
 
+  void insertVariablePassOperation(const TreePath &,TreeObserver &) const
+  {
+    charmapper.insertVariablePass(pass_index);
+  }
+
   void
     removeOperation(
       const TreePath &path,
@@ -719,8 +607,9 @@ struct MotionPassWrapper : VoidWrapper {
   static OperationTable operationTable()
   {
     return {
-      {"Add Pos Expr",&Self::addPosExprOperation},
-      {"Remove",      &Self::removeOperation}
+      {"Add Pos Expr",        &Self::addPosExprOperation},
+      {"Insert Variable Pass",&Self::insertVariablePassOperation},
+      {"Remove",              &Self::removeOperation}
     };
   }
 
@@ -753,10 +642,7 @@ struct MotionPassWrapper : VoidWrapper {
     return (this ->* method)(path,tree_observer);
   }
 
-  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
-  {
-    visitor(PosExprWrapper(motion_pass,child_index,callbacks));
-  }
+  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
 
   virtual Label label() const
   {
@@ -770,6 +656,182 @@ struct MotionPassWrapper : VoidWrapper {
 
   void setState(const WrapperState &state) const override;
 };
+}
+
+
+namespace {
+struct VariablePassWrapper : VoidWrapper {
+  int nChildren() const override { assert(false); }
+  Label label() const override { return "Variable Pass"; }
+
+  void
+    withChildWrapper(
+      int /*child_index*/,
+      const WrapperVisitor &/*visitor*/
+    ) const override
+  {
+    assert(false); // not implemented
+  }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false); // not implemented
+  }
+
+  std::vector<OperationName> operationNames() const override
+  {
+    return {"Add Variable"};
+  }
+
+  void executeAddVariableOperation() const
+  {
+    assert(false);
+  }
+
+  void
+    executeOperation(
+      int operation_index,
+      const TreePath &/*path*/,
+      TreeObserver &
+    ) const override
+  {
+    switch (operation_index) {
+      case 0: executeAddVariableOperation(); return;
+    }
+
+    assert(false);
+  }
+};
+}
+
+
+struct MotionPassWrapper::PosExprWrapper : VoidWrapper {
+  MotionPass &motion_pass;
+  int index;
+  const WrapperData &callbacks;
+
+  PosExprWrapper(
+    MotionPass &motion_pass_arg,
+    int index_arg,
+    const WrapperData &callbacks_arg
+  )
+  : motion_pass(motion_pass_arg),
+    index(index_arg),
+    callbacks(callbacks_arg)
+  {
+  }
+
+  PosExpr &posExpr() const
+  {
+    return motion_pass.expr(index);
+  }
+
+  Diagram *diagramPtr() const override
+  {
+    return &posExpr().diagram;
+  }
+
+  DiagramObserverPtr makeDiagramObserver() const override
+  {
+    return callbacks.makeDiagramObserver(posExpr().diagram);
+  }
+
+  const Diagram &defaultDiagram() const override
+  {
+    return PosExpr::defaultDiagram();
+  }
+
+  void
+    executeRemoveOperation(
+      const TreePath &path,
+      TreeObserver &tree_observer
+    ) const
+  {
+    tree_observer.itemRemoved(path);
+    motion_pass.removePosExpr(index);
+  }
+
+  virtual std::vector<OperationName> operationNames() const
+  {
+    return {"Remove"};
+  }
+
+  virtual void
+    executeOperation(
+      int operation_index,
+      const TreePath &path,
+      TreeObserver &tree_observer
+    ) const
+  {
+    if (operation_index==0) {
+      executeRemoveOperation(path,tree_observer);
+      return;
+    }
+
+    assert(false);
+  }
+
+  static const int target_body_index = 0;
+  static const int local_position_index = 1;
+  static const int global_position_index = 2;
+
+  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
+  {
+    if (child_index==target_body_index) {
+      // Target body
+      visitor(
+        BodyWrapper("Target Body",posExpr().target_body_link,callbacks)
+      );
+    }
+    else if (child_index==local_position_index) {
+      visitor(
+        PositionWrapper(
+          posExpr().local_position,
+          "Local Position",
+          callbacks,
+          &posExpr().defaultLocalPositionDiagram()
+        )
+      );
+    }
+    else if (child_index==global_position_index) {
+      visitor(
+        GlobalPositionWrapper(posExpr().global_position,callbacks)
+      );
+    }
+    else {
+      assert(false);
+    }
+  }
+
+  virtual Label label() const
+  {
+    return "Pos Expr";
+  }
+
+  virtual int nChildren() const
+  {
+    return 3;
+  }
+
+  void setState(const WrapperState &state) const override
+  {
+    setChildren(*this,state);
+  }
+
+  void diagramChanged() const override
+  {
+    callbacks.notifyCharmapChanged();
+  }
+};
+
+
+void
+  MotionPassWrapper::withChildWrapper(
+    int child_index,
+    const WrapperVisitor &visitor
+  ) const
+{
+  visitor(PosExprWrapper(motion_pass,child_index,callbacks));
 }
 
 
@@ -873,14 +935,27 @@ void
     int child_index,const WrapperVisitor &visitor
   ) const
 {
-  visitor(
-    MotionPassWrapper{
-      charmapper,
-      charmapper.pass(child_index),
-      child_index,
-      wrapper_data
-    }
-  );
+  if (auto *motion_pass_ptr = charmapper.maybeMotionPass(child_index)) {
+    visitor(
+      MotionPassWrapper{
+        charmapper,
+        *motion_pass_ptr,
+        child_index,
+        wrapper_data
+      }
+    );
+  }
+  else if (
+    auto *charmapper_pass_ptr = charmapper.maybeVariablePass(child_index)
+  ) {
+    visitor(
+      VariablePassWrapper{
+      }
+    );
+  }
+  else {
+    assert(false); // not implemented
+  }
 }
 
 

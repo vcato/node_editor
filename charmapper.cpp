@@ -14,6 +14,7 @@ using std::cerr;
 using std::vector;
 using std::unique_ptr;
 using MotionPass = Charmapper::MotionPass;
+using VariablePass = Charmapper::VariablePass;
 
 
 
@@ -22,14 +23,25 @@ Charmapper::MotionPass::MotionPass()
 }
 
 
-template <typename T>
-static T& create(vector<unique_ptr<T>> &ptr_vector)
+template <typename T,typename U>
+static T& create(vector<unique_ptr<U>> &ptr_vector)
 {
   auto ptr = make_unique<T>();
   T &result = *ptr;
   ptr_vector.push_back(std::move(ptr));
   return result;
 }
+
+
+template <typename T,typename U>
+static T& insert(vector<unique_ptr<U>> &ptr_vector,size_t index)
+{
+  auto ptr= make_unique<T>();
+  T &result = *ptr;
+  ptr_vector.insert(ptr_vector.begin() + index, std::move(ptr));
+  return result;
+}
+
 
 auto Charmapper::MotionPass::addPosExpr() -> PosExpr&
 {
@@ -167,12 +179,51 @@ static void
 }
 
 
+template <typename T>
+static const T& asConst(T &arg)
+{
+  return arg;
+}
+
+
+MotionPass *Charmapper::maybeMotionPass(int pass_index)
+{
+  return const_cast<MotionPass*>(asConst(*this).maybeMotionPass(pass_index));
+}
+
+
+VariablePass *Charmapper::maybeVariablePass(int pass_index)
+{
+  return const_cast<VariablePass*>(asConst(*this).maybeVariablePass(pass_index));
+}
+
+
+const MotionPass *Charmapper::maybeMotionPass(int pass_index) const
+{
+  return dynamic_cast<const MotionPass *>(passes[pass_index].get());
+}
+
+
+const VariablePass *Charmapper::maybeVariablePass(int pass_index) const
+{
+  return dynamic_cast<const VariablePass *>(passes[pass_index].get());
+}
+
+
+MotionPass &Charmapper::motionPass(int pass_index)
+{
+  MotionPass *motion_pass_ptr = maybeMotionPass(pass_index);
+  assert(motion_pass_ptr);
+  return *motion_pass_ptr;
+}
+
+
 void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
 {
   int n_passes = nPasses();
 
   for (int i=0; i!=n_passes; ++i) {
-    auto &pass = this->pass(i);
+    auto &pass = this->motionPass(i);
     auto n_exprs = pass.nExprs();
 
     for (int i=0; i!=n_exprs; ++i) {
@@ -277,4 +328,10 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
 void Charmapper::removePass(int pass_index)
 {
   passes.erase(passes.begin()+pass_index);
+}
+
+
+void Charmapper::insertVariablePass(int pass_index)
+{
+  insert<VariablePass>(passes,pass_index);
 }

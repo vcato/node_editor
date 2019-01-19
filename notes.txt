@@ -256,5 +256,20 @@ to it to the right.
 The lines of nodes should probably be more distinct.  Maybe they look like
 separate nodes stacked on top of each other.
 ---
+We could simply wrappers by not having operationNames and executeOperation
+members, and just having wrappers for Events.  We could create a menu by
+going through all the children and finding those which were events.
+---
 Need to be able to add variables.
 * Maybe add a variable pass.
+* Test
+  * Add a scene
+  * Add a body to the scene
+  * Add a charmapper
+  * Add a motion pass to the charmapper
+  * Add a pos expr to the motion pass
+  * Insert a variable pass
+  * Add a body_x variable to the variable pass.
+  * Make the diagram for the Global pos x be a single node with "return body_x"
+  * Set the body_x variable to 20
+  * Check that the body x in the scene display frame is 20.

@@ -154,6 +154,12 @@ Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path)
 }
 
 
+Diagram *wrapperDiagramPtr(const Wrapper &wrapper,const string &path_string)
+{
+  return diagramPtr(wrapper,makePath(wrapper,path_string));
+}
+
+
 DiagramObserverPtr
   diagramObserverPtr(const Wrapper &wrapper,const TreePath &path)
 {

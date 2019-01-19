@@ -55,6 +55,8 @@ extern int
   );
 
 extern Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path);
+extern Diagram *
+  wrapperDiagramPtr(const Wrapper &wrapper,const std::string &path_string);
 
 extern DiagramObserverPtr
   diagramObserverPtr(const Wrapper &wrapper,const TreePath &path);
