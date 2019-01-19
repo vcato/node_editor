@@ -291,7 +291,7 @@ static void testSettingStateWithNonEmptyBackgroundFrame()
 static void testSettingStateWithEmptyBackgroundFrame()
 {
   Scene scene;
-  SceneWrapper::SceneObserver observer = unusedObserver();
+  SceneWrapper::SceneObserver observer = ignoringObserver();
   SceneWrapper wrapper(scene,&observer,"Scene");
   const char *text =
     "scene {\n"

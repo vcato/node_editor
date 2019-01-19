@@ -808,6 +808,22 @@ static void testPosExprDiagramThatReferencesAScene()
   assert(body_x==10);
 }
 
+
+static void testSettingCurrentFrameIndexToAnInvalidValue()
+{
+  FakeWorld world;
+  Scene &scene = world.addScene();
+  Scene::Body &body1 = scene.addBody("body1");
+  setBodyPosition(body1,scene.backgroundFrame(),Point2D(10,20));
+
+  WorldWrapper world_wrapper(world);
+
+  setValue(world_wrapper,"Scene1|current_frame",1);
+
+  // Invalid frame should have been ignored.
+  assert(scene.currentFrameIndex() == 0);
+}
+
 }
 
 
@@ -1051,5 +1067,6 @@ int main()
     tests::testChangingLocalPositionDiagram();
     tests::testChangingPosExprDiagram();
     tests::testPosExprDiagramThatReferencesAScene();
+    tests::testSettingCurrentFrameIndexToAnInvalidValue();
   }
 }

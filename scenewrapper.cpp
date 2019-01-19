@@ -717,7 +717,13 @@ struct CurrentFrameWrapper : LeafWrapper<NoOperationWrapper<NumericWrapper>> {
 
   void setValue(Value arg) const override
   {
+    if (arg < 0 || arg >= wrapper_data.scene.backgroundMotion().nFrames()) {
+      // Invalid index.
+      return;
+    }
+
     wrapper_data.scene.setCurrentFrameIndex(arg);
+    wrapper_data.callbacks.changed_func();
   }
 
   Value value() const override
