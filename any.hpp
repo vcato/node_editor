@@ -176,13 +176,16 @@ struct AnyPolicy {
     bool isClassPtr() const { return _type==class_ptr_type; }
     bool isFunction() const { return _type==function_type; }
 
+    static std::string voidTypeName() { return "void"; }
+    static std::string floatTypeName() { return "float"; }
+
     std::string typeName() const
     {
       switch (_type) {
-        case void_type: return "void";
+        case void_type: return voidTypeName();
         case vector_type: return "vector";
         case string_type: return "string";
-        case float_type: return "float";
+        case float_type: return floatTypeName();
         case object_type: return asObject().typeName();
         case class_ptr_type: return "class_ptr";
         case function_type: return "function";

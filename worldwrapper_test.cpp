@@ -14,13 +14,12 @@
 #include "testdiagramevaluator.hpp"
 #include "makestr.hpp"
 
-#define ADD_TEST 0
-
 using std::string;
 using std::istringstream;
 using std::ostringstream;
 using std::ostream;
 using std::cerr;
+using PosExpr = Charmapper::MotionPass::PosExpr;
 
 
 static NodeIndex nodeIndexWithText(const Diagram &diagram,const string &text)
@@ -268,7 +267,7 @@ static void testAddingABodyToTheScene()
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.global_position.switchToFromBody();
 
   world.addScene();
@@ -369,7 +368,7 @@ static void testChangingABodyPositionInTheScene()
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
   Scene &scene = world.addScene(); // child 1
   Scene::Body &body = scene.addBody(); // child 0
   WorldWrapper world_wrapper(world);
@@ -441,7 +440,7 @@ static void testChangingTheTargetBody()
     executeOperation2(world_wrapper,path,"Add Pos Expr",tree_observer);
   }
 
-  Charmapper::MotionPass::PosExpr &pos_expr = charmapper.motionPass(0).expr(0);
+  PosExpr &pos_expr = charmapper.motionPass(0).expr(0);
 
   {
     TreePath path =
@@ -495,7 +494,6 @@ static void
 }
 
 
-#if ADD_TEST
 static void
   setWrapperValue(
     const Wrapper &wrapper,
@@ -513,7 +511,6 @@ static void
     }
   );
 }
-#endif
 
 
 namespace scene_and_charmapper_tests {
@@ -525,7 +522,7 @@ static void testUsingCharmapperToMoveABody()
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link = BodyLink(&scene,&body);
   WorldWrapper wrapper(world);
   auto &components =
@@ -559,13 +556,13 @@ static void testWithTwoCharmappers()
 
   Charmapper &charmapper1 = world.addCharmapper();
   Charmapper::MotionPass &motion_pass1 = charmapper1.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr1 = motion_pass1.addPosExpr();
+  PosExpr &pos_expr1 = motion_pass1.addPosExpr();
   pos_expr1.target_body_link = BodyLink(&scene,&body1);
   pos_expr1.global_position.components().x.value = 1;
 
   Charmapper &charmapper2 = world.addCharmapper();
   Charmapper::MotionPass &motion_pass2 = charmapper2.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr2 = motion_pass2.addPosExpr();
+  PosExpr &pos_expr2 = motion_pass2.addPosExpr();
   pos_expr2.target_body_link = BodyLink(&scene,&body2);
   pos_expr2.global_position.components().x.value = 2;
 
@@ -599,7 +596,7 @@ static void testRemovingABodyFromTheScene()
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
 
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
@@ -707,7 +704,7 @@ static void testChangingGlobalPositionDiagram()
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link.set(&scene,&body);
   Diagram &diagram = pos_expr.global_position.diagram;
   replaceNodeText(diagram,"return $\n","return [1,2]");
@@ -759,7 +756,7 @@ static void testChangingLocalPositionDiagram()
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link.set(&scene,&body);
   pos_expr.global_position.switchToFromBody();
   pos_expr.global_position.fromBody().local_position.x.value = 1;
@@ -789,7 +786,7 @@ static void testChangingPosExprDiagram()
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link.set(&scene,&body);
 
   applyCharmapper(charmapper);
@@ -819,7 +816,7 @@ static void testPosExprDiagramThatReferencesAScene()
   Scene::Body &body1 = scene.addBody("body1");
   Scene::Body &body2 = scene.addBody("body2");
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
-  Charmapper::MotionPass::PosExpr &pos_expr = motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link.set(&scene,&body1);
   setBodyPosition(body2,scene.backgroundFrame(),Point2D(10,20));
 
@@ -859,7 +856,6 @@ static void testSettingCurrentFrameIndexToAnInvalidValue()
 }
 
 
-#if ADD_TEST
 static void testUsingACharmapperVariable()
 {
   using MotionPass = Charmapper::MotionPass;
@@ -870,7 +866,8 @@ static void testUsingACharmapperVariable()
   Body &body = scene.addBody("body1");
   Charmapper &charmapper = world.addCharmapper();
   MotionPass &motion_pass = charmapper.addMotionPass();
-  motion_pass.addPosExpr();
+  PosExpr &pos_expr = motion_pass.addPosExpr();
+  pos_expr.target_body_link.set(&scene,&body);
 
   WorldWrapper world_wrapper(world);
 
@@ -934,7 +931,6 @@ static void testUsingACharmapperVariable()
 
   assert(bodyPosition(body,scene.displayFrame()).x == 20);
 }
-#endif
 
 }
 
@@ -1180,8 +1176,6 @@ int main()
     tests::testChangingPosExprDiagram();
     tests::testPosExprDiagramThatReferencesAScene();
     tests::testSettingCurrentFrameIndexToAnInvalidValue();
-#if ADD_TEST
     tests::testUsingACharmapperVariable();
-#endif
   }
 }

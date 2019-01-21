@@ -142,9 +142,47 @@ static void
 }
 
 
-static Point2D makePoint2D(const Charmapper::GlobalPosition::ComponentsData &p)
+static float
+  evaluateChannel(
+    const Charmapper::Channel &channel,
+    const Environment *parent_environment_ptr,
+    AbstractDiagramEvaluator &evaluator
+  )
 {
-  return Point2D(p.x.value,p.y.value);
+  if (channel.optional_diagram) {
+    // Seems like we should be setting the expected return value type
+    // somewhere.
+    Optional<Any> maybe_result =
+      evaluator.maybeEvaluate(
+        *channel.optional_diagram,
+        parent_environment_ptr,
+        Any::floatTypeName()
+      );
+
+    if (maybe_result) {
+      return maybe_result->asFloat();
+    }
+    else {
+      return 0;
+    }
+  }
+  else {
+    return channel.value;
+  }
+}
+
+
+static Point2D
+  makePoint2D(
+    const Charmapper::GlobalPosition::ComponentsData &p,
+    const Environment *parent_environment_ptr,
+    AbstractDiagramEvaluator &evaluator
+  )
+{
+  float x = evaluateChannel(p.x,parent_environment_ptr,evaluator);
+  float y = evaluateChannel(p.y,parent_environment_ptr,evaluator);
+
+  return Point2D(x,y);
 }
 
 
@@ -220,6 +258,7 @@ MotionPass &Charmapper::motionPass(int pass_index)
 
 void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
 {
+  Environment charmapper_environment(evaluator.context.parent_environment_ptr);
   int n_passes = nPasses();
 
   for (int i=0; i!=n_passes; ++i) {
@@ -238,9 +277,14 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
 
           if (expr.global_position.isComponents()) {
             Diagram &diagram = expr.global_position.diagram;
-            Point2D parameters = makePoint2D(expr.global_position.components());
+            Point2D parameters =
+              makePoint2D(
+                expr.global_position.components(),
+                &charmapper_environment,
+                evaluator
+              );
 
-            Environment environment(evaluator.context.parent_environment_ptr);
+            Environment environment(&charmapper_environment);
             environment["x"] = parameters.x;
             environment["y"] = parameters.y;
             evaluatePoint2DDiagram(
@@ -260,7 +304,7 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
               float x_param = from_body_data.local_position.x.value;
               float y_param = from_body_data.local_position.y.value;
 
-              Environment environment(evaluator.context.parent_environment_ptr);
+              Environment environment(&charmapper_environment);
               environment["x"] = x_param;
               environment["y"] = y_param;
 
@@ -270,7 +314,7 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
               );
             }
             {
-              Environment environment(evaluator.context.parent_environment_ptr);
+              Environment environment(&charmapper_environment);
               environment["source_body"] = makeBodyObject(source_body_link);
               environment["local_position"] = makePoint2DObject(local_position);
 
@@ -290,7 +334,7 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
           Class pos_expr_class = posExprClass();
           Point2D local_position = makePoint2D(expr.local_position);
 
-          Environment environment(evaluator.context.parent_environment_ptr);
+          Environment environment(&charmapper_environment);
           environment["PosExpr"] = &pos_expr_class;
           environment["target_body"] = makeBodyObject(target_body_link);
           environment["local_position"] = makePoint2DObject(local_position);
@@ -325,8 +369,12 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
       }
     }
     else if (auto *variable_pass_ptr = maybeVariablePass(i)) {
-      // Nothing to do here yet.
-      ignore(variable_pass_ptr);
+      auto &variables = variable_pass_ptr->variables;
+
+      for (auto &variable : variables) {
+        // We'll want to handle diagrams here also
+        charmapper_environment[variable.name] = variable.value.value;
+      }
     }
     else {
       assert(false);
