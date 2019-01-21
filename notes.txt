@@ -331,5 +331,6 @@ The label on a variable should change as you type the name.
         the specific features of a label, so we can't really have it
         be a child with arbitrary properties.
 ---
-mainwindow_test.cpp FakeTreeEditor
-treeeditor_test.cpp FakeTreeEditor
+Need to consolidate
+  mainwindow_test.cpp FakeTreeEditor
+  treeeditor_test.cpp FakeTreeEditor

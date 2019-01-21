@@ -9,103 +9,16 @@
 #include "fakediagrameditorwindows.hpp"
 #include "optional.hpp"
 #include "scenewrapper.hpp"
+#include "faketreeeditor.hpp"
+#include "faketree.hpp"
 
 using std::string;
 using std::vector;
 using std::cerr;
 
 
-static int findIndex(const vector<string> &container,const string &element)
-{
-  auto b = container.begin();
-  auto e = container.end();
-  auto iter = std::find(b,e,element);
-
-  if (iter==e) {
-    cerr << "Could not find " << element << " in " << container << "\n";
-  }
-
-  assert(iter!=e);
-  return iter-b;
-}
-
-
 namespace {
-struct FakeTreeItem {
-  bool is_expanded;
-  string label;
-  vector<FakeTreeItem> children;
-
-  FakeTreeItem()
-  : is_expanded(true)
-  {
-  }
-
-  int childCount() const { return children.size(); }
-  FakeTreeItem *child(int index) { return &children[index]; }
-  const FakeTreeItem *child(int index) const { return &children[index]; }
-
-  friend FakeTreeItem& insertChildItem(FakeTreeItem &parent_item,int index)
-  {
-    parent_item.children.insert(
-      parent_item.children.begin()+index,
-      FakeTreeItem()
-    );
-
-    return parent_item.children[index];
-  }
-
-  friend void removeChildItem(FakeTreeItem &parent_item,int index)
-  {
-    parent_item.children.erase(parent_item.children.begin() + index);
-  }
-
-  friend void setText(FakeTreeItem &item,const string &text)
-  {
-    item.label = text;
-  }
-};
-}
-
-
-namespace {
-struct FakeTreeEditor : TreeEditor {
-  using Item = FakeTreeItem;
-
-  Item root;
-
-  void
-    userSelectsContextMenuItem(
-      const string &path_string,
-      const string &operation_name
-    )
-  {
-    TreePath path = makePath(world(),path_string);
-    userSelectsContextMenuItem(path,operation_name);
-  }
-
-
-  void userSelectsContextMenuItem(const string &operation_name)
-  {
-    TreePath path = {};
-    vector<string> operation_names = operationNames(path);
-    int index = findIndex(operation_names,operation_name);
-    executeOperation(path,index);
-  }
-
-  void
-    userSelectsContextMenuItem(
-      const TreePath &path,const string &operation_name
-    )
-  {
-    if (operation_name=="Edit Diagram...") {
-      openDiagramEditor(path);
-    }
-    else {
-      executeOperation(path,operationIndex2(world(),path,operation_name));
-    }
-  }
-
+struct FakeTreeEditor1 : FakeTreeEditor {
   void userChangesStringValue(const TreePath &path,const string &new_value)
   {
     stringItemValueChanged(path,new_value);
@@ -128,7 +41,7 @@ struct FakeTreeEditor : TreeEditor {
 
   int itemChildCount(const TreePath &parent_path) const override
   {
-    return itemFromPath(root,parent_path).children.size();
+    return itemFromPath(root(),parent_path).children.size();
   }
 
   virtual void
@@ -140,25 +53,13 @@ struct FakeTreeEditor : TreeEditor {
     assert(false);
   }
 
-  void removeTreeItem(const TreePath &path) override
-  {
-    Item &parent_item = itemFromPath(root,parentPath(path));
-    removeChildItem(parent_item,path.back());
-  }
-
-  void removeChildItems(const TreePath &path) override
-  {
-    Item &parent_item = itemFromPath(root,path);
-    parent_item.children.clear();
-  }
-
   void
     setItemExpanded(
       const TreePath &path,
       bool new_expanded_state
     ) override
   {
-    itemFromPath(root,path).is_expanded = new_expanded_state;
+    itemFromPath(root(),path).is_expanded = new_expanded_state;
   }
 
   virtual DiagramEditorWindow& createDiagramEditor()
@@ -173,7 +74,7 @@ struct FakeTreeEditor : TreeEditor {
     ) override
   {
     TreePath parent_path = parentPath(new_item_path);
-    Item &parent_item = itemFromPath(root,parent_path);
+    Item &parent_item = itemFromPath(root(),parent_path);
     int n_children = parent_item.children.size();
     assert(new_item_path.back() == n_children);
     insertChildItem(parent_item, n_children);
@@ -187,7 +88,7 @@ struct FakeTreeEditor : TreeEditor {
     ) override
   {
     TreePath parent_path = parentPath(new_item_path);
-    Item &parent_item = itemFromPath(root,parent_path);
+    Item &parent_item = itemFromPath(root(),parent_path);
     int n_children = parent_item.children.size();
     assert(new_item_path.back() == n_children);
     insertChildItem(parent_item,parent_item.children.size());
@@ -203,7 +104,7 @@ struct FakeTreeEditor : TreeEditor {
   {
     TreePath parent_path = parentPath(new_item_path);
     assert(new_item_path.back() == itemChildCount(parent_path));
-    Item &parent_item = itemFromPath(root,parent_path);
+    Item &parent_item = itemFromPath(root(),parent_path);
     insertChildItem(parent_item,parent_item.children.size());
   }
 
@@ -216,7 +117,7 @@ struct FakeTreeEditor : TreeEditor {
   {
     TreePath parent_path = parentPath(new_item_path);
     assert(new_item_path.back() == itemChildCount(parent_path));
-    Item &parent_item = itemFromPath(root,parent_path);
+    Item &parent_item = itemFromPath(root(),parent_path);
     insertChildItem(parent_item,parent_item.children.size());
   }
 
@@ -232,7 +133,7 @@ struct FakeTreeEditor : TreeEditor {
 
 namespace {
 struct FakeMainWindow : MainWindow {
-  FakeTreeEditor &treeEditor() override { return tree_editor; }
+  FakeTreeEditor1 &treeEditor() override { return tree_editor; }
 
   Optional<std::string> _askForSavePath() override
   {
@@ -248,7 +149,7 @@ struct FakeMainWindow : MainWindow {
   {
   }
 
-  FakeTreeEditor tree_editor;
+  FakeTreeEditor1 tree_editor;
   Optional<string> maybe_save_path;
   Optional<string> maybe_open_path;
 
@@ -372,7 +273,7 @@ static void testAddingABodyToTheScene()
 
   FakeMainWindow &main_window = tester.main_window;
   FakeWorld &world = tester.world;
-  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeTreeEditor1 &tree_editor = main_window.tree_editor;
   FakeSceneTree &scene_tree = world.scene_window.tree_member;
   FakeSceneViewer &scene_viewer = world.scene_window.viewer_member;
 
@@ -407,7 +308,7 @@ static void testAddingABodyToABody()
 
   FakeWorld &world = tester.world;
   FakeMainWindow &main_window = tester.main_window;
-  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeTreeEditor1 &tree_editor = main_window.tree_editor;
   FakeSceneWindow &scene_window = world.scene_window;
   FakeSceneTree &scene_tree = scene_window.tree_member;
 
@@ -441,7 +342,7 @@ static void testRemovingAMotionPass()
   FakeWorld &world = tester.world;
   WorldWrapper &world_wrapper = tester.world_wrapper;
   FakeMainWindow &main_window = tester.main_window;
-  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeTreeEditor1 &tree_editor = main_window.tree_editor;
 
   // User executes Add Charmapper in the tree editor.
   tree_editor.userSelectsContextMenuItem("Add Charmapper");
@@ -460,7 +361,7 @@ static void testRemovingAMotionPass()
   assert(world.charmapperMember(0).charmapper.nPasses()==0);
 
   // Check that the item was removed from the tree editor.
-  assert(tree_editor.root.children[0].childCount()==0);
+  assert(tree_editor.root().children[0].childCount()==0);
 }
 
 
@@ -470,7 +371,7 @@ static void testChangingABodyName()
   FakeWorld &world = tester.world;
   WorldWrapper &world_wrapper = tester.world_wrapper;
   FakeMainWindow &main_window = tester.main_window;
-  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeTreeEditor1 &tree_editor = main_window.tree_editor;
 
   // User executes Add Scene in the tree editor.
   tree_editor.userSelectsContextMenuItem("Add Scene");
@@ -492,7 +393,7 @@ static void testRemovingABody()
   Tester tester;
   FakeWorld &world = tester.world;
   FakeMainWindow &main_window = tester.main_window;
-  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeTreeEditor1 &tree_editor = main_window.tree_editor;
   FakeSceneWindow &scene_window = world.scene_window;
   size_t n_scene_properties = SceneWrapper::firstBodyChildIndex();
 
@@ -513,7 +414,7 @@ static void testRemovingABody()
   assert(world.sceneMember(0).scene.bodies().size()==0);
 
   // Assert the body was removed from the tree editor.
-  assert(tree_editor.root.children[0].children.size()==n_scene_properties);
+  assert(tree_editor.root().children[0].children.size()==n_scene_properties);
 
   // Assert the body was removed from the scene window tree.
   assert(scene_window.tree_member.root.children.size()==0);
@@ -526,7 +427,7 @@ static void testRemovingABody()
 static void testRemovingAPosExpr()
 {
   Tester tester;
-  FakeTreeEditor &tree_editor = tester.main_window.tree_editor;
+  FakeTreeEditor1 &tree_editor = tester.main_window.tree_editor;
 
   tree_editor.userSelectsContextMenuItem(
     "Add Charmapper"
@@ -565,7 +466,7 @@ static void testCreatingABodyWithAnAveragePosition()
   Tester tester;
   //WorldWrapper &world_wrapper = tester.world_wrapper;
   FakeMainWindow &main_window = tester.main_window;
-  FakeTreeEditor &tree_editor = main_window.tree_editor;
+  FakeTreeEditor1 &tree_editor = main_window.tree_editor;
 
   tree_editor.userSelectsContextMenuItem("Add Scene");
   tree_editor.userSelectsContextMenuItem("Scene1","Add Body");
@@ -645,9 +546,9 @@ static void testOpeningAProject()
 
   tester.main_window.userPressesOpenProject("test.dat");
 
-  FakeTreeEditor &tree_editor = tester.main_window.tree_editor;
-  assert(!tree_editor.root.children[0].is_expanded);
-  assert(!tree_editor.root.children[0].children[0].is_expanded);
+  FakeTreeEditor1 &tree_editor = tester.main_window.tree_editor;
+  assert(!tree_editor.root().children[0].is_expanded);
+  assert(!tree_editor.root().children[0].children[0].is_expanded);
 }
 
 

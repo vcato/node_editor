@@ -10,6 +10,7 @@
 #include "itemfrompath.hpp"
 #include "observeddiagrams.hpp"
 #include "ostreamvector.hpp"
+#include "faketreeeditor.hpp"
 
 using std::vector;
 using std::istringstream;
@@ -53,24 +54,7 @@ static void
 
 
 namespace {
-struct FakeTreeEditor : TreeEditor {
-  void removeTreeItem(const TreePath &path) override
-  {
-    FakeTree::Item &parent_item = itemFromPath(tree.root, parentPath(path));
-    removeIndexFrom(parent_item.children, path.back());
-  }
-
-  void removeChildItems(const TreePath &path) override
-  {
-    if (path.empty()) {
-      tree.root.children.clear();
-      return;
-    }
-
-    cerr << "path: " << path << "\n";
-    assert(false);
-  }
-
+struct FakeTreeEditor2 : FakeTreeEditor {
   void
     setItemExpanded(
       const TreePath &/*path*/,
@@ -82,7 +66,7 @@ struct FakeTreeEditor : TreeEditor {
 
   int itemChildCount(const TreePath &parent_item) const override
   {
-    return itemFromPath(tree.root, parent_item).children.size();
+    return itemFromPath(root(), parent_item).children.size();
   }
 
   virtual void replaceTreeItems(const TreePath &/*parent_path*/)
@@ -149,24 +133,7 @@ struct FakeTreeEditor : TreeEditor {
     assert(false);
   }
 
-  void
-    userSelectsContextMenuItem(
-      const string &path_string,
-      const string &operation_name
-    )
-  {
-    TreePath path = makePath(world(),path_string);
-
-    if (operation_name=="Edit Diagram...") {
-      openDiagramEditor(path);
-    }
-    else {
-      executeOperation(path,operationIndex2(world(),path,operation_name));
-    }
-  }
-
   FakeDiagramEditorWindows diagram_editor_windows;
-  FakeTree tree;
 };
 }
 
@@ -443,7 +410,7 @@ static void testEditingDiagramThenClosingTheDiagramEditorWindow()
   TestObject object;
   TestWrapper world(object);
   object.diagram_ptr = &diagram;
-  FakeTreeEditor editor;
+  FakeTreeEditor2 editor;
   editor.setWorldPtr(&world);
   editor.userSelectsContextMenuItem("","Edit Diagram...");
   assert(editor.diagram_editor_windows[0]);
@@ -461,7 +428,7 @@ static void testEditingDiagramThenRemovingItem()
   TestWrapper world(object);
   TestObject &child = world.createChild("child");
   child.diagram_ptr = &diagram;
-  FakeTreeEditor editor;
+  FakeTreeEditor2 editor;
   editor.setWorldPtr(&world);
   editor.userSelectsContextMenuItem("child","Edit Diagram...");
   editor.userSelectsContextMenuItem("child","Remove");
@@ -477,7 +444,7 @@ static void testEditingChildDiagramThenRemovingItem()
   TestObject &parent = world.createChild("parent");
   TestObject &child = parent.createChild("child");
   child.diagram_ptr = &diagram;
-  FakeTreeEditor editor;
+  FakeTreeEditor2 editor;
   editor.setWorldPtr(&world);
   editor.userSelectsContextMenuItem("parent|child","Edit Diagram...");
   editor.userSelectsContextMenuItem("parent","Remove");
@@ -496,7 +463,7 @@ static void testEditingDiagramNotifiesWrapper()
   member.diagram_ptr = &diagram;
   member.diagram_changed_count_ptr = &diagram_changed_count;
 
-  FakeTreeEditor tree_editor;
+  FakeTreeEditor2 tree_editor;
   tree_editor.setWorldPtr(&world);
   tree_editor.userSelectsContextMenuItem("member","Edit Diagram...");
   tree_editor.diagram_editor_windows[0]->callDiagramChangedCallback();
@@ -508,7 +475,7 @@ static void testSettingWorldState()
 {
   TestObject object;
   TestWrapper world(object);
-  FakeTreeEditor editor;
+  FakeTreeEditor2 editor;
   editor.setWorldPtr(&world);
 
   const char *text =
@@ -555,7 +522,7 @@ static void testReplacingAnItem(TestObject::ValueType value_type)
   }
 
   // Create a tree editor
-  FakeTreeEditor tree_editor;
+  FakeTreeEditor2 tree_editor;
 
   // Set the world wrapper on the tree editor.
   TestWrapper wrapper(object);

@@ -231,7 +231,8 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   charmapperobjects.o sceneobjects.o point2dobject.o globalvec.o \
   printindent.o any.o contains.o diagramexecutor.o anyio.o \
   evaluatelinetext.o streamparser.o diagramwrapperstate.o fakediagrameditor.o \
-  nodetexteditor.o testdiagramevaluator.o observeddiagrams.o observeddiagram.o
+  nodetexteditor.o testdiagramevaluator.o observeddiagrams.o \
+  observeddiagram.o faketreeeditor.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \

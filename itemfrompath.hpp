@@ -1,3 +1,7 @@
+#ifndef ITEMFROMPATH_HPP_
+#define ITEMFROMPATH_HPP_
+
+
 template <typename Item>
 inline const Item &
   itemFromPath(const Item &root_item,const std::vector<int> &path)
@@ -22,3 +26,6 @@ inline Item &
   const Item &const_result = itemFromPath(const_root_item,path);
   return const_cast<Item&>(const_result);
 }
+
+
+#endif /* ITEMFROMPATH_HPP_ */
