@@ -273,3 +273,24 @@ Need to be able to add variables.
   * Make the diagram for the Global pos x be a single node with "return body_x"
   * Set the body_x variable to 20
   * Check that the body x in the scene display frame is 20.
+---
+Having to keep the child indices in sync is a maintenence issue.
+Maybe instead of passing a child_index to the withChildWrapper(), we have
+a way to select which children are to be visited.
+
+void withChildWrapper(const ChildSelector &selector,const Visitor &visitor)
+{
+  if (selector()) { visitor(child1Wrapper()); }
+  if (selector()) { visitor(child2Wrapper()); }
+}
+
+Using this form, we could visit multiple children in one pass.  We could
+also get the number of children by having selector always return true and
+just counting the number of calls to the visitor.
+---
+The PosExpr GlobalPosition X doesn't have a diagram.
+
+We need a way to switch between the value being driven by a diagram and
+the value being driven by a constant.
+---
+PosExpr GlobalPosition doesn't use the diagram to evaluate the x,y values.

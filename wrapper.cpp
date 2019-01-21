@@ -9,6 +9,21 @@ using std::string;
 using std::function;
 
 
+bool Wrapper::canEditDiagram() const
+{
+  // If we have a diagram, then we assume we can edit it.
+
+  if (diagramPtr()) {
+    return true;
+  }
+
+  // If we don't have a diagram, then we assume we can't edit it, but
+  // a derived class may override this behavior if a diagram can be created
+  // if it doesn't exist.
+  return false;
+}
+
+
 void
   visitEnumerationSubWrapper(
     const Wrapper &wrapper,

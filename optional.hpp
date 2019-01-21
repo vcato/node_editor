@@ -69,10 +69,11 @@ class Optional {
       if (this==&arg) return *this;
 
       if (_has_value && arg._has_value) {
-        assert(false);
+        _value = arg._value;
       }
       else if (_has_value) {
-        assert(false);
+        destroyObject(_value);
+        _has_value = false;
       }
       else if (arg._has_value) {
         createObject(_value,arg._value);
@@ -104,8 +105,30 @@ class Optional {
     void reset()
     {
       if (_has_value) {
-        _value.~T();
+        destroyObject(_value);
         _has_value = false;
+      }
+    }
+
+    void emplace()
+    {
+      if (hasValue()) {
+        destroyObject(_value);
+        createObject(_value);
+      }
+      else {
+        createObject(_value);
+        _has_value = true;
+      }
+    }
+
+    bool operator==(const T& arg) const
+    {
+      if (hasValue()) {
+        return _value == arg;
+      }
+      else {
+        return false;
       }
     }
 

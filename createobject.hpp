@@ -9,4 +9,17 @@ void createObject(T& object,U &&value)
 }
 
 
+template <typename T>
+void createObject(T& object)
+{
+  new (&object) T();
+}
+
+
+template <typename T>
+void destroyObject(T& object)
+{
+  object.~T();
+}
+
 #endif /* CREATEOBJECT_HPP */

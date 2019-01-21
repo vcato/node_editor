@@ -108,11 +108,9 @@ struct NodeConnectorIndex {
 class DiagramEditor {
   public:
     DiagramEditor();
-    void setDiagramPtr(Diagram *);
-    void setDiagramState(const DiagramState &);
+
     void setDiagramObserver(DiagramObserverPtr);
     Diagram *diagramPtr() const;
-    std::function<void()> &diagramChangedCallback();
 
   protected:
     using Node = DiagramNode;
@@ -204,6 +202,7 @@ class DiagramEditor {
     Point2D temp_source_pos;
     Optional<ViewportRect> maybe_selection_rectangle;
     Vector2D view_offset{0,0};
+    void notifyDiagramChanged();
 
   private:
     enum class MouseMode {
@@ -241,7 +240,6 @@ class DiagramEditor {
     void clearSelection();
     Node& focusedNode(Diagram &diagram);
     bool aNodeIsSelected() const;
-    void notifyDiagramChanged();
     void selectNodesInRect(const ViewportRect &);
     bool nodeIsInRect(NodeIndex node_index,const ViewportRect &rect) const;
     virtual ViewportLine
@@ -263,12 +261,14 @@ class DiagramEditor {
         const ViewportCoords &p
       ) const;
 
+    void setDiagramPtr(Diagram *);
+    void setDiagramState(const DiagramState &);
+
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;
     static constexpr float connector_radius = 5;
     ViewportCoords mouse_press_position;
     std::map<NodeIndex,DiagramCoords> original_node_positions;
-    std::function<void()> diagram_changed_callback;
     MouseMode mouse_mode = MouseMode::none;
     Vector2D mouse_down_view_offset;
 };

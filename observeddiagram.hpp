@@ -1,7 +1,6 @@
 #ifndef OBSERVEDDIAGRAM_HPP_
 #define OBSERVEDDIAGRAM_HPP_
 
-
 #include "diagramstate.hpp"
 
 struct Diagram;
@@ -11,19 +10,42 @@ struct ObservedDiagram {
   DiagramState diagram_state;
 
   struct Holder {
-    virtual void notifyUnobserved(Diagram &diagram) = 0;
+    virtual void notifyDiagramUnobserved(Diagram &) = 0;
+    virtual void notifyDiagramChanged(Diagram &) = 0;
   };
 
   ObservedDiagram(Diagram &diagram_arg,Holder &holder_arg);
+  ~ObservedDiagram();
 
-  void notifyDiagramStateChanged();
+  void notifyObserversThatDiagramStateChanged();
 
   struct Observer {
-    ObservedDiagram &observed_diagram;
     std::function<void()> diagram_state_changed_callback;
+    void notifyObservedDiagramThatDiagramChanged();
 
-    Observer(ObservedDiagram &observed_diagram_arg);
+    Observer(
+      ObservedDiagram &observed_diagram_arg,
+      std::function<void()> diagram_changed_hook
+    );
+
     ~Observer();
+
+    Observer(const Observer &) = delete;
+    void operator=(const Observer &) = delete;
+
+    const DiagramState &diagramState()
+    {
+      return observed_diagram.diagram_state;
+    }
+
+    Diagram &diagram()
+    {
+      return observed_diagram.diagram;
+    }
+
+    private:
+      ObservedDiagram &observed_diagram;
+      std::function<void()> diagram_changed_hook;
   };
 
 private:
@@ -32,6 +54,7 @@ private:
 
   void addObserver(Observer &observer);
   void removeObserver(Observer &observer);
+  void notifyOwnerThatDiagramChanged();
 };
 
 

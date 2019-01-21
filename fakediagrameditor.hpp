@@ -15,12 +15,6 @@ struct FakeDiagramEditor : DiagramEditor {
   {
   }
 
-  FakeDiagramEditor(Diagram &diagram)
-  : DiagramEditor()
-  {
-    setDiagramPtr(&diagram);
-  }
-
   int userAddsANode()
   {
     return userAddsANodeWithText("");
@@ -231,6 +225,11 @@ struct FakeDiagramEditor : DiagramEditor {
   Point2D nodeOutputPosition(NodeIndex node_index,int output_index)
   {
     return nodeOutputCircle(node(node_index),output_index).center;
+  }
+
+  void callDiagramChangedCallback()
+  {
+    notifyDiagramChanged();
   }
 
   using DiagramEditor::aNodeIsFocused;

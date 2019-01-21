@@ -321,31 +321,6 @@ void TreeEditor::diagramEditorClosed(DiagramEditorWindow &window)
 }
 
 
-void TreeEditor::notifyItemsOfDiagramChange(Diagram &diagram_that_changed)
-{
-  forEachDescendant(
-    world(),
-    [&](const Wrapper &wrapper){
-      Diagram *diagram_ptr = wrapper.diagramPtr();
-
-      if (diagram_ptr) {
-        if (diagram_ptr==&diagram_that_changed) {
-          wrapper.diagramChanged();
-        }
-      }
-    }
-  );
-}
-
-
-void TreeEditor::diagramChanged(DiagramEditorWindow &window)
-{
-  Diagram *diagram_ptr = window.diagramPtr();
-  assert(diagram_ptr);
-  notifyItemsOfDiagramChange(*diagram_ptr);
-}
-
-
 void TreeEditor::removeDiagramEditors(const TreePath &path)
 {
   if (diagram_editor_window_ptrs.empty()) {
@@ -399,7 +374,6 @@ void TreeEditor::openDiagramEditor(const TreePath &path)
   diagram_editor_window_ptrs.push_back(&window);
 
   window.closeCallback() = [&]{ diagramEditorClosed(window); };
-  window.diagramChangedCallback() = [&]{ diagramChanged(window); };
 }
 
 
@@ -413,7 +387,7 @@ auto TreeEditor::contextMenuItems(const TreePath &path) -> vector<MenuItem>
 {
   vector<MenuItem> menu_items;
 
-  if (diagramPtr(world(),path)) {
+  if (canEditDiagramOf(world(),path)) {
     menu_items.push_back(
       {"Edit Diagram...",[this,path]{ openDiagramEditor(path); }}
     );

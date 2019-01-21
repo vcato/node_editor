@@ -36,6 +36,7 @@ class Charmapper {
       using Value = int;
       // We'll want to have Channels have diagrams at some point.
       Value value = 0;
+      Optional<Diagram> optional_diagram;
     };
 
     struct Position {
@@ -173,7 +174,28 @@ class Charmapper {
 
     };
 
+    struct Variable {
+      using Name = std::string;
+      Name name;
+
+      Variable(const Name &name_arg) : name(name_arg) { }
+
+      Channel value;
+    };
+
     struct VariablePass : Pass {
+      using Variables = std::vector<Variable>;
+      using VariableIndex = int;
+      Variables variables;
+
+      VariableIndex addVariable(const Variable::Name &name)
+      {
+        VariableIndex new_variable_index = variables.size();
+
+        variables.push_back(Variable{name});
+
+        return new_variable_index;
+      }
     };
 
   private:

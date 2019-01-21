@@ -14,3 +14,9 @@ void FakeDiagramEditorWindow::forceClose()
 {
   removeFrom(all_windows,this);
 }
+
+
+void FakeDiagramEditorWindow::callDiagramChangedCallback()
+{
+  diagram_editor.callDiagramChangedCallback();
+}

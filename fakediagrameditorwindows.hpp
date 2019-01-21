@@ -31,6 +31,7 @@ struct FakeDiagramEditorWindow : DiagramEditorWindow {
 
   void userClosesWindow();
   void forceClose();
+  void callDiagramChangedCallback();
 
   FakeDiagramEditor diagram_editor;
 };

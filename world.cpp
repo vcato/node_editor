@@ -19,7 +19,12 @@ using SceneMember = World::SceneMember;
 
 
 
-World::World() = default;
+World::World()
+: observed_diagrams([&](const Diagram &diagram){
+    notifyDiagramChanged(diagram);
+  })
+{
+}
 
 World::~World()
 {
@@ -215,7 +220,7 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
         optional_expected_type_name
       );
 
-    observed_diagram.notifyDiagramStateChanged();
+    observed_diagram.notifyObserversThatDiagramStateChanged();
     return result;
   }
 };
@@ -289,4 +294,10 @@ unique_ptr<Member> World::removeMember(int index)
   unique_ptr<Member> unique_member_ptr = std::move(world_members[index]);
   world_members.erase(world_members.begin() + index);
   return unique_member_ptr;
+}
+
+
+void World::notifyDiagramChanged(const Diagram &)
+{
+  applyCharmaps();
 }

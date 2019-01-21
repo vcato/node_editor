@@ -223,103 +223,113 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
   int n_passes = nPasses();
 
   for (int i=0; i!=n_passes; ++i) {
-    auto &pass = this->motionPass(i);
-    auto n_exprs = pass.nExprs();
+    if (auto *motion_pass_ptr = maybeMotionPass(i)) {
+      // Need to extract this to another method.
+      auto &pass = *motion_pass_ptr;
+      auto n_exprs = pass.nExprs();
 
-    for (int i=0; i!=n_exprs; ++i) {
-      auto &expr = pass.expr(i);
-      BodyLink &target_body_link = expr.target_body_link;
+      for (int i=0; i!=n_exprs; ++i) {
+        auto &expr = pass.expr(i);
+        BodyLink &target_body_link = expr.target_body_link;
 
-      // The diagram generates a PosExpr object, which requires a target body.
-      if (target_body_link.hasValue()) {
-        Point2D global_position(0,0);
+        // The diagram generates a PosExpr object, which requires a target body.
+        if (target_body_link.hasValue()) {
+          Point2D global_position(0,0);
 
-        if (expr.global_position.isComponents()) {
-          Diagram &diagram = expr.global_position.diagram;
-          Point2D parameters = makePoint2D(expr.global_position.components());
+          if (expr.global_position.isComponents()) {
+            Diagram &diagram = expr.global_position.diagram;
+            Point2D parameters = makePoint2D(expr.global_position.components());
+
+            Environment environment(evaluator.context.parent_environment_ptr);
+            environment["x"] = parameters.x;
+            environment["y"] = parameters.y;
+            evaluatePoint2DDiagram(
+              diagram,&environment,global_position,evaluator
+            );
+          }
+          else if (expr.global_position.isFromBody()) {
+            using FromBodyData = GlobalPosition::FromBodyData;
+            FromBodyData &from_body_data = expr.global_position.fromBody();
+            BodyLink &source_body_link = from_body_data.source_body_link;
+
+
+            Diagram &local_position_diagram =
+              from_body_data.local_position.diagram;
+            Point2D local_position(0,0);
+            {
+              float x_param = from_body_data.local_position.x.value;
+              float y_param = from_body_data.local_position.y.value;
+
+              Environment environment(evaluator.context.parent_environment_ptr);
+              environment["x"] = x_param;
+              environment["y"] = y_param;
+
+              evaluatePoint2DDiagram(
+                local_position_diagram,&environment,local_position,
+                evaluator
+              );
+            }
+            {
+              Environment environment(evaluator.context.parent_environment_ptr);
+              environment["source_body"] = makeBodyObject(source_body_link);
+              environment["local_position"] = makePoint2DObject(local_position);
+
+              evaluatePoint2DDiagram(
+                expr.global_position.diagram,
+                &environment,
+                global_position,
+                evaluator
+              );
+            }
+          }
+          else {
+            assert(false);
+          }
+
+          Diagram &diagram = expr.diagram;
+          Class pos_expr_class = posExprClass();
+          Point2D local_position = makePoint2D(expr.local_position);
 
           Environment environment(evaluator.context.parent_environment_ptr);
-          environment["x"] = parameters.x;
-          environment["y"] = parameters.y;
-          evaluatePoint2DDiagram(
-            diagram,&environment,global_position,evaluator
-          );
-        }
-        else if (expr.global_position.isFromBody()) {
-          using FromBodyData = GlobalPosition::FromBodyData;
-          FromBodyData &from_body_data = expr.global_position.fromBody();
-          BodyLink &source_body_link = from_body_data.source_body_link;
+          environment["PosExpr"] = &pos_expr_class;
+          environment["target_body"] = makeBodyObject(target_body_link);
+          environment["local_position"] = makePoint2DObject(local_position);
+          environment["global_position"] = makePoint2DObject(global_position);
 
-
-          Diagram &local_position_diagram =
-            from_body_data.local_position.diagram;
-          Point2D local_position(0,0);
-          {
-            float x_param = from_body_data.local_position.x.value;
-            float y_param = from_body_data.local_position.y.value;
-
-            Environment environment(evaluator.context.parent_environment_ptr);
-            environment["x"] = x_param;
-            environment["y"] = y_param;
-
-            evaluatePoint2DDiagram(
-              local_position_diagram,&environment,local_position,
-              evaluator
-            );
-          }
-          {
-            Environment environment(evaluator.context.parent_environment_ptr);
-            environment["source_body"] = makeBodyObject(source_body_link);
-            environment["local_position"] = makePoint2DObject(local_position);
-
-            evaluatePoint2DDiagram(
-              expr.global_position.diagram,
+          Optional<Any> maybe_return_value =
+            evaluator.maybeEvaluate(
+              diagram,
               &environment,
-              global_position,
-              evaluator
+              PosExprObjectData::staticTypeName()
+            );
+
+          Optional<PosExprData> maybe_pos_expr;
+
+          if (maybe_return_value) {
+            maybe_pos_expr =
+              maybePosExpr(*maybe_return_value,evaluator.context.error_stream);
+          }
+          else {
+            evaluator.context.error_stream << "Diagram did not return anything\n";
+          }
+
+          if (maybe_pos_expr) {
+            setDisplayedBodyPosition(
+              maybe_pos_expr->body_link,maybe_pos_expr->position
             );
           }
-        }
-        else {
-          assert(false);
-        }
-
-        Diagram &diagram = expr.diagram;
-        Class pos_expr_class = posExprClass();
-        Point2D local_position = makePoint2D(expr.local_position);
-
-        Environment environment(evaluator.context.parent_environment_ptr);
-        environment["PosExpr"] = &pos_expr_class;
-        environment["target_body"] = makeBodyObject(target_body_link);
-        environment["local_position"] = makePoint2DObject(local_position);
-        environment["global_position"] = makePoint2DObject(global_position);
-
-        Optional<Any> maybe_return_value =
-          evaluator.maybeEvaluate(
-            diagram,
-            &environment,
-            PosExprObjectData::staticTypeName()
-          );
-
-        Optional<PosExprData> maybe_pos_expr;
-
-        if (maybe_return_value) {
-          maybe_pos_expr =
-            maybePosExpr(*maybe_return_value,evaluator.context.error_stream);
-        }
-        else {
-          evaluator.context.error_stream << "Diagram did not return anything\n";
-        }
-
-        if (maybe_pos_expr) {
-          setDisplayedBodyPosition(
-            maybe_pos_expr->body_link,maybe_pos_expr->position
-          );
-        }
-        else {
-          evaluator.context.error_stream << "pos expr diagram failed\n";
+          else {
+            evaluator.context.error_stream << "pos expr diagram failed\n";
+          }
         }
       }
+    }
+    else if (auto *variable_pass_ptr = maybeVariablePass(i)) {
+      // Nothing to do here yet.
+      ignore(variable_pass_ptr);
+    }
+    else {
+      assert(false);
     }
   }
 }

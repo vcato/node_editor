@@ -73,7 +73,7 @@ struct FakeDiagramEvaluator {
     ObservedDiagram &observed_diagram = *maybe_observed_diagram;
 
     // evaluateDiagram(diagram,observed_diagram.diagram_state);
-    observed_diagram.notifyDiagramStateChanged();
+    observed_diagram.notifyObserversThatDiagramStateChanged();
   }
 };
 }

@@ -5,6 +5,7 @@
 #include <sstream>
 #include "float.hpp"
 #include "makestr.hpp"
+#include "namewrapper.hpp"
 
 using std::cerr;
 using std::vector;
@@ -186,44 +187,6 @@ struct Point2DMapWrapper : NoOperationWrapper<VoidWrapper> {
 
 
 namespace {
-struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
-  const char *label_member;
-  std::string &name;
-  const WrapperData &wrapper_data;
-
-  NameWrapper(
-    const char *label,
-    string &name_arg,
-    const WrapperData &wrapper_data_arg
-  )
-  : label_member(label),
-    name(name_arg),
-    wrapper_data(wrapper_data_arg)
-  {
-  }
-
-  Label label() const override { return label_member; }
-
-  virtual std::string value() const
-  {
-    return name;
-  }
-
-  void setValue(const string &arg) const
-  {
-    name = arg;
-    wrapper_data.callbacks.changed_func();
-  }
-
-  void setState(const WrapperState &) const override
-  {
-    assert(false);
-  }
-};
-}
-
-
-namespace {
 struct BodyWrapper : VoidWrapper {
   Scene &scene;
   Scene::Body &parent_body;
@@ -267,7 +230,7 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==name_index) {
-      visitor(NameWrapper{"name",body.name,wrapper_data});
+      visitor(NameWrapper{"name",body.name,wrapper_data.callbacks.changed_func});
       return;
     }
 

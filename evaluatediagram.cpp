@@ -103,6 +103,9 @@ static void
 
   assert(node_state.output_values.empty());
   assert(node_state.line_errors.empty());
+    // We are assuming that the node state has been cleared before calling
+    // this so that we're starting with a clean state.
+
   node_state.output_values.resize(n_outputs);
   node_state.line_errors.resize(n_lines);
 

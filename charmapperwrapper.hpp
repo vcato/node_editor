@@ -26,6 +26,7 @@ class CharmapperWrapper : public VoidWrapper {
       bool &diagram_observer_created;
 
       void notifyCharmapChanged() const { callbacks.notifyCharmapChanged(); }
+
       void removeCharmapper() const { callbacks.removeCharmapper(); }
 
       DiagramObserverPtr makeDiagramObserver(Diagram &diagram) const

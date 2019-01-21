@@ -8,6 +8,8 @@
 using std::string;
 using std::cerr;
 using std::ofstream;
+using std::make_unique;
+using std::function;
 
 
 
@@ -21,25 +23,57 @@ static const char *bad_diagram_text =
   "}\n";
 
 
-static void test1()
-{
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+namespace {
+struct TestHolder : ObservedDiagram::Holder {
+  function<void()> diagram_changed_callback;
 
-  // User clicks on the background.
-  // A single node exists.
-  // The node is focused.
+  void notifyDiagramUnobserved(Diagram &) override
+  {
+  }
+
+  void notifyDiagramChanged(Diagram &) override
+  {
+    if (diagram_changed_callback) {
+      diagram_changed_callback();
+    }
+  }
+};
+}
+
+
+namespace {
+struct Tester {
+  Diagram diagram;
+
+  TestHolder holder;
+  ObservedDiagram observed_diagram{diagram,holder};
+  FakeDiagramEditor editor;
+
+  Tester()
+  {
+    editor.setDiagramObserver(
+      make_unique<ObservedDiagram::Observer>(
+        observed_diagram,
+        /*diagram_changed_hook*/[](){}
+      )
+    );
+  }
+
+  auto &diagramChangedCallback() { return holder.diagram_changed_callback; }
+};
 }
 
 
 static void testDeletingANode()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  int diagram_changed_count = 0;
+  Diagram &diagram = tester.diagram;
+  FakeDiagramEditor &editor = tester.editor;
   int node_index = editor.userAddsANodeWithText("test");
   editor.userSelectsNode(node_index);
-  int diagram_changed_count = 0;
-  editor.diagramChangedCallback() = [&](){ ++diagram_changed_count; };
+  auto diagram_changed_function = [&](){ ++diagram_changed_count; };
+  tester.diagramChangedCallback() = diagram_changed_function;
 
   editor.userPressesBackspace();
   assert(diagram.nExistingNodes()==0);
@@ -49,8 +83,9 @@ static void testDeletingANode()
 
 static void testDeletingAConnectedNode()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   int n1 = editor.userAddsANodeWithText("5");
   int n2 = editor.userAddsANodeWithText("a=$");
   editor.userConnects(n1,0,n2,0);
@@ -62,8 +97,9 @@ static void testDeletingAConnectedNode()
 
 static void testChangingText()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   int n1 = editor.userAddsANodeWithText("5");
   int n2 = editor.userAddsANodeWithText("show($)");
   editor.userConnects(n1,0,n2,0);
@@ -76,8 +112,9 @@ static void testChangingText()
 
 static void testChangingText2()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   int n1 = editor.userAddsANode();
   editor.userFocusesNode(n1);
   editor.userTypesText("$");
@@ -97,8 +134,9 @@ static void testChangingText2()
 
 static void testChangingText3()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   NodeIndex n1 = editor.userAddsANodeWithText("x\ny\nz");
   NodeIndex n2 = editor.userAddsANodeWithText("$");
   editor.userConnects(n1,2,n2,0);
@@ -112,10 +150,10 @@ static void testChangingText3()
 
 static void testChangingText4()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   int diagram_changed_count = 0;
-  editor.diagramChangedCallback() = [&](){ ++diagram_changed_count; };
+  tester.diagramChangedCallback() = [&](){ ++diagram_changed_count; };
   NodeIndex n1 = editor.userAddsANodeWithText("return 0");
   editor.userFocusesNode(n1);
   editor.userMovesCursorTo(/*row*/0,/*column*/8);
@@ -129,10 +167,10 @@ static void testChangingText4()
 
 void testChangingText5()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   int diagram_changed_count = 0;
-  editor.diagramChangedCallback() = [&](){ ++diagram_changed_count; };
+  tester.diagramChangedCallback() = [&](){ ++diagram_changed_count; };
   NodeIndex n1 = editor.userAddsANodeWithText("return 10");
   editor.userFocusesNode(n1);
   editor.userMovesCursorTo(/*row*/0,/*column*/8);
@@ -145,24 +183,23 @@ void testChangingText5()
 static void testSettingDiagramPtr()
 {
   {
-    Diagram diagram;
-    FakeDiagramEditor editor(diagram);
+    Tester tester;
+    FakeDiagramEditor &editor = tester.editor;
     NodeIndex n1 = editor.userAddsANode();
     editor.userFocusesNode(n1);
-    editor.setDiagramPtr(0);
+    editor.setDiagramObserver(0);
     assert(!editor.aNodeIsFocused());
   }
   {
-    Diagram diagram;
-    FakeDiagramEditor editor(diagram);
-    editor.setDiagramPtr(0);
+    Tester tester;
+    tester.editor.setDiagramObserver(0);
   }
   {
-    Diagram diagram;
-    FakeDiagramEditor editor(diagram);
+    Tester tester;
+    FakeDiagramEditor &editor = tester.editor;
     NodeIndex n1 = editor.userAddsANode();
     editor.userSelectsNode(n1);
-    editor.setDiagramPtr(0);
+    editor.setDiagramObserver(0);
     assert(editor.nSelectedNodes()==0);
   }
 }
@@ -170,18 +207,19 @@ static void testSettingDiagramPtr()
 
 static void testSettingDiagramPtrWithAnEmptyFocusedNode()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  Diagram &diagram = tester.diagram;
+  FakeDiagramEditor &editor = tester.editor;
   editor.userClicksAt(ViewportCoords(100,100));
-  editor.setDiagramPtr(0);
+  editor.setDiagramObserver(0);
   assert(diagram.existingNodeIndices().empty());
 }
 
 
 static void testClickingOnBackgroundTwice()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   editor.redraw_count = 0;
   editor.userClicksAt(ViewportCoords(100,100));
   assert(editor.redraw_count==2);
@@ -192,8 +230,9 @@ static void testClickingOnBackgroundTwice()
 
 static void testEscapeWithAFocusedEmptyNode()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   editor.userClicksAt(ViewportCoords(100,100));
   assert(diagram.nNodes()==1);
   int n_redraws = editor.redraw_count;
@@ -206,9 +245,11 @@ static void testEscapeWithAFocusedEmptyNode()
 
 static void testEscapeWithAFocusedNonEmptyNode()
 {
-  Diagram diagram;
+  Tester tester;
+  Diagram &diagram = tester.diagram;
+
   NodeIndex n = diagram.createNodeWithText("12");
-  FakeDiagramEditor editor(diagram);
+  FakeDiagramEditor &editor = tester.editor;
   editor.userFocusesNode(n);
   editor.userPressesEscape();
   assert(!editor.aNodeIsFocused());
@@ -218,8 +259,9 @@ static void testEscapeWithAFocusedNonEmptyNode()
 
 static void testTypingInNode()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   NodeIndex n1 = editor.userAddsANodeWithText("x");
   NodeIndex n2 = editor.userAddsANodeWithText("$");
   editor.userConnects(n1,0,n2,0);
@@ -232,8 +274,9 @@ static void testTypingInNode()
 
 static void testRenderInfo()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   NodeIndex n1 = editor.userAddsANodeWithText("$+$");
   DiagramNode &node = diagram.node(n1);
   auto render_info = editor.nodeRenderInfo(node);
@@ -244,8 +287,9 @@ static void testRenderInfo()
 
 static void testClickingOnANode()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   NodeIndex n1 = editor.userAddsANodeWithText("test");
 
   editor.userClicksOnNode(n1);
@@ -257,8 +301,9 @@ static void testClickingOnANode()
 
 static void testShiftSelectingMultipleNodes()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   NodeIndex n1 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,0));
   NodeIndex n2 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,100));
 
@@ -294,8 +339,8 @@ static void
     const ViewportCoords &end
   )
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   NodeIndex n1 = editor.userAddsANodeWithTextAt("x",DiagramCoords(10,10));
   NodeIndex n2 = editor.userAddsANodeWithTextAt("y",DiagramCoords(20,20));
 
@@ -326,8 +371,8 @@ static void testRectangleSelectingMultipleNodes2()
 
 static void testTranslatingView()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   EventModifiers modifiers;
   modifiers.alt_is_pressed = true;
   editor.userPressesMiddleMouseAt(ViewportCoords(10,10),modifiers);
@@ -338,9 +383,10 @@ static void testTranslatingView()
 
 static void testTranslatingView2()
 {
-  Diagram diagram;
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
+  Diagram &diagram = tester.diagram;
   NodeIndex node_index = diagram.createNodeWithText("test");
-  FakeDiagramEditor editor(diagram);
   EventModifiers modifiers;
   modifiers.alt_is_pressed = true;
   editor.userPressesMiddleMouseAt(ViewportCoords(10,10),modifiers);
@@ -363,8 +409,8 @@ static void testTranslatingView2()
 
 static void testCancellingExport()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   editor.userPressesExportDiagram(/*chosen_path*/"");
   assert(!editor.an_error_was_shown);
 }
@@ -383,7 +429,7 @@ class ImportTester {
   public:
     ImportTester()
     {
-      editor.diagramChangedCallback() = [&]{ ++diagram_changed_count; };
+      tester.diagramChangedCallback() = [&]{ ++diagram_changed_count; };
     }
 
     ~ImportTester()
@@ -394,14 +440,14 @@ class ImportTester {
     void runWithEmptyDiagram()
     {
       userImportsDiagramText(empty_diagram_text);
-      assert(!editor.an_error_was_shown);
+      assert(!editor().an_error_was_shown);
       assert(diagram_changed_count==1);
     }
 
     void runWithBadDiagram()
     {
       userImportsDiagramText(bad_diagram_text);
-      assert(editor.an_error_was_shown);
+      assert(editor().an_error_was_shown);
       assert(diagram_changed_count==0);
     }
 
@@ -420,21 +466,21 @@ class ImportTester {
         "}\n";
 
       userImportsDiagramText(text);
-      assert(!editor.an_error_was_shown);
+      assert(!editor().an_error_was_shown);
       userImportsDiagramText(text);
-      assert(!editor.an_error_was_shown);
+      assert(!editor().an_error_was_shown);
     }
 
   private:
-    Diagram diagram;
-    FakeDiagramEditor editor{diagram};
+    Tester tester;
+    FakeDiagramEditor &editor() { return tester.editor; }
     int diagram_changed_count = 0;
     const char *test_diagram_path = "diagrameditortest.dat";
 
     void userImportsDiagramText(const char *text)
     {
       saveFile(test_diagram_path,text);
-      editor.userPressesImportDiagram(test_diagram_path);
+      editor().userPressesImportDiagram(test_diagram_path);
     }
 };
 }
@@ -457,8 +503,9 @@ static bool
 
 static void testConnectingNodes()
 {
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  Diagram &diagram = tester.diagram;
+  FakeDiagramEditor &editor = tester.editor;
   NodeIndex node1 =
     editor.userAddsANodeWithTextAt("1",DiagramCoords(0,0));
   NodeIndex node2 =
@@ -466,7 +513,7 @@ static void testConnectingNodes()
   editor.userPressesMouseAt(editor.nodeOutputPosition(node1,0));
 
   int diagram_change_count = 0;
-  editor.diagramChangedCallback() = [&]{ ++diagram_change_count; };
+  tester.diagramChangedCallback() = [&]{ ++diagram_change_count; };
   editor.userReleasesMouseAt(
     editor.viewportCoordsFromDiagramCoords(editor.nodeInputPosition(node2,0))
   );
@@ -484,8 +531,8 @@ static ViewportCoords centerOf(const ViewportLine &l)
 static void testClickingOnAFocusedNode()
 {
   // Have a diagram with a single node.
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   NodeIndex node = editor.userAddsANodeWithTextAt("12",DiagramCoords(0,0));
 
   // Click on the node to select it.
@@ -513,8 +560,8 @@ static void testClickingOnAFocusedNode2()
   string node_text = "abcd\ne";
 
   // Have a diagram with a single node.
-  Diagram diagram;
-  FakeDiagramEditor editor(diagram);
+  Tester tester;
+  FakeDiagramEditor &editor = tester.editor;
   NodeIndex node = editor.userAddsANodeWithTextAt(node_text,DiagramCoords(0,0));
 
   // Click on the node to select it.
@@ -545,10 +592,10 @@ static void testClickingOnAFocusedNode2()
 
 static void testCopyingANodeByCtrlDrag()
 {
-  Diagram diagram;
+  Tester tester;
+  Diagram &diagram = tester.diagram;
   NodeIndex n = diagram.createNodeWithText("5");
-
-  FakeDiagramEditor editor(diagram);
+  FakeDiagramEditor &editor = tester.editor;
   ViewportCoords press_position = editor.viewportCoordsForCenterOfNode(n);
   ViewportCoords release_position = press_position + Vector2D(0,-20);
 
@@ -563,7 +610,6 @@ static void testCopyingANodeByCtrlDrag()
 
 int main()
 {
-  test1();
   testDeletingANode();
   testDeletingAConnectedNode();
   testChangingText();

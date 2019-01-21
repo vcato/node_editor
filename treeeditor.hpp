@@ -92,8 +92,6 @@ struct TreeEditor {
       ) = 0;
 
   private:
-    void diagramChanged(DiagramEditorWindow &window);
-    void notifyItemsOfDiagramChange(Diagram &diagram_that_changed);
     void addMainTreeItem(const TreePath &new_item_path);
     void replaceChildTreeItems(const TreePath &parent_path);
     void collapseBranch(const TreePath &path);

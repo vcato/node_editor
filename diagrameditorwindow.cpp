@@ -9,18 +9,6 @@ void DiagramEditorWindow::notifyWindowClosing()
 }
 
 
-std::function<void()> &DiagramEditorWindow::diagramChangedCallback()
-{
-  return diagramEditor().diagramChangedCallback();
-}
-
-
-void DiagramEditorWindow::setDiagramPtr(Diagram *arg)
-{
-  diagramEditor().setDiagramPtr(arg);
-}
-
-
 void DiagramEditorWindow::setDiagramObserver(DiagramObserverPtr arg)
 {
   diagramEditor().setDiagramObserver(std::move(arg));

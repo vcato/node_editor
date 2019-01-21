@@ -12,8 +12,6 @@
 
 class Diagram;
 class DiagramState;
-
-
 struct Wrapper;
 struct VoidWrapper;
 struct NumericWrapper;
@@ -57,14 +55,11 @@ struct Wrapper {
     ) const = 0;
 
   virtual Diagram *diagramPtr() const { return nullptr; }
-  virtual void diagramChanged() const {}
+  virtual bool canEditDiagram() const;
   virtual DiagramObserverPtr makeDiagramObserver() const { assert(false); }
-
   virtual void accept(const SubclassVisitor &) const = 0;
   virtual Label label() const = 0;
-
   virtual void setState(const WrapperState &) const = 0;
-
   virtual const Diagram &defaultDiagram() const { assert(false); }
 };
 

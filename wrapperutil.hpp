@@ -55,6 +55,9 @@ extern int
   );
 
 extern Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path);
+
+extern bool canEditDiagramOf(const Wrapper &wrapper,const TreePath &path);
+
 extern Diagram *
   wrapperDiagramPtr(const Wrapper &wrapper,const std::string &path_string);
 

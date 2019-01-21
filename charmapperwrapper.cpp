@@ -5,12 +5,16 @@
 #include "streamvector.hpp"
 #include "defaultdiagrams.hpp"
 #include "diagramwrapperstate.hpp"
+#include "namewrapper.hpp"
 
 using std::cerr;
 using std::vector;
 using std::string;
 using WrapperData = CharmapperWrapper::WrapperData;
+using VariablePass = Charmapper::VariablePass;
+using Variable = Charmapper::Variable;
 using Label = CharmapperWrapper::Label;
+using Channel = Charmapper::Channel;
 
 
 template <typename T>
@@ -76,13 +80,98 @@ static void setChildren(const Wrapper &wrapper,const WrapperState &state)
 
 
 namespace {
+struct ChannelWrapper : LeafWrapper<NumericWrapper> {
+  Channel &channel;
+  const char *label_member;
+  const WrapperData &callbacks;
+
+  ChannelWrapper(
+    Channel &channel_arg,
+    const char *label_arg,
+    const WrapperData &callbacks_arg
+  )
+  : channel(channel_arg),
+    label_member(label_arg),
+    callbacks(callbacks_arg)
+  {
+  }
+
+  std::vector<OperationName> operationNames() const override
+  {
+    return {};
+  }
+
+  void
+    executeOperation(
+      int /*operation_index*/,
+      const TreePath &/*path*/,
+      TreeObserver &
+    ) const override
+  {
+    assert(false);
+  }
+
+  Diagram *diagramPtr() const override
+  {
+    if (channel.optional_diagram) {
+      return &*channel.optional_diagram;
+    }
+
+    // Channels will have diagrams at some point, but they don't have them
+    // yet.
+    return nullptr;
+  }
+
+  DiagramObserverPtr makeDiagramObserver() const override
+  {
+    if (!channel.optional_diagram) {
+      channel.optional_diagram.emplace();
+    }
+
+    return callbacks.makeDiagramObserver(*channel.optional_diagram);
+  }
+
+  Label label() const override
+  {
+    return label_member;
+  }
+
+  void setValue(Value arg) const override
+  {
+    channel.value = arg;
+    callbacks.notifyCharmapChanged();
+  }
+
+  Value value() const override
+  {
+    return channel.value;
+  }
+
+  void setState(const WrapperState &state) const override
+  {
+    if (state.value.isNumeric()) {
+      setValue(state.value.asNumeric());
+    }
+    else {
+      assert(false);
+    }
+  }
+
+  bool canEditDiagram() const override
+  {
+    assert(false);
+  }
+};
+}
+
+
+namespace {
 struct MotionPassWrapper : VoidWrapper {
   private: using Self = MotionPassWrapper;
   public:
   using MotionPass = Charmapper::MotionPass;
   using Position = Charmapper::Position;
   using PosExpr = MotionPass::PosExpr;
-  using Channel = Charmapper::Channel;
   using GlobalPositionData = Charmapper::GlobalPosition::Data;
   using GlobalPosition = Charmapper::GlobalPosition;
   using FromBodyGlobalPositionData = Charmapper::GlobalPosition::FromBodyData;
@@ -93,56 +182,6 @@ struct MotionPassWrapper : VoidWrapper {
   MotionPass &motion_pass;
   const int pass_index;
   const WrapperData &callbacks;
-
-  struct ChannelWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
-    Channel &channel;
-    const char *label_member;
-    const WrapperData &callbacks;
-
-    ChannelWrapper(
-      Channel &channel_arg,
-      const char *label_arg,
-      const WrapperData &callbacks_arg
-    )
-    : channel(channel_arg),
-      label_member(label_arg),
-      callbacks(callbacks_arg)
-    {
-    }
-
-    Diagram *diagramPtr() const override
-    {
-      // Channels will have diagrams at some point, but they don't have them
-      // yet.
-      return nullptr;
-    }
-
-    Label label() const override
-    {
-      return label_member;
-    }
-
-    void setValue(Value arg) const override
-    {
-      channel.value = arg;
-      callbacks.notifyCharmapChanged();
-    }
-
-    Value value() const override
-    {
-      return channel.value;
-    }
-
-    void setState(const WrapperState &state) const override
-    {
-      if (state.value.isNumeric()) {
-        setValue(state.value.asNumeric());
-      }
-      else {
-        assert(false);
-      }
-    }
-  };
 
   struct PositionWrapper : NoOperationWrapper<VoidWrapper> {
     Position &position;
@@ -161,22 +200,6 @@ struct MotionPassWrapper : VoidWrapper {
       callbacks(callbacks_arg),
       default_diagram_ptr(default_diagram_ptr_arg)
     {
-    }
-
-    Diagram *diagramPtr() const override
-    {
-      return &position.diagram;
-    }
-
-    DiagramObserverPtr makeDiagramObserver() const override
-    {
-      return callbacks.makeDiagramObserver(position.diagram);
-    }
-
-    const Diagram& defaultDiagram() const override
-    {
-      assert(default_diagram_ptr);
-      return *default_diagram_ptr;
     }
 
     virtual int nChildren() const
@@ -206,9 +229,20 @@ struct MotionPassWrapper : VoidWrapper {
       setChildren(*this,state);
     }
 
-    void diagramChanged() const override
+    Diagram *diagramPtr() const override
     {
-      callbacks.notifyCharmapChanged();
+      return &position.diagram;
+    }
+
+    DiagramObserverPtr makeDiagramObserver() const override
+    {
+      return callbacks.makeDiagramObserver(position.diagram);
+    }
+
+    const Diagram& defaultDiagram() const override
+    {
+      assert(default_diagram_ptr);
+      return *default_diagram_ptr;
     }
   };
 
@@ -403,11 +437,6 @@ struct MotionPassWrapper : VoidWrapper {
       }
 
       assert(false);
-    }
-
-    void diagramChanged() const override
-    {
-      callbacks.notifyCharmapChanged();
     }
 
     void setIndex(int index) const
@@ -659,18 +688,123 @@ struct MotionPassWrapper : VoidWrapper {
 }
 
 
+static string varName(int var_number)
+{
+  return "var" + std::to_string(var_number);
+}
+
+
+static bool
+  hasVariable(const VariablePass &variable_pass,const string &var_name)
+{
+  for (auto &var : variable_pass.variables) {
+    if (var.name == var_name) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+static string firstUnusedVariableName(const VariablePass &variable_pass)
+{
+  int var_number = 1;
+
+  for (;;) {
+    string var_name = varName(var_number);
+
+    if (!hasVariable(variable_pass,var_name)) {
+      return var_name;
+    }
+
+    ++var_number;
+  }
+}
+
+
+namespace {
+struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
+  Variable &variable;
+  const WrapperData &wrapper_data;
+
+  VariableWrapper(Variable &variable_arg,const WrapperData &wrapper_data_arg)
+  : variable(variable_arg),
+    wrapper_data(wrapper_data_arg)
+  {
+  }
+
+  int nChildren() const override
+  {
+    return 2;
+  }
+
+  void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const override
+  {
+    if (child_index == 0) {
+      // We could reuse SceneWrapper::NameWrapper here.
+      // If a variable name is changed, then the diagrams have to be
+      // reevaluated, so we need some kind of callback here.
+
+      auto changed_func = [&]{
+        wrapper_data.notifyCharmapChanged();
+      };
+
+      return visitor(NameWrapper("name",variable.name,changed_func));
+    }
+
+    if (child_index == 1) {
+      return visitor(ChannelWrapper(variable.value,"value",wrapper_data));
+    }
+
+    assert(false);
+  }
+
+  Label label() const override
+  {
+    return variable.name;
+  }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
+  }
+};
+}
+
+
 namespace {
 struct VariablePassWrapper : VoidWrapper {
-  int nChildren() const override { assert(false); }
+  VariablePass &variable_pass;
+  const WrapperData &wrapper_data;
+
+  VariablePassWrapper(
+    VariablePass &variable_pass_arg,
+    const WrapperData &wrapper_data_arg
+  )
+  : variable_pass(variable_pass_arg),
+    wrapper_data(wrapper_data_arg)
+  {
+  }
+
+  int nChildren() const override
+  {
+    return variable_pass.variables.size();
+  }
+
   Label label() const override { return "Variable Pass"; }
 
   void
     withChildWrapper(
-      int /*child_index*/,
-      const WrapperVisitor &/*visitor*/
+      int child_index,
+      const WrapperVisitor &visitor
     ) const override
   {
-    assert(false); // not implemented
+    visitor(VariableWrapper{variable_pass.variables[child_index],wrapper_data});
   }
 
   void setState(const WrapperState &) const override
@@ -683,20 +817,34 @@ struct VariablePassWrapper : VoidWrapper {
     return {"Add Variable"};
   }
 
-  void executeAddVariableOperation() const
+  void
+    executeAddVariableOperation(
+      const TreePath &variable_pass_path,
+      TreeObserver &tree_observer
+    ) const
   {
-    assert(false);
+    VariablePass::VariableIndex new_variable_index =
+      variable_pass.addVariable(firstUnusedVariableName(variable_pass));
+
+#if 1
+    TreePath new_variable_path = join(variable_pass_path,new_variable_index);
+    tree_observer.itemAdded(new_variable_path);
+#else
+    // We'll need to notify the tree observer of the new item.
+#endif
   }
 
   void
     executeOperation(
       int operation_index,
-      const TreePath &/*path*/,
-      TreeObserver &
+      const TreePath &variable_pass_path,
+      TreeObserver &tree_observer
     ) const override
   {
     switch (operation_index) {
-      case 0: executeAddVariableOperation(); return;
+      case 0:
+        executeAddVariableOperation(variable_pass_path,tree_observer);
+        return;
     }
 
     assert(false);
@@ -724,21 +872,6 @@ struct MotionPassWrapper::PosExprWrapper : VoidWrapper {
   PosExpr &posExpr() const
   {
     return motion_pass.expr(index);
-  }
-
-  Diagram *diagramPtr() const override
-  {
-    return &posExpr().diagram;
-  }
-
-  DiagramObserverPtr makeDiagramObserver() const override
-  {
-    return callbacks.makeDiagramObserver(posExpr().diagram);
-  }
-
-  const Diagram &defaultDiagram() const override
-  {
-    return PosExpr::defaultDiagram();
   }
 
   void
@@ -818,9 +951,19 @@ struct MotionPassWrapper::PosExprWrapper : VoidWrapper {
     setChildren(*this,state);
   }
 
-  void diagramChanged() const override
+  Diagram *diagramPtr() const override
   {
-    callbacks.notifyCharmapChanged();
+    return &posExpr().diagram;
+  }
+
+  DiagramObserverPtr makeDiagramObserver() const override
+  {
+    return callbacks.makeDiagramObserver(posExpr().diagram);
+  }
+
+  const Diagram &defaultDiagram() const override
+  {
+    return PosExpr::defaultDiagram();
   }
 };
 
@@ -841,11 +984,6 @@ void
     const TreePath &path_of_this
   ) const
 {
-  // This works right now, but it isn't very good.  The body_link
-  // could be pointing to a scene which no longer exists, and comparing
-  // a dangling pointer isn't valid.  I think we need to have
-  // scene-being-removed and body-being-removed callbacks so we can
-  // handle this properly.
   bool found = false;
 
   for (auto &one_body_link : callbacks.scene_list.allBodyLinks()) {
@@ -859,6 +997,11 @@ void
   }
 
   tree_observer.itemReplaced(path_of_this);
+
+  // We notify the tree observer that the charmap changed, but we don't
+  // call back saying that the charmap changed.  Whoever is calling this
+  // will just have to assume that the charmap changed and reapply the
+  // charmaps.
 }
 
 
@@ -946,10 +1089,12 @@ void
     );
   }
   else if (
-    auto *charmapper_pass_ptr = charmapper.maybeVariablePass(child_index)
+    auto *variable_pass_ptr = charmapper.maybeVariablePass(child_index)
   ) {
     visitor(
       VariablePassWrapper{
+        *variable_pass_ptr,
+        wrapper_data
       }
     );
   }
@@ -989,15 +1134,20 @@ void
     const SceneList &scene_list
   )
 {
+  // We just have stub callbacks here so that we can create the
+  // CharmapperWrapper.  CharmapperWrapper::handleSceneChange won't
+  // use the callbacks.
+
   struct Callbacks : CharmapperWrapper::Callbacks {
     void notifyCharmapChanged() const override
     {
-      // The charmap changed due to a scene change.  We don't want
-      // to cause an inifinite loop, so we don't notify the scene
-      // of the charmap change.
+      // MotionPassWrapper::BodyWrapper could potentially call this, but
+      // right now it makes the assumption that the caller knows that
+      // a charmap change is a possibility and doesn't actually call this.
+      assert(false);
     }
 
-    virtual void removeCharmapper() const
+    void removeCharmapper() const override
     {
       assert(false);
     }

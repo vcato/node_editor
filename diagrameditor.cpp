@@ -60,13 +60,13 @@ void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
   if (diagram_observer_ptr) {
     diagram_observer_ptr->diagram_state_changed_callback =
       [this]{
-        setDiagramState(diagram_observer_ptr->observed_diagram.diagram_state);
+        setDiagramState(diagram_observer_ptr->diagramState());
       };
   }
 
   if (diagram_observer_ptr) {
-    setDiagramPtr(&diagram_observer_ptr->observed_diagram.diagram);
-    setDiagramState(diagram_observer_ptr->observed_diagram.diagram_state);
+    setDiagramPtr(&diagram_observer_ptr->diagram());
+    setDiagramState(diagram_observer_ptr->diagramState());
   }
   else {
     setDiagramPtr(nullptr);
@@ -78,12 +78,6 @@ void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
 Diagram* DiagramEditor::diagramPtr() const
 {
   return diagram_ptr2;
-}
-
-
-std::function<void()> &DiagramEditor::diagramChangedCallback()
-{
-  return diagram_changed_callback;
 }
 
 
@@ -114,8 +108,8 @@ void DiagramEditor::enterPressed()
 
 void DiagramEditor::notifyDiagramChanged()
 {
-  if (diagram_changed_callback) {
-    diagram_changed_callback();
+  if (diagram_observer_ptr) {
+    diagram_observer_ptr->notifyObservedDiagramThatDiagramChanged();
   }
 }
 

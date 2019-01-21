@@ -17,6 +17,7 @@ using std::string;
 using std::unique_ptr;
 using std::make_unique;
 using std::cerr;
+using std::function;
 
 
 template <typename T>
@@ -234,6 +235,13 @@ struct TestObject {
     child.parent_ptr = this;
     return child;
   }
+
+  void notifyDiagramChanged()
+  {
+    if (diagram_changed_count_ptr) {
+      ++*diagram_changed_count_ptr;
+    }
+  }
 };
 }
 
@@ -306,14 +314,14 @@ struct BasicTestWrapper : BaseType {
   DiagramObserverPtr makeDiagramObserver() const override
   {
     assert(object.diagram_ptr);
-    return object.observed_diagrams.makeObserver(*object.diagram_ptr);
-  }
 
-  void diagramChanged() const override
-  {
-    if (object.diagram_changed_count_ptr) {
-      ++*object.diagram_changed_count_ptr;
-    }
+    return
+      object.observed_diagrams.makeObserver(
+        *object.diagram_ptr,
+        /*diagram_changed_hook*/ [&object = object](){
+          object.notifyDiagramChanged();
+        }
+      );
   }
 
   void setState(const WrapperState &new_state) const override
@@ -475,16 +483,18 @@ static void testEditingChildDiagramThenRemovingItem()
 static void testEditingDiagramNotifiesWrapper()
 {
   Diagram diagram;
+
   TestObject object;
   TestWrapper world(object);
   TestObject &member = world.createChild("member");
   int diagram_changed_count = 0;
   member.diagram_ptr = &diagram;
   member.diagram_changed_count_ptr = &diagram_changed_count;
-  FakeTreeEditor editor;
-  editor.setWorldPtr(&world);
-  editor.userSelectsContextMenuItem("member","Edit Diagram...");
-  editor.diagram_editor_windows[0]->diagramChangedCallback()();
+
+  FakeTreeEditor tree_editor;
+  tree_editor.setWorldPtr(&world);
+  tree_editor.userSelectsContextMenuItem("member","Edit Diagram...");
+  tree_editor.diagram_editor_windows[0]->callDiagramChangedCallback();
   assert(diagram_changed_count==1);
 }
 

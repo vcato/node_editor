@@ -181,21 +181,24 @@ struct ChildWrapperVisitor : World::MemberVisitor {
   const int member_index;
 
   std::function<void()> &charmap_changed_function;
+  std::function<void(const Diagram &)> &diagram_changed_function;
 
   ChildWrapperVisitor(
     World &world_arg,
     const std::function<void(const Wrapper&)> &visitor_arg,
     int member_index_arg,
-    std::function<void()> &charmap_changed_function_arg
+    std::function<void()> &charmap_changed_function_arg,
+    std::function<void(const Diagram &)> &diagram_changed_function_arg
   )
   : world(world_arg),
     visitor(visitor_arg),
     member_index(member_index_arg),
-    charmap_changed_function(charmap_changed_function_arg)
+    charmap_changed_function(charmap_changed_function_arg),
+    diagram_changed_function(diagram_changed_function_arg)
   {
   }
 
-  virtual void visitCharmapper(World::CharmapperMember &member) const
+  void visitCharmapper(World::CharmapperMember &member) const override
   {
     struct Callbacks : CharmapperWrapper::Callbacks {
       std::function<void()> &charmap_changed_function;
@@ -255,7 +258,7 @@ struct ChildWrapperVisitor : World::MemberVisitor {
     }
   }
 
-  virtual void visitScene(World::SceneMember &member) const
+  void visitScene(World::SceneMember &member) const override
   {
     auto changed_func =
       [&,&world=world]()
@@ -373,16 +376,24 @@ void
   ) const
 {
   int member_index = child_index;
+
   function<void()> charmap_changed_function =
     [&world = this->world](){
       world.applyCharmaps();
     };
+
+  function<void(const Diagram &)> diagram_changed_function =
+    [&world = this->world](const Diagram &){
+      world.applyCharmaps();
+    };
+
   ChildWrapperVisitor
     wrapper_visitor(
       world,
       visitor,
       member_index,
-      charmap_changed_function
+      charmap_changed_function,
+      diagram_changed_function
     );
 
   world.visitMember(member_index,wrapper_visitor);
@@ -419,12 +430,15 @@ void WorldWrapper::setState(const WrapperState &state) const
       // Defer applying charmaps as they are changing, since the time
       // will be wasted on these intermediary changes.
       function<void()> charmap_changed_function = [](){};
+      function<void(const Diagram &)> diagram_changed_function =
+        [](const Diagram &){};
       ChildWrapperVisitor
         wrapper_visitor(
           world,
           visitor,
           member_index,
-          charmap_changed_function
+          charmap_changed_function,
+          diagram_changed_function
         );
 
       world.visitMember(member_index,wrapper_visitor);

@@ -74,6 +74,10 @@ void
     Wrapper::TreeObserver &tree_observer
   )
 {
+  if (operation_name == "Edit Diagram...") {
+    assert(false);
+  }
+
   int operation_index = operationIndex(sub_wrapper,operation_name);
   sub_wrapper.executeOperation(operation_index,path,tree_observer);
 }
@@ -151,6 +155,18 @@ Diagram *diagramPtr(const Wrapper &wrapper,const TreePath &path)
   }
 
   return result_ptr;
+}
+
+
+bool canEditDiagramOf(const Wrapper &wrapper,const TreePath &path)
+{
+  bool result = false;
+  auto sub_wrapper_function =
+    [&](const Wrapper &wrapper){ result = wrapper.canEditDiagram(); };
+
+  visitSubWrapper( wrapper, path, sub_wrapper_function );
+
+  return result;
 }
 
 

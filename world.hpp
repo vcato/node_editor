@@ -157,6 +157,7 @@ class World {
     }
 
     std::vector<Charmapper*> allCharmapPtrs();
+    void notifyDiagramChanged(const Diagram &);
 };
 
 

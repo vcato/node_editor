@@ -72,10 +72,11 @@ static void notifyDiagramChanged(Wrapper &wrapper,const string &path_string)
 
   WrapperVisitor visitor =
     [&](const Wrapper &sub_wrapper){
-      sub_wrapper.diagramChanged();
+      sub_wrapper.makeDiagramObserver()
+        ->notifyObservedDiagramThatDiagramChanged();
     };
 
-  visitSubWrapper(wrapper,path,visitor);
+  visitSubWrapper(wrapper, path, visitor);
 }
 
 
@@ -711,12 +712,15 @@ static void testChangingGlobalPositionDiagram()
   Diagram &diagram = pos_expr.global_position.diagram;
   replaceNodeText(diagram,"return $\n","return [1,2]");
   WorldWrapper world_wrapper(world);
+
   {
     float x = body.position.x(scene.displayFrame());
     assert(x==0);
   }
+
   string path_string = "Charmapper1|Motion Pass|Pos Expr|Global Position";
   notifyDiagramChanged(world_wrapper,path_string);
+
   {
     float x = body.position.x(scene.displayFrame());
     assert(x==1);
@@ -889,15 +893,24 @@ static void testUsingACharmapperVariable()
 
   setWrapperValue(
     world_wrapper,
-    "Charmapper1|Variable Pass|var|name",
+    "Charmapper1|Variable Pass|var1|name",
     "body_x"
   );
+
+  DiagramObserverPtr x_diagram_observer_ptr =
+    diagramObserverPtr(
+      world_wrapper,
+      makePath(
+        world_wrapper,
+        "Charmapper1|Motion Pass|Pos Expr|Global Position|X"
+      )
+    );
 
   {
     Diagram *pos_x_diagram_ptr =
       wrapperDiagramPtr(
         world_wrapper,
-        "Charmapper1|Motion Pass|Pos Expr|Global Position|x"
+        "Charmapper1|Motion Pass|Pos Expr|Global Position|X"
       );
 
     assert(pos_x_diagram_ptr);
@@ -909,17 +922,17 @@ static void testUsingACharmapperVariable()
 
     notifyDiagramChanged(
       world_wrapper,
-      "Charmapper1|Motion Pass|Pos Expr|Global Position|x"
+      "Charmapper1|Motion Pass|Pos Expr|Global Position|X"
     );
   }
 
   setWrapperValue(
     world_wrapper,
-    "Charmapper1|Variable Pass|body_x",
+    "Charmapper1|Variable Pass|body_x|value",
     20
   );
 
-  assert(bodyPosition(body,scene.displayFrame()).x == 2);
+  assert(bodyPosition(body,scene.displayFrame()).x == 20);
 }
 #endif
 
