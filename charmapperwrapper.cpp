@@ -611,9 +611,15 @@ struct MotionPassWrapper : VoidWrapper {
     tree_observer.itemAdded(join(path,index));
   }
 
-  void insertVariablePassOperation(const TreePath &,TreeObserver &) const
+  void
+    insertVariablePassOperation(
+      const TreePath &path,
+      TreeObserver &tree_observer
+    ) const
   {
     charmapper.insertVariablePass(pass_index);
+
+    tree_observer.itemAdded(path);
   }
 
   void

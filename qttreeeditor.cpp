@@ -84,8 +84,8 @@ void
 {
   TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  assert(new_item_path.back() == parent_item.childCount());
-  createChildItem(parent_item,label);
+  QTreeWidgetItem &item = insertChildItem(parent_item,new_item_path.back());
+  setItemText(item,label);
 }
 
 

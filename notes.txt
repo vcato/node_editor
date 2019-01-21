@@ -288,9 +288,4 @@ Using this form, we could visit multiple children in one pass.  We could
 also get the number of children by having selector always return true and
 just counting the number of calls to the visitor.
 ---
-The PosExpr GlobalPosition X doesn't have a diagram.
-
-We need a way to switch between the value being driven by a diagram and
-the value being driven by a constant.
----
-PosExpr GlobalPosition doesn't use the diagram to evaluate the x,y values.
+The label on a variable should change as you type the name.
