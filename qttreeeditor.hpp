@@ -14,6 +14,8 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
   private slots:
     void itemSelectionChangedSlot();
     void prepareMenuSlot(const QPoint &pos);
+    void itemClickedSlot(QTreeWidgetItem *);
+    void closeItemEditorSlot();
 
   private:
     QTreeWidgetItem &itemFromPath(const TreePath &path) const;
@@ -56,6 +58,8 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
         const std::string &label,
         const std::string &value
       ) override;
+
+    void beginEditingItem(const TreePath &) override;
 
     static void setItemText(QTreeWidgetItem &item,const std::string &label);
 

@@ -45,12 +45,24 @@ T &
 }
 
 
+void QtTreeEditor::closeItemEditorSlot()
+{
+  itemEditingFinished();
+}
+
+
 QtTreeEditor::QtTreeEditor()
 {
   assert(header());
   header()->close();
   setContextMenuPolicy(Qt::CustomContextMenu);
 
+  connect(
+    itemDelegate(),
+    SIGNAL(closeEditor(QWidget *)),
+    this,
+    SLOT(closeItemEditorSlot())
+  );
   connect(
     this,
     SIGNAL(itemSelectionChanged()),
@@ -60,6 +72,11 @@ QtTreeEditor::QtTreeEditor()
     this,
     SIGNAL(customContextMenuRequested(const QPoint &)),
     SLOT(prepareMenuSlot(const QPoint &))
+  );
+  connect(
+    this,
+    SIGNAL(itemClicked(QTreeWidgetItem *,int)),
+    SLOT(itemClickedSlot(QTreeWidgetItem *))
   );
 }
 
@@ -129,6 +146,14 @@ void
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   assert(new_item_path.back() == parent_item.childCount());
   createLineEditItem(parent_item,label,value);
+}
+
+
+void QtTreeEditor::beginEditingItem(const TreePath &path)
+{
+  QTreeWidgetItem &item = itemFromPath(path);
+  item.setFlags(item.flags() | Qt::ItemIsEditable);
+  editItem(&item);
 }
 
 
@@ -396,6 +421,13 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
 {
   prepareMenu(pos);
+}
+
+
+void QtTreeEditor::itemClickedSlot(QTreeWidgetItem *item_ptr)
+{
+  assert(item_ptr);
+  TreeEditor::itemClicked(itemPath(*item_ptr));
 }
 
 

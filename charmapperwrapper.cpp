@@ -770,6 +770,11 @@ struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
     assert(false);
   }
 
+  bool labelCanBeChanged() const override
+  {
+    return true;
+  }
+
   Label label() const override
   {
     return variable.name;

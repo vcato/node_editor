@@ -144,6 +144,11 @@ struct FakeTreeEditor : TreeEditor {
     createItem(tree,new_item_path,label);
   }
 
+  void beginEditingItem(const TreePath &) override
+  {
+    assert(false);
+  }
+
   void
     userSelectsContextMenuItem(
       const string &path_string,

@@ -289,3 +289,47 @@ also get the number of children by having selector always return true and
 just counting the number of calls to the visitor.
 ---
 The label on a variable should change as you type the name.
+* Not sure about this.  Having the label show the variable name is
+  convenient, but I'm not sure that's really what the label is for.  Maybe
+  the label should always be Variable, and we need some other mechanism to make
+  it easier to find the variable we are interested in.
+  * How does this relate to setting and restoring state?
+    * variables {
+        Variable {
+          name: "x"
+          value: 5
+        }
+        Variable {
+          name: "y"
+          value: 6
+        }
+      }
+    * If we're setting the state of the "variables" item, then it's not
+      a problem, since we're just replacing everything anyway.
+    * If we're setting the state of one particular variable, then we
+      have to have a way of matching the variable that we want.  Saying
+      "Set the state of Variable-2 to 7" doesn't seem very useful.
+    * Seems like we need a way of being able to set the label for a wrapper.
+      * If we do, we also need a way to indicate whether the label can
+        be changed.
+    * So I guess for variables, the label can be the name and the value
+      can be the value.
+    * I guess this also opens the possibility for different kinds of labels.
+      We could have labels that are numbers instead of strings.
+    * Variables could have operations like "Add minimum" to be able to
+      set a minimum value.
+      * x: 5 {
+          minimum: 0
+          maximum: 10
+          precision: 2
+        }
+    * It's interesting that the label is also like a child, where it
+      can have properties as well.  The label could have a max length
+      for example.
+      * Maybe we have a way to indicate that the label is a child.
+      * The difference though is that the tree editor would have to know
+        the specific features of a label, so we can't really have it
+        be a child with arbitrary properties.
+---
+mainwindow_test.cpp FakeTreeEditor
+treeeditor_test.cpp FakeTreeEditor

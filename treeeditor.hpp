@@ -30,6 +30,8 @@ struct TreeEditor {
     void executeOperation(const TreePath &,int operation_index);
     void stringItemValueChanged(const TreePath &path,const std::string &value);
     void numberItemValueChanged(const TreePath &path,int value);
+    void itemClicked(const TreePath &);
+    void itemEditingFinished();
 
     void createTreeItem(const TreePath &new_item_path);
     void addChildTreeItems(const TreePath &parent_path);
@@ -90,6 +92,8 @@ struct TreeEditor {
         const std::string &label,
         const std::string &value
       ) = 0;
+
+    virtual void beginEditingItem(const TreePath &) = 0;
 
   private:
     void addMainTreeItem(const TreePath &new_item_path);

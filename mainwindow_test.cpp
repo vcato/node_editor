@@ -220,6 +220,11 @@ struct FakeTreeEditor : TreeEditor {
     insertChildItem(parent_item,parent_item.children.size());
   }
 
+  void beginEditingItem(const TreePath &) override
+  {
+    assert(false);
+  }
+
   FakeDiagramEditorWindows diagram_editor_windows;
 };
 }

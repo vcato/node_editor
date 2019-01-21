@@ -59,6 +59,7 @@ struct Wrapper {
   virtual DiagramObserverPtr makeDiagramObserver() const { assert(false); }
   virtual void accept(const SubclassVisitor &) const = 0;
   virtual Label label() const = 0;
+  virtual bool labelCanBeChanged() const { return false; }
   virtual void setState(const WrapperState &) const = 0;
   virtual const Diagram &defaultDiagram() const { assert(false); }
 };

@@ -275,6 +275,24 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
 }
 
 
+void TreeEditor::itemClicked(const TreePath &path)
+{
+  visitSubWrapper(world(),path,
+    [&](const Wrapper &wrapper){
+      if (wrapper.labelCanBeChanged()) {
+        beginEditingItem(path);
+      }
+    }
+  );
+}
+
+
+void TreeEditor::itemEditingFinished()
+{
+  cerr << "TreeEditor::itemEditingFinished()\n";
+}
+
+
 void TreeEditor::addMainTreeItem(const TreePath &new_item_path)
 {
   visitSubWrapper(
