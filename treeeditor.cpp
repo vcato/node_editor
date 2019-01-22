@@ -280,6 +280,8 @@ void TreeEditor::itemClicked(const TreePath &path)
   visitSubWrapper(world(),path,
     [&](const Wrapper &wrapper){
       if (wrapper.labelCanBeChanged()) {
+        assert(!maybe_path_of_item_being_edited);
+        maybe_path_of_item_being_edited = path;
         beginEditingItem(path);
       }
     }
@@ -287,9 +289,21 @@ void TreeEditor::itemClicked(const TreePath &path)
 }
 
 
-void TreeEditor::itemEditingFinished()
+void TreeEditor::itemEditingFinished(const std::string &new_item_text)
 {
-  cerr << "TreeEditor::itemEditingFinished()\n";
+  assert(maybe_path_of_item_being_edited);
+  visitSubWrapper(world(),*maybe_path_of_item_being_edited,
+    [&](const Wrapper &wrapper){
+      wrapper.setLabel(new_item_text);
+    }
+  );
+  maybe_path_of_item_being_edited.reset();
+}
+
+
+const Optional<TreePath> &TreeEditor::maybePathOfItemBeingEdited() const
+{
+  return maybe_path_of_item_being_edited;
 }
 
 

@@ -47,7 +47,13 @@ T &
 
 void QtTreeEditor::closeItemEditorSlot()
 {
-  itemEditingFinished();
+  const Optional<TreePath> &maybe_path = maybePathOfItemBeingEdited();
+  assert(maybe_path);
+  QTreeWidgetItem &item = itemFromPath(*maybe_path);
+  item.setFlags(item.flags() | Qt::ItemIsEditable);
+  string new_item_text = item.text(/*column*/0).toStdString();
+
+  itemEditingFinished(new_item_text);
 }
 
 

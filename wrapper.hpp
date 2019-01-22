@@ -60,6 +60,7 @@ struct Wrapper {
   virtual void accept(const SubclassVisitor &) const = 0;
   virtual Label label() const = 0;
   virtual bool labelCanBeChanged() const { return false; }
+  virtual void setLabel(const Label &) const { assert(false); }
   virtual void setState(const WrapperState &) const = 0;
   virtual const Diagram &defaultDiagram() const { assert(false); }
 };
@@ -112,7 +113,7 @@ inline void
 {
   int path_length = path.size();
 
-  if (depth==path_length) {
+  if (depth == path_length) {
     visitor(wrapper);
     return;
   }

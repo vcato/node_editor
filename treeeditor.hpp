@@ -21,8 +21,6 @@ struct TreeEditor {
       std::function<void()> callback;
     };
 
-    Wrapper *world_ptr = 0;
-
     Wrapper &world();
     std::vector<std::string> operationNames(const TreePath &path);
 
@@ -31,7 +29,8 @@ struct TreeEditor {
     void stringItemValueChanged(const TreePath &path,const std::string &value);
     void numberItemValueChanged(const TreePath &path,int value);
     void itemClicked(const TreePath &);
-    void itemEditingFinished();
+    void itemEditingFinished(const std::string &new_item_text);
+    const Optional<TreePath> &maybePathOfItemBeingEdited() const;
 
     void createTreeItem(const TreePath &new_item_path);
     void addChildTreeItems(const TreePath &parent_path);
@@ -46,13 +45,8 @@ struct TreeEditor {
 
   private:
     struct CreateChildItemVisitor;
-
     struct TreeObserver;
     virtual void removeDiagramEditors(const TreePath &);
-
-  private:
-    std::vector<DiagramEditorWindow *> diagram_editor_window_ptrs;
-
     void addWrapperItem(const TreePath &new_item_path,const Wrapper &);
     virtual int itemChildCount(const TreePath &parent_item) const = 0;
     void changeEnumerationValues(const TreePath &);
@@ -95,11 +89,14 @@ struct TreeEditor {
 
     virtual void beginEditingItem(const TreePath &) = 0;
 
-  private:
     void addMainTreeItem(const TreePath &new_item_path);
     void replaceChildTreeItems(const TreePath &parent_path);
     void collapseBranch(const TreePath &path);
     void collapseChildren(const TreePath &path);
+
+    Wrapper *world_ptr = 0;
+    std::vector<DiagramEditorWindow *> diagram_editor_window_ptrs;
+    Optional<TreePath> maybe_path_of_item_being_edited;
 };
 
 #endif /* TREEEDITOR_HPP_ */

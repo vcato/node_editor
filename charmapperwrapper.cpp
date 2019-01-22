@@ -742,7 +742,7 @@ struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
 
   int nChildren() const override
   {
-    return 2;
+    return 1;
   }
 
   void
@@ -752,22 +752,15 @@ struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
     ) const override
   {
     if (child_index == 0) {
-      // We could reuse SceneWrapper::NameWrapper here.
-      // If a variable name is changed, then the diagrams have to be
-      // reevaluated, so we need some kind of callback here.
-
-      auto changed_func = [&]{
-        wrapper_data.notifyCharmapChanged();
-      };
-
-      return visitor(NameWrapper("name",variable.name,changed_func));
-    }
-
-    if (child_index == 1) {
       return visitor(ChannelWrapper(variable.value,"value",wrapper_data));
     }
 
     assert(false);
+  }
+
+  Label label() const override
+  {
+    return variable.name;
   }
 
   bool labelCanBeChanged() const override
@@ -775,9 +768,10 @@ struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
     return true;
   }
 
-  Label label() const override
+  void setLabel(const Label &new_label) const override
   {
-    return variable.name;
+    variable.name = new_label;
+    wrapper_data.notifyCharmapChanged();
   }
 
   void setState(const WrapperState &) const override

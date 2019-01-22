@@ -41,6 +41,13 @@ extern void
     Wrapper::TreeObserver &
   );
 
+extern void
+  setWrapperLabel(
+    const Wrapper &wrapper,
+    const std::string &path_string,
+    const std::string &new_label
+  );
+
 extern int
   operationIndex(
     const Wrapper &sub_wrapper,
