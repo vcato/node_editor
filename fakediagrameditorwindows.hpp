@@ -1,3 +1,6 @@
+#ifndef FAKEDIAGRAMEDITORWINDOWS_HPP_
+#define FAKEDIAGRAMEDITORWINDOWS_HPP_
+
 #include "fakediagrameditor.hpp"
 #include "diagrameditorwindow.hpp"
 
@@ -35,3 +38,6 @@ struct FakeDiagramEditorWindow : DiagramEditorWindow {
 
   FakeDiagramEditor diagram_editor;
 };
+
+
+#endif /* FAKEDIAGRAMEDITORWINDOWS_HPP_ */

@@ -2,6 +2,7 @@
 #include "faketree.hpp"
 #include "itemfrompath.hpp"
 #include "wrapperutil.hpp"
+#include "fakediagrameditorwindows.hpp"
 
 struct FakeTreeEditor : TreeEditor {
   using Item = FakeTreeItem;
@@ -55,5 +56,123 @@ struct FakeTreeEditor : TreeEditor {
     parent_item.children.clear();
   }
 
+  void
+    setItemExpanded(
+      const TreePath &path,
+      bool new_expanded_state
+    ) override
+  {
+    itemFromPath(root(),path).is_expanded = new_expanded_state;
+  }
+
+  void userChangesStringValue(const TreePath &path,const std::string &new_value)
+  {
+    stringItemValueChanged(path,new_value);
+  }
+
+  void userChangesNumberValue(const TreePath &path,int new_value)
+  {
+    numberItemValueChanged(path,new_value);
+  }
+
+  void userChangesNumberValue(const std::string &path_string,int new_value)
+  {
+    userChangesNumberValue(makePath(world(),path_string),new_value);
+  }
+
+  void userChangesComboBoxIndex(const std::string &path_string,int new_value)
+  {
+    setEnumerationIndex(makePath(world(),path_string),new_value);
+  }
+
+  int itemChildCount(const TreePath &parent_path) const override
+  {
+    return itemFromPath(root(),parent_path).children.size();
+  }
+
+  void
+    setEnumerationValues(
+      const TreePath &,
+      const std::vector<std::string> & /*items*/
+    ) override
+  {
+    assert(false);
+  }
+
+  DiagramEditorWindow& createDiagramEditor() override
+  {
+    return diagram_editor_windows.create();
+  }
+
+  template <typename T>
+  static T& insertItemIn(std::vector<T> &container,size_t index)
+  {
+    container.emplace(container.begin() + index);
+    FakeTree::Item &new_item = container[index];
+    return new_item;
+  }
+
+
+  static void
+    createItem(
+      FakeTree &tree,
+      const TreePath &new_item_path,
+      const std::string &label
+    )
+  {
+    TreePath parent_path = parentPath(new_item_path);
+    FakeTree::Item &parent_item = itemFromPath(tree.root, parent_path);
+    int new_item_index = new_item_path.back();
+    FakeTree::Item &new_item =
+      insertItemIn(parent_item.children,new_item_index);
+    new_item.label = label;
+  }
+
+  void
+    createVoidItem(
+      const TreePath &new_item_path,
+      const std::string &label
+    ) override
+  {
+    createItem(tree,new_item_path,label);
+  }
+
+  void
+    createNumericItem(
+      const TreePath &new_item_path,
+      const std::string & label,
+      const NumericValue /*value*/
+    ) override
+  {
+    createItem(tree,new_item_path,label);
+  }
+
+  void
+    createEnumerationItem(
+      const TreePath &new_item_path,
+      const std::string &label,
+      const std::vector<std::string> &/*options*/,
+      int /*value*/
+    ) override
+  {
+    createItem(tree,new_item_path,label);
+  }
+
+  void
+    createStringItem(
+      const TreePath &new_item_path,
+      const std::string &label,
+      const std::string &/*value*/
+    ) override
+  {
+    createItem(tree,new_item_path,label);
+  }
+
+  void beginEditingItem(const TreePath &) override
+  {
+    assert(false);
+  }
+
   FakeTree tree;
+  FakeDiagramEditorWindows diagram_editor_windows;
 };
