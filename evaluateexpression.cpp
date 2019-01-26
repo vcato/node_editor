@@ -267,7 +267,10 @@ Optional<Any>
   }
 
   if (!first_term.isVector() || !second_term.isVector()) {
-    error_stream << "Invalid types for addition.\n";
+    string first_term_type_name = first_term.typeName();
+    string second_term_type_name = second_term.typeName();
+    error_stream << "Invalid types for addition: " <<
+      first_term_type_name << " and " << second_term_type_name << ".\n";
     return {};
   }
 

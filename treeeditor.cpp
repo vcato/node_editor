@@ -22,6 +22,15 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   const TreePath &new_item_path;
   bool &created;
 
+  static LabelProperties labelProperties(const Wrapper &wrapper)
+  {
+    return
+      LabelProperties{
+        /*text*/wrapper.label(),
+        /*can_be_edited*/wrapper.labelCanBeChanged()
+      };
+  }
+
   CreateChildItemVisitor(
     TreeEditor &tree_editor_arg,
     const TreePath &new_item_path_arg,
@@ -35,7 +44,10 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
 
   void operator()(const VoidWrapper &wrapper) const override
   {
-    tree_editor.createVoidItem(new_item_path,wrapper.label());
+    tree_editor.createVoidItem(
+      new_item_path,
+      labelProperties(wrapper)
+    );
     created = true;
   }
 
@@ -43,7 +55,7 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   {
     tree_editor.createNumericItem(
       new_item_path,
-      wrapper.label(),
+      labelProperties(wrapper),
       wrapper.value()
     );
     created = true;
@@ -53,7 +65,7 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   {
     tree_editor.createEnumerationItem(
       new_item_path,
-      wrapper.label(),
+      labelProperties(wrapper),
       comboBoxItems(wrapper),
       wrapper.value()
     );
@@ -63,7 +75,9 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
   void operator()(const StringWrapper &wrapper) const override
   {
     tree_editor.createStringItem(
-      new_item_path,wrapper.label(),wrapper.value()
+      new_item_path,
+      labelProperties(wrapper),
+      wrapper.value()
     );
     created = true;
   }
@@ -275,29 +289,17 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
 }
 
 
-void TreeEditor::itemClicked(const TreePath &path)
+void
+  TreeEditor::itemLabelChanged(
+    const TreePath &path,
+    const string &new_item_text
+  )
 {
-  visitSubWrapper(world(),path,
-    [&](const Wrapper &wrapper){
-      if (wrapper.labelCanBeChanged()) {
-        assert(!maybe_path_of_item_being_edited);
-        maybe_path_of_item_being_edited = path;
-        beginEditingItem(path);
-      }
-    }
+  visitSubWrapper(
+    world(),
+    path,
+    [&](const Wrapper &wrapper){ wrapper.setLabel(new_item_text); }
   );
-}
-
-
-void TreeEditor::itemEditingFinished(const std::string &new_item_text)
-{
-  assert(maybe_path_of_item_being_edited);
-  visitSubWrapper(world(),*maybe_path_of_item_being_edited,
-    [&](const Wrapper &wrapper){
-      wrapper.setLabel(new_item_text);
-    }
-  );
-  maybe_path_of_item_being_edited.reset();
 }
 
 

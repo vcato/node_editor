@@ -21,6 +21,11 @@ struct TreeEditor {
       std::function<void()> callback;
     };
 
+    struct LabelProperties {
+      std::string text;
+      bool is_editable = false;
+    };
+
     Wrapper &world();
     std::vector<std::string> operationNames(const TreePath &path);
 
@@ -28,8 +33,11 @@ struct TreeEditor {
     void executeOperation(const TreePath &,int operation_index);
     void stringItemValueChanged(const TreePath &path,const std::string &value);
     void numberItemValueChanged(const TreePath &path,int value);
-    void itemClicked(const TreePath &);
-    void itemEditingFinished(const std::string &new_item_text);
+    void
+      itemLabelChanged(
+        const TreePath &path,
+        const std::string &new_item_text
+      );
     const Optional<TreePath> &maybePathOfItemBeingEdited() const;
 
     void createTreeItem(const TreePath &new_item_path);
@@ -59,23 +67,24 @@ struct TreeEditor {
 
     virtual DiagramEditorWindow& createDiagramEditor() = 0;
 
+    // Maybe having a LabelProperties struct is best.
     virtual void
       createVoidItem(
         const TreePath &new_item_path,
-        const std::string &label
+        const LabelProperties &label_properties
       ) = 0;
 
     virtual void
       createNumericItem(
         const TreePath &new_item_path,
-        const std::string &label,
+        const LabelProperties &,
         const NumericValue value
       ) = 0;
 
     virtual void
       createEnumerationItem(
         const TreePath &new_item_path,
-        const std::string &label,
+        const LabelProperties &,
         const std::vector<std::string> &options,
         int value
       ) = 0;
@@ -83,11 +92,9 @@ struct TreeEditor {
     virtual void
       createStringItem(
         const TreePath &new_item_path,
-        const std::string &label,
+        const LabelProperties &,
         const std::string &value
       ) = 0;
-
-    virtual void beginEditingItem(const TreePath &) = 0;
 
     void addMainTreeItem(const TreePath &new_item_path);
     void replaceChildTreeItems(const TreePath &parent_path);

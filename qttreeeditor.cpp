@@ -30,30 +30,43 @@ template <typename T>
 T &
   QtTreeEditor::createItemWidget(
     QTreeWidgetItem &item,
-    const std::string &label
+    const LabelProperties &label_properties
   )
 {
+  const std::string &label = label_properties.text;
+  bool label_is_editable = label_properties.is_editable;
   QWidget *wrapper_widget_ptr = new QWidget();
   // NOTE: setting the item widget before adding the contents makes
   // it not have the proper size.
   QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
-  QLabel &label_widget = createWidget<QLabel>(layout);
-  label_widget.setText(QString::fromStdString(label));
+
+  if (label_is_editable) {
+    QtLineEdit &label_widget = createWidget<QtLineEdit>(layout);
+    label_widget.setText(label);
+    label_widget.text_changed_function =
+      [&item,this](const string &new_text){
+        itemLabelChanged(item, new_text);
+      };
+  }
+  else {
+    QLabel &label_widget = createWidget<QLabel>(layout);
+    label_widget.setText(QString::fromStdString(label));
+  }
+
   T& widget = createWidget<T>(layout);
   setItemWidget(&item,/*column*/0,wrapper_widget_ptr);
   return widget;
 }
 
 
-void QtTreeEditor::closeItemEditorSlot()
+void
+  QtTreeEditor::itemLabelChanged(
+    QTreeWidgetItem &item,
+    const string &new_text
+  )
 {
-  const Optional<TreePath> &maybe_path = maybePathOfItemBeingEdited();
-  assert(maybe_path);
-  QTreeWidgetItem &item = itemFromPath(*maybe_path);
-  item.setFlags(item.flags() & ~Qt::ItemIsEditable);
-  string new_item_text = item.text(/*column*/0).toStdString();
-
-  itemEditingFinished(new_item_text);
+  TreePath path = itemPath(item);
+  TreeEditor::itemLabelChanged(path,new_text);
 }
 
 
@@ -64,12 +77,6 @@ QtTreeEditor::QtTreeEditor()
   setContextMenuPolicy(Qt::CustomContextMenu);
 
   connect(
-    itemDelegate(),
-    SIGNAL(closeEditor(QWidget *)),
-    this,
-    SLOT(closeItemEditorSlot())
-  );
-  connect(
     this,
     SIGNAL(itemSelectionChanged()),
     SLOT(itemSelectionChangedSlot())
@@ -78,11 +85,6 @@ QtTreeEditor::QtTreeEditor()
     this,
     SIGNAL(customContextMenuRequested(const QPoint &)),
     SLOT(prepareMenuSlot(const QPoint &))
-  );
-  connect(
-    this,
-    SIGNAL(itemClicked(QTreeWidgetItem *,int)),
-    SLOT(itemClickedSlot(QTreeWidgetItem *))
   );
 }
 
@@ -102,9 +104,10 @@ QTreeWidgetItem&
 void
   QtTreeEditor::createVoidItem(
     const TreePath &new_item_path,
-    const string &label
+    const LabelProperties &label_properties
   )
 {
+  const string &label = label_properties.text;
   TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   QTreeWidgetItem &item = insertChildItem(parent_item,new_item_path.back());
@@ -115,21 +118,21 @@ void
 void
   QtTreeEditor::createNumericItem(
     const TreePath &new_item_path,
-    const string &label,
+    const LabelProperties &label_properties,
     const NumericValue value
   )
 {
   TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   assert(new_item_path.back() == parent_item.childCount());
-  createSpinBoxItem(parent_item,label,value);
+  createSpinBoxItem(parent_item,label_properties,value);
 }
 
 
 void
   QtTreeEditor::createEnumerationItem(
     const TreePath &new_item_path,
-    const string &label,
+    const LabelProperties &label_properties,
     const vector<string> &options,
     int value
   )
@@ -137,29 +140,21 @@ void
   TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   int index = new_item_path.back();
-  createComboBoxItem(parent_item,index,label,options,value);
+  createComboBoxItem(parent_item,index,label_properties,options,value);
 }
 
 
 void
   QtTreeEditor::createStringItem(
     const TreePath &new_item_path,
-    const string &label,
+    const LabelProperties &label_properties,
     const string &value
   )
 {
   TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   assert(new_item_path.back() == parent_item.childCount());
-  createLineEditItem(parent_item,label,value);
-}
-
-
-void QtTreeEditor::beginEditingItem(const TreePath &path)
-{
-  QTreeWidgetItem &item = itemFromPath(path);
-  item.setFlags(item.flags() | Qt::ItemIsEditable);
-  editItem(&item);
+  createLineEditItem(parent_item,label_properties,value);
 }
 
 
@@ -169,6 +164,8 @@ void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
 }
 
 
+// Why does this have both a label and a value widget?
+// Shouldn't we call createItemWidget?
 namespace {
 struct QtComboBoxTreeItemWidget : QWidget {
   QtComboBox *combo_box_ptr;
@@ -179,12 +176,19 @@ struct QtComboBoxTreeItemWidget : QWidget {
     return *combo_box_ptr;
   }
 
-  QtComboBoxTreeItemWidget(const string &label)
+  QtComboBoxTreeItemWidget(const string &label,bool label_is_editable)
   : combo_box_ptr(0)
   {
     QHBoxLayout &layout = createLayout<QHBoxLayout>(*this);
     QLabel &label_widget = createWidget<QLabel>(layout);
     label_widget.setText(QString::fromStdString(label));
+
+    if (label_is_editable) {
+      assert(false);
+      // Maybe we can reuse how we create spin box items here.
+      // QtTreeEditor::createItemWidget
+    }
+
     QtComboBox& combo_box = createWidget<QtComboBox>(layout);
     combo_box_ptr = &combo_box;
   }
@@ -196,14 +200,16 @@ QTreeWidgetItem&
   QtTreeEditor::createComboBoxItem(
     QTreeWidgetItem &parent_item,
     int index,
-    const std::string &label,
+    const LabelProperties &label_properties,
     const std::vector<std::string> &enumeration_names,
     int value
   )
 {
+  const string &label = label_properties.text;
+  const bool label_is_editable = label_properties.is_editable;
   QTreeWidgetItem &item = ::insertChildItem(parent_item,index);
   QtComboBoxTreeItemWidget *widget_ptr =
-    new QtComboBoxTreeItemWidget(label);
+    new QtComboBoxTreeItemWidget(label,label_is_editable);
   QtComboBox &combo_box = widget_ptr->comboBox();
   setItemWidget(&item,/*column*/0,widget_ptr);
   combo_box.current_index_changed_function =
@@ -219,12 +225,13 @@ QTreeWidgetItem&
 void
   QtTreeEditor::createLineEditItem(
     QTreeWidgetItem &parent_item,
-    const std::string &label,
+    const LabelProperties &label_properties,
     const std::string &value
   )
 {
   QTreeWidgetItem &item = ::createChildItem(parent_item);
-  QtLineEdit &line_edit = createItemWidget<QtLineEdit>(item,label);
+  QtLineEdit &line_edit =
+    createItemWidget<QtLineEdit>(item,label_properties);
   line_edit.text_changed_function = [&](const string &new_text){
     handleLineEditItemValueChanged(&item,new_text);
   };
@@ -235,13 +242,14 @@ void
 void
   QtTreeEditor::createSpinBoxItem(
     QTreeWidgetItem &parent_item,
-    const std::string &label,
+    const LabelProperties &label_properties,
     int value
   )
 {
   QtTreeEditor &tree_widget = *this;
   QTreeWidgetItem &item = ::createChildItem(parent_item);
-  QtSpinBox &spin_box = tree_widget.createItemWidget<QtSpinBox>(item,label);
+  QtSpinBox &spin_box =
+    tree_widget.createItemWidget<QtSpinBox>(item,label_properties);
   spin_box.setValue(value);
   spin_box.value_changed_function =
     [this,&item](int value){
@@ -427,13 +435,6 @@ void QtTreeEditor::prepareMenu(const QPoint &pos)
 void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
 {
   prepareMenu(pos);
-}
-
-
-void QtTreeEditor::itemClickedSlot(QTreeWidgetItem *item_ptr)
-{
-  assert(item_ptr);
-  TreeEditor::itemClicked(itemPath(*item_ptr));
 }
 
 

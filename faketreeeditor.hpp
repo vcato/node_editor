@@ -117,7 +117,7 @@ struct FakeTreeEditor : TreeEditor {
     createItem(
       FakeTree &tree,
       const TreePath &new_item_path,
-      const std::string &label
+      const LabelProperties &label_properties
     )
   {
     TreePath parent_path = parentPath(new_item_path);
@@ -125,52 +125,52 @@ struct FakeTreeEditor : TreeEditor {
     int new_item_index = new_item_path.back();
     FakeTree::Item &new_item =
       insertItemIn(parent_item.children,new_item_index);
-    new_item.label = label;
+    new_item.label = label_properties.text;
+    new_item.label_is_editable = label_properties.is_editable;
   }
 
   void
     createVoidItem(
       const TreePath &new_item_path,
-      const std::string &label
+      const LabelProperties &label_properties
     ) override
   {
-    createItem(tree,new_item_path,label);
+    createItem(
+      tree,
+      new_item_path,
+      label_properties
+    );
   }
 
   void
     createNumericItem(
       const TreePath &new_item_path,
-      const std::string & label,
+      const LabelProperties &label_properties,
       const NumericValue /*value*/
     ) override
   {
-    createItem(tree,new_item_path,label);
+    createItem(tree,new_item_path,label_properties);
   }
 
   void
     createEnumerationItem(
       const TreePath &new_item_path,
-      const std::string &label,
+      const LabelProperties &label_properties,
       const std::vector<std::string> &/*options*/,
       int /*value*/
     ) override
   {
-    createItem(tree,new_item_path,label);
+    createItem(tree,new_item_path,label_properties);
   }
 
   void
     createStringItem(
       const TreePath &new_item_path,
-      const std::string &label,
+      const LabelProperties &label_properties,
       const std::string &/*value*/
     ) override
   {
-    createItem(tree,new_item_path,label);
-  }
-
-  void beginEditingItem(const TreePath &) override
-  {
-    assert(false);
+    createItem(tree,new_item_path,label_properties);
   }
 
   FakeTree tree;

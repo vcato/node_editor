@@ -14,8 +14,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
   private slots:
     void itemSelectionChangedSlot();
     void prepareMenuSlot(const QPoint &pos);
-    void itemClickedSlot(QTreeWidgetItem *);
-    void closeItemEditorSlot();
 
   private:
     QTreeWidgetItem &itemFromPath(const TreePath &path) const;
@@ -26,7 +24,10 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     int itemChildCount(const TreePath &parent_item) const override;
 
     template <typename T>
-    T &createItemWidget(QTreeWidgetItem &item,const std::string &label);
+    T &createItemWidget(
+      QTreeWidgetItem &item,
+      const LabelProperties &
+    );
 
     static QTreeWidgetItem&
       createChildItem(QTreeWidgetItem &parent_item,const std::string &label);
@@ -34,20 +35,20 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void
       createVoidItem(
         const TreePath &new_item_path,
-        const std::string &label
+        const LabelProperties &
       ) override;
 
     void
       createNumericItem(
         const TreePath &new_item_path,
-        const std::string &label,
+        const LabelProperties &,
         const NumericValue value
       ) override;
 
     void
       createEnumerationItem(
         const TreePath &new_item_path,
-        const std::string &label,
+        const LabelProperties &,
         const std::vector<std::string> &options,
         int value
       ) override;
@@ -55,11 +56,9 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void
       createStringItem(
         const TreePath &new_item_path,
-        const std::string &label,
+        const LabelProperties &,
         const std::string &value
       ) override;
-
-    void beginEditingItem(const TreePath &) override;
 
     static void setItemText(QTreeWidgetItem &item,const std::string &label);
 
@@ -67,7 +66,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       createComboBoxItem(
         QTreeWidgetItem &parent_item,
         int index,
-        const std::string &label,
+        const LabelProperties &,
         const std::vector<std::string> &enumeration_names,
         int value
       );
@@ -75,14 +74,14 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void
       createLineEditItem(
         QTreeWidgetItem &,
-        const std::string &label,
+        const LabelProperties &,
         const std::string &value
       );
 
     void
       createSpinBoxItem(
         QTreeWidgetItem &parent_item,
-        const std::string &label,
+        const LabelProperties &,
         int value
       );
 
@@ -117,6 +116,8 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       ) override;
 
     void selectItem(const TreePath &path);
+
+    void itemLabelChanged(QTreeWidgetItem &,const std::string &new_text);
 };
 
 #endif /* QTTREEEDITOR_HPP_ */

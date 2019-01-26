@@ -10,9 +10,11 @@ struct FakeTreeItem {
   bool is_expanded;
   std::string label;
   std::vector<FakeTreeItem> children;
+  bool label_is_editable;
 
   FakeTreeItem()
-  : is_expanded(true)
+  : is_expanded(true),
+    label_is_editable(false)
   {
   }
 
