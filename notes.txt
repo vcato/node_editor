@@ -288,5 +288,5 @@ Using this form, we could visit multiple children in one pass.  We could
 also get the number of children by having selector always return true and
 just counting the number of calls to the visitor.
 ---
-Need to make it where the wrapper value for a variable is the variable's
-value.
+Changed Variables so that the label is the variable namd and the value
+is the variable value.

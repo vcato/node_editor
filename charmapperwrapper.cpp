@@ -730,7 +730,7 @@ static string firstUnusedVariableName(const VariablePass &variable_pass)
 
 
 namespace {
-struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
+struct VariableWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
   Variable &variable;
   const WrapperData &wrapper_data;
 
@@ -738,24 +738,6 @@ struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
   : variable(variable_arg),
     wrapper_data(wrapper_data_arg)
   {
-  }
-
-  int nChildren() const override
-  {
-    return 1;
-  }
-
-  void
-    withChildWrapper(
-      int child_index,
-      const WrapperVisitor &visitor
-    ) const override
-  {
-    if (child_index == 0) {
-      return visitor(ChannelWrapper(variable.value,"value",wrapper_data));
-    }
-
-    assert(false);
   }
 
   Label label() const override
@@ -777,6 +759,17 @@ struct VariableWrapper : NoOperationWrapper<VoidWrapper> {
   void setState(const WrapperState &) const override
   {
     assert(false);
+  }
+
+  void setValue(Value arg) const override
+  {
+    variable.value.value = arg;
+    wrapper_data.notifyCharmapChanged();
+  }
+
+  Value value() const override
+  {
+    return variable.value.value;
   }
 };
 }

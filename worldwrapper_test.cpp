@@ -902,7 +902,7 @@ static void testUsingACharmapperVariable()
 
   setWrapperValue(
     world_wrapper,
-    "Charmapper1|Variable Pass|body_x|value",
+    "Charmapper1|Variable Pass|body_x",
     20
   );
 

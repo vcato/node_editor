@@ -7,7 +7,6 @@ QTreeWidgetItem& createChildItem(QTreeWidgetItem &parent_item)
   parent_item.addChild(item_ptr);
   QTreeWidgetItem &item = *item_ptr;
   item.setExpanded(true);
-  item.setFlags(item.flags() | Qt::ItemIsEditable);
   return item;
 }
 
