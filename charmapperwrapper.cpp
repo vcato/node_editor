@@ -756,9 +756,14 @@ struct VariableWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     wrapper_data.notifyCharmapChanged();
   }
 
-  void setState(const WrapperState &) const override
+  void setState(const WrapperState &state) const override
   {
-    assert(false);
+    if (state.value.isNumeric()) {
+      setValue(state.value.asNumeric());
+    }
+    else {
+      assert(false);
+    }
   }
 
   void setValue(Value arg) const override
@@ -805,9 +810,21 @@ struct VariablePassWrapper : VoidWrapper {
     visitor(VariableWrapper{variable_pass.variables[child_index],wrapper_data});
   }
 
-  void setState(const WrapperState &) const override
+  void setState(const WrapperState &state) const override
   {
-    assert(false); // not implemented
+    int n = state.children.size();
+
+    for (int i=0; i!=n; ++i) {
+      const string &tag = state.children[i].tag;
+
+      auto set_child_state_function =
+        [&](const Wrapper &child_wrapper){
+          child_wrapper.setState(state.children[i]);
+        };
+
+      variable_pass.addVariable(tag);
+      withChildWrapper(i,set_child_state_function);
+    }
   }
 
   std::vector<OperationName> operationNames() const override
@@ -1031,8 +1048,19 @@ void CharmapperWrapper::setState(const WrapperState &state) const
   int n = state.children.size();
 
   for (int i=0; i!=n; ++i) {
-    if (state.children[i].tag=="motion_pass") {
+    const string &tag = state.children[i].tag;
+
+    if (tag == "motion_pass") {
       charmapper.addMotionPass();
+      withChildWrapper(
+        i,
+        [&](const Wrapper &child_wrapper){
+          child_wrapper.setState(state.children[i]);
+        }
+      );
+    }
+    else if (tag == "variable_pass") {
+      charmapper.addVariablePass();
       withChildWrapper(
         i,
         [&](const Wrapper &child_wrapper){

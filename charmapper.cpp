@@ -55,6 +55,12 @@ MotionPass& Charmapper::addMotionPass()
 }
 
 
+VariablePass& Charmapper::addVariablePass()
+{
+  return create<VariablePass>(passes);
+}
+
+
 const Diagram&
   Charmapper::GlobalPosition::defaultComponentsDiagram()
 {

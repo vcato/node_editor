@@ -27,6 +27,7 @@ class Charmapper {
     const MotionPass *maybeMotionPass(int pass_index) const;
     MotionPass &motionPass(int pass_index);
     MotionPass& addMotionPass();
+    VariablePass& addVariablePass();
     void removePass(int pass_index);
     void insertVariablePass(int pass_index);
 

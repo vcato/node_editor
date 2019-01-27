@@ -438,7 +438,6 @@ static void testPoint2DMembers()
 
 int main()
 {
-  testInvalidExpression("[,2]");
   test("[]",makeVector());
   test("[[],2]",makeVector(makeVector(),2));
   test("[1,2] + [3,4]",makeVector(4,6));
@@ -450,6 +449,9 @@ int main()
   test("2*[1,2]",makeVector(2,4));
   test("[1,2]*2",makeVector(2,4));
   test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
+  test("2*3+4",2*3+4);
+
+  testInvalidExpression("[,2]");
   testInvalidExpression("2*[[],2]");
   testInvalidExpression("[]*[]");
   testInvalidExpression("2*","Unexpected end of expression.");
@@ -468,6 +470,7 @@ int main()
   testInvalidExpression("([[],2] + [2,3])/2");
   testInvalidExpression("([1,2] + [2,3]");
   testInvalidExpression("[[],2]/2");
+
   testAddingInputs();
   testSubtractingInputs();
   testIdentifier();

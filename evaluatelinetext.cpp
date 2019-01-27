@@ -7,6 +7,7 @@
 using std::string;
 using std::vector;
 using std::ostream;
+using std::cerr;
 
 
 Optional<Any>

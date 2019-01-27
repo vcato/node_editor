@@ -1,6 +1,7 @@
 #include "evaluateexpression.hpp"
 
 #include "maybepoint2d.hpp"
+#include "anyio.hpp"
 
 
 using std::vector;
@@ -28,6 +29,7 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
     ) const;
   Optional<Any> evaluateAddition(const Any &first_term) const;
   Optional<Any> evaluateSubtraction(const Any &first_term) const;
+  Optional<Any> evaluateMultiplication(const Any &first_term) const;
   Optional<Any> evaluateDivision(const Any &first_term) const;
   Optional<Any> evaluateMemberExpression(const Any &first_term) const;
   Optional<Any> evaluatePostfixExpression() const;
@@ -121,7 +123,7 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
   string identifier;
 
   if (parser.getIdentifier(identifier)) {
-    return evaluateExpressionStartingWithIdentifier(identifier);
+    return evaluatePrimaryExpressionStartingWithIdentifier(identifier);
   }
 
   if (parser.atEnd()) {
@@ -162,10 +164,16 @@ Optional<Any>
     const string &identifier
   ) const
 {
-  return
-    evaluateExpressionStartingWithTerm(
-      evaluatePrimaryExpressionStartingWithIdentifier(identifier)
-    );
+  Optional<Any> result =
+    evaluatePrimaryExpressionStartingWithIdentifier(identifier);
+
+  if (!result) {
+    return result;
+  }
+
+  result = evaluatePostfixExpressionStartingWith(std::move(*result));
+  result = evaluateExpressionStartingWithTerm(std::move(result));
+  return result;
 }
 
 
@@ -349,6 +357,48 @@ Optional<Any>
 
 
 Optional<Any>
+  ExpressionEvaluator::evaluateMultiplication(const Any &first_term) const
+{
+  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+
+  if (!maybe_second_term) {
+    return {};
+  }
+
+  const Any &second_term = *maybe_second_term;
+
+  if (first_term.isFloat() && second_term.isFloat()) {
+    float first_float = first_term.asFloat();
+    float second_float = second_term.asFloat();
+    return {first_float * second_float};
+  }
+
+  if (first_term.isFloat() && second_term.isVector()) {
+    return
+      maybeScaleVector(
+        first_term.asFloat(),
+        second_term.asVector(),
+        error_stream
+      );
+  }
+
+  if (first_term.isVector() && second_term.isFloat()) {
+    return
+      maybeScaleVector(
+        second_term.asFloat(),
+        first_term.asVector(),
+        error_stream
+      );
+  }
+
+  error_stream << "Unhandled multiplication: " <<
+    first_term.typeName() << "*" <<
+    second_term.typeName() << "\n";
+  return {};
+}
+
+
+Optional<Any>
   ExpressionEvaluator::evaluateDivision(const Any &first_term) const
 {
   Optional<Any> maybe_second_term = evaluatePostfixExpression();
@@ -513,48 +563,8 @@ Optional<Any>
 
   if (parser.peekChar()=='*') {
     parser.skipChar();
-
-    Optional<Any> maybe_second_term = evaluatePostfixExpression();
-
-    if (!maybe_second_term) {
-      return {};
-    }
-
-    const Any &second_term = *maybe_second_term;
-
-    if (first_term.isFloat() && second_term.isFloat()) {
-      float first_float = first_term.asFloat();
-      float second_float = second_term.asFloat();
-      return {first_float * second_float};
-    }
-
-    if (first_term.isVector() && second_term.isVector()) {
-      error_stream << "Can't multiply vectors\n";
-      return {};
-    }
-
-    if (first_term.isFloat() && second_term.isVector()) {
-      return
-        maybeScaleVector(
-          first_term.asFloat(),
-          second_term.asVector(),
-          error_stream
-        );
-    }
-
-    if (first_term.isVector() && second_term.isFloat()) {
-      return
-        maybeScaleVector(
-          second_term.asFloat(),
-          first_term.asVector(),
-          error_stream
-        );
-    }
-
-    error_stream << "Unhandled multiplication: " <<
-      first_term.typeName() << "*" <<
-      second_term.typeName() << "\n";
-    return {};
+    return
+      evaluateExpressionStartingWithTerm(evaluateMultiplication(first_term));
   }
 
   if (parser.peekChar()=='/') {
@@ -562,7 +572,7 @@ Optional<Any>
     return evaluateDivision(first_term);
   }
 
-  return evaluatePostfixExpressionStartingWith(first_term);
+  return first_term;
 }
 
 

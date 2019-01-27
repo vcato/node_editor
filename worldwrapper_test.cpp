@@ -1035,6 +1035,25 @@ static void testSettingStateWithPosExpr()
 }
 
 
+static void testSettingStateWithVariablePass()
+{
+  const char *text =
+    "world {\n"
+    "  charmapper1 {\n"
+    "    variable_pass {\n"
+    "      x: 5\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  WrapperState state = stateFromText(text);
+  FakeWorld world;
+  WorldWrapper wrapper(world);
+  wrapper.setState(state);
+  assert(stateOf(wrapper)==state);
+}
+
+
 static void testSettingStateTwice()
 {
   const char *text =
@@ -1133,6 +1152,7 @@ int main()
   testSettingStateWithSceneWithBody();
   testSettingStateWithCharmapper();
   testSettingStateWithPosExpr();
+  testSettingStateWithVariablePass();
   testSettingStateTwice();
   testAddingAFrameToTheScene();
 

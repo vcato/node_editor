@@ -291,10 +291,6 @@ just counting the number of calls to the visitor.
 I wonder if I should have the tree widget so that the labels are in the
 first column and the editors are in the second column.
 ---
-Need to get a label changed callback back to the TreeEditor.
----
-This expression doesn't work: $*var1 + [0,0]
----
 We have QtComboBoxTreeItemWidget, which has both a label and a value widget.
 Not sure why we don't use QtTreeEditor::createItemWidget<QtComboBoxWidget>
 or something like that so that the logic of how the label widget is created
