@@ -183,408 +183,11 @@ struct MotionPassWrapper : VoidWrapper {
   const int pass_index;
   const WrapperData &callbacks;
 
-  struct PositionWrapper : NoOperationWrapper<VoidWrapper> {
-    Position &position;
-    const char *label_member;
-    const WrapperData &callbacks;
-    const Diagram *default_diagram_ptr;
-
-    PositionWrapper(
-      Position &position_arg,
-      const char *label_arg,
-      const WrapperData &callbacks_arg,
-      const Diagram *default_diagram_ptr_arg
-    )
-    : position(position_arg),
-      label_member(label_arg),
-      callbacks(callbacks_arg),
-      default_diagram_ptr(default_diagram_ptr_arg)
-    {
-    }
-
-    virtual int nChildren() const
-    {
-      return 2;
-    }
-
-    void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
-    {
-      switch (child_index) {
-        case 0:
-          visitor(ChannelWrapper(position.x,"X",callbacks));
-          return;
-        case 1:
-          visitor(ChannelWrapper(position.y,"Y",callbacks));
-          return;
-      }
-    }
-
-    virtual Label label() const
-    {
-      return label_member;
-    }
-
-    void setState(const WrapperState &state) const override
-    {
-      setChildren(*this,state);
-    }
-
-    Diagram *diagramPtr() const override
-    {
-      return &position.diagram;
-    }
-
-    DiagramObserverPtr makeDiagramObserver() const override
-    {
-      return callbacks.makeDiagramObserver(position.diagram);
-    }
-
-    const Diagram& defaultDiagram() const override
-    {
-      assert(default_diagram_ptr);
-      return *default_diagram_ptr;
-    }
-  };
-
-  struct FromBodyGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
-    FromBodyGlobalPositionData &from_body_global_position;
-    const WrapperData &callbacks;
-
-    FromBodyGlobalPositionWrapper(
-      FromBodyGlobalPositionData &arg,
-      const WrapperData &callbacks_arg
-    )
-    : from_body_global_position(arg),
-      callbacks(callbacks_arg)
-    {
-    }
-
-    void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
-    {
-      if (child_index==0) {
-        visitor(
-          BodyWrapper(
-            "Source Body",
-            from_body_global_position.source_body_link,
-            callbacks
-          )
-        );
-      }
-      else if (child_index==1) {
-        visitor(PositionWrapper(
-          from_body_global_position.local_position,
-          "Local Position",
-          callbacks,
-          &from_body_global_position.defaultLocalPositionDiagram()
-        ));
-      }
-      else {
-        cerr << "child_index=" << child_index << '\n';
-        assert(false);
-      }
-    }
-
-    virtual Diagram *diagramPtr() const
-    {
-      assert(false);
-    }
-
-    virtual Label label() const
-    {
-      assert(false);
-    }
-
-    virtual int nChildren() const
-    {
-      return 2;
-    }
-
-    void setState(const WrapperState &) const override
-    {
-      assert(false);
-    }
-  };
-
-  struct ComponentsGlobalPositionWrapper : NoOperationWrapper<VoidWrapper> {
-    ComponentsGlobalPositionData &components_global_position;
-    const WrapperData &callbacks;
-
-    ComponentsGlobalPositionWrapper(
-      ComponentsGlobalPositionData &arg,
-      const WrapperData &callbacks_arg
-    )
-    : components_global_position(arg),
-      callbacks(callbacks_arg)
-    {
-    }
-
-    void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
-    {
-      switch (child_index) {
-        case 0:
-          visitor(ChannelWrapper(components_global_position.x,"X",callbacks));
-          return;
-        case 1:
-          visitor(ChannelWrapper(components_global_position.y,"Y",callbacks));
-          return;
-      }
-    }
-
-    virtual Diagram *diagramPtr() const
-    {
-      assert(false);
-    }
-
-    virtual Label label() const
-    {
-      assert(false);
-    }
-
-    virtual int nChildren() const
-    {
-      return 2;
-    }
-
-    void setState(const WrapperState &) const override
-    {
-      assert(false);
-    }
-  };
-
-  struct GlobalPositionWrapper : NoOperationWrapper<EnumerationWrapper> {
-    GlobalPosition &global_position;
-    const WrapperData &callbacks;
-
-    GlobalPositionWrapper(
-      GlobalPosition &global_position_arg,
-      const WrapperData &callbacks_arg
-    )
-    : global_position(global_position_arg),
-      callbacks(callbacks_arg)
-    {
-    }
-
-    struct ValueVisitor : GlobalPositionData::Visitor {
-      const WrapperVisitor &visitor;
-      const WrapperData &callbacks;
-
-      ValueVisitor(
-        const WrapperVisitor &visitor_arg,
-        const WrapperData &callbacks_arg
-      )
-      : visitor(visitor_arg),
-        callbacks(callbacks_arg)
-      {
-      }
-
-      virtual void visit(FromBodyGlobalPositionData &data) const
-      {
-        visitor(FromBodyGlobalPositionWrapper(data,callbacks));
-      }
-
-      virtual void visit(ComponentsGlobalPositionData &data) const
-      {
-        visitor(ComponentsGlobalPositionWrapper(data,callbacks));
-      }
-    };
-
-    void withValueWrapper(const WrapperVisitor &visitor) const
-    {
-      assert(global_position.global_position_ptr);
-      global_position.global_position_ptr->accept(
-        ValueVisitor(visitor,callbacks)
-      );
-    }
-
-    void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
-    {
-      withValueWrapper(
-        [&](const Wrapper &wrapper){
-          wrapper.withChildWrapper(child_index,visitor);
-        }
-      );
-    }
-
-    virtual int nChildren() const
-    {
-      int n_children = 0;
-      withValueWrapper(
-        [&](const Wrapper &wrapper){
-          n_children = wrapper.nChildren();
-        }
-      );
-      return n_children;
-    }
-
-    Diagram *diagramPtr() const override
-    {
-      return &global_position.diagram;
-    }
-
-    DiagramObserverPtr makeDiagramObserver() const override
-    {
-      return callbacks.makeDiagramObserver(global_position.diagram);
-    }
-
-    const Diagram& defaultDiagram() const override
-    {
-      if (global_position.isComponents()) {
-        return global_position.defaultComponentsDiagram();
-      }
-
-      if (global_position.isFromBody()) {
-        return global_position.defaultFromBodyDiagram();
-      }
-
-      assert(false);
-    }
-
-    void setIndex(int index) const
-    {
-      switch (index) {
-        case 0:
-          // Components
-          global_position.switchToComponents();
-          break;
-        case 1:
-          // From Body
-          global_position.switchToFromBody();
-          break;
-        default:
-          assert(false);
-      }
-    }
-
-    virtual void
-      setValue(
-        const TreePath &path,
-        int index,
-        TreeObserver &tree_observer
-      ) const
-    {
-      setIndex(index);
-      tree_observer.itemReplaced(path);
-    }
-
-    Index value() const override
-    {
-      if (global_position.isComponents()) {
-        return 0;
-      }
-
-      if (global_position.isFromBody()) {
-        return 1;
-      }
-
-      assert(false);
-    }
-
-    vector<string> enumerationNames() const override
-    {
-      return {"Components","From Body"};
-    }
-
-    virtual Label label() const
-    {
-      return "Global Position";
-    }
-
-    void setState(const WrapperState &state) const override
-    {
-      if (state.value.isEnumeration()) {
-        setIndex(findIndex(*this,state.value.asEnumeration()));
-      }
-      else {
-        assert(false);
-      }
-
-      setChildren(*this,state);
-    }
-  };
-
-  struct BodyWrapper : NoOperationWrapper<LeafWrapper<EnumerationWrapper>> {
-    const WrapperData &callbacks;
-    BodyLink &body_link;
-    const char *label_member;
-
-    BodyWrapper(
-      const char *label_arg,
-      BodyLink &body_link_arg,
-      const WrapperData &callbacks_arg
-    )
-    : callbacks(callbacks_arg),
-      body_link(body_link_arg),
-      label_member(label_arg)
-    {
-    }
-
-    Label label() const override { return label_member; }
-
-    void
-      handleSceneChange(
-        Wrapper::TreeObserver &tree_observer,
-        const TreePath &path_of_this
-      ) const;
-
-    vector<string> enumerationNames() const override
-    {
-      vector<string> result;
-      result.push_back("None");
-      vector<string> body_names = callbacks.scene_list.allBodyNames();
-      result.insert(result.end(),body_names.begin(),body_names.end());
-      return result;
-    }
-
-    void setIndex(int index) const
-    {
-      assert(index>=0);
-
-      if (index==0) {
-        body_link.clear();
-      }
-      else {
-        body_link = callbacks.scene_list.allBodyLinks()[index-1];
-      }
-    }
-
-    void
-      setValue(
-        const TreePath &,
-        int index,
-        TreeObserver &
-      ) const override
-    {
-      setIndex(index);
-      callbacks.notifyCharmapChanged();
-    }
-
-    Index value() const override
-    {
-      if (!body_link.hasValue()) {
-        return 0;
-      }
-
-      return indexOf(body_link,callbacks.scene_list.allBodyLinks()) + 1;
-    }
-
-    void setState(const WrapperState &state) const override
-    {
-      if (!state.value.isVoid()) {
-        if (state.value.isEnumeration()) {
-          setIndex(findIndex(*this,state.value.asEnumeration()));
-        }
-        else {
-          assert(false);
-        }
-      }
-
-      for (const WrapperState &child_state : state.children) {
-        cerr << "child_state.tag: " << child_state.tag << "\n";
-        assert(false);
-      }
-    }
-  };
-
+  struct PositionWrapper;
+  struct FromBodyGlobalPositionWrapper;
+  struct ComponentsGlobalPositionWrapper;
+  struct GlobalPositionWrapper;
+  struct BodyWrapper;
   struct PosExprWrapper;
 
   MotionPassWrapper(
@@ -692,6 +295,475 @@ struct MotionPassWrapper : VoidWrapper {
   void setState(const WrapperState &state) const override;
 };
 }
+
+
+struct MotionPassWrapper::BodyWrapper
+  : NoOperationWrapper<LeafWrapper<EnumerationWrapper>>
+{
+  const WrapperData &callbacks;
+  BodyLink &body_link;
+  const char *label_member;
+
+  BodyWrapper(
+    const char *label_arg,
+    BodyLink &body_link_arg,
+    const WrapperData &callbacks_arg
+  )
+  : callbacks(callbacks_arg),
+    body_link(body_link_arg),
+    label_member(label_arg)
+  {
+  }
+
+  Label label() const override { return label_member; }
+
+  void
+    handleSceneChange(
+      Wrapper::TreeObserver &tree_observer,
+      const TreePath &path_of_this
+    ) const;
+
+  vector<string> enumerationNames() const override
+  {
+    vector<string> result;
+    result.push_back("None");
+    vector<string> body_names = callbacks.scene_list.allBodyNames();
+    result.insert(result.end(),body_names.begin(),body_names.end());
+    return result;
+  }
+
+  void setIndex(int index) const
+  {
+    assert(index>=0);
+
+    if (index==0) {
+      body_link.clear();
+    }
+    else {
+      body_link = callbacks.scene_list.allBodyLinks()[index-1];
+    }
+  }
+
+  void
+    setValue(
+      const TreePath &,
+      int index,
+      TreeObserver &
+    ) const override
+  {
+    setIndex(index);
+    callbacks.notifyCharmapChanged();
+  }
+
+  Index value() const override
+  {
+    if (!body_link.hasValue()) {
+      return 0;
+    }
+
+    return indexOf(body_link,callbacks.scene_list.allBodyLinks()) + 1;
+  }
+
+  void setState(const WrapperState &state) const override
+  {
+    if (!state.value.isVoid()) {
+      if (state.value.isEnumeration()) {
+        setIndex(findIndex(*this,state.value.asEnumeration()));
+      }
+      else {
+        assert(false);
+      }
+    }
+
+    for (const WrapperState &child_state : state.children) {
+      cerr << "child_state.tag: " << child_state.tag << "\n";
+      assert(false);
+    }
+  }
+};
+
+
+template <typename Wrapper>
+static int countChildren(const Wrapper &wrapper)
+{
+  int count = 0;
+  auto counter = [&]{ ++count; return false;};
+  wrapper.forEachSelectedChild(counter,[](auto &){});
+  return count;
+}
+
+
+struct MotionPassWrapper::ComponentsGlobalPositionWrapper
+  : NoOperationWrapper<VoidWrapper>
+{
+  ComponentsGlobalPositionData &components_global_position;
+  const WrapperData &callbacks;
+
+  ComponentsGlobalPositionWrapper(
+    ComponentsGlobalPositionData &arg,
+    const WrapperData &callbacks_arg
+  )
+  : components_global_position(arg),
+    callbacks(callbacks_arg)
+  {
+  }
+
+  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
+  {
+    switch (child_index) {
+      case 0:
+        visitor(ChannelWrapper(components_global_position.x,"X",callbacks));
+        return;
+      case 1:
+        visitor(ChannelWrapper(components_global_position.y,"Y",callbacks));
+        return;
+    }
+  }
+
+  virtual Diagram *diagramPtr() const
+  {
+    assert(false);
+  }
+
+  virtual Label label() const
+  {
+    assert(false);
+  }
+
+  virtual int nChildren() const
+  {
+    return 2;
+  }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
+  }
+};
+
+
+namespace {
+struct ChildSelector {
+  const int desired_child_index;
+
+  int current_child_index = 0;
+  bool any_matched = false;
+
+  ~ChildSelector()
+  {
+    assert(any_matched);
+  }
+
+  bool operator()()
+  {
+    bool result = current_child_index++ == desired_child_index;
+
+    if (result) {
+      any_matched = true;
+    }
+
+    return result;
+  }
+};
+}
+
+
+struct MotionPassWrapper::PositionWrapper : NoOperationWrapper<VoidWrapper> {
+  Position &position;
+  const char *label_member;
+  const WrapperData &callbacks;
+  const Diagram *default_diagram_ptr;
+
+  PositionWrapper(
+    Position &position_arg,
+    const char *label_arg,
+    const WrapperData &callbacks_arg,
+    const Diagram *default_diagram_ptr_arg
+  )
+  : position(position_arg),
+    label_member(label_arg),
+    callbacks(callbacks_arg),
+    default_diagram_ptr(default_diagram_ptr_arg)
+  {
+  }
+
+  template <typename Selector>
+  void
+    forEachSelectedChild(
+      Selector &selector,
+      const WrapperVisitor &visitor
+    ) const
+  {
+    if (selector()) { visitor(ChannelWrapper(position.x,"X",callbacks)); }
+    if (selector()) { visitor(ChannelWrapper(position.y,"Y",callbacks)); }
+  }
+
+  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
+  {
+    ChildSelector selector{child_index};
+
+    forEachSelectedChild(selector,visitor);
+  }
+
+  virtual int nChildren() const
+  {
+    return countChildren(*this);
+  }
+
+  virtual Label label() const
+  {
+    return label_member;
+  }
+
+  void setState(const WrapperState &state) const override
+  {
+    setChildren(*this,state);
+  }
+
+  Diagram *diagramPtr() const override
+  {
+    return &position.diagram;
+  }
+
+  DiagramObserverPtr makeDiagramObserver() const override
+  {
+    return callbacks.makeDiagramObserver(position.diagram);
+  }
+
+  const Diagram& defaultDiagram() const override
+  {
+    assert(default_diagram_ptr);
+    return *default_diagram_ptr;
+  }
+};
+
+
+struct MotionPassWrapper::FromBodyGlobalPositionWrapper
+  : NoOperationWrapper<VoidWrapper>
+{
+  FromBodyGlobalPositionData &from_body_global_position;
+  const WrapperData &callbacks;
+
+  FromBodyGlobalPositionWrapper(
+    FromBodyGlobalPositionData &arg,
+    const WrapperData &callbacks_arg
+  )
+  : from_body_global_position(arg),
+    callbacks(callbacks_arg)
+  {
+  }
+
+  template <typename Selector>
+  void
+    forEachSelectedChild(
+      Selector &selector,
+      const WrapperVisitor &visitor
+    ) const
+  {
+    if (selector()) {
+      visitor(
+        BodyWrapper(
+          "Source Body",
+          from_body_global_position.source_body_link,
+          callbacks
+        )
+      );
+    }
+
+    if (selector()) {
+      visitor(PositionWrapper(
+        from_body_global_position.local_position,
+        "Local Position",
+        callbacks,
+        &from_body_global_position.defaultLocalPositionDiagram()
+      ));
+    }
+  }
+
+  int nChildren() const override
+  {
+    return countChildren(*this);
+  }
+
+  void
+    withChildWrapper(
+      int child_index,
+      const WrapperVisitor &visitor
+    ) const override
+  {
+    ChildSelector selector{child_index};
+
+    forEachSelectedChild(selector,visitor);
+  }
+
+  Diagram *diagramPtr() const override
+  {
+    assert(false);
+  }
+
+  Label label() const override
+  {
+    assert(false);
+  }
+
+  void setState(const WrapperState &) const override
+  {
+    assert(false);
+  }
+};
+
+struct MotionPassWrapper::GlobalPositionWrapper
+: NoOperationWrapper<EnumerationWrapper>
+{
+  GlobalPosition &global_position;
+  const WrapperData &callbacks;
+
+  GlobalPositionWrapper(
+    GlobalPosition &global_position_arg,
+    const WrapperData &callbacks_arg
+  )
+  : global_position(global_position_arg),
+    callbacks(callbacks_arg)
+  {
+  }
+
+  struct ValueVisitor : GlobalPositionData::Visitor {
+    const WrapperVisitor &visitor;
+    const WrapperData &callbacks;
+
+    ValueVisitor(
+      const WrapperVisitor &visitor_arg,
+      const WrapperData &callbacks_arg
+    )
+    : visitor(visitor_arg),
+      callbacks(callbacks_arg)
+    {
+    }
+
+    virtual void visit(FromBodyGlobalPositionData &data) const
+    {
+      visitor(FromBodyGlobalPositionWrapper(data,callbacks));
+    }
+
+    virtual void visit(ComponentsGlobalPositionData &data) const
+    {
+      visitor(ComponentsGlobalPositionWrapper(data,callbacks));
+    }
+  };
+
+  void withValueWrapper(const WrapperVisitor &visitor) const
+  {
+    assert(global_position.global_position_ptr);
+    global_position.global_position_ptr->accept(
+      ValueVisitor(visitor,callbacks)
+    );
+  }
+
+  void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
+  {
+    withValueWrapper(
+      [&](const Wrapper &wrapper){
+        wrapper.withChildWrapper(child_index,visitor);
+      }
+    );
+  }
+
+  virtual int nChildren() const
+  {
+    int n_children = 0;
+    withValueWrapper(
+      [&](const Wrapper &wrapper){
+        n_children = wrapper.nChildren();
+      }
+    );
+    return n_children;
+  }
+
+  Diagram *diagramPtr() const override
+  {
+    return &global_position.diagram;
+  }
+
+  DiagramObserverPtr makeDiagramObserver() const override
+  {
+    return callbacks.makeDiagramObserver(global_position.diagram);
+  }
+
+  const Diagram& defaultDiagram() const override
+  {
+    if (global_position.isComponents()) {
+      return global_position.defaultComponentsDiagram();
+    }
+
+    if (global_position.isFromBody()) {
+      return global_position.defaultFromBodyDiagram();
+    }
+
+    assert(false);
+  }
+
+  void setIndex(int index) const
+  {
+    switch (index) {
+      case 0:
+        // Components
+        global_position.switchToComponents();
+        break;
+      case 1:
+        // From Body
+        global_position.switchToFromBody();
+        break;
+      default:
+        assert(false);
+    }
+  }
+
+  virtual void
+    setValue(
+      const TreePath &path,
+      int index,
+      TreeObserver &tree_observer
+    ) const
+  {
+    setIndex(index);
+    tree_observer.itemReplaced(path);
+  }
+
+  Index value() const override
+  {
+    if (global_position.isComponents()) {
+      return 0;
+    }
+
+    if (global_position.isFromBody()) {
+      return 1;
+    }
+
+    assert(false);
+  }
+
+  vector<string> enumerationNames() const override
+  {
+    return {"Components","From Body"};
+  }
+
+  virtual Label label() const
+  {
+    return "Global Position";
+  }
+
+  void setState(const WrapperState &state) const override
+  {
+    if (state.value.isEnumeration()) {
+      setIndex(findIndex(*this,state.value.asEnumeration()));
+    }
+    else {
+      assert(false);
+    }
+
+    setChildren(*this,state);
+  }
+};
 
 
 static string varName(int var_number)
@@ -919,19 +991,17 @@ struct MotionPassWrapper::PosExprWrapper : VoidWrapper {
     assert(false);
   }
 
-  static const int target_body_index = 0;
-  static const int local_position_index = 1;
-  static const int global_position_index = 2;
-
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
-    if (child_index==target_body_index) {
-      // Target body
+    ChildSelector selector{child_index};
+
+    if (selector()) {
       visitor(
         BodyWrapper("Target Body",posExpr().target_body_link,callbacks)
       );
     }
-    else if (child_index==local_position_index) {
+
+    if (selector()) {
       visitor(
         PositionWrapper(
           posExpr().local_position,
@@ -941,13 +1011,11 @@ struct MotionPassWrapper::PosExprWrapper : VoidWrapper {
         )
       );
     }
-    else if (child_index==global_position_index) {
+
+    if (selector()) {
       visitor(
         GlobalPositionWrapper(posExpr().global_position,callbacks)
       );
-    }
-    else {
-      assert(false);
     }
   }
 
