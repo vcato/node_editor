@@ -67,11 +67,12 @@ struct Tester {
 static void testDeletingANode()
 {
   Tester tester;
-  int diagram_changed_count = 0;
   Diagram &diagram = tester.diagram;
   FakeDiagramEditor &editor = tester.editor;
   int node_index = editor.userAddsANodeWithText("test");
   editor.userSelectsNode(node_index);
+
+  int diagram_changed_count = 0;
   auto diagram_changed_function = [&](){ ++diagram_changed_count; };
   tester.diagramChangedCallback() = diagram_changed_function;
 
@@ -264,11 +265,21 @@ static void testTypingInNode()
   Diagram &diagram = tester.diagram;
   NodeIndex n1 = editor.userAddsANodeWithText("x");
   NodeIndex n2 = editor.userAddsANodeWithText("$");
+
+  int diagram_changed_count = 0;
+  auto diagram_changed_function = [&](){ ++diagram_changed_count; };
+  tester.diagramChangedCallback() = diagram_changed_function;
+
   editor.userConnects(n1,0,n2,0);
   editor.userFocusesNode(n1);
   editor.userPressesBackspace();
+
+  diagram_changed_count = 0;
+
   editor.userPressesEnter();
-  assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
+
+  assert(diagram.node(n2).inputs[0].source_node_index == nullNodeIndex());
+  assert(diagram_changed_count == 1);
 }
 
 

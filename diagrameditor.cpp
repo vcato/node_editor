@@ -101,6 +101,7 @@ void DiagramEditor::enterPressed()
   if (focused_node_index>=0) {
     text_editor.enter();
     diagram().removeInvalidInputs();
+    notifyDiagramChanged();
     redraw();
   }
 }
