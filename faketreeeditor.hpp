@@ -90,15 +90,6 @@ struct FakeTreeEditor : TreeEditor {
     return itemFromPath(root(),parent_path).children.size();
   }
 
-  void
-    setEnumerationValues(
-      const TreePath &,
-      const std::vector<std::string> & /*items*/
-    ) override
-  {
-    assert(false);
-  }
-
   DiagramEditorWindow& createDiagramEditor() override
   {
     return diagram_editor_windows.create();

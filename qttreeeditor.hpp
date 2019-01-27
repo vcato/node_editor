@@ -109,12 +109,6 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
         const std::string &value
       );
 
-    void
-      setEnumerationValues(
-        const TreePath &path,
-        const std::vector<std::string> &items
-      ) override;
-
     void selectItem(const TreePath &path);
 
     void itemLabelChanged(QTreeWidgetItem &,const std::string &new_text);

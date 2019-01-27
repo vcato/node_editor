@@ -164,38 +164,6 @@ void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
 }
 
 
-// Why does this have both a label and a value widget?
-// Shouldn't we call createItemWidget?
-namespace {
-struct QtComboBoxTreeItemWidget : QWidget {
-  QtComboBox *combo_box_ptr;
-
-  QtComboBox &comboBox()
-  {
-    assert(combo_box_ptr);
-    return *combo_box_ptr;
-  }
-
-  QtComboBoxTreeItemWidget(const string &label,bool label_is_editable)
-  : combo_box_ptr(0)
-  {
-    QHBoxLayout &layout = createLayout<QHBoxLayout>(*this);
-    QLabel &label_widget = createWidget<QLabel>(layout);
-    label_widget.setText(QString::fromStdString(label));
-
-    if (label_is_editable) {
-      assert(false);
-      // Maybe we can reuse how we create spin box items here.
-      // QtTreeEditor::createItemWidget
-    }
-
-    QtComboBox& combo_box = createWidget<QtComboBox>(layout);
-    combo_box_ptr = &combo_box;
-  }
-};
-}
-
-
 QTreeWidgetItem&
   QtTreeEditor::createComboBoxItem(
     QTreeWidgetItem &parent_item,
@@ -205,13 +173,8 @@ QTreeWidgetItem&
     int value
   )
 {
-  const string &label = label_properties.text;
-  const bool label_is_editable = label_properties.is_editable;
   QTreeWidgetItem &item = ::insertChildItem(parent_item,index);
-  QtComboBoxTreeItemWidget *widget_ptr =
-    new QtComboBoxTreeItemWidget(label,label_is_editable);
-  QtComboBox &combo_box = widget_ptr->comboBox();
-  setItemWidget(&item,/*column*/0,widget_ptr);
+  QtComboBox &combo_box = createItemWidget<QtComboBox>(item,label_properties);
   combo_box.current_index_changed_function =
     [this,&item](int index){
       handleComboBoxItemIndexChanged(&item,index);
@@ -331,22 +294,6 @@ void QtTreeEditor::removeChildItems(const TreePath &path)
   while (item.childCount()>0) {
     item.removeChild(item.child(item.childCount()-1));
   }
-}
-
-
-void
-  QtTreeEditor::setEnumerationValues(
-    const TreePath &path,
-    const vector<string> &items
-  )
-{
-  QTreeWidgetItem &item = itemFromPath(path);
-  QWidget *widget_ptr = itemWidget(&item,/*column*/0);
-  QtComboBoxTreeItemWidget *combobox_item_widget_ptr =
-    dynamic_cast<QtComboBoxTreeItemWidget*>(widget_ptr);
-  assert(combobox_item_widget_ptr);
-  QtComboBox &combo_box = combobox_item_widget_ptr->comboBox();
-  combo_box.setItems(items);
 }
 
 

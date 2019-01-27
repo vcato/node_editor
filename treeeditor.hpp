@@ -57,17 +57,8 @@ struct TreeEditor {
     virtual void removeDiagramEditors(const TreePath &);
     void addWrapperItem(const TreePath &new_item_path,const Wrapper &);
     virtual int itemChildCount(const TreePath &parent_item) const = 0;
-    void changeEnumerationValues(const TreePath &);
-
-    virtual void
-      setEnumerationValues(
-        const TreePath &path,
-        const std::vector<std::string> &items
-      ) = 0;
-
     virtual DiagramEditorWindow& createDiagramEditor() = 0;
 
-    // Maybe having a LabelProperties struct is best.
     virtual void
       createVoidItem(
         const TreePath &new_item_path,

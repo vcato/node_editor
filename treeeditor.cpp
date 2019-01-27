@@ -153,30 +153,6 @@ struct TreeEditor::TreeObserver : ::TreeObserver {
 };
 
 
-static vector<string>
-  getComboBoxItems(const Wrapper &wrapper,const TreePath &path)
-{
-  vector<string> items;
-
-  visitEnumerationSubWrapper(
-    wrapper,
-    path,
-    [&](const EnumerationWrapper &enumeration_wrapper){
-      items = comboBoxItems(enumeration_wrapper);
-    }
-  );
-
-  return items;
-}
-
-
-void TreeEditor::changeEnumerationValues(const TreePath &path)
-{
-  vector<string> items = getComboBoxItems(world(),path);
-  setEnumerationValues(path,items);
-}
-
-
 void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
 {
   TreeObserver tree_observer(*this);
