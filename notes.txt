@@ -287,11 +287,3 @@ void withChildWrapper(const ChildSelector &selector,const Visitor &visitor)
 Using this form, we could visit multiple children in one pass.  We could
 also get the number of children by having selector always return true and
 just counting the number of calls to the visitor.
----
-I wonder if I should have the tree widget so that the labels are in the
-first column and the editors are in the second column.
----
-We have QtComboBoxTreeItemWidget, which has both a label and a value widget.
-Not sure why we don't use QtTreeEditor::createItemWidget<QtComboBoxWidget>
-or something like that so that the logic of how the label widget is created
-is centralized in createItemWidget().
