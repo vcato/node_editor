@@ -17,68 +17,6 @@ One of the main ideas is that we can have three modes for editing expressions:
   * The default operation for dragging on a node is making a connection.
     * Moving a node involves selecting it, which produces something like
       a title-bar that you can drag to move the node.
----
-If we have an input that is a function, it feels like an output.  For
-example, if we have an "if" expression, the "then" and "else" parts are
-parameters which specify functions to evaluate, but they feel like
-outputs.
-
-Drawing a square
-
-draw(square(a,b))
-
-let square(lower_left_corner,upper_right_corner) = (
-  let min_x = lower_left_corner.x;
-  let min_y = lower_left_corner.y;
-  let max_x = upper_right_corner.x;
-  let max_y = upper_right_corner.y;
-  let upper_left_corner = Point(x=min_x,y=max_y);
-  let lower_right_corner = Point(x=max_x,y=min_y);
-  let left_edge = Line(start=upper_left_corner,end=lower_left_corner);
-  let right_edge = Line(start=lower_right_corner,end=upper_right_corner);
-  let top_edge = Line(start=upper_right_corner,end=upper_left_corner);
-  let bottom_edge = Line(start=lower_left_corner,end=lower_right_corner);
-  [
-    left_edge,
-    right_edge,
-    top_edge,
-    bottom_edge
-  ]
-)
-
-let lines_for_square(lower_left_corner,upper_right_corner) = (
-  let Point = Object;
-  let Line = Object;
-  let (
-    let (
-      let min_x = lower_left_corner.x;
-      let min_y = lower_left_corner.y;
-      let max_x = upper_right_corner.x;
-      let max_y = upper_right_corner.y;
-      upper_left_corner = Point(x=min_x,y=max_y),
-      lower_right_corner = Point(x=max_x,y=min_y)
-    );
-    left_edge = Line(start=upper_left_corner,end=lower_left_corner),
-    right_edge = Line(start=lower_right_corner,end=upper_right_corner),
-    top_edge = Line(start=upper_right_corner,end=upper_left_corner),
-    bottom_edge = Line(start=lower_left_corner,end=lower_right_corner)
-  )
-  [
-    left_edge,
-    right_edge,
-    top_edge,
-    bottom_edge
-  ]
-)
-
----
-I like the way this looks:
-  http://rawkes.com/media/noflo-introduction/quartz-composer.png
-
-Maybe I should work on a node system that has both inputs and outputs.
-Inputs are names.
-Outputs are expressions.
-Seems like you could do a decent amount with just that.
 ----
 Nodes have regular inputs and outputs on the left and right.
 Nodes have an environment input on the top and an environment output on
@@ -99,77 +37,15 @@ A block is a function which takes an environment and returns an environment.
 Functions can be created from blocks:
   function(inputs=['x','y'],outputs=['a','b'],code={a=x;b=y;})
 
-You could have a node which was a sequence of statements.
-
-  *|let x = $| 
-  *|let y = $| 
-   |      x+y|*
-
-$ represents an input.  If the $ appears in the statement, then there is
-an input connector there.
-If the statement has a value, then an output connector appears.
-
-A statement may have both an input and an output connector.
-  *|$ + 5|*
-
-Example of extracting x,y members from a point:
-
-  *|let p = $|
-   |      p.x|*
-   |      p.y|*
-
-It seems like we have two basic operations: Abstract and Apply.
-Abstract creates a function, Apply applies a function.
-
-Visually, we can takes nodes and abstract them, which creates a function
-which takes an environment and returns and environment.
-
-
-function(inputs=['a','b'],outputs=['x','y'],code={x=a;y=b;})(a=1,b=2)
-
-this produces the tuple (x=1,y=2)
-
-We can have a function node, we coverts a block into a function.
-
-* Creating a block
-* Creating a function from a block
-* Applying a function
-
-*|let a=$|
-*|let b=$|
-     |
-  |a + b|*
-
-We have to be careful about scope.  Do we want a statement node to return 
-a modified verison of the original environment, or to return a new
-environment?
-
-
-*|x=input   |
-*|y=input   |
- |output x+y|*
-
-*|condition=input                                  |
-*|then_block=input                                 |
-*|else_block=input                                 |
- |then_block(env) if condition else else_block(env)|*
+*|condition=$                        |
+*|then_block=$                       |
+*|else_block=$                       |
+ |if(condition,then_block,else_block)|*
 
 *|if input:  |
 *|  exec     |
  |else:      |
 *|  exec     |
-
- |ikPos(         |
-*|  global=input,|
-*|  local=input, |
-*|  weight=input |
- |)              |
-
- |output list(|*
-*|  input,    |
-*|  input,    |
-*|  input     |
- |)           |
 
 Maybe if we have an output inside a loop, it creates a list:
 
@@ -208,13 +84,6 @@ If we have continuations, can we create blocks like this?
  *|let condition=input            |
   |output yes if condition else no|*
 
-If nodes become disconnected because we temporarily have an invalid value,
-it is inconvenient.
-
-Maybe we hold on the the connection if there is one, but otherwise, we
-add or remove the connector on each keystroke.
-
-
 I think I want to start integrating this with Qt widgets.
 I want to be able to add a slider, then put in some logic that does something
 with the slider, and then show the result.
@@ -222,30 +91,10 @@ with the slider, and then show the result.
 Maybe something where we add three sliders for R,G,B, then use a diagram
 to turn those into a color, and then display the color.
 ---
-It seems appealing to have it where the items in the tree represent
-expressions, and the child items represent variables that can be used in
-those expressions.
----
-Need to have named inputs.
-Maybe the inputs should be independent of the lines:
-i.e. if you use $a on various lines, they all refer to the same input.
----
-Maybe if we right-click on X we get a menu that lets us convert it to
-a diagram.
----
 It would be neat if you could select some text in a node, then drag it out
 and have it create a new node with the text, replace the text in the original
 node with a $ and attach the new node's output to a new input connector.
 ---
-Eventually.  I think we'll want to be able to have diagrams that generate
-new items in the tree.  I can imagine a diagram whose output is a list of
-tree items.
-
-Let's say we wanted to create a spline, and then generate a baked version
-of that spline that then goes into the tree.
-
-Or we want to create a tool that lets you add a new key to the spline.
-
 Maybe a good thing to work on is being able to draw a spline.
 We'll need a way to create a window, create a drawing area within the
 window, and then provide a diagram that generates what we will draw.
@@ -253,37 +102,17 @@ window, and then provide a diagram that generates what we will draw.
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
 ---
-The lines of nodes should probably be more distinct.  Maybe they look like
-separate nodes stacked on top of each other.
----
 We could simply wrappers by not having operationNames and executeOperation
 members, and just having wrappers for Events.  We could create a menu by
 going through all the children and finding those which were events.
----
-Need to be able to add variables.
-* Maybe add a variable pass.
-* Test
-  * Add a scene
-  * Add a body to the scene
-  * Add a charmapper
-  * Add a motion pass to the charmapper
-  * Add a pos expr to the motion pass
-  * Insert a variable pass
-  * Add a body_x variable to the variable pass.
-  * Make the diagram for the Global pos x be a single node with "return body_x"
-  * Set the body_x variable to 20
-  * Check that the body x in the scene display frame is 20.
----
-Having to keep the child indices in sync is a maintenence issue.
-Maybe instead of passing a child_index to the withChildWrapper(), we have
-a way to select which children are to be visited.
 
-void withChildWrapper(const ChildSelector &selector,const Visitor &visitor)
-{
-  if (selector()) { visitor(child1Wrapper()); }
-  if (selector()) { visitor(child2Wrapper()); }
-}
+We'd need to have it so that we don't get state for event children.
+Maybe there's a general principle that we don't add children that have no
+value and no children.
 
-Using this form, we could visit multiple children in one pass.  We could
-also get the number of children by having selector always return true and
-just counting the number of calls to the visitor.
+It's interesting that we could have events that have children, and the
+children could represent parameters, like a function call.
+---
+Have variables be able to have children which control the range.
+* Add minimum
+* Add maximum
