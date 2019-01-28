@@ -1,8 +1,10 @@
 #include "optional.hpp"
 
 #include <string>
+#include <memory>
 
 using std::string;
+using std::unique_ptr;
 
 
 static void testOptionalInt()
@@ -48,9 +50,19 @@ static void testEmplace()
 }
 
 
+static void testMovingWithNoncopyableValue()
+{
+  using NonCopyable = std::unique_ptr<int>;
+
+  Optional<NonCopyable> a;
+  Optional<NonCopyable> b = std::move(a);
+}
+
+
 int main()
 {
   testOptionalInt();
   testOptionalString();
   testEmplace();
+  testMovingWithNoncopyableValue();
 }

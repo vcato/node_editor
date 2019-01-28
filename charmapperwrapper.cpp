@@ -165,6 +165,53 @@ struct ChannelWrapper : LeafWrapper<NumericWrapper> {
 }
 
 
+template <typename Self>
+using OperationMethodPtr =
+  void (Self::*)(const TreePath &,TreeObserver &) const;
+
+namespace {
+template <typename Self>
+struct OperationTableEntry {
+  const char *name;
+  OperationMethodPtr<Self> method;
+};
+}
+
+
+template <typename Self>
+using OperationTable = std::vector<OperationTableEntry<Self>>;
+
+
+template <typename Self>
+static std::vector<std::string>
+  operationNamesOf(const OperationTable<Self> &table)
+{
+  std::vector<std::string> names;
+  names.reserve(table.size());
+
+  for (auto &entry : table) {
+    names.push_back(entry.name);
+  }
+
+  return names;
+}
+
+
+template <typename Self>
+static void
+  executeOperationOf(
+    const OperationTable<Self> &operation_table,
+    const Self &object,
+    int operation_index,
+    const TreePath &path,
+    TreeObserver &tree_observer
+  )
+{
+  auto method = operation_table[operation_index].method;
+  return (object .* method)(path,tree_observer);
+}
+
+
 namespace {
 struct MotionPassWrapper : VoidWrapper {
   private: using Self = MotionPassWrapper;
@@ -204,7 +251,7 @@ struct MotionPassWrapper : VoidWrapper {
   }
 
   void
-    addPosExprOperation(
+    executeAddPosExpr(
       const TreePath &path,
       TreeObserver &tree_observer
     ) const
@@ -215,7 +262,7 @@ struct MotionPassWrapper : VoidWrapper {
   }
 
   void
-    insertVariablePassOperation(
+    executeInsertVariablePass(
       const TreePath &path,
       TreeObserver &tree_observer
     ) const
@@ -226,7 +273,7 @@ struct MotionPassWrapper : VoidWrapper {
   }
 
   void
-    removeOperation(
+    executeRemove(
       const TreePath &path,
       TreeObserver &tree_observer
     ) const
@@ -235,33 +282,13 @@ struct MotionPassWrapper : VoidWrapper {
     tree_observer.itemRemoved(path);
   }
 
-  struct OperationTableEntry {
-    const char *name;
-    void (Self::*method)(const TreePath &,TreeObserver &) const;
-  };
-
-  using OperationTable = std::vector<OperationTableEntry>;
-
-  static OperationTable operationTable()
+  static OperationTable<Self> operationTable()
   {
     return {
-      {"Add Pos Expr",        &Self::addPosExprOperation},
-      {"Insert Variable Pass",&Self::insertVariablePassOperation},
-      {"Remove",              &Self::removeOperation}
+      {"Add Pos Expr",        &Self::executeAddPosExpr},
+      {"Insert Variable Pass",&Self::executeInsertVariablePass},
+      {"Remove",              &Self::executeRemove}
     };
-  }
-
-  static std::vector<std::string>
-    operationNamesOf(const OperationTable &table)
-  {
-    std::vector<std::string> names;
-    names.reserve(table.size());
-
-    for (auto &entry : table) {
-      names.push_back(entry.name);
-    }
-
-    return names;
   }
 
   std::vector<std::string> operationNames() const override
@@ -276,8 +303,13 @@ struct MotionPassWrapper : VoidWrapper {
       TreeObserver &tree_observer
     ) const override
   {
-    auto method = operationTable()[operation_index].method;
-    return (this ->* method)(path,tree_observer);
+    executeOperationOf(
+      operationTable(),
+      *this,
+      operation_index,
+      path,
+      tree_observer
+    );
   }
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const;
@@ -802,52 +834,191 @@ static string firstUnusedVariableName(const VariablePass &variable_pass)
 
 
 namespace {
-struct VariableWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
-  Variable &variable;
-  const WrapperData &wrapper_data;
+struct VariableWrapper : NumericWrapper {
+  private:
+    using Self = VariableWrapper;
+  public:
+    Variable &variable;
+    const WrapperData &wrapper_data;
 
-  VariableWrapper(Variable &variable_arg,const WrapperData &wrapper_data_arg)
-  : variable(variable_arg),
-    wrapper_data(wrapper_data_arg)
-  {
-  }
-
-  Label label() const override
-  {
-    return variable.name;
-  }
-
-  bool labelCanBeChanged() const override
-  {
-    return true;
-  }
-
-  void setLabel(const Label &new_label) const override
-  {
-    variable.name = new_label;
-    wrapper_data.notifyCharmapChanged();
-  }
-
-  void setState(const WrapperState &state) const override
-  {
-    if (state.value.isNumeric()) {
-      setValue(state.value.asNumeric());
+    VariableWrapper(Variable &variable_arg,const WrapperData &wrapper_data_arg)
+    : variable(variable_arg),
+      wrapper_data(wrapper_data_arg)
+    {
     }
-    else {
-      assert(false);
+
+    Label label() const override
+    {
+      return variable.name;
     }
-  }
 
-  void setValue(Value arg) const override
-  {
-    variable.value.value = arg;
-    wrapper_data.notifyCharmapChanged();
-  }
+    bool labelCanBeChanged() const override
+    {
+      return true;
+    }
 
-  Value value() const override
-  {
-    return variable.value.value;
-  }
+    void setLabel(const Label &new_label) const override
+    {
+      variable.name = new_label;
+      wrapper_data.notifyCharmapChanged();
+    }
+
+    void setState(const WrapperState &state) const override
+    {
+      if (state.value.isNumeric()) {
+        setValue(state.value.asNumeric());
+      }
+      else {
+        assert(false);
+      }
+    }
+
+    void setValue(Value arg) const override
+    {
+      variable.value.value = arg;
+      wrapper_data.notifyCharmapChanged();
+    }
+
+    Value value() const override
+    {
+      return variable.value.value;
+    }
+
+    void
+      executeAddMinimum(
+        const TreePath &variable_path,
+        TreeObserver &tree_observer
+      ) const
+    {
+      if (variable.maybe_minimum) {
+        assert(false);
+      }
+      else {
+        variable.maybe_minimum.emplace();
+        variable.maybe_minimum->value = 0;
+        int minimum_index = 0;
+        tree_observer.itemAdded(join(variable_path,minimum_index));
+      }
+    }
+
+    void
+      executeAddMaximum(
+        const TreePath &variable_path,
+        TreeObserver &tree_observer
+      ) const
+    {
+      if (variable.maybe_maximum) {
+        assert(false);
+      }
+      else {
+        variable.maybe_maximum.emplace();
+
+        if (variable.maybe_minimum) {
+          variable.maybe_maximum->value = variable.maybe_minimum->value;
+          int maximum_index = 1;
+          tree_observer.itemAdded(join(variable_path,maximum_index));
+        }
+        else {
+          variable.maybe_maximum->value = 0;
+          int maximum_index = 0;
+          tree_observer.itemAdded(join(variable_path,maximum_index));
+        }
+      }
+    }
+
+    template <typename Function>
+    void forEachOperation(const Function &f) const
+    {
+      if (!variable.maybe_minimum) {
+        f("Add Minimum",&Self::executeAddMinimum);
+      }
+
+      if (!variable.maybe_maximum) {
+        f("Add Maximum",&Self::executeAddMaximum);
+      }
+    }
+
+    static OperationTable<Self> operationTable()
+    {
+      return {
+        {"Add Minimum",&Self::executeAddMinimum},
+        {"Add Maximum",&Self::executeAddMaximum},
+      };
+    }
+
+    std::vector<OperationName> operationNames() const override
+    {
+      vector<OperationName> names;
+
+      forEachOperation(
+        [&](const char *name,OperationMethodPtr<Self>){
+          names.push_back(name);
+        }
+      );
+
+      return names;
+    }
+
+    void
+      executeOperation(
+        int desired_operation_index,
+        const TreePath &path,
+        TreeObserver &tree_observer
+      ) const override
+    {
+      bool found = false;
+      int operation_index = 0;
+
+      forEachOperation(
+        [&](const char * /*name*/,OperationMethodPtr<Self> method_ptr){
+          if (operation_index++ == desired_operation_index) {
+            (this->*method_ptr)(path,tree_observer);
+            found = true;
+          }
+        }
+      );
+
+      assert(found);
+    }
+
+    template <typename Selector>
+    void
+      forEachSelectedChild(
+        Selector &selector,
+        const WrapperVisitor &visitor
+      ) const
+    {
+      if (variable.maybe_minimum) {
+        if (selector()) {
+          visitor(
+            ChannelWrapper(*variable.maybe_minimum,"minimum",wrapper_data)
+          );
+        }
+      }
+
+      if (variable.maybe_maximum) {
+        if (selector()) {
+          visitor(
+            ChannelWrapper(*variable.maybe_maximum,"maximum",wrapper_data)
+          );
+        }
+      }
+    }
+
+    int nChildren() const override
+    {
+      return countChildren(*this);
+    }
+
+    void
+      withChildWrapper(
+        int child_index,
+        const WrapperVisitor &visitor
+      ) const override
+    {
+      ChildSelector selector{child_index};
+      forEachSelectedChild(selector,visitor);
+    }
 };
 }
 

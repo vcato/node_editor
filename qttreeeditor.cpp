@@ -214,6 +214,7 @@ void
   QtSpinBox &spin_box =
     tree_widget.createItemWidget<QtSpinBox>(item,label_properties);
   spin_box.setValue(value);
+  spin_box.setMaximum(std::numeric_limits<int>::max());
   spin_box.value_changed_function =
     [this,&item](int value){
       handleSpinBoxItemValueChanged(&item,value);

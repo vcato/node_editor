@@ -909,6 +909,103 @@ static void testUsingACharmapperVariable()
   assert(bodyPosition(body,scene.displayFrame()).x == 20);
 }
 
+
+namespace {
+struct VariableLimitsTester {
+  ostringstream command_stream;
+  FakeTreeObserver tree_observer{command_stream};
+  FakeWorld world;
+  Charmapper &charmapper = world.addCharmapper();
+  Charmapper::VariablePass &variable_pass = charmapper.addVariablePass();
+  Charmapper::VariablePass::VariableIndex variable_index =
+    variable_pass.addVariable("x");
+  WorldWrapper wrapper{world};
+
+  void addMinimum()
+  {
+    executeWrapperOperation(
+      wrapper,
+      "Charmapper1|Variable Pass|x",
+      "Add Minimum",
+      tree_observer
+    );
+  }
+
+  void addMaximum()
+  {
+    executeWrapperOperation(
+      wrapper,
+      "Charmapper1|Variable Pass|x",
+      "Add Maximum",
+      tree_observer
+    );
+  }
+
+  void setMinimum(int arg)
+  {
+    setWrapperValue(
+      wrapper,
+      "Charmapper1|Variable Pass|x|minimum",
+      arg
+    );
+  }
+
+  void setMaximum(int arg)
+  {
+    setWrapperValue(
+      wrapper,
+      "Charmapper1|Variable Pass|x|maximum",
+      arg
+    );
+  }
+
+  Charmapper::Variable &variable()
+  {
+    return variable_pass.variables[variable_index];
+  }
+
+  string commandString()
+  {
+    return command_stream.str();
+  }
+};
+}
+
+
+static void testChangingVariableLimits()
+{
+  {
+    VariableLimitsTester tester;
+
+    tester.addMinimum();
+    tester.setMinimum(10);
+    tester.addMaximum();
+    tester.setMaximum(20);
+
+    assert(tester.variable().maybe_minimum->value == 10);
+    assert(tester.variable().maybe_maximum->value == 20);
+    string expected_command_string =
+      "addItem([0,0,0,0])\n"
+      "addItem([0,0,0,1])\n";
+    assert(tester.commandString() == expected_command_string);
+  }
+  {
+    VariableLimitsTester tester;
+
+    tester.addMaximum();
+    tester.setMaximum(20);
+    tester.addMinimum();
+    tester.setMinimum(10);
+
+    assert(tester.variable().maybe_minimum->value == 10);
+    assert(tester.variable().maybe_maximum->value == 20);
+    string expected_command_string =
+      "addItem([0,0,0,0])\n"
+      "addItem([0,0,0,0])\n";
+    assert(tester.commandString() == expected_command_string);
+  }
+}
+
 }
 
 
@@ -1174,5 +1271,6 @@ int main()
     tests::testPosExprDiagramThatReferencesAScene();
     tests::testSettingCurrentFrameIndexToAnInvalidValue();
     tests::testUsingACharmapperVariable();
+    tests::testChangingVariableLimits();
   }
 }

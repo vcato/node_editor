@@ -113,6 +113,5 @@ value and no children.
 It's interesting that we could have events that have children, and the
 children could represent parameters, like a function call.
 ---
-Have variables be able to have children which control the range.
-* Add minimum
-* Add maximum
+If we have a minimum and maximum value for a variable.  Use a slider
+instead of a spin box for the value.

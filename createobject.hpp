@@ -5,7 +5,7 @@
 template <typename T,typename U>
 void createObject(T& object,U &&value)
 {
-  new (&object) T(value);
+  new (&object) T(std::forward<U>(value));
 }
 
 

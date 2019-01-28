@@ -35,7 +35,6 @@ class Charmapper {
 
     struct Channel {
       using Value = int;
-      // We'll want to have Channels have diagrams at some point.
       Value value = 0;
       Optional<Diagram> optional_diagram;
     };
@@ -182,6 +181,8 @@ class Charmapper {
       Variable(const Name &name_arg) : name(name_arg) { }
 
       Channel value;
+      Optional<Channel> maybe_minimum;
+      Optional<Channel> maybe_maximum;
     };
 
     struct VariablePass : Pass {
