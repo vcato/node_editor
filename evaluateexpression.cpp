@@ -22,9 +22,12 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
   Optional<Any>
     evaluatePrimaryExpressionStartingWithIdentifier(const string &) const;
   Optional<Any> evaluateExpression() const;
+  Optional<Any>
+    evaluateFactorStartingWith(Optional<Any> maybe_first_term) const;
+  Optional<Any> evaluateFactor() const;
   Optional<Any> evaluateExpressionStartingWithIdentifier(const string &) const;
   Optional<Any>
-    evaluateExpressionStartingWithTerm(
+    evaluateTermStartingWith(
       Optional<Any> maybe_first_term
     ) const;
   Optional<Any> evaluateAddition(const Any &first_term) const;
@@ -172,7 +175,7 @@ Optional<Any>
   }
 
   result = evaluatePostfixExpressionStartingWith(std::move(*result));
-  result = evaluateExpressionStartingWithTerm(std::move(result));
+  result = evaluateTermStartingWith(std::move(result));
   return result;
 }
 
@@ -262,7 +265,7 @@ Optional<Any>
 Optional<Any>
   ExpressionEvaluator::evaluateAddition(const Any &first_term) const
 {
-  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+  Optional<Any> maybe_second_term = evaluateFactor();
 
   if (!maybe_second_term) {
     return {};
@@ -312,7 +315,7 @@ Optional<Any>
 Optional<Any>
   ExpressionEvaluator::evaluateSubtraction(const Any &first_term) const
 {
-  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+  Optional<Any> maybe_second_term = evaluateFactor();
 
   if (!maybe_second_term) {
     return {};
@@ -501,7 +504,7 @@ Optional<Any>
           assert(false);
         }
 
-        // This should be calling evaluateExpressionStartingWithTerm() again
+        // This should be calling evaluateTermStartingWith() again
         // so that we can handle the case where the function returns an
         // object.
         return maybe_result;
@@ -521,7 +524,7 @@ Optional<Any>
         arguments.push_back(*maybe_first_argument);
         parser.skipChar();
 
-        // This should be calling evaluateExpressionStartingWithTerm() again
+        // This should be calling evaluateTermStartingWith() again
         // so that we can handle the case where the function returns an
         // object.
         return first_term.asFunction()(arguments);
@@ -538,8 +541,39 @@ Optional<Any>
 }
 
 
+Optional<Any> ExpressionEvaluator::evaluateFactor() const
+{
+  return evaluateFactorStartingWith(evaluatePostfixExpression());
+}
+
+
 Optional<Any>
-  ExpressionEvaluator::evaluateExpressionStartingWithTerm(
+  ExpressionEvaluator::evaluateFactorStartingWith(
+    Optional<Any> maybe_first_factor
+  ) const
+{
+  if (!maybe_first_factor) {
+    return maybe_first_factor;
+  }
+
+  Any first_term = std::move(*maybe_first_factor);
+
+  if (parser.peekChar()=='*') {
+    parser.skipChar();
+    return evaluateFactorStartingWith(evaluateMultiplication(first_term));
+  }
+
+  if (parser.peekChar()=='/') {
+    parser.skipChar();
+    return evaluateFactorStartingWith(evaluateDivision(first_term));
+  }
+
+  return first_term;
+}
+
+
+Optional<Any>
+  ExpressionEvaluator::evaluateTermStartingWith(
     Optional<Any> maybe_first_term
   ) const
 {
@@ -553,32 +587,21 @@ Optional<Any>
 
   if (parser.peekChar()=='+') {
     parser.skipChar();
-    return evaluateExpressionStartingWithTerm(evaluateAddition(first_term));
+    return evaluateTermStartingWith(evaluateAddition(first_term));
   }
 
   if (parser.peekChar()=='-') {
     parser.skipChar();
-    return evaluateExpressionStartingWithTerm(evaluateSubtraction(first_term));
+    return evaluateTermStartingWith(evaluateSubtraction(first_term));
   }
 
-  if (parser.peekChar()=='*') {
-    parser.skipChar();
-    return
-      evaluateExpressionStartingWithTerm(evaluateMultiplication(first_term));
-  }
-
-  if (parser.peekChar()=='/') {
-    parser.skipChar();
-    return evaluateDivision(first_term);
-  }
-
-  return first_term;
+  return evaluateFactorStartingWith(first_term);
 }
 
 
 Optional<Any> ExpressionEvaluator::evaluateExpression() const
 {
-  return evaluateExpressionStartingWithTerm(evaluatePostfixExpression());
+  return evaluateTermStartingWith(evaluateFactor());
 }
 
 

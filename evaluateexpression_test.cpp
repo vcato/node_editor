@@ -450,6 +450,7 @@ int main()
   test("[1,2]*2",makeVector(2,4));
   test("([1,2] + [2,3])/2",makeVector(1.5,2.5));
   test("2*3+4",2*3+4);
+  test("2*3 + 4*5", 2*3 + 4*5);
 
   testInvalidExpression("[,2]");
   testInvalidExpression("2*[[],2]");
