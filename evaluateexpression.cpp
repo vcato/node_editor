@@ -18,33 +18,30 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
   {
   }
 
-  Optional<Any> evaluatePrimaryExpression() const;
-  Optional<Any>
-    evaluatePrimaryExpressionStartingWithIdentifier(const string &) const;
   Optional<Any> evaluateExpression() const;
+  Optional<Any> evaluatePrimary() const;
+  Optional<Any>
+    evaluatePrimaryStartingWithIdentifier(const string &) const;
   Optional<Any>
     evaluateFactorStartingWith(Optional<Any> maybe_first_term) const;
   Optional<Any> evaluateFactor() const;
-  Optional<Any> evaluateExpressionStartingWithIdentifier(const string &) const;
-  Optional<Any>
-    evaluateTermStartingWith(
-      Optional<Any> maybe_first_term
-    ) const;
+  Optional<Any> evaluateStartingWithIdentifier(const string &) const;
+  Optional<Any> evaluateTermStartingWith(Optional<Any> maybe_first_term) const;
   Optional<Any> evaluateAddition(const Any &first_term) const;
   Optional<Any> evaluateSubtraction(const Any &first_term) const;
   Optional<Any> evaluateMultiplication(const Any &first_term) const;
   Optional<Any> evaluateDivision(const Any &first_term) const;
-  Optional<Any> evaluateMemberExpression(const Any &first_term) const;
-  Optional<Any> evaluatePostfixExpression() const;
-  Optional<Any>
-    evaluatePostfixExpressionStartingWith(const Any &first_term) const;
-  Optional<Any> parseObjectConstuction(const Class &) const;
+  Optional<Any> evaluateMember(const Any &first_term) const;
+  Optional<Any> evaluateFunctionCall(const Any &first_term) const;
+  Optional<Any> evaluatePostfix() const;
+  Optional<Any> evaluatePostfixStartingWith(Optional<Any> first_term) const;
+  Optional<Any> evaluateObjectConstruction(const Class &) const;
 };
 }
 
 
 Optional<Any>
-  ExpressionEvaluator::evaluatePrimaryExpressionStartingWithIdentifier(
+  ExpressionEvaluator::evaluatePrimaryStartingWithIdentifier(
     const string &identifier
   ) const
 {
@@ -59,7 +56,7 @@ Optional<Any>
 }
 
 
-Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
+Optional<Any> ExpressionEvaluator::evaluatePrimary() const
 {
   float value = 0;
 
@@ -126,7 +123,7 @@ Optional<Any> ExpressionEvaluator::evaluatePrimaryExpression() const
   string identifier;
 
   if (parser.getIdentifier(identifier)) {
-    return evaluatePrimaryExpressionStartingWithIdentifier(identifier);
+    return evaluatePrimaryStartingWithIdentifier(identifier);
   }
 
   if (parser.atEnd()) {
@@ -163,28 +160,22 @@ static Optional<Any>
 
 
 Optional<Any>
-  ExpressionEvaluator::evaluateExpressionStartingWithIdentifier(
+  ExpressionEvaluator::evaluateStartingWithIdentifier(
     const string &identifier
   ) const
 {
   Optional<Any> result =
-    evaluatePrimaryExpressionStartingWithIdentifier(identifier);
+    evaluatePrimaryStartingWithIdentifier(identifier);
 
-  if (!result) {
-    return result;
-  }
-
-  result = evaluatePostfixExpressionStartingWith(std::move(*result));
+  result = evaluatePostfixStartingWith(std::move(result));
   result = evaluateTermStartingWith(std::move(result));
   return result;
 }
 
 
 Optional<Any>
-  ExpressionEvaluator::parseObjectConstuction(const Class &the_class) const
+  ExpressionEvaluator::evaluateObjectConstruction(const Class &the_class) const
 {
-  assert(parser.peekChar()=='(');
-  parser.skipChar();
   map<string,Any> named_parameters;
 
   if (parser.peekChar()==')') {
@@ -246,19 +237,6 @@ Optional<Any>
   else {
     return Any(std::move(*maybe_object));
   }
-}
-
-
-Optional<Any>
-  ExpressionEvaluator::evaluatePostfixExpression() const
-{
-  Optional<Any> maybe_first_term = evaluatePrimaryExpression();
-
-  if (!maybe_first_term) {
-    return {};
-  }
-
-  return evaluatePostfixExpressionStartingWith(*maybe_first_term);
 }
 
 
@@ -362,7 +340,7 @@ Optional<Any>
 Optional<Any>
   ExpressionEvaluator::evaluateMultiplication(const Any &first_term) const
 {
-  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+  Optional<Any> maybe_second_term = evaluatePostfix();
 
   if (!maybe_second_term) {
     return {};
@@ -404,7 +382,7 @@ Optional<Any>
 Optional<Any>
   ExpressionEvaluator::evaluateDivision(const Any &first_term) const
 {
-  Optional<Any> maybe_second_term = evaluatePostfixExpression();
+  Optional<Any> maybe_second_term = evaluatePostfix();
 
   if (!maybe_second_term) {
     return {};
@@ -442,7 +420,7 @@ Optional<Any>
 
 
 Optional<Any>
-  ExpressionEvaluator::evaluateMemberExpression(const Any &first_term) const
+  ExpressionEvaluator::evaluateMember(const Any &first_term) const
 {
   string member_name;
   parser.getIdentifier(member_name);
@@ -470,80 +448,74 @@ Optional<Any>
 
 
 Optional<Any>
-  ExpressionEvaluator::evaluatePostfixExpressionStartingWith(
-    const Any &first_term
-  ) const
+  ExpressionEvaluator::evaluateFunctionCall(const Any &first_term) const
 {
-  if (parser.peekChar()=='.') {
-    parser.skipChar();
-    Optional<Any> maybe_member = evaluateMemberExpression(first_term);
+  if (first_term.isClassPtr()) {
+    const Class *class_ptr = first_term.asClassPtr();
+    assert(class_ptr);
 
-    if (!maybe_member) {
-      return {};
-    }
-
-    return evaluatePostfixExpressionStartingWith(*maybe_member);
+    return evaluateObjectConstruction(*class_ptr);
   }
 
-  if (parser.peekChar()=='(') {
-    if (first_term.isClassPtr()) {
-      const Class *class_ptr = first_term.asClassPtr();
-      assert(class_ptr);
+  if (first_term.isFunction()) {
+    if (parser.peekChar()==')') {
+      vector<Any> arguments;
+      Optional<Any> maybe_result = first_term.asFunction()(arguments);
 
-      return parseObjectConstuction(*class_ptr);
+      if (!maybe_result) {
+        assert(false);
+      }
+
+      return maybe_result;
     }
+    else {
+      Optional<Any> maybe_first_argument = evaluateExpression();
 
-    if (first_term.isFunction()) {
+      if (!maybe_first_argument) {
+        return {};
+      }
+
+      if (parser.peekChar()!=')') {
+        assert(false);
+      }
+
+      vector<Any> arguments;
+      arguments.push_back(*maybe_first_argument);
       parser.skipChar();
 
-      if (parser.peekChar()==')') {
-        vector<Any> arguments;
-        Optional<Any> maybe_result = first_term.asFunction()(arguments);
-
-        if (!maybe_result) {
-          assert(false);
-        }
-
-        // This should be calling evaluateTermStartingWith() again
-        // so that we can handle the case where the function returns an
-        // object.
-        return maybe_result;
-      }
-      else {
-        Optional<Any> maybe_first_argument = evaluateExpression();
-
-        if (!maybe_first_argument) {
-          return {};
-        }
-
-        if (parser.peekChar()!=')') {
-          assert(false);
-        }
-
-        vector<Any> arguments;
-        arguments.push_back(*maybe_first_argument);
-        parser.skipChar();
-
-        // This should be calling evaluateTermStartingWith() again
-        // so that we can handle the case where the function returns an
-        // object.
-        return first_term.asFunction()(arguments);
-      }
+      return first_term.asFunction()(arguments);
     }
-
-    // We had [term '('], but term wasn't a class or a function.
-    // What type did it have?
-    cerr << "first_term.typeName():" << first_term.typeName() << "\n";
-    assert(false);
   }
 
-  return first_term;
+  // We had [term '('], but term wasn't a class or a function.
+  // What type did it have?
+  cerr << "first_term.typeName():" << first_term.typeName() << "\n";
+  assert(false);
 }
 
 
-Optional<Any> ExpressionEvaluator::evaluateFactor() const
+Optional<Any>
+  ExpressionEvaluator::evaluatePostfixStartingWith(
+    Optional<Any> maybe_first_term
+  ) const
 {
-  return evaluateFactorStartingWith(evaluatePostfixExpression());
+  while (maybe_first_term) {
+    const Any &first_term = *maybe_first_term;
+
+    if (parser.peekChar()=='.') {
+      parser.skipChar();
+      maybe_first_term = evaluateMember(first_term);
+    }
+    else if (parser.peekChar()=='(') {
+      parser.skipChar();
+      maybe_first_term = evaluateFunctionCall(first_term);
+    }
+    else {
+      break;
+    }
+  }
+
+  return maybe_first_term;
 }
 
 
@@ -552,23 +524,23 @@ Optional<Any>
     Optional<Any> maybe_first_factor
   ) const
 {
-  if (!maybe_first_factor) {
-    return maybe_first_factor;
+  while (maybe_first_factor) {
+    const Any &first_factor = *maybe_first_factor;
+
+    if (parser.peekChar()=='*') {
+      parser.skipChar();
+      maybe_first_factor = evaluateMultiplication(first_factor);
+    }
+    else if (parser.peekChar()=='/') {
+      parser.skipChar();
+      maybe_first_factor = evaluateDivision(first_factor);
+    }
+    else {
+      break;
+    }
   }
 
-  Any first_term = std::move(*maybe_first_factor);
-
-  if (parser.peekChar()=='*') {
-    parser.skipChar();
-    return evaluateFactorStartingWith(evaluateMultiplication(first_term));
-  }
-
-  if (parser.peekChar()=='/') {
-    parser.skipChar();
-    return evaluateFactorStartingWith(evaluateDivision(first_term));
-  }
-
-  return first_term;
+  return maybe_first_factor;
 }
 
 
@@ -577,25 +549,37 @@ Optional<Any>
     Optional<Any> maybe_first_term
   ) const
 {
-  if (!maybe_first_term) {
-    return maybe_first_term;
+  while (maybe_first_term) {
+    const Any &first_term = *maybe_first_term;
+
+    parser.skipWhitespace();
+
+    if (parser.peekChar()=='+') {
+      parser.skipChar();
+      maybe_first_term = evaluateAddition(first_term);
+    }
+    else if (parser.peekChar()=='-') {
+      parser.skipChar();
+      maybe_first_term = evaluateSubtraction(first_term);
+    }
+    else {
+      break;
+    }
   }
 
-  const Any &first_term = *maybe_first_term;
+  return maybe_first_term;
+}
 
-  parser.skipWhitespace();
 
-  if (parser.peekChar()=='+') {
-    parser.skipChar();
-    return evaluateTermStartingWith(evaluateAddition(first_term));
-  }
+Optional<Any> ExpressionEvaluator::evaluatePostfix() const
+{
+  return evaluatePostfixStartingWith(evaluatePrimary());
+}
 
-  if (parser.peekChar()=='-') {
-    parser.skipChar();
-    return evaluateTermStartingWith(evaluateSubtraction(first_term));
-  }
 
-  return evaluateFactorStartingWith(first_term);
+Optional<Any> ExpressionEvaluator::evaluateFactor() const
+{
+  return evaluateFactorStartingWith(evaluatePostfix());
 }
 
 
@@ -618,7 +602,7 @@ Optional<Any>
   )
 {
   return
-    ExpressionEvaluator(data).evaluateExpressionStartingWithIdentifier(
+    ExpressionEvaluator(data).evaluateStartingWithIdentifier(
       identifier
     );
 }
