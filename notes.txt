@@ -120,3 +120,7 @@ Updating the min/max value for a variable should update the slider range.
 
 The slider needs to show the value.  There isn't a Qt widget that has a
 slider combined with a text field, so we'll need to make one.
+
+Seeing some weird behavior when adding a min/max to a variable.  It might
+be due to creating the item widget for the spin box or slider after
+adding the item to the tree.
