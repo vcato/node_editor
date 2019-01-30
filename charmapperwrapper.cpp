@@ -931,6 +931,10 @@ struct VariableWrapper : NumericWrapper {
         }
       }
 
+      if (variable.value.value < value) {
+        value = variable.value.value;
+      }
+
       addMinimum(value);
     }
 
@@ -942,6 +946,10 @@ struct VariableWrapper : NumericWrapper {
         if (value < variable.maybe_minimum->value) {
           value = variable.maybe_minimum->value;
         }
+      }
+
+      if (variable.value.value > value) {
+        value = variable.value.value;
       }
 
       addMaximum(value);
