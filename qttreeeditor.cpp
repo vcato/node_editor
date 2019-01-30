@@ -1,6 +1,7 @@
 #include "qttreeeditor.hpp"
 
 #include <iostream>
+#include <type_traits>
 #include <QMenu>
 #include <QHeaderView>
 #include <QLineEdit>
@@ -119,13 +120,31 @@ void
   QtTreeEditor::createNumericItem(
     const TreePath &new_item_path,
     const LabelProperties &label_properties,
-    const NumericValue value
+    const NumericValue value,
+    const NumericValue minimum_value,
+    const NumericValue maximum_value
   )
 {
   TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
   assert(new_item_path.back() == parent_item.childCount());
-  createSpinBoxItem(parent_item,label_properties,value);
+
+  static_assert(std::is_same<NumericValue,int>::value,"");
+
+  bool value_is_limited_on_both_ends =
+    minimum_value != std::numeric_limits<NumericValue>::min() &&
+    maximum_value != std::numeric_limits<NumericValue>::max();
+
+  if (value_is_limited_on_both_ends) {
+    createSliderItem(
+      parent_item,label_properties,value,minimum_value,maximum_value
+    );
+  }
+  else {
+    createSpinBoxItem(
+      parent_item,label_properties,value,minimum_value,maximum_value
+    );
+  }
 }
 
 
@@ -206,7 +225,9 @@ void
   QtTreeEditor::createSpinBoxItem(
     QTreeWidgetItem &parent_item,
     const LabelProperties &label_properties,
-    int value
+    int value,
+    int minimum_value,
+    int maximum_value
   )
 {
   QtTreeEditor &tree_widget = *this;
@@ -214,11 +235,34 @@ void
   QtSpinBox &spin_box =
     tree_widget.createItemWidget<QtSpinBox>(item,label_properties);
   spin_box.setValue(value);
-  spin_box.setMaximum(std::numeric_limits<int>::max());
+  spin_box.setMinimum(minimum_value);
+  spin_box.setMaximum(maximum_value);
   spin_box.value_changed_function =
     [this,&item](int value){
       handleSpinBoxItemValueChanged(&item,value);
     };
+}
+
+
+void
+  QtTreeEditor::createSliderItem(
+    QTreeWidgetItem &parent_item,
+    const LabelProperties &label_properties,
+    int value,
+    int minimum_value,
+    int maximum_value
+  )
+{
+  QtTreeEditor &tree_widget = *this;
+  QTreeWidgetItem &item = ::createChildItem(parent_item);
+  QSlider &slider =
+    tree_widget.createItemWidget<QSlider>(item,label_properties);
+  slider.setOrientation(Qt::Horizontal);
+  slider.setValue(value);
+  slider.setMinimum(minimum_value);
+  slider.setMaximum(maximum_value);
+
+  // Need to have a value changed function
 }
 
 

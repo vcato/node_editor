@@ -5,6 +5,7 @@
 #include <vector>
 #include <cassert>
 #include <functional>
+#include <limits>
 #include "treepath.hpp"
 #include "wrapperstate.hpp"
 #include "optional.hpp"
@@ -57,12 +58,15 @@ struct Wrapper {
   virtual Diagram *diagramPtr() const { return nullptr; }
   virtual bool canEditDiagram() const;
   virtual DiagramObserverPtr makeDiagramObserver() const { assert(false); }
+  virtual const Diagram &defaultDiagram() const { assert(false); }
+
   virtual void accept(const SubclassVisitor &) const = 0;
+
   virtual Label label() const = 0;
   virtual bool labelCanBeChanged() const { return false; }
   virtual void setLabel(const Label &) const { assert(false); }
+
   virtual void setState(const WrapperState &) const = 0;
-  virtual const Diagram &defaultDiagram() const { assert(false); }
 };
 
 
@@ -178,6 +182,26 @@ struct NumericWrapper : Wrapper {
 
   virtual void setValue(Value) const = 0;
   virtual Value value() const = 0;
+
+  static Value noMinimumValue()
+  {
+    return std::numeric_limits<Value>::min();
+  }
+
+  static Value noMaximumValue()
+  {
+    return std::numeric_limits<Value>::max();
+  }
+
+  virtual Value minimumValue() const
+  {
+    return noMinimumValue();
+  }
+
+  virtual Value maximumValue() const
+  {
+    return noMaximumValue();
+  }
 };
 
 

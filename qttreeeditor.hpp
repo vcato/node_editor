@@ -42,7 +42,9 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       createNumericItem(
         const TreePath &new_item_path,
         const LabelProperties &,
-        const NumericValue value
+        const NumericValue value,
+        const NumericValue minimum_value,
+        const NumericValue maximum_value
       ) override;
 
     void
@@ -82,7 +84,18 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       createSpinBoxItem(
         QTreeWidgetItem &parent_item,
         const LabelProperties &,
-        int value
+        int value,
+        int minimum_value,
+        int maximum_value
+      );
+
+    void
+      createSliderItem(
+        QTreeWidgetItem &parent_item,
+        const LabelProperties &,
+        int value,
+        int minimum_value,
+        int maximum_value
       );
 
     QTreeWidgetItem* findSelectedItem();

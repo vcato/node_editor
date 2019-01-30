@@ -137,7 +137,9 @@ struct FakeTreeEditor : TreeEditor {
     createNumericItem(
       const TreePath &new_item_path,
       const LabelProperties &label_properties,
-      const NumericValue /*value*/
+      const NumericValue /*value*/,
+      const NumericValue /*minimum_value */,
+      const NumericValue /*maximum_value */
     ) override
   {
     createItem(tree,new_item_path,label_properties);

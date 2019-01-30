@@ -56,7 +56,9 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
     tree_editor.createNumericItem(
       new_item_path,
       labelProperties(wrapper),
-      wrapper.value()
+      wrapper.value(),
+      wrapper.minimumValue(),
+      wrapper.maximumValue()
     );
     created = true;
   }

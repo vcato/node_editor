@@ -69,7 +69,9 @@ struct TreeEditor {
       createNumericItem(
         const TreePath &new_item_path,
         const LabelProperties &,
-        const NumericValue value
+        const NumericValue value,
+        const NumericValue minimum_value,
+        const NumericValue maximum_value
       ) = 0;
 
     virtual void

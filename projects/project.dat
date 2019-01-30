@@ -1,13 +1,16 @@
 world {
   scene1 {
-    background_frame {
-      0: 0
-      1: 0
-      2: 0
-      3: 0
-      4: 0
-      5: 0
+    background_motion {
+      0 {
+        0: 0
+        1: 0
+        2: 0
+        3: 0
+        4: 0
+        5: 0
+      }
     }
+    current_frame: 0
     body {
       name: "Body1"
       position_map {
@@ -31,6 +34,12 @@ world {
     }
   }
   charmapper1 {
+    variable_pass {
+      var1: 0 {
+        minimum: 0
+        maximum: 100
+      }
+    }
     motion_pass {
       pos_expr {
         target_body: scene1:body3

@@ -871,6 +871,23 @@ struct VariableWrapper : NumericWrapper {
       else {
         assert(false);
       }
+
+      for (const WrapperState &child_state : state.children) {
+        if (child_state.tag == "minimum") {
+          if (!variable.maybe_minimum) {
+            addDefaultMinimum();
+          }
+
+          minimumWrapper().setState(child_state);
+        }
+        else if (child_state.tag == "maximum") {
+          if (!variable.maybe_maximum) {
+            addDefaultMaximum();
+          }
+
+          maximumWrapper().setState(child_state);
+        }
+      }
     }
 
     void setValue(Value arg) const override
@@ -884,6 +901,64 @@ struct VariableWrapper : NumericWrapper {
       return variable.value.value;
     }
 
+    Value minimumValue() const override
+    {
+      if (variable.maybe_minimum) {
+        return variable.maybe_minimum->value;
+      }
+      else {
+        return noMinimumValue();
+      }
+    }
+
+    Value maximumValue() const override
+    {
+      if (variable.maybe_maximum) {
+        return variable.maybe_maximum->value;
+      }
+      else {
+        return noMaximumValue();
+      }
+    }
+
+    void addDefaultMinimum() const
+    {
+      int value = 0;
+
+      if (variable.maybe_maximum) {
+        if (value > variable.maybe_maximum->value) {
+          value = variable.maybe_maximum->value;
+        }
+      }
+
+      addMinimum(value);
+    }
+
+    void addDefaultMaximum() const
+    {
+      int value = 0;
+
+      if (variable.maybe_minimum) {
+        if (value < variable.maybe_minimum->value) {
+          value = variable.maybe_minimum->value;
+        }
+      }
+
+      addMaximum(value);
+    }
+
+    void addMinimum(int value) const
+    {
+      variable.maybe_minimum.emplace();
+      variable.maybe_minimum->value = value;
+    }
+
+    void addMaximum(int value) const
+    {
+      variable.maybe_maximum.emplace();
+      variable.maybe_maximum->value = value;
+    }
+
     void
       executeAddMinimum(
         const TreePath &variable_path,
@@ -894,8 +969,7 @@ struct VariableWrapper : NumericWrapper {
         assert(false);
       }
       else {
-        variable.maybe_minimum.emplace();
-        variable.maybe_minimum->value = 0;
+        addDefaultMinimum();
         int minimum_index = 0;
         tree_observer.itemAdded(join(variable_path,minimum_index));
       }
@@ -911,15 +985,13 @@ struct VariableWrapper : NumericWrapper {
         assert(false);
       }
       else {
-        variable.maybe_maximum.emplace();
+        addDefaultMaximum();
 
         if (variable.maybe_minimum) {
-          variable.maybe_maximum->value = variable.maybe_minimum->value;
           int maximum_index = 1;
           tree_observer.itemAdded(join(variable_path,maximum_index));
         }
         else {
-          variable.maybe_maximum->value = 0;
           int maximum_index = 0;
           tree_observer.itemAdded(join(variable_path,maximum_index));
         }
@@ -981,6 +1053,16 @@ struct VariableWrapper : NumericWrapper {
       assert(found);
     }
 
+    ChannelWrapper minimumWrapper() const
+    {
+      return ChannelWrapper(*variable.maybe_minimum,"minimum",wrapper_data);
+    }
+
+    ChannelWrapper maximumWrapper() const
+    {
+      return ChannelWrapper(*variable.maybe_maximum,"maximum",wrapper_data);
+    }
+
     template <typename Selector>
     void
       forEachSelectedChild(
@@ -990,17 +1072,13 @@ struct VariableWrapper : NumericWrapper {
     {
       if (variable.maybe_minimum) {
         if (selector()) {
-          visitor(
-            ChannelWrapper(*variable.maybe_minimum,"minimum",wrapper_data)
-          );
+          visitor(minimumWrapper());
         }
       }
 
       if (variable.maybe_maximum) {
         if (selector()) {
-          visitor(
-            ChannelWrapper(*variable.maybe_maximum,"maximum",wrapper_data)
-          );
+          visitor(maximumWrapper());
         }
       }
     }
