@@ -212,7 +212,7 @@ void TreeEditor::collapseChildren(const TreePath &path)
   int n_children = itemChildCount(path);
 
   for (int i=0; i!=n_children; ++i) {
-    collapseBranch(join(path,i));
+    collapseBranch(childPath(path,i));
   }
 }
 
@@ -322,7 +322,7 @@ void TreeEditor::addChildTreeItems(const TreePath &parent_path)
   int n_children = nChildren(world(),parent_path);
 
   for (int i=0; i!=n_children; ++i) {
-    createTreeItem(join(parent_path,i));
+    createTreeItem(childPath(parent_path,i));
   }
 }
 

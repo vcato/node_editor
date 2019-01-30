@@ -260,12 +260,6 @@ struct EnumerationWrapper : Wrapper {
 using TreeObserver = Wrapper::TreeObserver;
 
 
-inline TreePath join(TreePath path,TreeItemIndex child_index)
-{
-  path.push_back(child_index);
-  return path;
-}
-
 extern WrapperState stateOf(const Wrapper &wrapper);
 extern std::string makeTag(std::string label);
 

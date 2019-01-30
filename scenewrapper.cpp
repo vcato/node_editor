@@ -303,10 +303,10 @@ void
 
     scene_path.erase(scene_path.end()-depth,scene_path.end());
     TreePath background_frame_path =
-      join(join(scene_path,background_motion_index),0);
+      childPath(childPath(scene_path,background_motion_index),0);
 
     for (int i=old_n_vars; i!=new_n_vars; ++i) {
-      TreePath var_path = join(background_frame_path,i);
+      TreePath var_path = childPath(background_frame_path,i);
       tree_observer.itemAdded(var_path);
     }
   }
@@ -315,7 +315,7 @@ void
     wrapper_data.callbacks.body_added_func(new_body,tree_observer);
   }
 
-  tree_observer.itemAdded(join(path,index+nBodyAttributes()));
+  tree_observer.itemAdded(childPath(path,index+nBodyAttributes()));
 }
 
 
@@ -475,7 +475,7 @@ struct MotionWrapper : VoidWrapper {
   {
     int frame_index = motion.nFrames();
     motion.addFrame();
-    observer.itemAdded(join(motion_path,frame_index));
+    observer.itemAdded(childPath(motion_path,frame_index));
   }
 
   void
@@ -559,15 +559,15 @@ void
   if (new_n_vars!=old_n_vars) {
     assert(new_n_vars>old_n_vars);
     TreePath background_frame_path =
-      join(join(scene_path,background_motion_index),0);
+      childPath(childPath(scene_path,background_motion_index),0);
 
     for (int i=old_n_vars; i!=new_n_vars; ++i) {
-      TreePath var_path = join(background_frame_path,i);
+      TreePath var_path = childPath(background_frame_path,i);
       tree_observer.itemAdded(var_path);
     }
   }
 
-  tree_observer.itemAdded(join(scene_path,index+firstBodyChildIndex()));
+  tree_observer.itemAdded(childPath(scene_path,index+firstBodyChildIndex()));
 
   if (callbacks.body_added_func) {
     callbacks.body_added_func(new_body,tree_observer);

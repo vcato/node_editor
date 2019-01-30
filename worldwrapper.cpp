@@ -354,14 +354,14 @@ void
       {
         int index = world.nMembers();
         world.addCharmapper();
-        tree_observer.itemAdded(join(path,index));
+        tree_observer.itemAdded(childPath(path,index));
       }
       return;
     case 1:
       {
         int index = world.nMembers();
         world.addScene();
-        tree_observer.itemAdded(join(path,index));
+        tree_observer.itemAdded(childPath(path,index));
       }
       return;
   }

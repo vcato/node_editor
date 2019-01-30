@@ -258,7 +258,7 @@ struct MotionPassWrapper : VoidWrapper {
   {
     int index = motion_pass.nExprs();
     motion_pass.addPosExpr();
-    tree_observer.itemAdded(join(path,index));
+    tree_observer.itemAdded(childPath(path,index));
   }
 
   void
@@ -973,14 +973,14 @@ struct VariableWrapper : NumericWrapper {
         TreeObserver &tree_observer
       ) const
     {
-      if (variable.maybe_minimum) {
-        assert(false);
-      }
-      else {
-        addDefaultMinimum();
-        int minimum_index = 0;
-        tree_observer.itemAdded(join(variable_path,minimum_index));
-      }
+      assert(!variable.maybe_minimum);
+      addDefaultMinimum();
+#if 1
+      int minimum_index = 0;
+      tree_observer.itemAdded(childPath(variable_path,minimum_index));
+#else
+      tree_observer.itemReplaced(parentPath(variable_path));
+#endif
     }
 
     void
@@ -989,20 +989,16 @@ struct VariableWrapper : NumericWrapper {
         TreeObserver &tree_observer
       ) const
     {
-      if (variable.maybe_maximum) {
-        assert(false);
+      assert(!variable.maybe_maximum);
+      addDefaultMaximum();
+
+      if (variable.maybe_minimum) {
+        int maximum_index = 1;
+        tree_observer.itemAdded(childPath(variable_path,maximum_index));
       }
       else {
-        addDefaultMaximum();
-
-        if (variable.maybe_minimum) {
-          int maximum_index = 1;
-          tree_observer.itemAdded(join(variable_path,maximum_index));
-        }
-        else {
-          int maximum_index = 0;
-          tree_observer.itemAdded(join(variable_path,maximum_index));
-        }
+        int maximum_index = 0;
+        tree_observer.itemAdded(childPath(variable_path,maximum_index));
       }
     }
 
@@ -1171,7 +1167,8 @@ struct VariablePassWrapper : VoidWrapper {
       variable_pass.addVariable(firstUnusedVariableName(variable_pass));
 
 #if 1
-    TreePath new_variable_path = join(variable_pass_path,new_variable_index);
+    TreePath new_variable_path =
+      childPath(variable_pass_path,new_variable_index);
     tree_observer.itemAdded(new_variable_path);
 #else
     // We'll need to notify the tree observer of the new item.
@@ -1409,7 +1406,7 @@ void
       {
         int index = charmapper.nPasses();
         charmapper.addMotionPass();
-        tree_observer.itemAdded(join(path,index));
+        tree_observer.itemAdded(childPath(path,index));
       }
       return;
     case 1:
@@ -1468,7 +1465,7 @@ static void
   for (int i=0; i!=n_children; ++i) {
     wrapper.withChildWrapper(
       i,[&](const Wrapper &child_wrapper){
-        forEachSubWrapper(child_wrapper,join(path_of_wrapper,i),f);
+        forEachSubWrapper(child_wrapper,childPath(path_of_wrapper,i),f);
       }
     );
   }

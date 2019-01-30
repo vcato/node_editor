@@ -193,14 +193,14 @@ static void testAddingBodies()
 
   string commands = stream.str();
   string expected_commands =
-    "addItem: path=" + makeStr(join(background_frame_path,0)) + "\n"
-    "addItem: path=" + makeStr(join(background_frame_path,1)) + "\n"
+    "addItem: path=" + makeStr(childPath(background_frame_path,0)) + "\n"
+    "addItem: path=" + makeStr(childPath(background_frame_path,1)) + "\n"
     "addItem: path=" + makeStr(first_body_path)               + "\n"
-    "addItem: path=" + makeStr(join(background_frame_path,2)) + "\n"
-    "addItem: path=" + makeStr(join(background_frame_path,3)) + "\n"
+    "addItem: path=" + makeStr(childPath(background_frame_path,2)) + "\n"
+    "addItem: path=" + makeStr(childPath(background_frame_path,3)) + "\n"
     "addItem: path=" + makeStr(first_child_body_path)         + "\n"
-    "addItem: path=" + makeStr(join(background_frame_path,4)) + "\n"
-    "addItem: path=" + makeStr(join(background_frame_path,5)) + "\n"
+    "addItem: path=" + makeStr(childPath(background_frame_path,4)) + "\n"
+    "addItem: path=" + makeStr(childPath(background_frame_path,5)) + "\n"
     "addItem: path=" + makeStr(first_grandchild_body_path)    + "\n";
 
   if (commands!=expected_commands) {

@@ -280,13 +280,13 @@ static void testAddingABodyToTheScene()
   executeAddBodyFunction2(world_wrapper,scene_path,tree_observer);
 
   string command_string = command_stream.str();
-  TreePath background_frame_path = join(join(scene_path,0),0);
+  TreePath background_frame_path = childPath(childPath(scene_path,0),0);
   TreePath first_body_path =
-    join(scene_path,SceneWrapper::firstBodyChildIndex());
+    childPath(scene_path,SceneWrapper::firstBodyChildIndex());
 
   string expected_command_string =
-    "addItem(" + makeStr(join(background_frame_path,0)) + ")\n"
-    "addItem(" + makeStr(join(background_frame_path,1)) + ")\n"
+    "addItem(" + makeStr(childPath(background_frame_path,0)) + ")\n"
+    "addItem(" + makeStr(childPath(background_frame_path,1)) + ")\n"
     "addItem(" + makeStr(first_body_path) + ")\n"
     "itemReplaced([0,0,0,0])\n"
     "itemReplaced([0,0,0,2,0])\n";
@@ -317,19 +317,19 @@ static void testAddingABodyToABody()
   executeWrapperOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
 
   TreePath scene_path = {0};
-  TreePath background_motion_path = join(scene_path,0);
-  TreePath background_frame_path = join(background_motion_path,0);
+  TreePath background_motion_path = childPath(scene_path,0);
+  TreePath background_frame_path = childPath(background_motion_path,0);
   TreePath first_body_path =
-    join(scene_path,SceneWrapper::firstBodyChildIndex());
+    childPath(scene_path,SceneWrapper::firstBodyChildIndex());
 
   string command_string = command_stream.str();
 
   string expected_command_string =
     // Adding two variables to the background frame
-    "addItem(" + makeStr(join(background_frame_path,2)) + ")\n"
-    "addItem(" + makeStr(join(background_frame_path,3)) + ")\n"
+    "addItem(" + makeStr(childPath(background_frame_path,2)) + ")\n"
+    "addItem(" + makeStr(childPath(background_frame_path,3)) + ")\n"
     // Adding the body
-    "addItem(" + makeStr(join(first_body_path,2)) + ")\n";
+    "addItem(" + makeStr(childPath(first_body_path,2)) + ")\n";
 
   if (command_string!=expected_command_string) {
     cerr << "command_string:\n";
@@ -585,7 +585,8 @@ static void testRemovingABodyFromTheScene()
 
   WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
-  TreePath body_path = join(scene_path,SceneWrapper::firstBodyChildIndex());
+  TreePath body_path =
+    childPath(scene_path,SceneWrapper::firstBodyChildIndex());
 
   ostringstream command_stream;
   FakeTreeObserver tree_observer(command_stream);
