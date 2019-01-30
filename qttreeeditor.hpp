@@ -83,6 +83,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void
       createSpinBoxItem(
         QTreeWidgetItem &parent_item,
+        int child_index,
         const LabelProperties &,
         int value,
         int minimum_value,
@@ -92,6 +93,7 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void
       createSliderItem(
         QTreeWidgetItem &parent_item,
+        int child_index,
         const LabelProperties &,
         int value,
         int minimum_value,

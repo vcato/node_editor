@@ -127,7 +127,7 @@ void
 {
   TreePath parent_path = parentPath(new_item_path);
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  assert(new_item_path.back() == parent_item.childCount());
+  int child_index = new_item_path.back();
 
   static_assert(std::is_same<NumericValue,int>::value,"");
 
@@ -137,12 +137,22 @@ void
 
   if (value_is_limited_on_both_ends) {
     createSliderItem(
-      parent_item,label_properties,value,minimum_value,maximum_value
+      parent_item,
+      child_index,
+      label_properties,
+      value,
+      minimum_value,
+      maximum_value
     );
   }
   else {
     createSpinBoxItem(
-      parent_item,label_properties,value,minimum_value,maximum_value
+      parent_item,
+      child_index,
+      label_properties,
+      value,
+      minimum_value,
+      maximum_value
     );
   }
 }
@@ -224,6 +234,7 @@ void
 void
   QtTreeEditor::createSpinBoxItem(
     QTreeWidgetItem &parent_item,
+    int child_index,
     const LabelProperties &label_properties,
     int value,
     int minimum_value,
@@ -231,7 +242,7 @@ void
   )
 {
   QtTreeEditor &tree_widget = *this;
-  QTreeWidgetItem &item = ::createChildItem(parent_item);
+  QTreeWidgetItem &item = ::insertChildItem(parent_item,child_index);
   QtSpinBox &spin_box =
     tree_widget.createItemWidget<QtSpinBox>(item,label_properties);
   spin_box.setValue(value);
@@ -247,6 +258,7 @@ void
 void
   QtTreeEditor::createSliderItem(
     QTreeWidgetItem &parent_item,
+    int child_index,
     const LabelProperties &label_properties,
     int value,
     int minimum_value,
@@ -254,7 +266,7 @@ void
   )
 {
   QtTreeEditor &tree_widget = *this;
-  QTreeWidgetItem &item = ::createChildItem(parent_item);
+  QTreeWidgetItem &item = ::insertChildItem(parent_item,child_index);
   QSlider &slider =
     tree_widget.createItemWidget<QSlider>(item,label_properties);
   slider.setOrientation(Qt::Horizontal);

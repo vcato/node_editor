@@ -13,6 +13,7 @@
 #include "stringutil.hpp"
 #include "testdiagramevaluator.hpp"
 #include "makestr.hpp"
+#include "charmapperwrapper.hpp"
 
 using std::string;
 using std::istringstream;
@@ -986,8 +987,8 @@ static void testChangingVariableLimits()
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
     string expected_command_string =
-      "addItem([0,0,0,0])\n"
-      "addItem([0,0,0,1])\n";
+      "itemReplaced([0,0,0])\n"
+      "itemReplaced([0,0,0])\n";
     assert(tester.commandString() == expected_command_string);
   }
   {
@@ -1001,8 +1002,8 @@ static void testChangingVariableLimits()
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
     string expected_command_string =
-      "addItem([0,0,0,0])\n"
-      "addItem([0,0,0,0])\n";
+      "itemReplaced([0,0,0])\n"
+      "itemReplaced([0,0,0])\n";
     assert(tester.commandString() == expected_command_string);
   }
 }

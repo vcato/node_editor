@@ -975,12 +975,7 @@ struct VariableWrapper : NumericWrapper {
     {
       assert(!variable.maybe_minimum);
       addDefaultMinimum();
-#if 1
-      int minimum_index = 0;
-      tree_observer.itemAdded(childPath(variable_path,minimum_index));
-#else
-      tree_observer.itemReplaced(parentPath(variable_path));
-#endif
+      tree_observer.itemReplaced(variable_path);
     }
 
     void
@@ -991,15 +986,7 @@ struct VariableWrapper : NumericWrapper {
     {
       assert(!variable.maybe_maximum);
       addDefaultMaximum();
-
-      if (variable.maybe_minimum) {
-        int maximum_index = 1;
-        tree_observer.itemAdded(childPath(variable_path,maximum_index));
-      }
-      else {
-        int maximum_index = 0;
-        tree_observer.itemAdded(childPath(variable_path,maximum_index));
-      }
+      tree_observer.itemReplaced(variable_path);
     }
 
     template <typename Function>
