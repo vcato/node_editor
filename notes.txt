@@ -116,5 +116,7 @@ children could represent parameters, like a function call.
 If we have a minimum and maximum value for a variable.  Use a slider
 instead of a spin box for the value.
 
+Updating the min/max value for a variable should update the slider range.
+
 The slider needs to show the value.  There isn't a Qt widget that has a
 slider combined with a text field, so we'll need to make one.
