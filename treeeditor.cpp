@@ -27,7 +27,7 @@ struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
     return
       LabelProperties{
         /*text*/wrapper.label(),
-        /*can_be_edited*/wrapper.labelCanBeChanged()
+        /*can_be_edited*/false
       };
   }
 
@@ -269,15 +269,11 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
 
 void
   TreeEditor::itemLabelChanged(
-    const TreePath &path,
-    const string &new_item_text
+    const TreePath &/*path*/,
+    const string &/*new_item_text*/
   )
 {
-  visitSubWrapper(
-    world(),
-    path,
-    [&](const Wrapper &wrapper){ wrapper.setLabel(new_item_text); }
-  );
+  assert(false);
 }
 
 

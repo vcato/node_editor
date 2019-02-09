@@ -27,8 +27,13 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
     changed_func();
   }
 
-  void setState(const WrapperState &) const override
+  void setState(const WrapperState &new_state) const override
   {
-    assert(false);
+    if (new_state.value.isString()) {
+      name = new_state.value.asString();
+    }
+    else {
+      assert(false);
+    }
   }
 };

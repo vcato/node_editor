@@ -33,11 +33,14 @@ struct TreeEditor {
     void executeOperation(const TreePath &,int operation_index);
     void stringItemValueChanged(const TreePath &path,const std::string &value);
     void numberItemValueChanged(const TreePath &path,int value);
+
+    // This is no longer needed since we won't allow changing labels.
     void
       itemLabelChanged(
         const TreePath &path,
         const std::string &new_item_text
       );
+
     const Optional<TreePath> &maybePathOfItemBeingEdited() const;
 
     void createTreeItem(const TreePath &new_item_path);

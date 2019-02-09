@@ -837,11 +837,15 @@ namespace {
 struct VariableWrapper : NumericWrapper {
   private:
     using Self = VariableWrapper;
+
   public:
     Variable &variable;
     const WrapperData &wrapper_data;
 
-    VariableWrapper(Variable &variable_arg,const WrapperData &wrapper_data_arg)
+    VariableWrapper(
+      Variable &variable_arg,
+      const WrapperData &wrapper_data_arg
+    )
     : variable(variable_arg),
       wrapper_data(wrapper_data_arg)
     {
@@ -852,16 +856,7 @@ struct VariableWrapper : NumericWrapper {
       return variable.name;
     }
 
-    bool labelCanBeChanged() const override
-    {
-      return true;
-    }
-
-    void setLabel(const Label &new_label) const override
-    {
-      variable.name = new_label;
-      wrapper_data.notifyCharmapChanged();
-    }
+    Tag tag() const override { return "var"; }
 
     void setState(const WrapperState &state) const override
     {
@@ -886,6 +881,9 @@ struct VariableWrapper : NumericWrapper {
           }
 
           maximumWrapper().setState(child_state);
+        }
+        else if (child_state.tag == "name") {
+          nameWrapper().setState(child_state);
         }
       }
     }
@@ -1044,6 +1042,15 @@ struct VariableWrapper : NumericWrapper {
       assert(found);
     }
 
+    NameWrapper nameWrapper() const
+    {
+      auto changed_func = [this](){
+        wrapper_data.notifyCharmapChanged();
+      };
+
+      return NameWrapper("name",variable.name,changed_func);
+    }
+
     ChannelWrapper minimumWrapper() const
     {
       return ChannelWrapper(*variable.maybe_minimum,"minimum",wrapper_data);
@@ -1061,6 +1068,10 @@ struct VariableWrapper : NumericWrapper {
         const WrapperVisitor &visitor
       ) const
     {
+      if (selector()) {
+        visitor(nameWrapper());
+      }
+
       if (variable.maybe_minimum) {
         if (selector()) {
           visitor(minimumWrapper());
@@ -1127,14 +1138,13 @@ struct VariablePassWrapper : VoidWrapper {
     int n = state.children.size();
 
     for (int i=0; i!=n; ++i) {
-      const string &tag = state.children[i].tag;
 
       auto set_child_state_function =
         [&](const Wrapper &child_wrapper){
           child_wrapper.setState(state.children[i]);
         };
 
-      variable_pass.addVariable(tag);
+      variable_pass.addVariable(firstUnusedVariableName(variable_pass));
       withChildWrapper(i,set_child_state_function);
     }
   }

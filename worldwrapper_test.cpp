@@ -495,6 +495,25 @@ static void
 }
 
 
+static void
+  setWrapperValue(
+    const Wrapper &wrapper,
+    const string &path_string,
+    const string &value
+  )
+{
+  TreePath path = makePath(wrapper,path_string);
+
+  visitStringSubWrapper(
+    wrapper,
+    path,
+    [&](const StringWrapper &string_wrapper){
+      string_wrapper.setValue(value);
+    }
+  );
+}
+
+
 namespace scene_and_charmapper_tests {
 static void testUsingCharmapperToMoveABody()
 {
@@ -871,7 +890,7 @@ static void testUsingACharmapperVariable()
     tree_observer
   );
 
-  setWrapperLabel(world_wrapper,"Charmapper1|Variable Pass|var1","body_x");
+  setWrapperValue(world_wrapper,"Charmapper1|Variable Pass|var1|name","body_x");
 
   DiagramObserverPtr x_diagram_observer_ptr =
     diagramObserverPtr(
@@ -1140,7 +1159,9 @@ static void testSettingStateWithVariablePass()
     "world {\n"
     "  charmapper1 {\n"
     "    variable_pass {\n"
-    "      x: 5\n"
+    "      var: 5 {\n"
+    "        name: \"x\"\n"
+    "      }\n"
     "    }\n"
     "  }\n"
     "}\n";

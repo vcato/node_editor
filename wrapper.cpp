@@ -24,6 +24,12 @@ bool Wrapper::canEditDiagram() const
 }
 
 
+WrapperState::Tag Wrapper::tag() const
+{
+  return makeTag(label());
+}
+
+
 void
   visitEnumerationSubWrapper(
     const Wrapper &wrapper,
@@ -216,7 +222,7 @@ static WrapperValue valueOf(const Wrapper &wrapper)
 
 WrapperState stateOf(const Wrapper &wrapper)
 {
-  WrapperState result(makeTag(wrapper.label()));
+  WrapperState result(wrapper.tag());
   result.value = valueOf(wrapper);
 
   for (int i=0, n=wrapper.nChildren(); i!=n; ++i) {

@@ -24,6 +24,7 @@ using WrapperVisitor = std::function<void(const Wrapper &)>;
 struct Wrapper {
   using OperationName = std::string;
   using Label = std::string;
+  using Tag = WrapperState::Tag;
 
   struct TreeObserver {
     virtual void itemAdded(const TreePath &) = 0;
@@ -63,8 +64,8 @@ struct Wrapper {
   virtual void accept(const SubclassVisitor &) const = 0;
 
   virtual Label label() const = 0;
-  virtual bool labelCanBeChanged() const { return false; }
-  virtual void setLabel(const Label &) const { assert(false); }
+
+  virtual Tag tag() const;
 
   virtual void setState(const WrapperState &) const = 0;
 };

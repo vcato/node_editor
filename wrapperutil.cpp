@@ -310,20 +310,3 @@ void
   TreePath path = makePath(wrapper,path_string);
   executeOperation2(wrapper,path,operation_name,tree_observer);
 }
-
-
-void
-  setWrapperLabel(
-    const Wrapper &wrapper,
-    const string &path_string,
-    const string &new_label
-  )
-{
-  visitSubWrapper(
-    wrapper,
-    makePath(wrapper,path_string),
-    [&](const Wrapper &var_wrapper){
-      var_wrapper.setLabel(new_label);
-    }
-  );
-}
