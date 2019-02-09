@@ -230,7 +230,11 @@ struct BodyWrapper : VoidWrapper {
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
     if (child_index==name_index) {
-      visitor(NameWrapper{"name",body.name,wrapper_data.callbacks.changed_func});
+      auto changed_func = [&](const TreePath &,TreeObserver &){
+        wrapper_data.callbacks.changed_func();
+      };
+
+      visitor(NameWrapper{"name", body.name, changed_func});
       return;
     }
 

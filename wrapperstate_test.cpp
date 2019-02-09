@@ -20,8 +20,8 @@ struct TestWrapper : LeafWrapper<NoOperationWrapper<EnumerationWrapper> > {
 
   virtual void
     setValue(
-      const TreePath &,
       Index,
+      const TreePath &,
       TreeObserver &
     ) const
   {

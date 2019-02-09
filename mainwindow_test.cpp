@@ -153,6 +153,14 @@ static bool
   return scene_tree.root.children[0].label == body_name;
 }
 
+
+static void openProjectWithText(Tester &tester,const char *test_project_text)
+{
+  tester.files.store("test.dat",test_project_text);
+  tester.main_window.userPressesOpenProject("test.dat");
+}
+
+
 static void testAddingABodyToTheScene()
 {
   Tester tester;
@@ -428,13 +436,42 @@ static void testOpeningAProject()
     "}\n";
 
   Tester tester;
-  tester.files.store("test.dat",test_project_text);
-
-  tester.main_window.userPressesOpenProject("test.dat");
+  openProjectWithText(tester,test_project_text);
 
   FakeTreeEditor &tree_editor = tester.main_window.tree_editor;
   assert(!tree_editor.root().children[0].is_expanded);
   assert(!tree_editor.root().children[0].children[0].is_expanded);
+}
+
+
+static void testChangingAVariableName()
+{
+  // Have a charmapper with a variable pass with a variable.
+  // Change the name of the variable.
+  // Make sure the label in the tree shows the new name.
+
+  const char *test_project_text =
+    "world {\n"
+    "  charmapper {\n"
+    "    variable_pass {\n"
+    "      var: 0 {\n"
+    "        name: \"x\"\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  Tester tester;
+  openProjectWithText(tester,test_project_text);
+
+  tester.main_window.tree_editor.userChangesStringValue(
+    "Charmapper1|Variable Pass|x|name",
+    "y"
+  );
+
+  FakeTreeItem &var_item =
+    tester.main_window.tree_editor.root().children[0].children[0].children[0];
+  assert(var_item.label == "y");
 }
 
 
@@ -450,4 +487,5 @@ int main()
   testCancellingOpenProject();
   testCreatingABodyWithAnAveragePosition();
   testOpeningAProject();
+  testChangingAVariableName();
 }

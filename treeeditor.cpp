@@ -152,6 +152,11 @@ struct TreeEditor::TreeObserver : ::TreeObserver {
     tree_editor.removeTreeItem(path);
     tree_editor.removeDiagramEditors(path);
   }
+
+  void itemLabelChanged(const TreePath &path) override
+  {
+    tree_editor.updateItemLabel(path);
+  }
 };
 
 
@@ -164,7 +169,7 @@ void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
       enumeration_wrapper.setValue(
-        path,index,tree_observer
+        index,path,tree_observer
       );
     }
   );
@@ -249,7 +254,8 @@ void
     world(),
     path,
     [&](const StringWrapper &string_wrapper){
-      string_wrapper.setValue(value);
+      TreeObserver tree_observer(*this);
+      string_wrapper.setValue(value,path,tree_observer);
     }
   );
 }
@@ -299,6 +305,18 @@ void TreeEditor::createTreeItem(const TreePath &new_item_path)
 {
   addMainTreeItem(new_item_path);
   addChildTreeItems(new_item_path);
+}
+
+
+void TreeEditor::updateItemLabel(const TreePath &item_path)
+{
+  visitSubWrapper(
+    world(),
+    item_path,
+    [&](const Wrapper &w){
+      setItemLabel(item_path,w.label());
+    }
+  );
 }
 
 

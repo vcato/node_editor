@@ -170,6 +170,11 @@ struct StubTreeObserver : Wrapper::TreeObserver {
   {
     assert(false);
   }
+
+  void itemLabelChanged(const TreePath &) override
+  {
+    assert(false);
+  }
 };
 }
 

@@ -62,6 +62,11 @@ struct StubTreeObserver : Wrapper::TreeObserver {
   {
     assert(false);
   }
+
+  void itemLabelChanged(const TreePath &) override
+  {
+    assert(false);
+  }
 };
 }
 
@@ -102,6 +107,11 @@ struct FakeTreeObserver : Wrapper::TreeObserver {
   void itemRemoved(const TreePath &path) override
   {
     command_stream << "removeItem(" << path << ")\n";
+  }
+
+  void itemLabelChanged(const TreePath &path) override
+  {
+    command_stream << "labelChanged(" << path << ")\n";
   }
 };
 }
@@ -415,7 +425,7 @@ static void
     [&](const EnumerationWrapper &enumeration_wrapper){
       int index =
         enumerationLabelIndex(enumeration_wrapper,enumeration_label);
-      enumeration_wrapper.setValue(path,index,tree_observer);
+      enumeration_wrapper.setValue(index,path,tree_observer);
     }
   );
 }
@@ -499,7 +509,8 @@ static void
   setWrapperValue(
     const Wrapper &wrapper,
     const string &path_string,
-    const string &value
+    const string &value,
+    TreeObserver &tree_observer
   )
 {
   TreePath path = makePath(wrapper,path_string);
@@ -508,7 +519,7 @@ static void
     wrapper,
     path,
     [&](const StringWrapper &string_wrapper){
-      string_wrapper.setValue(value);
+      string_wrapper.setValue(value,path,tree_observer);
     }
   );
 }
@@ -890,7 +901,11 @@ static void testUsingACharmapperVariable()
     tree_observer
   );
 
-  setWrapperValue(world_wrapper,"Charmapper1|Variable Pass|var1|name","body_x");
+  setWrapperValue(
+    world_wrapper,
+    "Charmapper1|Variable Pass|var1|name","body_x",
+    tree_observer
+  );
 
   DiagramObserverPtr x_diagram_observer_ptr =
     diagramObserverPtr(

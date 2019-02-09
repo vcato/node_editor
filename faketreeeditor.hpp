@@ -70,6 +70,15 @@ struct FakeTreeEditor : TreeEditor {
     stringItemValueChanged(path,new_value);
   }
 
+  void
+    userChangesStringValue(
+      const std::string &path_string,
+      const std::string &new_value
+    )
+  {
+    userChangesStringValue(makePath(world(),path_string),new_value);
+  }
+
   void userChangesNumberValue(const TreePath &path,int new_value)
   {
     numberItemValueChanged(path,new_value);
@@ -164,6 +173,11 @@ struct FakeTreeEditor : TreeEditor {
     ) override
   {
     createItem(tree,new_item_path,label_properties);
+  }
+
+  void setItemLabel(const TreePath &path,const std::string &new_label)
+  {
+    itemFromPath(tree.root, path).label = new_label;
   }
 
   FakeTree tree;

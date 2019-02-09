@@ -145,6 +145,11 @@ static void
     {
       assert(false);
     }
+
+    virtual void itemLabelChanged(const TreePath &) override
+    {
+      assert(false);
+    }
   };
 
   TreeObserver operation_handler(stream);

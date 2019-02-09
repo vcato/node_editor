@@ -175,8 +175,8 @@ struct EnumerationTestWrapper : BasicTestWrapper<EnumerationWrapper> {
 
   void
     setValue(
-      const TreePath &,
       Index,
+      const TreePath &,
       TreeObserver &
     ) const override
   {
@@ -210,7 +210,7 @@ struct StringTestWrapper : BasicTestWrapper<StringWrapper> {
     return object.string_value;
   }
 
-  void setValue(const Value &) const override
+  void setValue(const Value &,const TreePath &,TreeObserver &) const override
   {
     assert(false);
   }

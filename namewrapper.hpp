@@ -1,12 +1,13 @@
 struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
   const char *label_member;
   std::string &name;
-  std::function<void()> changed_func;
+  using ChangedFunc = std::function<void(const TreePath &,TreeObserver &)>;
+  ChangedFunc changed_func;
 
   NameWrapper(
     const char *label,
     std::string &name_arg,
-    std::function<void()> changed_func_arg
+    ChangedFunc changed_func_arg
   )
   : label_member(label),
     name(name_arg),
@@ -21,10 +22,15 @@ struct NameWrapper : NoOperationWrapper<LeafWrapper<StringWrapper>> {
     return name;
   }
 
-  void setValue(const std::string &arg) const
+  void
+    setValue(
+      const std::string &arg,
+      const TreePath &path,
+      TreeObserver &tree_observer
+    ) const
   {
     name = arg;
-    changed_func();
+    changed_func(path,tree_observer);
   }
 
   void setState(const WrapperState &new_state) const override

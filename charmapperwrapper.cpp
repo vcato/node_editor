@@ -378,8 +378,8 @@ struct MotionPassWrapper::BodyWrapper
 
   void
     setValue(
-      const TreePath &,
       int index,
+      const TreePath &,
       TreeObserver &
     ) const override
   {
@@ -752,8 +752,8 @@ struct MotionPassWrapper::GlobalPositionWrapper
 
   virtual void
     setValue(
-      const TreePath &path,
       int index,
+      const TreePath &path,
       TreeObserver &tree_observer
     ) const
   {
@@ -1044,8 +1044,11 @@ struct VariableWrapper : NumericWrapper {
 
     NameWrapper nameWrapper() const
     {
-      auto changed_func = [this](){
+      auto changed_func =
+      [this](const TreePath &name_path,TreeObserver &tree_observer){
         wrapper_data.notifyCharmapChanged();
+        TreePath variable_path = parentPath(name_path);
+        tree_observer.itemLabelChanged(variable_path);
       };
 
       return NameWrapper("name",variable.name,changed_func);

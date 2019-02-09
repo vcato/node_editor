@@ -62,6 +62,9 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
         const std::string &value
       ) override;
 
+    void
+      setItemLabel(const TreePath &path,const std::string &new_label) override;
+
     static void setItemText(QTreeWidgetItem &item,const std::string &label);
 
     QTreeWidgetItem&

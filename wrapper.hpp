@@ -30,6 +30,7 @@ struct Wrapper {
     virtual void itemAdded(const TreePath &) = 0;
     virtual void itemReplaced(const TreePath &) = 0;
     virtual void itemRemoved(const TreePath &) = 0;
+    virtual void itemLabelChanged(const TreePath &) = 0;
   };
 
   struct SubclassVisitor {
@@ -224,7 +225,12 @@ struct StringWrapper : Wrapper {
 
   virtual Value value() const = 0;
 
-  virtual void setValue(const Value &) const = 0;
+  virtual void
+    setValue(
+      const Value &,
+      const TreePath &path,
+      TreeObserver &
+    ) const = 0;
 };
 
 
@@ -249,8 +255,8 @@ struct EnumerationWrapper : Wrapper {
 
   virtual void
     setValue(
-      const TreePath &path,
       Index,
+      const TreePath &path,
       TreeObserver &
     ) const = 0;
 

@@ -44,6 +44,7 @@ struct TreeEditor {
     const Optional<TreePath> &maybePathOfItemBeingEdited() const;
 
     void createTreeItem(const TreePath &new_item_path);
+    void updateItemLabel(const TreePath &);
     void addChildTreeItems(const TreePath &parent_path);
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
@@ -91,6 +92,9 @@ struct TreeEditor {
         const LabelProperties &,
         const std::string &value
       ) = 0;
+
+    virtual void
+      setItemLabel(const TreePath &path,const std::string &new_label) = 0;
 
     void addMainTreeItem(const TreePath &new_item_path);
     void replaceChildTreeItems(const TreePath &parent_path);

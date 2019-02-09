@@ -27,6 +27,19 @@ using std::function;
 using std::list;
 
 
+namespace {
+struct QtItemWidget : QWidget {
+  QLabel *label_widget_ptr = nullptr;
+};
+}
+
+
+static void setLabelWidgetText(QLabel &label_widget,const string &label)
+{
+  label_widget.setText(QString::fromStdString(label));
+}
+
+
 template <typename T>
 T &
   QtTreeEditor::createItemWidget(
@@ -36,12 +49,13 @@ T &
 {
   const std::string &label = label_properties.text;
   bool label_is_editable = label_properties.is_editable;
-  QWidget *wrapper_widget_ptr = new QWidget();
+  QtItemWidget *wrapper_widget_ptr = new QtItemWidget();
   // NOTE: setting the item widget before adding the contents makes
   // it not have the proper size.
   QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
 
   if (label_is_editable) {
+    assert(false); // not handled
     QtLineEdit &label_widget = createWidget<QtLineEdit>(layout);
     label_widget.setText(label);
     label_widget.text_changed_function =
@@ -51,7 +65,8 @@ T &
   }
   else {
     QLabel &label_widget = createWidget<QLabel>(layout);
-    label_widget.setText(QString::fromStdString(label));
+    setLabelWidgetText(label_widget,label);
+    wrapper_widget_ptr->label_widget_ptr = &label_widget;
   }
 
   T& widget = createWidget<T>(layout);
@@ -190,6 +205,18 @@ void
 void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
 {
   item.setText(/*column*/0,QString::fromStdString(label));
+}
+
+
+void
+  QtTreeEditor::setItemLabel(const TreePath &path,const std::string &new_label)
+{
+  QTreeWidgetItem &item = itemFromPath(path);
+  QWidget *widget_ptr = itemWidget(&item,/*column*/0);
+  QtItemWidget *item_widget_ptr = dynamic_cast<QtItemWidget*>(widget_ptr);
+  assert(item_widget_ptr);
+  assert(item_widget_ptr->label_widget_ptr);
+  setLabelWidgetText(*item_widget_ptr->label_widget_ptr,new_label);
 }
 
 
