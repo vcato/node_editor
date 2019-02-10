@@ -6,6 +6,7 @@
 #include "charmapperwrapper.hpp"
 #include "scenewrapper.hpp"
 #include "stringutil.hpp"
+#include "stubtreeobserver.hpp"
 
 using std::cerr;
 using std::vector;
@@ -152,30 +153,6 @@ static void
   };
 
   world.forEachCharmapperMember(handle_scene_change_function);
-}
-
-
-namespace {
-struct StubTreeObserver : Wrapper::TreeObserver {
-  void itemAdded(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemReplaced(const TreePath &) override
-  {
-  }
-
-  void itemRemoved(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemLabelChanged(const TreePath &) override
-  {
-    assert(false);
-  }
-};
 }
 
 

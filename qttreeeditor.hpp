@@ -48,6 +48,14 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       ) override;
 
     void
+      setItemNumericValue(
+        const TreePath &,
+        NumericValue value,
+        NumericValue minimum_value,
+        NumericValue maximum_value
+      ) override;
+
+    void
       createEnumerationItem(
         const TreePath &new_item_path,
         const LabelProperties &,

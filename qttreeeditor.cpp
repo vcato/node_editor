@@ -30,6 +30,7 @@ using std::list;
 namespace {
 struct QtItemWidget : QWidget {
   QLabel *label_widget_ptr = nullptr;
+  QWidget *value_widget_ptr = nullptr;
 };
 }
 
@@ -70,7 +71,10 @@ T &
   }
 
   T& widget = createWidget<T>(layout);
+
+  wrapper_widget_ptr->value_widget_ptr = &widget;
   setItemWidget(&item,/*column*/0,wrapper_widget_ptr);
+
   return widget;
 }
 
@@ -131,6 +135,16 @@ void
 }
 
 
+static bool
+  useSliderForRange(NumericValue minimum_value,NumericValue maximum_value)
+{
+  bool value_is_limited_on_both_ends =
+    minimum_value != std::numeric_limits<NumericValue>::min() &&
+    maximum_value != std::numeric_limits<NumericValue>::max();
+
+  return value_is_limited_on_both_ends;
+}
+
 void
   QtTreeEditor::createNumericItem(
     const TreePath &new_item_path,
@@ -146,11 +160,7 @@ void
 
   static_assert(std::is_same<NumericValue,int>::value,"");
 
-  bool value_is_limited_on_both_ends =
-    minimum_value != std::numeric_limits<NumericValue>::min() &&
-    maximum_value != std::numeric_limits<NumericValue>::max();
-
-  if (value_is_limited_on_both_ends) {
+  if (useSliderForRange(minimum_value,maximum_value)) {
     createSliderItem(
       parent_item,
       child_index,
@@ -169,6 +179,73 @@ void
       minimum_value,
       maximum_value
     );
+  }
+}
+
+
+static QtItemWidget &itemWrapperWidget(QTreeWidget &tree,QTreeWidgetItem &item)
+{
+  QWidget *widget_ptr = tree.itemWidget(&item,/*column*/0);
+  QtItemWidget *item_widget_ptr = dynamic_cast<QtItemWidget*>(widget_ptr);
+  assert(item_widget_ptr);
+  return *item_widget_ptr;
+}
+
+
+void
+  QtTreeEditor::setItemNumericValue(
+    const TreePath &path,
+    NumericValue value,
+    NumericValue minimum_value,
+    NumericValue maximum_value
+  )
+{
+  QTreeWidgetItem &item = itemFromPath(path);
+  QtItemWidget &wrapper_widget = itemWrapperWidget(*this,item);
+  QWidget *value_widget_ptr = wrapper_widget.value_widget_ptr;
+  assert(value_widget_ptr);
+
+  bool use_slider = useSliderForRange(minimum_value,maximum_value);
+
+  if (auto *slider_ptr = dynamic_cast<QSlider*>(value_widget_ptr)) {
+    auto &slider = *slider_ptr;
+
+    if (use_slider) {
+      slider.setMinimum(minimum_value);
+      slider.setMaximum(maximum_value);
+      slider.setValue(value);
+    }
+    else {
+      assert(false);
+    }
+  }
+  else {
+    auto *spin_box_ptr = dynamic_cast<QtSpinBox*>(value_widget_ptr);
+    assert(spin_box_ptr);
+    auto &spin_box = *spin_box_ptr;
+
+    if (use_slider) {
+      auto *box_layout_ptr =
+        dynamic_cast<QBoxLayout *>(wrapper_widget.layout());
+      assert(box_layout_ptr);
+      QBoxLayout &box_layout = *box_layout_ptr;
+      box_layout.removeWidget(wrapper_widget.value_widget_ptr);
+      wrapper_widget.value_widget_ptr = 0;
+      delete &spin_box;
+
+      auto& slider = createWidget<QSlider>(box_layout);
+      slider.setOrientation(Qt::Horizontal);
+      slider.setMinimum(minimum_value);
+      slider.setMaximum(maximum_value);
+      slider.setValue(value);
+
+      wrapper_widget.value_widget_ptr = &slider;
+    }
+    else {
+      spin_box.setMinimum(minimum_value);
+      spin_box.setMaximum(maximum_value);
+      spin_box.setValue(value);
+    }
   }
 }
 
@@ -212,11 +289,10 @@ void
   QtTreeEditor::setItemLabel(const TreePath &path,const std::string &new_label)
 {
   QTreeWidgetItem &item = itemFromPath(path);
-  QWidget *widget_ptr = itemWidget(&item,/*column*/0);
-  QtItemWidget *item_widget_ptr = dynamic_cast<QtItemWidget*>(widget_ptr);
-  assert(item_widget_ptr);
-  assert(item_widget_ptr->label_widget_ptr);
-  setLabelWidgetText(*item_widget_ptr->label_widget_ptr,new_label);
+
+  QtItemWidget &item_widget = itemWrapperWidget(*this,item);
+  assert(item_widget.label_widget_ptr);
+  setLabelWidgetText(*item_widget.label_widget_ptr,new_label);
 }
 
 
@@ -294,6 +370,9 @@ void
 {
   QtTreeEditor &tree_widget = *this;
   QTreeWidgetItem &item = ::insertChildItem(parent_item,child_index);
+
+  // Logic needs to be consistent when we recreate the widget if the value
+  // changes.
   QSlider &slider =
     tree_widget.createItemWidget<QSlider>(item,label_properties);
   slider.setOrientation(Qt::Horizontal);

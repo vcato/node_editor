@@ -45,6 +45,7 @@ struct TreeEditor {
 
     void createTreeItem(const TreePath &new_item_path);
     void updateItemLabel(const TreePath &);
+    void updateItemValue(const TreePath &);
     void addChildTreeItems(const TreePath &parent_path);
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
@@ -73,9 +74,17 @@ struct TreeEditor {
       createNumericItem(
         const TreePath &new_item_path,
         const LabelProperties &,
-        const NumericValue value,
-        const NumericValue minimum_value,
-        const NumericValue maximum_value
+        NumericValue value,
+        NumericValue minimum_value,
+        NumericValue maximum_value
+      ) = 0;
+
+    virtual void
+      setItemNumericValue(
+        const TreePath &,
+        NumericValue value,
+        NumericValue minimum_value,
+        NumericValue maximum_value
       ) = 0;
 
     virtual void

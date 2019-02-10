@@ -146,7 +146,12 @@ static void
       assert(false);
     }
 
-    virtual void itemLabelChanged(const TreePath &) override
+    void itemLabelChanged(const TreePath &) override
+    {
+      assert(false);
+    }
+
+    void itemValueChanged(const TreePath &) override
     {
       assert(false);
     }

@@ -14,6 +14,7 @@
 #include "testdiagramevaluator.hpp"
 #include "makestr.hpp"
 #include "charmapperwrapper.hpp"
+#include "stubtreeobserver.hpp"
 
 using std::string;
 using std::istringstream;
@@ -44,30 +45,6 @@ static void
 {
   NodeIndex node_index = nodeIndexWithText(diagram,old_text);
   diagram.node(node_index).setText(new_text);
-}
-
-
-namespace {
-struct StubTreeObserver : Wrapper::TreeObserver {
-  void itemAdded(const TreePath &) override
-  {
-  }
-
-  void itemReplaced(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemRemoved(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemLabelChanged(const TreePath &) override
-  {
-    assert(false);
-  }
-};
 }
 
 
@@ -112,6 +89,11 @@ struct FakeTreeObserver : Wrapper::TreeObserver {
   void itemLabelChanged(const TreePath &path) override
   {
     command_stream << "labelChanged(" << path << ")\n";
+  }
+
+  void itemValueChanged(const TreePath &path) override
+  {
+    command_stream << "valueChanged(" << path << ")\n";
   }
 };
 }
@@ -362,11 +344,13 @@ static void
     int value
   )
 {
+
   visitNumericSubWrapper(
     world_wrapper,
     path,
     [&](const NumericWrapper &numeric_wrapper){
-      numeric_wrapper.setValue(value);
+      StubTreeObserver tree_observer;
+      numeric_wrapper.setValue(value,path,tree_observer);
     }
   );
 }
@@ -491,7 +475,12 @@ static void testChangingTheTargetBody()
 
 
 static void
-  setWrapperValue(const Wrapper &wrapper,const string &path_string,int value)
+  setWrapperValue(
+    const Wrapper &wrapper,
+    const string &path_string,
+    int value,
+    TreeObserver &tree_observer
+  )
 {
   TreePath path = makePath(wrapper,path_string);
 
@@ -499,9 +488,17 @@ static void
     wrapper,
     path,
     [&](const NumericWrapper &numeric_wrapper){
-      numeric_wrapper.setValue(value);
+      numeric_wrapper.setValue(value,path,tree_observer);
     }
   );
+}
+
+
+static void
+  setWrapperValue(const Wrapper &wrapper,const string &path_string,int value)
+{
+  StubTreeObserver tree_observer;
+  setWrapperValue(wrapper,path_string,value,tree_observer);
 }
 
 
@@ -982,7 +979,8 @@ struct VariableLimitsTester {
     setWrapperValue(
       wrapper,
       "Charmapper1|Variable Pass|x|minimum",
-      arg
+      arg,
+      tree_observer
     );
   }
 
@@ -991,7 +989,8 @@ struct VariableLimitsTester {
     setWrapperValue(
       wrapper,
       "Charmapper1|Variable Pass|x|maximum",
-      arg
+      arg,
+      tree_observer
     );
   }
 
@@ -1021,8 +1020,12 @@ static void testChangingVariableLimits()
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
     string expected_command_string =
-      "itemReplaced([0,0,0])\n"
-      "itemReplaced([0,0,0])\n";
+      "addItem([0,0,0,1])\n"
+      "valueChanged([0,0,0])\n"
+      "valueChanged([0,0,0])\n"
+      "addItem([0,0,0,2])\n"
+      "valueChanged([0,0,0])\n"
+      "valueChanged([0,0,0])\n";
     assert(tester.commandString() == expected_command_string);
   }
   {
@@ -1036,8 +1039,12 @@ static void testChangingVariableLimits()
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
     string expected_command_string =
-      "itemReplaced([0,0,0])\n"
-      "itemReplaced([0,0,0])\n";
+      "addItem([0,0,0,1])\n"
+      "valueChanged([0,0,0])\n"
+      "valueChanged([0,0,0])\n"
+      "addItem([0,0,0,1])\n"
+      "valueChanged([0,0,0])\n"
+      "valueChanged([0,0,0])\n";
     assert(tester.commandString() == expected_command_string);
   }
 }

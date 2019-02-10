@@ -113,7 +113,7 @@ struct FakeTreeEditor : TreeEditor {
   }
 
 
-  static void
+  static FakeTree::Item &
     createItem(
       FakeTree &tree,
       const TreePath &new_item_path,
@@ -127,6 +127,7 @@ struct FakeTreeEditor : TreeEditor {
       insertItemIn(parent_item.children,new_item_index);
     new_item.label = label_properties.text;
     new_item.label_is_editable = label_properties.is_editable;
+    return new_item;
   }
 
   void
@@ -146,13 +147,18 @@ struct FakeTreeEditor : TreeEditor {
     createNumericItem(
       const TreePath &new_item_path,
       const LabelProperties &label_properties,
-      const NumericValue /*value*/,
-      const NumericValue /*minimum_value */,
-      const NumericValue /*maximum_value */
-    ) override
-  {
-    createItem(tree,new_item_path,label_properties);
-  }
+      const NumericValue value,
+      const NumericValue minimum_value,
+      const NumericValue maximum_value
+    ) override;
+
+  void
+    setItemNumericValue(
+      const TreePath &,
+      NumericValue value,
+      NumericValue minimum_value,
+      NumericValue maximum_value
+    ) override;
 
   void
     createEnumerationItem(

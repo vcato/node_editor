@@ -216,7 +216,7 @@ treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o \
   diagrameditorwindow.o printindent.o maybepoint2d.o any.o contains.o \
   anyio.o streamparser.o diagramwrapperstate.o fakediagrameditor.o \
-  nodetexteditor.o observeddiagram.o observeddiagrams.o
+  nodetexteditor.o observeddiagram.o observeddiagrams.o faketreeeditor.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \

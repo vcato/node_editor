@@ -33,3 +33,37 @@ void
   int index = findIndex(operation_names,operation_name);
   executeOperation(path,index);
 }
+
+
+void
+  FakeTreeEditor::createNumericItem(
+    const TreePath &new_item_path,
+    const LabelProperties &label_properties,
+    const NumericValue value,
+    const NumericValue minimum_value,
+    const NumericValue maximum_value
+  )
+{
+  FakeTreeItem &item =
+    createItem(tree,new_item_path,label_properties);
+  item.value_widget_ptr = std::make_unique<FakeSlider>();
+  item.value_widget_ptr->value = value;
+  item.value_widget_ptr->minimum = minimum_value;
+  item.value_widget_ptr->maximum = maximum_value;
+}
+
+
+void
+  FakeTreeEditor::setItemNumericValue(
+    const TreePath &path,
+    NumericValue value,
+    NumericValue minimum_value,
+    NumericValue maximum_value
+  )
+{
+  FakeTreeItem &item = itemFromPath(tree.root,path);
+  assert(item.value_widget_ptr);
+  item.value_widget_ptr->value = value;
+  item.value_widget_ptr->minimum = minimum_value;
+  item.value_widget_ptr->maximum = maximum_value;
+}

@@ -6,11 +6,19 @@
 #include <vector>
 
 
+struct FakeSlider {
+  int value = 0;
+  int minimum = 0;
+  int maximum = 100;
+};
+
+
 struct FakeTreeItem {
   bool is_expanded;
   std::string label;
   std::vector<FakeTreeItem> children;
   bool label_is_editable;
+  std::unique_ptr<FakeSlider> value_widget_ptr;
 
   FakeTreeItem()
   : is_expanded(true),
@@ -40,6 +48,11 @@ struct FakeTreeItem {
   friend void setText(FakeTreeItem &item,const std::string &text)
   {
     item.label = text;
+  }
+
+  FakeSlider *maybeSlider()
+  {
+    return value_widget_ptr.get();
   }
 };
 

@@ -54,7 +54,7 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     return Label(label_member)+" variable";
   }
 
-  void setValue(int arg) const override
+  void setValue(int arg) const
   {
     if (arg<0 || arg>=wrapper_data.motion.nVariables()) {
       return;
@@ -62,6 +62,11 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
 
     map.var_index = arg;
     wrapper_data.callbacks.changed_func();
+  }
+
+  void setValue(int arg,const TreePath &,TreeObserver &) const override
+  {
+    setValue(arg);
   }
 
   Value value() const override
@@ -103,10 +108,20 @@ struct FloatWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     return label_member;
   }
 
-  void setValue(int arg) const override
+  void setValue(int arg) const
   {
     value_ref = arg;
     wrapper_data.callbacks.changed_func();
+  }
+
+  void
+    setValue(
+      Value arg,
+      const TreePath &,
+      TreeObserver &
+    ) const override
+  {
+    setValue(arg);
   }
 
   virtual Value value() const { return value_ref; }
@@ -682,7 +697,7 @@ struct CurrentFrameWrapper : LeafWrapper<NoOperationWrapper<NumericWrapper>> {
     setValue(state.value.asNumeric());
   }
 
-  void setValue(Value arg) const override
+  void setValue(Value arg) const
   {
     if (arg < 0 || arg >= wrapper_data.scene.backgroundMotion().nFrames()) {
       // Invalid index.
@@ -691,6 +706,16 @@ struct CurrentFrameWrapper : LeafWrapper<NoOperationWrapper<NumericWrapper>> {
 
     wrapper_data.scene.setCurrentFrameIndex(arg);
     wrapper_data.callbacks.changed_func();
+  }
+
+  void
+    setValue(
+      Value arg,
+      const TreePath &,
+      TreeObserver &
+    ) const override
+  {
+    setValue(arg);
   }
 
   Value value() const override

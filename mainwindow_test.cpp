@@ -475,6 +475,51 @@ static void testChangingAVariableName()
 }
 
 
+static void testChangingAVariableRange()
+{
+  const char *test_project_text =
+    "world {\n"
+    "  charmapper {\n"
+    "    variable_pass {\n"
+    "      var: 0 {\n"
+    "        name: \"x\"\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  Tester tester;
+  openProjectWithText(tester,test_project_text);
+
+  tester.main_window.tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Variable Pass|x",
+    "Add Minimum"
+  );
+
+  tester.main_window.tree_editor.userChangesNumberValue(
+    "Charmapper1|Variable Pass|x|minimum",
+    10
+  );
+
+  tester.main_window.tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Variable Pass|x",
+    "Add Maximum"
+  );
+
+  tester.main_window.tree_editor.userChangesNumberValue(
+    "Charmapper1|Variable Pass|x|maximum",
+    20
+  );
+
+  FakeTreeItem &variable_item =
+    tester.main_window.tree_editor.root().children[0].children[0].children[0];
+  FakeSlider *slider_ptr = variable_item.maybeSlider();
+  assert(slider_ptr);
+  assert(slider_ptr->minimum == 10);
+  assert(slider_ptr->maximum == 20);
+}
+
+
 int main()
 {
   testAddingABodyToTheScene();
@@ -488,4 +533,5 @@ int main()
   testCreatingABodyWithAnAveragePosition();
   testOpeningAProject();
   testChangingAVariableName();
+  testChangingAVariableRange();
 }

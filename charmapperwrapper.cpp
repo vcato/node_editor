@@ -84,15 +84,21 @@ struct ChannelWrapper : LeafWrapper<NumericWrapper> {
   Channel &channel;
   const char *label_member;
   const WrapperData &callbacks;
+  using ValueChangedFunction =
+    std::function<void(const TreePath &,TreeObserver &)>;
+  ValueChangedFunction value_changed_function;
 
   ChannelWrapper(
     Channel &channel_arg,
     const char *label_arg,
-    const WrapperData &callbacks_arg
+    const WrapperData &callbacks_arg,
+    ValueChangedFunction value_changed_function_arg =
+      [](const TreePath &,TreeObserver &){}
   )
   : channel(channel_arg),
     label_member(label_arg),
-    callbacks(callbacks_arg)
+    callbacks(callbacks_arg),
+    value_changed_function(value_changed_function_arg)
   {
   }
 
@@ -117,8 +123,6 @@ struct ChannelWrapper : LeafWrapper<NumericWrapper> {
       return &*channel.optional_diagram;
     }
 
-    // Channels will have diagrams at some point, but they don't have them
-    // yet.
     return nullptr;
   }
 
@@ -136,10 +140,24 @@ struct ChannelWrapper : LeafWrapper<NumericWrapper> {
     return label_member;
   }
 
-  void setValue(Value arg) const override
+  void setValue(Value arg) const
   {
+    // We'll need to call a notification function so that if this channel
+    // is being used for a variable min/max then the tree observer can
+    // be notified of the change in the value range.
     channel.value = arg;
     callbacks.notifyCharmapChanged();
+  }
+
+  void
+    setValue(
+      Value arg,
+      const TreePath &tree_path,
+      TreeObserver &tree_observer
+    ) const override
+  {
+    setValue(arg);
+    value_changed_function(tree_path,tree_observer);
   }
 
   Value value() const override
@@ -159,7 +177,7 @@ struct ChannelWrapper : LeafWrapper<NumericWrapper> {
 
   bool canEditDiagram() const override
   {
-    assert(false);
+    return true;
   }
 };
 }
@@ -888,10 +906,15 @@ struct VariableWrapper : NumericWrapper {
       }
     }
 
-    void setValue(Value arg) const override
+    void setValue(Value arg) const
     {
       variable.value.value = arg;
       wrapper_data.notifyCharmapChanged();
+    }
+
+    void setValue(Value arg,const TreePath &,TreeObserver &) const override
+    {
+      setValue(arg);
     }
 
     Value value() const override
@@ -965,6 +988,21 @@ struct VariableWrapper : NumericWrapper {
       variable.maybe_maximum->value = value;
     }
 
+    TreePath minimumPath(const TreePath &variable_path) const
+    {
+      return childPath(variable_path,1);
+    }
+
+    TreePath maximumPath(const TreePath &variable_path) const
+    {
+      if (variable.maybe_minimum) {
+        return childPath(variable_path,2);
+      }
+      else {
+        return childPath(variable_path,1);
+      }
+    }
+
     void
       executeAddMinimum(
         const TreePath &variable_path,
@@ -973,7 +1011,8 @@ struct VariableWrapper : NumericWrapper {
     {
       assert(!variable.maybe_minimum);
       addDefaultMinimum();
-      tree_observer.itemReplaced(variable_path);
+      tree_observer.itemAdded(minimumPath(variable_path));
+      tree_observer.itemValueChanged(variable_path);
     }
 
     void
@@ -984,7 +1023,8 @@ struct VariableWrapper : NumericWrapper {
     {
       assert(!variable.maybe_maximum);
       addDefaultMaximum();
-      tree_observer.itemReplaced(variable_path);
+      tree_observer.itemAdded(maximumPath(variable_path));
+      tree_observer.itemValueChanged(variable_path);
     }
 
     template <typename Function>
@@ -1054,14 +1094,25 @@ struct VariableWrapper : NumericWrapper {
       return NameWrapper("name",variable.name,changed_func);
     }
 
+    ChannelWrapper rangeWrapper(Channel &channel, const char *label) const
+    {
+      auto range_changed_function =
+        [](const TreePath &minmax_path,TreeObserver &tree_observer){
+          TreePath variable_path = parentPath(minmax_path);
+          tree_observer.itemValueChanged(variable_path);
+        };
+
+      return {channel,label,wrapper_data,range_changed_function};
+    }
+
     ChannelWrapper minimumWrapper() const
     {
-      return ChannelWrapper(*variable.maybe_minimum,"minimum",wrapper_data);
+      return rangeWrapper(*variable.maybe_minimum,"minimum");
     }
 
     ChannelWrapper maximumWrapper() const
     {
-      return ChannelWrapper(*variable.maybe_maximum,"maximum",wrapper_data);
+      return rangeWrapper(*variable.maybe_maximum,"maximum");
     }
 
     template <typename Selector>

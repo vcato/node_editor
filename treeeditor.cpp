@@ -157,6 +157,11 @@ struct TreeEditor::TreeObserver : ::TreeObserver {
   {
     tree_editor.updateItemLabel(path);
   }
+
+  void itemValueChanged(const TreePath &path) override
+  {
+    tree_editor.updateItemValue(path);
+  }
 };
 
 
@@ -267,7 +272,8 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
     world(),
     path,
     [&](const NumericWrapper &numeric_wrapper){
-      numeric_wrapper.setValue(value);
+      TreeObserver tree_observer(*this);
+      numeric_wrapper.setValue(value,path,tree_observer);
     }
   );
 }
@@ -315,6 +321,57 @@ void TreeEditor::updateItemLabel(const TreePath &item_path)
     item_path,
     [&](const Wrapper &w){
       setItemLabel(item_path,w.label());
+    }
+  );
+}
+
+
+void TreeEditor::updateItemValue(const TreePath &item_path)
+{
+  struct Visitor : Wrapper::SubclassVisitor {
+    TreeEditor &tree_editor;
+    const TreePath &item_path;
+
+    Visitor(
+      TreeEditor &tree_editor_arg,
+      const TreePath &item_path_arg
+    )
+    : tree_editor(tree_editor_arg),
+      item_path(item_path_arg)
+    {
+    }
+
+    void operator()(const VoidWrapper &) const override
+    {
+      assert(false);
+    }
+
+    void operator()(const NumericWrapper &wrapper) const override
+    {
+      tree_editor.setItemNumericValue(
+        item_path,
+        wrapper.value(),
+        wrapper.minimumValue(),
+        wrapper.maximumValue()
+      );
+    }
+
+    void operator()(const EnumerationWrapper &) const override
+    {
+      assert(false);
+    }
+
+    void operator()(const StringWrapper &) const override
+    {
+      assert(false);
+    }
+  } visitor{*this,item_path};
+
+  visitSubWrapper(
+    world(),
+    item_path,
+    [&](const Wrapper &w){
+      w.accept(visitor);
     }
   );
 }

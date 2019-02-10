@@ -31,6 +31,7 @@ struct Wrapper {
     virtual void itemReplaced(const TreePath &) = 0;
     virtual void itemRemoved(const TreePath &) = 0;
     virtual void itemLabelChanged(const TreePath &) = 0;
+    virtual void itemValueChanged(const TreePath &) = 0;
   };
 
   struct SubclassVisitor {
@@ -182,7 +183,15 @@ struct NumericWrapper : Wrapper {
     visitor(*this);
   }
 
-  virtual void setValue(Value) const = 0;
+  // We'll need to pass the path and tree observer here in case changing
+  // this value affects other parts of the tree.
+  virtual void
+    setValue(
+      Value,
+      const TreePath &path,
+      TreeObserver &
+    ) const = 0;
+
   virtual Value value() const = 0;
 
   static Value noMinimumValue()

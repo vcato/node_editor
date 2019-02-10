@@ -195,7 +195,16 @@ namespace {
 struct NumericTestWrapper : BasicTestWrapper<NumericWrapper> {
   using BasicTestWrapper<NumericWrapper>::BasicTestWrapper;
 
-  void setValue(Value) const override { assert(false); }
+  void
+    setValue(
+      Value,
+      const TreePath &,
+      TreeObserver &
+    ) const override
+  {
+    assert(false);
+  }
+
   Value value() const override { return object.numeric_value; }
 };
 }
