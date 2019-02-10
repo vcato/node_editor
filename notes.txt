@@ -101,26 +101,3 @@ window, and then provide a diagram that generates what we will draw.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
----
-We could simply wrappers by not having operationNames and executeOperation
-members, and just having wrappers for Events.  We could create a menu by
-going through all the children and finding those which were events.
-
-We'd need to have it so that we don't get state for event children.
-Maybe there's a general principle that we don't add children that have no
-value and no children.
-
-It's interesting that we could have events that have children, and the
-children could represent parameters, like a function call.
----
-If we have a minimum and maximum value for a variable.  Use a slider
-instead of a spin box for the value.
-
-Updating the min/max value for a variable should update the slider range.
-
-The slider needs to show the value.  There isn't a Qt widget that has a
-slider combined with a text field, so we'll need to make one.
-
-Seeing some weird behavior when adding a min/max to a variable.  It might
-be due to creating the item widget for the spin box or slider after
-adding the item to the tree.

@@ -1,0 +1,10 @@
+We could simplify wrappers by not having operationNames and executeOperation
+members, and just having wrappers for Events.  We could create a menu by
+going through all the children and finding those which were events.
+
+We'd need to have it so that we don't get state for event children.
+Maybe there's a general principle that we don't add children that have no
+value and no children.
+
+It's interesting that we could have events that have children, and the
+children could represent parameters, like a function call.

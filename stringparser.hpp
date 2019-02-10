@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <string>
+#include "optional.hpp"
 
 
 class StringParser {
@@ -16,7 +17,7 @@ class StringParser {
     inline bool skipNumber() const;
     inline void skipWhitespace() const;
     inline bool getIdentifier(std::string &identifier) const;
-    inline bool getNumber(float &number) const;
+    bool getNumber(float &number) const;
     int index() const { return _index; }
 
   private:
@@ -130,23 +131,6 @@ bool StringParser::getIdentifier(std::string &identifier) const
   skipIdentifier();
   int end = _index;
   identifier = text.substr(start,end-start);
-  return true;
-}
-
-
-bool StringParser::getNumber(float &number) const
-{
-  skipWhitespace();
-
-  int start = _index;
-
-  if (!skipNumber()) {
-    return false;
-  }
-
-  int end = _index;
-
-  number = stoi(text.substr(start,end-start));
   return true;
 }
 

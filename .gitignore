@@ -35,3 +35,4 @@ streamparser_test
 fileaccessor_test
 observeddiagrams_test
 qtslider_manualtest
+maybeint_test
