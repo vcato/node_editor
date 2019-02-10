@@ -444,6 +444,38 @@ static void testOpeningAProject()
 }
 
 
+static void testOpeningAProjectWhenADiagramEditorIsOpen()
+{
+  const char *test_project_text =
+    "world {\n"
+    "  charmapper {\n"
+    "    variable_pass {\n"
+    "      var: 0 {\n"
+    "        name: \"x\"\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "}\n";
+
+  // Have some world where we have something that has a diagram.
+  Tester tester;
+  openProjectWithText(tester,test_project_text);
+
+  // User opens the diagram editor.
+  tester.main_window.tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Variable Pass|x",
+    "Edit Diagram..."
+  );
+
+  assert( tester.main_window.tree_editor.diagram_editor_windows.size() == 1);
+
+  // User re-opens the same project.
+  openProjectWithText(tester,test_project_text);
+
+  assert( tester.main_window.tree_editor.diagram_editor_windows.size() == 0);
+}
+
+
 static void testChangingAVariableName()
 {
   // Have a charmapper with a variable pass with a variable.
@@ -532,6 +564,7 @@ int main()
   testCancellingOpenProject();
   testCreatingABodyWithAnAveragePosition();
   testOpeningAProject();
+  testOpeningAProjectWhenADiagramEditorIsOpen();
   testChangingAVariableName();
   testChangingAVariableRange();
 }

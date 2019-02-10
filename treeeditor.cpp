@@ -144,6 +144,7 @@ struct TreeEditor::TreeObserver : ::TreeObserver {
   void itemReplaced(const TreePath &path) override
   {
     tree_editor.removeTreeItem(path);
+    tree_editor.removeDiagramEditors(path);
     tree_editor.createTreeItem(path);
   }
 
@@ -231,6 +232,7 @@ void TreeEditor::setWorldState(const WrapperState &new_state)
 {
   Wrapper *world_ptr = worldPtr();
   assert(world_ptr);
+  removeDiagramEditors(TreePath());
   world_ptr->setState(new_state);
   replaceChildTreeItems(TreePath());
   collapseChildren(TreePath());

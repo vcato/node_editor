@@ -63,10 +63,10 @@ static void notifyDiagramChanged(Wrapper &wrapper,const string &path_string)
 
 
 namespace {
-struct FakeTreeObserver : Wrapper::TreeObserver {
+struct CommandStreamTreeObserver : Wrapper::TreeObserver {
   ostream &command_stream;
 
-  FakeTreeObserver(ostream &command_stream_arg)
+  CommandStreamTreeObserver(ostream &command_stream_arg)
   : command_stream(command_stream_arg)
   {
   }
@@ -268,7 +268,7 @@ static void testAddingABodyToTheScene()
   TreePath scene_path = {1};
 
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
 
   executeAddBodyFunction2(world_wrapper,scene_path,tree_observer);
 
@@ -284,14 +284,14 @@ static void testAddingABodyToTheScene()
     "itemReplaced([0,0,0,0])\n"
     "itemReplaced([0,0,0,2,0])\n";
 
-  if (command_string!=expected_command_string) {
+  if (command_string != expected_command_string) {
     cerr << "command_string:\n";
     cerr << command_string << "\n";
     cerr << "expected_command_string:\n";
     cerr << expected_command_string << "\n";
   }
 
-  assert(command_string==expected_command_string);
+  assert(command_string == expected_command_string);
 }
 }
 
@@ -305,7 +305,7 @@ static void testAddingABodyToABody()
   WorldWrapper world_wrapper(world);
 
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
 
   executeWrapperOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
 
@@ -427,7 +427,7 @@ static void testChangingTheTargetBody()
   charmapper.addMotionPass();
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
   string motion_pass_path = "Charmapper1|Motion Pass";
 
   {
@@ -617,7 +617,7 @@ static void testRemovingABodyFromTheScene()
     childPath(scene_path,SceneWrapper::firstBodyChildIndex());
 
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
 
   executeOperation2(world_wrapper,body_path,"Remove",tree_observer);
 
@@ -647,7 +647,7 @@ static void testRemovingAPosExprFromAMotionPass()
   motion_pass.addPosExpr();
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
 
   executeWrapperOperation(
     world_wrapper,
@@ -668,7 +668,7 @@ static void testRemovingACharmapper()
   world.addCharmapper();
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
   executeWrapperOperation(world_wrapper,"Charmapper1","Remove",tree_observer);
   assert(world.nMembers()==0);
   string expected_command_string = "removeItem([0])\n";
@@ -689,7 +689,7 @@ static void testRemovingAScene()
 
   WorldWrapper world_wrapper(world);
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
   executeWrapperOperation(world_wrapper,"Scene1","Remove",tree_observer);
   assert(world.nMembers()==1);
   string expected_command_string =
@@ -882,7 +882,7 @@ static void testUsingACharmapperVariable()
   WorldWrapper world_wrapper(world);
 
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
 
   executeWrapperOperation(
     world_wrapper,
@@ -946,7 +946,7 @@ static void testUsingACharmapperVariable()
 namespace {
 struct VariableLimitsTester {
   ostringstream command_stream;
-  FakeTreeObserver tree_observer{command_stream};
+  CommandStreamTreeObserver tree_observer{command_stream};
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::VariablePass &variable_pass = charmapper.addVariablePass();
@@ -1244,7 +1244,7 @@ static void testAddingAFrameToTheScene()
   WrapperState state = stateFromText(text);
   wrapper.setState(state);
   ostringstream command_stream;
-  FakeTreeObserver tree_observer(command_stream);
+  CommandStreamTreeObserver tree_observer(command_stream);
 
   executeWrapperOperation(
     wrapper,"Scene1|background_motion","Add Frame",tree_observer

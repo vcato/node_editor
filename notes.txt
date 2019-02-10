@@ -93,7 +93,7 @@ to turn those into a color, and then display the color.
 ---
 It would be neat if you could select some text in a node, then drag it out
 and have it create a new node with the text, replace the text in the original
-node with a $ and attach the new node's output to a new input connector.
+node with a $, and attach the new node's output to a new input connector.
 ---
 Maybe a good thing to work on is being able to draw a spline.
 We'll need a way to create a window, create a drawing area within the
@@ -101,3 +101,9 @@ window, and then provide a diagram that generates what we will draw.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
+---
+Be able to remove variable min/max
+
+Having the worldwrapper_test use a FakeTree should make the tests easier.
+Looks like we don't have anything that ties a TreeObserver to a tree.
+I guess all this logic is inside the TreeEditor currently.

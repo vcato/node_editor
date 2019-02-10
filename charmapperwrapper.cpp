@@ -79,6 +79,27 @@ static void setChildren(const Wrapper &wrapper,const WrapperState &state)
 }
 
 
+static Diagram *channelDiagramPtr(Channel &channel)
+{
+  if (channel.optional_diagram) {
+    return &*channel.optional_diagram;
+  }
+
+  return nullptr;
+}
+
+
+static DiagramObserverPtr
+  makeChannelDiagramObserver(const WrapperData &callbacks,Channel &channel)
+{
+  if (!channel.optional_diagram) {
+    channel.optional_diagram.emplace();
+  }
+
+  return callbacks.makeDiagramObserver(*channel.optional_diagram);
+}
+
+
 namespace {
 struct ChannelWrapper : LeafWrapper<NumericWrapper> {
   Channel &channel;
@@ -119,20 +140,12 @@ struct ChannelWrapper : LeafWrapper<NumericWrapper> {
 
   Diagram *diagramPtr() const override
   {
-    if (channel.optional_diagram) {
-      return &*channel.optional_diagram;
-    }
-
-    return nullptr;
+    return channelDiagramPtr(channel);
   }
 
   DiagramObserverPtr makeDiagramObserver() const override
   {
-    if (!channel.optional_diagram) {
-      channel.optional_diagram.emplace();
-    }
-
-    return callbacks.makeDiagramObserver(*channel.optional_diagram);
+    return makeChannelDiagramObserver(callbacks,channel);
   }
 
   Label label() const override
@@ -1153,6 +1166,21 @@ struct VariableWrapper : NumericWrapper {
       ChildSelector selector{child_index};
       forEachSelectedChild(selector,visitor);
     }
+
+  bool canEditDiagram() const override
+  {
+    return true;
+  }
+
+  Diagram *diagramPtr() const override
+  {
+    return channelDiagramPtr(variable.value);
+  }
+
+  DiagramObserverPtr makeDiagramObserver() const override
+  {
+    return makeChannelDiagramObserver(wrapper_data,variable.value);
+  }
 };
 }
 
@@ -1555,6 +1583,7 @@ void
   Callbacks callbacks;
 
   bool diagram_observer_created = false;
+
   CharmapperWrapper::WrapperData wrapper_data{
     scene_list,
     observed_diagrams,
