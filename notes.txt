@@ -107,3 +107,14 @@ Be able to remove variable min/max
 Having the worldwrapper_test use a FakeTree should make the tests easier.
 Looks like we don't have anything that ties a TreeObserver to a tree.
 I guess all this logic is inside the TreeEditor currently.
+
+TreeEditor::TreeObserver is the observer, but it handles removing
+diagram editors as well as updating the tree.
+
+TreeEditor::createTreeItem() is a bit complicated.  We could extract
+this logic so that it works off a Tree and not be specific to the
+TreeEditor.
+
+We have tree_editor.createVoidItem(), in CreateChildItemVisitor but we could 
+change it to tree_editor.tree().createVoidItem(), and then extract the
+tree_editor in a second step.
