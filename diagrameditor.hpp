@@ -255,6 +255,12 @@ class DiagramEditor {
         float vertical_alignment
       ) const;
 
+    int
+      closestColumn(
+        const ViewportTextObject &line_text_object,
+        const ViewportCoords &
+      ) const;
+
     NodeTextEditor::CursorPosition
       closestCursorPositionTo(
         NodeIndex node_index,

@@ -626,6 +626,30 @@ static void order(float &a,float &b)
 }
 
 
+int
+  DiagramEditor::closestColumn(
+    const ViewportTextObject &line_text_object,
+    const ViewportCoords &p
+  ) const
+{
+  int best_column_index = 0;
+  int length = line_text_object.text.length();
+  float min_distance = FLT_MAX;
+
+  for (int column_index=0; column_index!=length+1; ++column_index) {
+    ViewportLine l = textObjectCursorLine(line_text_object,column_index);
+    float d = fabsf(l.start.x - p.x);
+
+    if (d < min_distance) {
+      min_distance = d;
+      best_column_index = column_index;
+    }
+  }
+
+  return best_column_index;
+}
+
+
 NodeTextEditor::CursorPosition
   DiagramEditor::closestCursorPositionTo(
     NodeIndex node_index,
@@ -645,21 +669,22 @@ NodeTextEditor::CursorPosition
     ViewportRect line_rect = rectAroundText(line_text_object);
 
     if (p.y >= line_rect.start.y && p.y <= line_rect.end.y) {
-      int best_column_index = 0;
-      int length = line_text_object.text.length();
-      float min_distance = FLT_MAX;
-
-      for (int column_index=0; column_index!=length+1; ++column_index) {
-        ViewportLine l = textObjectCursorLine(line_text_object,column_index);
-        float d = fabsf(l.start.x - p.x);
-
-        if (d < min_distance) {
-          min_distance = d;
-          best_column_index = column_index;
-        }
-      }
+      int best_column_index = closestColumn(line_text_object,p);
 
       return {line_index,best_column_index};
+    }
+  }
+
+  {
+    int line_index = 0;
+
+    const ViewportTextObject &line_text_object =
+      render_info.text_objects[line_index];
+
+    ViewportRect line_rect = rectAroundText(line_text_object);
+
+    if (p.y > line_rect.end.y) {
+      return {line_index,closestColumn(line_text_object,p)};
     }
   }
 

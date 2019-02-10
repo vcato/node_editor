@@ -101,3 +101,12 @@ window, and then provide a diagram that generates what we will draw.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
+---
+Test clicking below the last line inside the node on a focused node.
+
+Should require some changes to DiagramEditor::closestCursorPositionTo().
+---
+Finish refactoring tests in diagrameditor_test.cpp:
+  testClickingOnAFocusedNode*()
+
+to use common logic.
