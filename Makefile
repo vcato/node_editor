@@ -37,6 +37,7 @@ run_unit_tests: \
 
 build_manual_tests: \
   qtscenewindow_manualtest \
+  qtslider_manualtest \
   qtdiagrameditorwindow_manualtest
 
 main: main.o diagrameditor.o \
@@ -47,6 +48,7 @@ main: main.o diagrameditor.o \
   qtslot.o                moc_qtslot.o \
   qtcombobox.o            moc_qtcombobox.o \
   qtlineedit.o            moc_qtlineedit.o \
+  qtslider.o              moc_qtslider.o \
   qtdiagrameditorwindow.o \
   mainwindow.o \
   circle.o stringutil.o linetext.o diagramnode.o diagram.o \
@@ -238,6 +240,9 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
   qtsceneviewer.o draw.o scene.o qttreewidgetitem.o qtscenetree.o \
   scenetree.o scenewindow.o generatename.o sceneviewer.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+qtslider_manualtest: qtslider_manualtest.o moc_qtslider.o qtslider.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtdiagrameditorwindow_manualtest: qtdiagrameditorwindow_manualtest.o \

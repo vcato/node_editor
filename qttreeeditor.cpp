@@ -17,6 +17,7 @@
 #include "qtdiagrameditorwindow.hpp"
 #include "qtwidget.hpp"
 #include "qtlayout.hpp"
+#include "qtslider.hpp"
 
 
 using std::cerr;
@@ -28,7 +29,7 @@ using std::list;
 
 
 namespace {
-struct QtItemWidget : QWidget {
+struct QtItemWrapperWidget : QWidget {
   QLabel *label_widget_ptr = nullptr;
   QWidget *value_widget_ptr = nullptr;
 };
@@ -41,19 +42,15 @@ static void setLabelWidgetText(QLabel &label_widget,const string &label)
 }
 
 
-template <typename T>
-T &
-  QtTreeEditor::createItemWidget(
+QLabel&
+  QtTreeEditor::createItemLabelWidget(
     QTreeWidgetItem &item,
+    QHBoxLayout &layout,
     const LabelProperties &label_properties
   )
 {
   const std::string &label = label_properties.text;
   bool label_is_editable = label_properties.is_editable;
-  QtItemWidget *wrapper_widget_ptr = new QtItemWidget();
-  // NOTE: setting the item widget before adding the contents makes
-  // it not have the proper size.
-  QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
 
   if (label_is_editable) {
     assert(false); // not handled
@@ -67,8 +64,25 @@ T &
   else {
     QLabel &label_widget = createWidget<QLabel>(layout);
     setLabelWidgetText(label_widget,label);
-    wrapper_widget_ptr->label_widget_ptr = &label_widget;
+    return label_widget;
   }
+}
+
+
+template <typename T>
+T &
+  QtTreeEditor::createItemWidget(
+    QTreeWidgetItem &item,
+    const LabelProperties &label_properties
+  )
+{
+  QtItemWrapperWidget *wrapper_widget_ptr = new QtItemWrapperWidget();
+  // NOTE: setting the item widget before adding the contents makes
+  // it not have the proper size.
+  QHBoxLayout &layout = createLayout<QHBoxLayout>(*wrapper_widget_ptr);
+
+  wrapper_widget_ptr->label_widget_ptr =
+    &createItemLabelWidget(item,layout,label_properties);
 
   T& widget = createWidget<T>(layout);
 
@@ -183,10 +197,12 @@ void
 }
 
 
-static QtItemWidget &itemWrapperWidget(QTreeWidget &tree,QTreeWidgetItem &item)
+static QtItemWrapperWidget &
+  itemWrapperWidget(QTreeWidget &tree,QTreeWidgetItem &item)
 {
   QWidget *widget_ptr = tree.itemWidget(&item,/*column*/0);
-  QtItemWidget *item_widget_ptr = dynamic_cast<QtItemWidget*>(widget_ptr);
+  QtItemWrapperWidget *item_widget_ptr =
+    dynamic_cast<QtItemWrapperWidget*>(widget_ptr);
   assert(item_widget_ptr);
   return *item_widget_ptr;
 }
@@ -201,13 +217,13 @@ void
   )
 {
   QTreeWidgetItem &item = itemFromPath(path);
-  QtItemWidget &wrapper_widget = itemWrapperWidget(*this,item);
+  QtItemWrapperWidget &wrapper_widget = itemWrapperWidget(*this,item);
   QWidget *value_widget_ptr = wrapper_widget.value_widget_ptr;
   assert(value_widget_ptr);
 
   bool use_slider = useSliderForRange(minimum_value,maximum_value);
 
-  if (auto *slider_ptr = dynamic_cast<QSlider*>(value_widget_ptr)) {
+  if (auto *slider_ptr = dynamic_cast<QtSlider*>(value_widget_ptr)) {
     auto &slider = *slider_ptr;
 
     if (use_slider) {
@@ -233,8 +249,10 @@ void
       wrapper_widget.value_widget_ptr = 0;
       delete &spin_box;
 
-      auto& slider = createWidget<QSlider>(box_layout);
-      slider.setOrientation(Qt::Horizontal);
+      auto& slider = createWidget<QtSlider>(box_layout);
+      slider.value_changed_function =
+        [this,&item](int value){ handleSliderItemValueChanged(&item,value); };
+
       slider.setMinimum(minimum_value);
       slider.setMaximum(maximum_value);
       slider.setValue(value);
@@ -290,7 +308,7 @@ void
 {
   QTreeWidgetItem &item = itemFromPath(path);
 
-  QtItemWidget &item_widget = itemWrapperWidget(*this,item);
+  QtItemWrapperWidget &item_widget = itemWrapperWidget(*this,item);
   assert(item_widget.label_widget_ptr);
   setLabelWidgetText(*item_widget.label_widget_ptr,new_label);
 }
@@ -373,9 +391,10 @@ void
 
   // Logic needs to be consistent when we recreate the widget if the value
   // changes.
-  QSlider &slider =
-    tree_widget.createItemWidget<QSlider>(item,label_properties);
-  slider.setOrientation(Qt::Horizontal);
+  QtSlider &slider =
+    tree_widget.createItemWidget<QtSlider>(item,label_properties);
+  slider.value_changed_function =
+    [this,&item](int value){ handleSliderItemValueChanged(&item,value); };
   slider.setValue(value);
   slider.setMinimum(minimum_value);
   slider.setMaximum(maximum_value);
@@ -487,6 +506,17 @@ void
 
 void
   QtTreeEditor::handleSpinBoxItemValueChanged(
+    QTreeWidgetItem *item_ptr,
+    int value
+  )
+{
+  assert(item_ptr);
+  numberItemValueChanged(itemPath(*item_ptr),value);
+}
+
+
+void
+  QtTreeEditor::handleSliderItemValueChanged(
     QTreeWidgetItem *item_ptr,
     int value
   )

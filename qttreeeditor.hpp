@@ -4,6 +4,9 @@
 #include <QTreeWidget>
 #include "treeeditor.hpp"
 
+struct QHBoxLayout;
+struct QLabel;
+
 
 class QtTreeEditor : public QTreeWidget, public TreeEditor {
   Q_OBJECT
@@ -130,6 +133,12 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
       );
 
     void
+      handleSliderItemValueChanged(
+        QTreeWidgetItem *item_ptr,
+        int value
+      );
+
+    void
       handleLineEditItemValueChanged(
         QTreeWidgetItem *item_ptr,
         const std::string &value
@@ -138,6 +147,13 @@ class QtTreeEditor : public QTreeWidget, public TreeEditor {
     void selectItem(const TreePath &path);
 
     void itemLabelChanged(QTreeWidgetItem &,const std::string &new_text);
+
+    QLabel&
+      createItemLabelWidget(
+        QTreeWidgetItem &item,
+        QHBoxLayout &layout,
+        const LabelProperties &label_properties
+      );
 };
 
 #endif /* QTTREEEDITOR_HPP_ */
