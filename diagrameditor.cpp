@@ -650,6 +650,63 @@ int
 }
 
 
+struct DiagramEditor::CursorPositionFinder {
+  const DiagramEditor &diagram_editor;
+  const NodeRenderInfo &render_info;
+  const ViewportCoords &p;
+
+  template <typename IsFeasiblePointFunction>
+  Optional<NodeTextEditor::CursorPosition>
+    maybeFind(
+      int line_index,
+      const IsFeasiblePointFunction &is_feasible_point
+    )
+  {
+    const ViewportTextObject &line_text_object =
+      render_info.text_objects[line_index];
+
+    ViewportRect line_rect = diagram_editor.rectAroundText(line_text_object);
+
+    if (is_feasible_point(line_rect)) {
+      int best_column_index = diagram_editor.closestColumn(line_text_object,p);
+
+      return {{line_index,best_column_index}};
+    }
+
+    return {};
+  }
+
+  Optional<NodeTextEditor::CursorPosition> maybeFindInside(int line_index)
+  {
+    auto inside = [&](const ViewportRect &line_rect)
+    {
+      return (p.y >= line_rect.start.y && p.y <= line_rect.end.y);
+    };
+
+    return maybeFind(line_index,inside);
+  }
+
+  Optional<NodeTextEditor::CursorPosition> maybeFindAbove(int line_index)
+  {
+    auto above = [&](const ViewportRect &line_rect)
+    {
+      return (p.y > line_rect.end.y);
+    };
+
+    return maybeFind(line_index,above);
+  }
+
+  Optional<NodeTextEditor::CursorPosition> maybeFindBelow(int line_index)
+  {
+    auto below = [&](const ViewportRect &line_rect){
+      return (p.y < line_rect.start.y);
+    };
+
+    return maybeFind(line_index,below);
+  }
+};
+
+
 NodeTextEditor::CursorPosition
   DiagramEditor::closestCursorPositionTo(
     NodeIndex node_index,
@@ -657,37 +714,31 @@ NodeTextEditor::CursorPosition
   ) const
 {
   NodeRenderInfo render_info = nodeRenderInfo(node(node_index));
-  int line_index = 0;
   int n_lines = render_info.text_objects.size();
 
   assert(n_lines!=0);
 
-  for (;line_index != n_lines; ++line_index) {
-    const ViewportTextObject &line_text_object =
-      render_info.text_objects[line_index];
+  CursorPositionFinder finder{*this,render_info,p};
 
-    ViewportRect line_rect = rectAroundText(line_text_object);
-
-    if (p.y >= line_rect.start.y && p.y <= line_rect.end.y) {
-      int best_column_index = closestColumn(line_text_object,p);
-
-      return {line_index,best_column_index};
+  for (int line_index=0; line_index != n_lines; ++line_index) {
+    if (auto maybe_cursor_position = finder.maybeFindInside(line_index)) {
+      return *maybe_cursor_position;
     }
   }
 
-  {
-    int line_index = 0;
+  int first_line = 0;
 
-    const ViewportTextObject &line_text_object =
-      render_info.text_objects[line_index];
-
-    ViewportRect line_rect = rectAroundText(line_text_object);
-
-    if (p.y > line_rect.end.y) {
-      return {line_index,closestColumn(line_text_object,p)};
-    }
+  if (auto maybe_cursor_position = finder.maybeFindAbove(first_line)) {
+    return *maybe_cursor_position;
   }
 
+  int last_line = n_lines - 1;
+
+  if (auto maybe_cursor_position = finder.maybeFindBelow(last_line)) {
+    return *maybe_cursor_position;
+  }
+
+  // Uh... where?
   assert(false);
 }
 

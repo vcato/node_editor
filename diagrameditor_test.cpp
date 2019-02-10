@@ -539,18 +539,24 @@ static ViewportCoords linePoint(const ViewportLine &l,float fraction)
 }
 
 
-static void testClickingOnAFocusedNode()
-{
+namespace {
+struct ClickingOnAFocusedNodeTest {
   using CursorPosition = NodeTextEditor::CursorPosition;
-  string node_text = "12";
+  string node_text;
   CursorPosition target_cursor_position{/*line*/0,/*column*/1};
   float target_fraction = 0.5;
-  CursorPosition expected_cursor_position = target_cursor_position;
+  CursorPosition expected_cursor_position{/*line*/0,/*column*/1};
+};
+}
 
+
+static void testClickingOnAFocusedNode(const ClickingOnAFocusedNodeTest &test)
+{
   // Have a diagram with a single node.
   Tester tester;
   FakeDiagramEditor &editor = tester.editor;
-  NodeIndex node = editor.userAddsANodeWithTextAt(node_text,DiagramCoords(0,0));
+  NodeIndex node =
+    editor.userAddsANodeWithTextAt(test.node_text,DiagramCoords(0,0));
 
   // Click on the node to select it.
   editor.userClicksOnNode(node);
@@ -562,96 +568,65 @@ static void testClickingOnAFocusedNode()
 
   // Click again on the node to move the cursor.
   ViewportLine cursor_line =
-    editor.cursorLine(editor.focusedNodeIndex(),target_cursor_position);
+    editor.cursorLine(editor.focusedNodeIndex(),test.target_cursor_position);
   assert(cursor_line.start.y < cursor_line.end.y);
 
   int old_redraw_count = editor.redraw_count;
 
-  editor.userClicksAt(linePoint(cursor_line,target_fraction));
+  editor.userClicksAt(linePoint(cursor_line,test.target_fraction));
 
   // The cursor position should have changed.
-  assert(editor.cursorPosition() == expected_cursor_position);
+  assert(editor.cursorPosition() == test.expected_cursor_position);
   assert(editor.aNodeIsFocused());
   assert(editor.redraw_count == old_redraw_count+1);
+}
+
+
+static void testClickingOnAFocusedNode1()
+{
+  ClickingOnAFocusedNodeTest test;
+  test.node_text = "12";
+  test.target_cursor_position = {/*line*/0,/*column*/1};
+  test.target_fraction = 0.5;
+  test.expected_cursor_position = test.target_cursor_position;
+
+  testClickingOnAFocusedNode(test);
 }
 
 
 static void testClickingOnAFocusedNode2()
 {
-  using CursorPosition = NodeTextEditor::CursorPosition;
-  string node_text = "abcd\ne";
-  CursorPosition target_cursor_position{/*line*/0,/*column*/3};
-  float target_fraction = -0.5;
-  CursorPosition expected_cursor_position(/*line*/1,/*column*/1);
+  ClickingOnAFocusedNodeTest test;
+  test.node_text = "abcd\ne";
+  test.target_cursor_position = {/*line*/0,/*column*/3};
+  test.target_fraction = -0.5;
+  test.expected_cursor_position = {/*line*/1,/*column*/1};
 
-  // Have a diagram with a single node.
-  Tester tester;
-  FakeDiagramEditor &editor = tester.editor;
-  NodeIndex node = editor.userAddsANodeWithTextAt(node_text,DiagramCoords(0,0));
-
-  // Click on the node to select it.
-  editor.userClicksOnNode(node);
-  assert(editor.nodeIsSelected(node));
-
-  // Click again on the node to focus it.
-  editor.userClicksOnNode(node);
-  assert(editor.aNodeIsFocused());
-
-  // Click again below the d
-  ViewportLine cursor_line =
-    editor.cursorLine(editor.focusedNodeIndex(),target_cursor_position);
-  assert(cursor_line.start.y < cursor_line.end.y);
-  ViewportCoords p = linePoint(cursor_line, target_fraction);
-
-  int old_redraw_count = editor.redraw_count;
-
-  editor.userClicksAt(editor.viewportCoordsFromDiagramCoords(p));
-
-  // The cursor position should have changed.
-  assert(editor.cursorPosition() == expected_cursor_position);
-  assert(editor.aNodeIsFocused());
-  assert(editor.redraw_count == old_redraw_count+1);
+  testClickingOnAFocusedNode(test);
 }
 
 
 static void testClickingOnAFocusedNodeAboveFirstLine()
 {
-  // If we have a node that has multiple inputs but a single line, then
-  // there's an area above and below the text that is not part of any line
-  // but it still inside the node.  Need to make sure that clicking in
-  // these areas does something reasonable.
+  ClickingOnAFocusedNodeTest test;
+  test.node_text = "$ + $";
+  test.target_cursor_position = {/*line*/0,/*column*/1};
+  test.target_fraction = 1.5;
+  test.expected_cursor_position = {/*line*/0,/*column*/1};
 
-  string node_text = "$ + $";
+  testClickingOnAFocusedNode(test);
+}
 
-  // Have a diagram with a single node.
-  Tester tester;
-  FakeDiagramEditor &editor = tester.editor;
-  NodeIndex node = editor.userAddsANodeWithTextAt(node_text,DiagramCoords(0,0));
 
-  // Click on the node to select it.
-  editor.userClicksOnNode(node);
+static void testClickingOnAFocusedNodeBelowFirstLine()
+{
+  ClickingOnAFocusedNodeTest test;
+  test.node_text = "$ + $";
+  test.target_cursor_position = {/*line*/0,/*column*/1};
+  test.target_fraction = -0.5;
+  test.expected_cursor_position = {/*line*/0,/*column*/1};
 
-  // Click again on the node to focus it.
-  editor.userClicksOnNode(node);
-
-  // Click again above the first line
-  using CursorPosition = NodeTextEditor::CursorPosition;
-  CursorPosition cursor_position{/*line*/0,/*column*/1};
-  ViewportLine cursor_line =
-    editor.cursorLine(editor.focusedNodeIndex(),cursor_position);
-  assert(cursor_line.start.y < cursor_line.end.y);
-  auto character_height = editor.characterHeight();
-
-  ViewportCoords p = cursor_line.end + Vector2D(0,character_height/2);
-
-  int old_redraw_count = editor.redraw_count;
-
-  editor.userClicksAt(editor.viewportCoordsFromDiagramCoords(p));
-
-  // The cursor position should have changed.
-  CursorPosition expected_cursor_position(/*line*/0,/*column*/1);
-  assert(editor.cursorPosition() == expected_cursor_position);
-  assert(editor.redraw_count == old_redraw_count+1);
+  testClickingOnAFocusedNode(test);
 }
 
 
@@ -697,9 +672,10 @@ int main()
   testTranslatingView2();
   testCancellingExport();
   testConnectingNodes();
-  testClickingOnAFocusedNode();
+  testClickingOnAFocusedNode1();
   testClickingOnAFocusedNode2();
   testClickingOnAFocusedNodeAboveFirstLine();
+  testClickingOnAFocusedNodeBelowFirstLine();
   testCopyingANodeByCtrlDrag();
 
   ImportTester().runWithEmptyDiagram();

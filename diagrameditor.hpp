@@ -261,6 +261,8 @@ class DiagramEditor {
         const ViewportCoords &
       ) const;
 
+    struct CursorPositionFinder;
+
     NodeTextEditor::CursorPosition
       closestCursorPositionTo(
         NodeIndex node_index,
