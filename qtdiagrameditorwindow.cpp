@@ -16,6 +16,11 @@ QtDiagramEditorWindow::QtDiagramEditorWindow()
 }
 
 
+QtDiagramEditorWindow::~QtDiagramEditorWindow()
+{
+}
+
+
 DiagramEditor &QtDiagramEditorWindow::diagramEditor()
 {
   assert(diagram_editor_ptr);

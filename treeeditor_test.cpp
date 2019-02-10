@@ -256,6 +256,19 @@ void
 }
 
 
+static bool
+  diagramIsObserved(
+    ObservedDiagrams &observed_diagrams,
+    const Diagram &diagram
+  )
+{
+  ObservedDiagram *observed_diagram_ptr =
+    observed_diagrams.findObservedDiagramFor(diagram);
+
+  return observed_diagram_ptr != nullptr;
+}
+
+
 static void testEditingDiagramThenClosingTheDiagramEditorWindow()
 {
   Diagram diagram;
@@ -267,9 +280,14 @@ static void testEditingDiagramThenClosingTheDiagramEditorWindow()
   editor.userSelectsContextMenuItem("","Edit Diagram...");
   assert(editor.diagram_editor_windows[0]);
   assert(editor.nDiagramEditorWindows()==1);
+  assert(diagramIsObserved(object.observed_diagrams, diagram));
+
   editor.diagram_editor_windows[0]->userClosesWindow();
+
   assert(editor.diagram_editor_windows.empty());
   assert(editor.nDiagramEditorWindows()==0);
+
+  assert(!diagramIsObserved(object.observed_diagrams, diagram));
 }
 
 

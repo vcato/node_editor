@@ -545,6 +545,7 @@ void QtTreeEditor::itemSelectionChangedSlot()
 DiagramEditorWindow& QtTreeEditor::createDiagramEditor()
 {
   auto window_ptr = new QtDiagramEditorWindow;
+  window_ptr->setAttribute( Qt::WA_DeleteOnClose );
   window_ptr->show();
   return *window_ptr;
 }

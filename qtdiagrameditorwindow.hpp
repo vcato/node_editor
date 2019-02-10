@@ -11,6 +11,7 @@ class QtDiagramEditor;
 class QtDiagramEditorWindow : public QDialog, public DiagramEditorWindow {
   public:
     QtDiagramEditorWindow();
+    ~QtDiagramEditorWindow();
     DiagramEditor &diagramEditor() override;
 
   private:
