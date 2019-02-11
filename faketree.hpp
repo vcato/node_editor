@@ -1,9 +1,11 @@
 #ifndef FAKETREE_HPP_
 #define FAKETREE_HPP_
 
-
+#include <memory>
 #include <string>
 #include <vector>
+#include <cassert>
+#include "treewidget.hpp"
 
 
 struct FakeSlider {
@@ -57,8 +59,78 @@ struct FakeTreeItem {
 };
 
 
-struct FakeTree {
+struct FakeTree : TreeWidget {
   using Item = FakeTreeItem;
+
+  static FakeTree::Item &
+    createItem(
+      FakeTree &tree,
+      const TreePath &new_item_path,
+      const LabelProperties &label_properties
+    );
+
+  void
+    createVoidItem(
+      const TreePath &new_item_path,
+      const TreeWidget::LabelProperties &label_properties
+    ) override
+  {
+    createItem(
+      *this,
+      new_item_path,
+      label_properties
+    );
+  }
+
+  void
+    createNumericItem(
+      const TreePath &new_item_path,
+      const LabelProperties &label_properties,
+      NumericValue value,
+      NumericValue minimum_value,
+      NumericValue maximum_value
+    )
+  {
+    FakeTreeItem &item =
+      createItem(*this,new_item_path,label_properties);
+    item.value_widget_ptr = std::make_unique<FakeSlider>();
+    item.value_widget_ptr->value = value;
+    item.value_widget_ptr->minimum = minimum_value;
+    item.value_widget_ptr->maximum = maximum_value;
+  }
+
+  void
+    createEnumerationItem(
+      const TreePath &new_item_path,
+      const LabelProperties &label_properties,
+      const std::vector<std::string> &/*options*/,
+      int /*value*/
+    ) override
+  {
+    createItem(*this,new_item_path,label_properties);
+  }
+
+  void
+    createStringItem(
+      const TreePath &new_item_path,
+      const LabelProperties &label_properties,
+      const std::string &/*value*/
+    ) override
+  {
+    createItem(*this,new_item_path,label_properties);
+  }
+
+  void setItemLabel(const TreePath &path,const std::string &new_label);
+
+  void removeItem(const TreePath &path) override;
+
+  void
+    setItemNumericValue(
+      const TreePath &,
+      NumericValue value,
+      NumericValue minimum_value,
+      NumericValue maximum_value
+    ) override;
 
   Item root;
 };

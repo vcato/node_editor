@@ -66,7 +66,8 @@ main: main.o diagrameditor.o \
   maybepoint2d.o charmapperobjects.o sceneobjects.o point2dobject.o \
   globalvec.o printindent.o any.o contains.o diagramexecutor.o anyio.o \
   evaluatelinetext.o streamparser.o diagramwrapperstate.o nodetexteditor.o \
-  testdiagramevaluator.o observeddiagrams.o observeddiagram.o stringparser.o
+  testdiagramevaluator.o observeddiagrams.o observeddiagram.o stringparser.o \
+  treeupdating.o
 	$(CXX) -o $@ $^ $(LDFLAGS) 
 
 moc_%.cpp: %.hpp
@@ -224,7 +225,7 @@ treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
   diagrameditorwindow.o printindent.o maybepoint2d.o any.o contains.o \
   anyio.o streamparser.o diagramwrapperstate.o fakediagrameditor.o \
   nodetexteditor.o observeddiagram.o observeddiagrams.o faketreeeditor.o \
-  stringparser.o
+  stringparser.o faketree.o treeupdating.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
@@ -240,7 +241,7 @@ mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
   printindent.o any.o contains.o diagramexecutor.o anyio.o \
   evaluatelinetext.o streamparser.o diagramwrapperstate.o fakediagrameditor.o \
   nodetexteditor.o testdiagramevaluator.o observeddiagrams.o \
-  observeddiagram.o faketreeeditor.o stringparser.o
+  observeddiagram.o faketreeeditor.o stringparser.o faketree.o treeupdating.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \

@@ -4,86 +4,12 @@
 #include "wrapperutil.hpp"
 #include "streamvector.hpp"
 #include "removefrom.hpp"
+#include "treeupdating.hpp"
 
 using std::vector;
 using std::string;
 using std::cerr;
 using std::function;
-
-
-static vector<string> comboBoxItems(const EnumerationWrapper &wrapper)
-{
-  return wrapper.enumerationNames();
-}
-
-
-struct TreeEditor::CreateChildItemVisitor : Wrapper::SubclassVisitor {
-  TreeEditor &tree_editor;
-  const TreePath &new_item_path;
-  bool &created;
-
-  static LabelProperties labelProperties(const Wrapper &wrapper)
-  {
-    return
-      LabelProperties{
-        /*text*/wrapper.label(),
-        /*can_be_edited*/false
-      };
-  }
-
-  CreateChildItemVisitor(
-    TreeEditor &tree_editor_arg,
-    const TreePath &new_item_path_arg,
-    bool &created_arg
-  )
-  : tree_editor(tree_editor_arg),
-    new_item_path(new_item_path_arg),
-    created(created_arg)
-  {
-  }
-
-  void operator()(const VoidWrapper &wrapper) const override
-  {
-    tree_editor.createVoidItem(
-      new_item_path,
-      labelProperties(wrapper)
-    );
-    created = true;
-  }
-
-  void operator()(const NumericWrapper &wrapper) const override
-  {
-    tree_editor.createNumericItem(
-      new_item_path,
-      labelProperties(wrapper),
-      wrapper.value(),
-      wrapper.minimumValue(),
-      wrapper.maximumValue()
-    );
-    created = true;
-  }
-
-  void operator()(const EnumerationWrapper &wrapper) const override
-  {
-    tree_editor.createEnumerationItem(
-      new_item_path,
-      labelProperties(wrapper),
-      comboBoxItems(wrapper),
-      wrapper.value()
-    );
-    created = true;
-  }
-
-  void operator()(const StringWrapper &wrapper) const override
-  {
-    tree_editor.createStringItem(
-      new_item_path,
-      labelProperties(wrapper),
-      wrapper.value()
-    );
-    created = true;
-  }
-};
 
 
 static void
@@ -105,7 +31,7 @@ void TreeEditor::setWorldPtr(Wrapper *arg)
 {
   removeChildItems(TreePath());
   world_ptr = arg;
-  addChildTreeItems(TreePath());
+  addChildTreeItems(tree(),world(),TreePath());
 }
 
 
@@ -128,52 +54,14 @@ vector<string> TreeEditor::operationNames(const TreePath &path)
 }
 
 
-struct TreeEditor::TreeObserver : ::TreeObserver {
-  TreeEditor &tree_editor;
-
-  TreeObserver(TreeEditor &tree_editor_arg)
-  : tree_editor(tree_editor_arg)
-  {
-  }
-
-  void itemAdded(const TreePath &path) override
-  {
-    tree_editor.createTreeItem(path);
-  }
-
-  void itemReplaced(const TreePath &path) override
-  {
-    tree_editor.removeTreeItem(path);
-    tree_editor.removeDiagramEditors(path);
-    tree_editor.createTreeItem(path);
-  }
-
-  void itemRemoved(const TreePath &path) override
-  {
-    tree_editor.removeTreeItem(path);
-    tree_editor.removeDiagramEditors(path);
-  }
-
-  void itemLabelChanged(const TreePath &path) override
-  {
-    tree_editor.updateItemLabel(path);
-  }
-
-  void itemValueChanged(const TreePath &path) override
-  {
-    tree_editor.updateItemValue(path);
-  }
-};
-
-
 void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
 {
-  TreeObserver tree_observer(*this);
-
   visitEnumerationSubWrapper(
     world(),
     path,
     [&](const EnumerationWrapper &enumeration_wrapper){
+      TreeUpdatingObserver tree_observer = treeObserver(*this);
+
       enumeration_wrapper.setValue(
         index,path,tree_observer
       );
@@ -206,7 +94,7 @@ struct TreeObserverStub : TreeObserver {
 void TreeEditor::replaceChildTreeItems(const TreePath &parent_path)
 {
   removeChildItems(parent_path);
-  addChildTreeItems(parent_path);
+  addChildTreeItems(tree(),world(),parent_path);
 }
 
 
@@ -228,6 +116,19 @@ void TreeEditor::collapseChildren(const TreePath &path)
 }
 
 
+TreeUpdatingObserver TreeEditor::treeObserver(TreeEditor &tree_editor)
+{
+  return
+    TreeUpdatingObserver(
+      tree_editor.tree(),
+      tree_editor.world(),
+      [&tree_editor](const TreePath &tree_path){
+        tree_editor.removeDiagramEditors(tree_path);
+      }
+    );
+}
+
+
 void TreeEditor::setWorldState(const WrapperState &new_state)
 {
   Wrapper *world_ptr = worldPtr();
@@ -245,7 +146,7 @@ void TreeEditor::executeOperation(const TreePath &path,int operation_index)
     world(),
     path,
     [&](const Wrapper &wrapper){
-      TreeObserver tree_observer(*this);
+      TreeUpdatingObserver tree_observer = treeObserver(*this);
       wrapper.executeOperation(operation_index,path,tree_observer);
     }
   );
@@ -261,7 +162,7 @@ void
     world(),
     path,
     [&](const StringWrapper &string_wrapper){
-      TreeObserver tree_observer(*this);
+      TreeUpdatingObserver tree_observer = treeObserver(*this);
       string_wrapper.setValue(value,path,tree_observer);
     }
   );
@@ -274,129 +175,16 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
     world(),
     path,
     [&](const NumericWrapper &numeric_wrapper){
-      TreeObserver tree_observer(*this);
+      TreeUpdatingObserver tree_observer = treeObserver(*this);
       numeric_wrapper.setValue(value,path,tree_observer);
     }
   );
 }
 
 
-void
-  TreeEditor::itemLabelChanged(
-    const TreePath &/*path*/,
-    const string &/*new_item_text*/
-  )
-{
-  assert(false);
-}
-
-
 const Optional<TreePath> &TreeEditor::maybePathOfItemBeingEdited() const
 {
   return maybe_path_of_item_being_edited;
-}
-
-
-void TreeEditor::addMainTreeItem(const TreePath &new_item_path)
-{
-  visitSubWrapper(
-    world(),
-    new_item_path,
-    [&](const Wrapper &w){
-      addWrapperItem(new_item_path,w);
-    }
-  );
-}
-
-
-void TreeEditor::createTreeItem(const TreePath &new_item_path)
-{
-  addMainTreeItem(new_item_path);
-  addChildTreeItems(new_item_path);
-}
-
-
-void TreeEditor::updateItemLabel(const TreePath &item_path)
-{
-  visitSubWrapper(
-    world(),
-    item_path,
-    [&](const Wrapper &w){
-      setItemLabel(item_path,w.label());
-    }
-  );
-}
-
-
-void TreeEditor::updateItemValue(const TreePath &item_path)
-{
-  struct Visitor : Wrapper::SubclassVisitor {
-    TreeEditor &tree_editor;
-    const TreePath &item_path;
-
-    Visitor(
-      TreeEditor &tree_editor_arg,
-      const TreePath &item_path_arg
-    )
-    : tree_editor(tree_editor_arg),
-      item_path(item_path_arg)
-    {
-    }
-
-    void operator()(const VoidWrapper &) const override
-    {
-      assert(false);
-    }
-
-    void operator()(const NumericWrapper &wrapper) const override
-    {
-      tree_editor.setItemNumericValue(
-        item_path,
-        wrapper.value(),
-        wrapper.minimumValue(),
-        wrapper.maximumValue()
-      );
-    }
-
-    void operator()(const EnumerationWrapper &) const override
-    {
-      assert(false);
-    }
-
-    void operator()(const StringWrapper &) const override
-    {
-      assert(false);
-    }
-  } visitor{*this,item_path};
-
-  visitSubWrapper(
-    world(),
-    item_path,
-    [&](const Wrapper &w){
-      w.accept(visitor);
-    }
-  );
-}
-
-
-static int nChildren(const Wrapper &wrapper,const TreePath &path)
-{
-  int n_children = 0;
-
-  auto get_n_children_function =
-    [&](const Wrapper &sub_wrapper){ n_children = sub_wrapper.nChildren(); };
-  visitSubWrapper(wrapper,path,get_n_children_function);
-  return n_children;
-}
-
-
-void TreeEditor::addChildTreeItems(const TreePath &parent_path)
-{
-  int n_children = nChildren(world(),parent_path);
-
-  for (int i=0; i!=n_children; ++i) {
-    createTreeItem(childPath(parent_path,i));
-  }
 }
 
 
@@ -489,24 +277,4 @@ auto TreeEditor::contextMenuItems(const TreePath &path) -> vector<MenuItem>
   }
 
   return menu_items;
-}
-
-
-void
-  TreeEditor::addWrapperItem(
-    const TreePath &new_item_path,
-    const Wrapper &wrapper
-  )
-{
-  bool created = false;
-
-  CreateChildItemVisitor
-    create_child_item_visitor(*this,new_item_path,created);
-
-  wrapper.accept(create_child_item_visitor);
-
-  if (!created) {
-    cerr << "No item created for " << new_item_path << "\n";
-    assert(created);
-  }
 }

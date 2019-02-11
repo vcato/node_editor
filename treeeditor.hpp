@@ -4,6 +4,8 @@
 #include "diagrameditorwindow.hpp"
 #include "wrapperstate.hpp"
 #include "treepath.hpp"
+#include "treewidget.hpp"
+#include "treeupdating.hpp"
 
 struct Wrapper;
 
@@ -21,10 +23,7 @@ struct TreeEditor {
       std::function<void()> callback;
     };
 
-    struct LabelProperties {
-      std::string text;
-      bool is_editable = false;
-    };
+    using LabelProperties = TreeWidget::LabelProperties;
 
     Wrapper &world();
     std::vector<std::string> operationNames(const TreePath &path);
@@ -34,81 +33,28 @@ struct TreeEditor {
     void stringItemValueChanged(const TreePath &path,const std::string &value);
     void numberItemValueChanged(const TreePath &path,int value);
 
-    // This is no longer needed since we won't allow changing labels.
-    void
-      itemLabelChanged(
-        const TreePath &path,
-        const std::string &new_item_text
-      );
-
     const Optional<TreePath> &maybePathOfItemBeingEdited() const;
 
-    void createTreeItem(const TreePath &new_item_path);
-    void updateItemLabel(const TreePath &);
-    void updateItemValue(const TreePath &);
-    void addChildTreeItems(const TreePath &parent_path);
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
     std::vector<MenuItem> contextMenuItems(const TreePath &path);
 
-    virtual void removeTreeItem(const TreePath &path) = 0;
     virtual void removeChildItems(const TreePath &path) = 0;
     virtual void
       setItemExpanded(const TreePath &path,bool new_expanded_state) = 0;
 
   private:
-    struct CreateChildItemVisitor;
-    struct TreeObserver;
     virtual void removeDiagramEditors(const TreePath &);
-    void addWrapperItem(const TreePath &new_item_path,const Wrapper &);
     virtual int itemChildCount(const TreePath &parent_item) const = 0;
     virtual DiagramEditorWindow& createDiagramEditor() = 0;
 
-    virtual void
-      createVoidItem(
-        const TreePath &new_item_path,
-        const LabelProperties &label_properties
-      ) = 0;
+    virtual TreeWidget &tree() = 0;
 
-    virtual void
-      createNumericItem(
-        const TreePath &new_item_path,
-        const LabelProperties &,
-        NumericValue value,
-        NumericValue minimum_value,
-        NumericValue maximum_value
-      ) = 0;
-
-    virtual void
-      setItemNumericValue(
-        const TreePath &,
-        NumericValue value,
-        NumericValue minimum_value,
-        NumericValue maximum_value
-      ) = 0;
-
-    virtual void
-      createEnumerationItem(
-        const TreePath &new_item_path,
-        const LabelProperties &,
-        const std::vector<std::string> &options,
-        int value
-      ) = 0;
-
-    virtual void
-      createStringItem(
-        const TreePath &new_item_path,
-        const LabelProperties &,
-        const std::string &value
-      ) = 0;
-
-    virtual void
-      setItemLabel(const TreePath &path,const std::string &new_label) = 0;
-
-    void addMainTreeItem(const TreePath &new_item_path);
     void replaceChildTreeItems(const TreePath &parent_path);
     void collapseBranch(const TreePath &path);
     void collapseChildren(const TreePath &path);
+
+    TreeUpdatingObserver treeObserver(TreeEditor &);
 
     Wrapper *world_ptr = 0;
     std::vector<DiagramEditorWindow *> diagram_editor_window_ptrs;

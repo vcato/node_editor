@@ -3,24 +3,19 @@
 #include "itemfrompath.hpp"
 #include "wrapperutil.hpp"
 #include "fakediagrameditorwindows.hpp"
+#include "insertitemin.hpp"
 
 struct FakeTreeEditor : TreeEditor {
   using Item = FakeTreeItem;
 
   Item &root()
   {
-    return tree.root;
+    return tree_member.root;
   }
 
   const Item &root() const
   {
-    return tree.root;
-  }
-
-  void removeTreeItem(const TreePath &path) override
-  {
-    Item &parent_item = itemFromPath(root(), parentPath(path));
-    removeChildItem(parent_item,path.back());
+    return tree_member.root;
   }
 
   void
@@ -104,15 +99,6 @@ struct FakeTreeEditor : TreeEditor {
     return diagram_editor_windows.create();
   }
 
-  template <typename T>
-  static T& insertItemIn(std::vector<T> &container,size_t index)
-  {
-    container.emplace(container.begin() + index);
-    FakeTree::Item &new_item = container[index];
-    return new_item;
-  }
-
-
   static FakeTree::Item &
     createItem(
       FakeTree &tree,
@@ -120,72 +106,11 @@ struct FakeTreeEditor : TreeEditor {
       const LabelProperties &label_properties
     )
   {
-    TreePath parent_path = parentPath(new_item_path);
-    FakeTree::Item &parent_item = itemFromPath(tree.root, parent_path);
-    int new_item_index = new_item_path.back();
-    FakeTree::Item &new_item =
-      insertItemIn(parent_item.children,new_item_index);
-    new_item.label = label_properties.text;
-    new_item.label_is_editable = label_properties.is_editable;
-    return new_item;
+    return FakeTree::createItem(tree,new_item_path,label_properties);
   }
 
-  void
-    createVoidItem(
-      const TreePath &new_item_path,
-      const LabelProperties &label_properties
-    ) override
-  {
-    createItem(
-      tree,
-      new_item_path,
-      label_properties
-    );
-  }
+  TreeWidget &tree() override { return tree_member; }
 
-  void
-    createNumericItem(
-      const TreePath &new_item_path,
-      const LabelProperties &label_properties,
-      const NumericValue value,
-      const NumericValue minimum_value,
-      const NumericValue maximum_value
-    ) override;
-
-  void
-    setItemNumericValue(
-      const TreePath &,
-      NumericValue value,
-      NumericValue minimum_value,
-      NumericValue maximum_value
-    ) override;
-
-  void
-    createEnumerationItem(
-      const TreePath &new_item_path,
-      const LabelProperties &label_properties,
-      const std::vector<std::string> &/*options*/,
-      int /*value*/
-    ) override
-  {
-    createItem(tree,new_item_path,label_properties);
-  }
-
-  void
-    createStringItem(
-      const TreePath &new_item_path,
-      const LabelProperties &label_properties,
-      const std::string &/*value*/
-    ) override
-  {
-    createItem(tree,new_item_path,label_properties);
-  }
-
-  void setItemLabel(const TreePath &path,const std::string &new_label)
-  {
-    itemFromPath(tree.root, path).label = new_label;
-  }
-
-  FakeTree tree;
+  FakeTree tree_member;
   FakeDiagramEditorWindows diagram_editor_windows;
 };

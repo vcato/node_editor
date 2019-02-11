@@ -3,9 +3,7 @@
 #include "noinittag.hpp"
 #include "createobject.hpp"
 #include "basicvariant.hpp"
-
-using NumericValue = int;
-using StringValue = std::string;
+#include "wrappervaluetypes.hpp"
 
 
 struct WrapperValuePolicy {

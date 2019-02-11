@@ -358,7 +358,7 @@ static void testSettingWorldState()
   assert(!scan_result.isError());
   const WrapperState &state = scan_result.state();
   editor.setWorldState(state);
-  assert(!editor.tree.root.children.empty());
+  assert(!editor.tree_member.root.children.empty());
 }
 
 
@@ -398,14 +398,15 @@ static void testReplacingAnItem(TestObject::ValueType value_type)
   TestWrapper wrapper(object);
   tree_editor.setWorldPtr(&wrapper);
 
-  assert(tree_editor.tree.root.children.size()==2);
+  FakeTree &tree = tree_editor.tree_member;
+  assert(tree.root.children.size()==2);
 
   // Execute an operation which replaces item a
   tree_editor.userSelectsContextMenuItem("a","Replace");
 
   // Check that the item is replaced.
-  assert(tree_editor.tree.root.children.size() == 2);
-  assert(tree_editor.tree.root.children[0].label == "c");
+  assert(tree.root.children.size() == 2);
+  assert(tree.root.children[0].label == "c");
 }
 
 

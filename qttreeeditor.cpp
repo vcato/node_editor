@@ -43,8 +43,8 @@ static void setLabelWidgetText(QLabel &label_widget,const string &label)
 
 
 QLabel&
-  QtTreeEditor::createItemLabelWidget(
-    QTreeWidgetItem &item,
+  QtTreeWidget::createItemLabelWidget(
+    QTreeWidgetItem &,
     QHBoxLayout &layout,
     const LabelProperties &label_properties
   )
@@ -54,12 +54,6 @@ QLabel&
 
   if (label_is_editable) {
     assert(false); // not handled
-    QtLineEdit &label_widget = createWidget<QtLineEdit>(layout);
-    label_widget.setText(label);
-    label_widget.text_changed_function =
-      [&item,this](const string &new_text){
-        itemLabelChanged(item, new_text);
-      };
   }
   else {
     QLabel &label_widget = createWidget<QLabel>(layout);
@@ -69,9 +63,10 @@ QLabel&
 }
 
 
+
 template <typename T>
 T &
-  QtTreeEditor::createItemWidget(
+  QtTreeWidget::createItemWidget(
     QTreeWidgetItem &item,
     const LabelProperties &label_properties
   )
@@ -93,17 +88,6 @@ T &
 }
 
 
-void
-  QtTreeEditor::itemLabelChanged(
-    QTreeWidgetItem &item,
-    const string &new_text
-  )
-{
-  TreePath path = itemPath(item);
-  TreeEditor::itemLabelChanged(path,new_text);
-}
-
-
 QtTreeEditor::QtTreeEditor()
 {
   assert(header());
@@ -120,6 +104,26 @@ QtTreeEditor::QtTreeEditor()
     SIGNAL(customContextMenuRequested(const QPoint &)),
     SLOT(prepareMenuSlot(const QPoint &))
   );
+
+  combobox_item_index_changed_function =
+    [this](const TreePath &path,int index){
+      treeComboBoxItemIndexChanged(path,index);
+    };
+
+  spin_box_item_value_changed_function =
+    [this](const TreePath &path,int index){
+      treeSpinBoxItemValueChanged(path,index);
+    };
+
+  slider_item_value_changed_function =
+    [this](const TreePath &path,int value){
+      treeSliderItemValueChanged(path,value);
+    };
+
+  line_edit_item_value_changed_function =
+    [this](const TreePath &path,const string& value){
+      treeLineEditItemValueChanged(path,value);
+    };
 }
 
 
@@ -136,7 +140,7 @@ QTreeWidgetItem&
 
 
 void
-  QtTreeEditor::createVoidItem(
+  QtTreeWidget::createVoidItem(
     const TreePath &new_item_path,
     const LabelProperties &label_properties
   )
@@ -159,8 +163,9 @@ static bool
   return value_is_limited_on_both_ends;
 }
 
+
 void
-  QtTreeEditor::createNumericItem(
+  QtTreeWidget::createNumericItem(
     const TreePath &new_item_path,
     const LabelProperties &label_properties,
     const NumericValue value,
@@ -269,7 +274,7 @@ void
 
 
 void
-  QtTreeEditor::createEnumerationItem(
+  QtTreeWidget::createEnumerationItem(
     const TreePath &new_item_path,
     const LabelProperties &label_properties,
     const vector<string> &options,
@@ -284,7 +289,7 @@ void
 
 
 void
-  QtTreeEditor::createStringItem(
+  QtTreeWidget::createStringItem(
     const TreePath &new_item_path,
     const LabelProperties &label_properties,
     const string &value
@@ -297,9 +302,15 @@ void
 }
 
 
-void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
+void QtTreeWidget::setItemText(QTreeWidgetItem &item,const std::string &label)
 {
   item.setText(/*column*/0,QString::fromStdString(label));
+}
+
+
+void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
+{
+  QtTreeWidget::setItemText(item,label);
 }
 
 
@@ -315,7 +326,7 @@ void
 
 
 QTreeWidgetItem&
-  QtTreeEditor::createComboBoxItem(
+  QtTreeWidget::createComboBoxItem(
     QTreeWidgetItem &parent_item,
     int index,
     const LabelProperties &label_properties,
@@ -336,7 +347,7 @@ QTreeWidgetItem&
 
 
 void
-  QtTreeEditor::createLineEditItem(
+  QtTreeWidget::createLineEditItem(
     QTreeWidgetItem &parent_item,
     const LabelProperties &label_properties,
     const std::string &value
@@ -353,7 +364,7 @@ void
 
 
 void
-  QtTreeEditor::createSpinBoxItem(
+  QtTreeWidget::createSpinBoxItem(
     QTreeWidgetItem &parent_item,
     int child_index,
     const LabelProperties &label_properties,
@@ -362,7 +373,7 @@ void
     int maximum_value
   )
 {
-  QtTreeEditor &tree_widget = *this;
+  QtTreeWidget &tree_widget = *this;
   QTreeWidgetItem &item = ::insertChildItem(parent_item,child_index);
   QtSpinBox &spin_box =
     tree_widget.createItemWidget<QtSpinBox>(item,label_properties);
@@ -377,7 +388,7 @@ void
 
 
 void
-  QtTreeEditor::createSliderItem(
+  QtTreeWidget::createSliderItem(
     QTreeWidgetItem &parent_item,
     int child_index,
     const LabelProperties &label_properties,
@@ -386,15 +397,17 @@ void
     int maximum_value
   )
 {
-  QtTreeEditor &tree_widget = *this;
+  QtTreeWidget &tree_widget = *this;
   QTreeWidgetItem &item = ::insertChildItem(parent_item,child_index);
 
   // Logic needs to be consistent when we recreate the widget if the value
   // changes.
   QtSlider &slider =
     tree_widget.createItemWidget<QtSlider>(item,label_properties);
+
   slider.value_changed_function =
     [this,&item](int value){ handleSliderItemValueChanged(&item,value); };
+
   slider.setValue(value);
   slider.setMinimum(minimum_value);
   slider.setMaximum(maximum_value);
@@ -403,18 +416,18 @@ void
 }
 
 
-QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
+
+QTreeWidgetItem &QtTreeWidget::itemFromPath(const std::vector<int> &path) const
 {
-  const QtTreeEditor &tree_widget = *this;
   int path_length = path.size();
 
   if (path_length==0) {
-    assert(tree_widget.invisibleRootItem());
-    return *tree_widget.invisibleRootItem();
+    assert(invisibleRootItem());
+    return *invisibleRootItem();
   }
 
   assert(path_length>0);
-  QTreeWidgetItem *item_ptr = tree_widget.topLevelItem(path[0]);
+  QTreeWidgetItem *item_ptr = topLevelItem(path[0]);
 
   int i = 1;
   while (i!=path_length) {
@@ -432,6 +445,12 @@ QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
 }
 
 
+QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
+{
+  return tree().itemFromPath(path);
+}
+
+
 int QtTreeEditor::itemChildCount(const TreePath &parent_path) const
 {
   QTreeWidgetItem &parent_item = itemFromPath(parent_path);
@@ -439,7 +458,7 @@ int QtTreeEditor::itemChildCount(const TreePath &parent_path) const
 }
 
 
-void QtTreeEditor::removeTreeItem(const TreePath &path)
+void QtTreeEditor::removeItem(const TreePath &path)
 {
   auto parent_path = parentPath(path);
   auto child_index = path.back();
@@ -447,7 +466,7 @@ void QtTreeEditor::removeTreeItem(const TreePath &path)
 }
 
 
-void QtTreeEditor::buildPath(vector<int> &path,QTreeWidgetItem &item)
+void QtTreeWidget::buildPath(vector<int> &path,QTreeWidgetItem &item)
 {
   QTreeWidgetItem *parent_item_ptr = item.parent();
 
@@ -461,7 +480,7 @@ void QtTreeEditor::buildPath(vector<int> &path,QTreeWidgetItem &item)
 }
 
 
-std::vector<int> QtTreeEditor::itemPath(QTreeWidgetItem &item)
+std::vector<int> QtTreeWidget::itemPath(QTreeWidgetItem &item)
 {
   vector<int> path;
   buildPath(path,item);
@@ -491,8 +510,20 @@ QTreeWidgetItem* QtTreeEditor::findSelectedItem()
 }
 
 
+void QtTreeEditor::treeComboBoxItemIndexChanged(const TreePath &path,int index)
+{
+  setEnumerationIndex(path,index);
+}
+
+
+void QtTreeEditor::treeSpinBoxItemValueChanged(const TreePath &path,int value)
+{
+  numberItemValueChanged(path,value);
+}
+
+
 void
-  QtTreeEditor::handleComboBoxItemIndexChanged(
+  QtTreeWidget::handleComboBoxItemIndexChanged(
     QTreeWidgetItem *item_ptr,
     int index
   )
@@ -500,40 +531,60 @@ void
   assert(item_ptr);
 
   TreePath path = itemPath(*item_ptr);
-  setEnumerationIndex(path,index);
+  combobox_item_index_changed_function(path,index);
 }
 
 
 void
-  QtTreeEditor::handleSpinBoxItemValueChanged(
+  QtTreeWidget::handleSpinBoxItemValueChanged(
     QTreeWidgetItem *item_ptr,
     int value
   )
 {
   assert(item_ptr);
-  numberItemValueChanged(itemPath(*item_ptr),value);
+  spin_box_item_value_changed_function(itemPath(*item_ptr),value);
 }
 
 
 void
-  QtTreeEditor::handleSliderItemValueChanged(
+  QtTreeEditor::treeSliderItemValueChanged(
+    const TreePath &path,
+    int value
+  )
+{
+  numberItemValueChanged(path,value);
+}
+
+
+void
+  QtTreeWidget::handleSliderItemValueChanged(
     QTreeWidgetItem *item_ptr,
     int value
   )
 {
   assert(item_ptr);
-  numberItemValueChanged(itemPath(*item_ptr),value);
+  slider_item_value_changed_function(itemPath(*item_ptr),value);
 }
 
 
 void
-  QtTreeEditor::handleLineEditItemValueChanged(
+  QtTreeEditor::treeLineEditItemValueChanged(
+    const TreePath &path,
+    const string &value
+  )
+{
+  stringItemValueChanged(path,value);
+}
+
+
+void
+  QtTreeWidget::handleLineEditItemValueChanged(
     QTreeWidgetItem *item_ptr,
     const string &value
   )
 {
   assert(item_ptr);
-  stringItemValueChanged(itemPath(*item_ptr),value);
+  line_edit_item_value_changed_function(itemPath(*item_ptr),value);
 }
 
 
