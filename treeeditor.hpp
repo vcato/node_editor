@@ -33,8 +33,6 @@ struct TreeEditor {
     void stringItemValueChanged(const TreePath &path,const std::string &value);
     void numberItemValueChanged(const TreePath &path,int value);
 
-    const Optional<TreePath> &maybePathOfItemBeingEdited() const;
-
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
     std::vector<MenuItem> contextMenuItems(const TreePath &path);
@@ -58,7 +56,6 @@ struct TreeEditor {
 
     Wrapper *world_ptr = 0;
     std::vector<DiagramEditorWindow *> diagram_editor_window_ptrs;
-    Optional<TreePath> maybe_path_of_item_being_edited;
 };
 
 #endif /* TREEEDITOR_HPP_ */

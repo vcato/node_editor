@@ -182,12 +182,6 @@ void TreeEditor::numberItemValueChanged(const TreePath &path,int value)
 }
 
 
-const Optional<TreePath> &TreeEditor::maybePathOfItemBeingEdited() const
-{
-  return maybe_path_of_item_being_edited;
-}
-
-
 void TreeEditor::diagramEditorClosed(DiagramEditorWindow &window)
 {
   removeFrom(diagram_editor_window_ptrs,&window);
