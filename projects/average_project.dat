@@ -10,6 +10,7 @@ world {
         5: 0
       }
     }
+    current_frame: 0
     body {
       name: "Body1"
       position_map {
@@ -33,6 +34,19 @@ world {
     }
   }
   charmapper1 {
+    variable_pass {
+      var: 51 {
+        name: "percent"
+        minimum: 0
+        maximum: 100
+      }
+      var: 0 {
+        name: "x_offset"
+      }
+      var: 0 {
+        name: "y_offset"
+      }
+    }
     motion_pass {
       pos_expr {
         target_body: scene1:body3
@@ -53,10 +67,20 @@ world {
                 x: 492
                 y: 382
               }
-              line: "return $"
+              line: "return $*(percent/100) + $*(1-(percent/100)) + $"
               connection {
                 input_index: 0
-                source_node_id: 9
+                source_node_id: 6
+                source_output_index: 0
+              }
+              connection {
+                input_index: 1
+                source_node_id: 8
+                source_output_index: 0
+              }
+              connection {
+                input_index: 2
+                source_node_id: 11
                 source_output_index: 0
               }
             }
@@ -77,21 +101,30 @@ world {
               line: "Scene1.Body2.pos()"
             }
             node {
-              id: 9
+              id: 10
               position {
-                x: 354
-                y: 399
+                x: 173
+                y: 233
               }
-              line: "($+$)/2"
+              line: "x_offset"
+              line: "y_offset"
+            }
+            node {
+              id: 11
+              position {
+                x: 345
+                y: 233
+              }
+              line: "[$,$]"
               connection {
                 input_index: 0
-                source_node_id: 6
+                source_node_id: 10
                 source_output_index: 0
               }
               connection {
                 input_index: 1
-                source_node_id: 8
-                source_output_index: 0
+                source_node_id: 10
+                source_output_index: 1
               }
             }
           }
