@@ -142,11 +142,11 @@ static void testEvaluateAfterDeletingAnInput()
   diagram.deleteNode(n1);
   assert(diagram.findNode(n2));
   assert(diagram.node(n2).inputs[0].source_node_index==nullNodeIndex());
-  ostringstream stream;
+  ostringstream output_stream;
   diagram.removeInvalidInputs();
-  evaluate(diagram,stream);
+  evaluate(diagram,output_stream);
 
-  // should we be expecting something here?
+  // Just making sure the evaluate doesn't crash
 }
 
 

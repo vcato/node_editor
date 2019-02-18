@@ -140,8 +140,6 @@ error end up being kept in the diagram state?
   It has access to both the DiagramState and the Executor.  It calls
   evaluateLineText().
 
-Review testEvaluateAfterDeletingAnInput().
-
 Inputs aren't clearly associated with lines.
 * If you have two lines, and the first line has no inputs, and the second
   line has two inputs, it looks like the first input goes with the first
