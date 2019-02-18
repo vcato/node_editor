@@ -110,12 +110,3 @@ Inputs aren't clearly associated with lines.
   line and the second input goes with the second line.  It would be better
   if the lines were spaced such that it was clear which inputs went with
   each line.
----
-Having the worldwrapper_test use a FakeTree should make the tests easier.
-We should now be able to use the TreeUpdatingObserver.
-
-Need a way to build a tree from a wrapper.
-
-  void TreeEditor::replaceChildTreeItems(const TreePath &parent_path)
-
-  addChildTreeItems()
