@@ -33,19 +33,3 @@ void
   int index = findIndex(operation_names,operation_name);
   executeOperation(path,index);
 }
-
-
-void
-  FakeTree::setItemNumericValue(
-    const TreePath &path,
-    NumericValue value,
-    NumericValue minimum_value,
-    NumericValue maximum_value
-  )
-{
-  FakeTreeItem &item = itemFromPath(root,path);
-  assert(item.value_widget_ptr);
-  item.value_widget_ptr->value = value;
-  item.value_widget_ptr->minimum = minimum_value;
-  item.value_widget_ptr->maximum = maximum_value;
-}

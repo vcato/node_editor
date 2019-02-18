@@ -8,7 +8,7 @@
 struct TreeWidget {
   struct LabelProperties {
     std::string text;
-    bool is_editable = false;
+    bool is_editable = false; // should remove this
   };
 
   virtual void

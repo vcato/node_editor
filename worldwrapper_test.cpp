@@ -15,6 +15,8 @@
 #include "makestr.hpp"
 #include "charmapperwrapper.hpp"
 #include "stubtreeobserver.hpp"
+#include "faketree.hpp"
+#include "treeupdating.hpp"
 
 using std::string;
 using std::istringstream;
@@ -22,6 +24,10 @@ using std::ostringstream;
 using std::ostream;
 using std::cerr;
 using PosExpr = Charmapper::MotionPass::PosExpr;
+
+
+static std::function<void(const TreePath &)>
+  ignore_item_removed_function = [](const TreePath &){};
 
 
 static NodeIndex nodeIndexWithText(const Diagram &diagram,const string &text)
@@ -33,6 +39,15 @@ static NodeIndex nodeIndexWithText(const Diagram &diagram,const string &text)
   }
 
   assert(false);
+}
+
+
+static string textOfTree(const FakeTree &tree)
+{
+  ostringstream stream;
+  tree.printOn(stream);
+  string tree_string = stream.str();
+  return tree_string;
 }
 
 
@@ -59,43 +74,6 @@ static void notifyDiagramChanged(Wrapper &wrapper,const string &path_string)
     };
 
   visitSubWrapper(wrapper, path, visitor);
-}
-
-
-namespace {
-struct CommandStreamTreeObserver : Wrapper::TreeObserver {
-  ostream &command_stream;
-
-  CommandStreamTreeObserver(ostream &command_stream_arg)
-  : command_stream(command_stream_arg)
-  {
-  }
-
-  void itemAdded(const TreePath &path) override
-  {
-    command_stream << "addItem(" << path << ")\n";
-  }
-
-  void itemReplaced(const TreePath &path) override
-  {
-    command_stream << "itemReplaced(" << path << ")\n";
-  }
-
-  void itemRemoved(const TreePath &path) override
-  {
-    command_stream << "removeItem(" << path << ")\n";
-  }
-
-  void itemLabelChanged(const TreePath &path) override
-  {
-    command_stream << "labelChanged(" << path << ")\n";
-  }
-
-  void itemValueChanged(const TreePath &path) override
-  {
-    command_stream << "valueChanged(" << path << ")\n";
-  }
-};
 }
 
 
@@ -247,7 +225,16 @@ static void testPrintingCharmapperState()
 }
 
 
+static FakeTree makeFakeTree(const Wrapper &wrapper)
+{
+  FakeTree tree;
+  addChildTreeItems(tree, wrapper, TreePath());
+  return tree;
+}
+
+
 namespace scene_and_charmapper_tests {
+
 
 static void testAddingABodyToTheScene()
 {
@@ -267,32 +254,71 @@ static void testAddingABodyToTheScene()
   WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
 
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+  FakeTree tree = makeFakeTree(world_wrapper);
 
+  // Charmapper1
+  //   Motion Pass
+  //     Pos Expr
+  //       Target Body
+  //       Local Position
+  //         X
+  //         Y
+  //       Global Position
+  //         Source Body
+  //         Local Position
+  //           X
+  //           Y
+  // Scene1
+  //   background_motion
+  //     0
+  //   current_frame
+
+  TreeUpdatingObserver
+    tree_observer(tree,world_wrapper,ignore_item_removed_function);
   executeAddBodyFunction2(world_wrapper,scene_path,tree_observer);
 
-  string command_string = command_stream.str();
-  TreePath background_frame_path = childPath(childPath(scene_path,0),0);
-  TreePath first_body_path =
-    childPath(scene_path,SceneWrapper::firstBodyChildIndex());
+  // check that the tree is correct
+  string tree_string = textOfTree(tree);
+  string expected_tree_string =
+    "Charmapper1\n"
+    "  Motion Pass\n"
+    "    Pos Expr\n"
+    "      Target Body: ComboBox(options=[None,Scene1:Body1],value=None)\n"
+    "      Local Position\n"
+    "        X: Slider(value=0)\n"
+    "        Y: Slider(value=0)\n"
+    "      Global Position: "
+      "ComboBox(options=[Components,From Body],value=From Body)\n"
+    "        Source Body: ComboBox(options=[None,Scene1:Body1],value=None)\n"
+    "        Local Position\n"
+    "          X: Slider(value=0)\n"
+    "          Y: Slider(value=0)\n"
+    "Scene1\n"
+    "  background_motion\n"
+    "    0\n"
+    "      0: Slider(value=0)\n"
+    "      1: Slider(value=0)\n"
+    "  current_frame: Slider(value=0)\n"
+    "  Body\n"
+    "    name\n"
+    "    position map\n"
+    "      x variable: Slider(value=0)\n"
+    "      y variable: Slider(value=1)\n";
 
-  string expected_command_string =
-    "addItem(" + makeStr(childPath(background_frame_path,0)) + ")\n"
-    "addItem(" + makeStr(childPath(background_frame_path,1)) + ")\n"
-    "addItem(" + makeStr(first_body_path) + ")\n"
-    "itemReplaced([0,0,0,0])\n"
-    "itemReplaced([0,0,0,2,0])\n";
 
-  if (command_string != expected_command_string) {
-    cerr << "command_string:\n";
-    cerr << command_string << "\n";
-    cerr << "expected_command_string:\n";
-    cerr << expected_command_string << "\n";
-  }
-
-  assert(command_string == expected_command_string);
+  assert(tree_string == expected_tree_string);
 }
+}
+
+
+static bool
+   treeMatchesWrapper(const FakeTree &tree,const Wrapper &world_wrapper)
+{
+  FakeTree new_tree = makeFakeTree(world_wrapper);
+  string expected_tree_string = textOfTree(new_tree);
+  string tree_string = textOfTree(tree);
+
+  return tree_string == expected_tree_string;
 }
 
 
@@ -304,34 +330,14 @@ static void testAddingABodyToABody()
   scene.addBody();
   WorldWrapper world_wrapper(world);
 
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+  FakeTree tree = makeFakeTree(world_wrapper);
+
+  TreeUpdatingObserver
+    tree_observer(tree,world_wrapper,ignore_item_removed_function);
 
   executeWrapperOperation(world_wrapper,"Scene1|Body","Add Body",tree_observer);
 
-  TreePath scene_path = {0};
-  TreePath background_motion_path = childPath(scene_path,0);
-  TreePath background_frame_path = childPath(background_motion_path,0);
-  TreePath first_body_path =
-    childPath(scene_path,SceneWrapper::firstBodyChildIndex());
-
-  string command_string = command_stream.str();
-
-  string expected_command_string =
-    // Adding two variables to the background frame
-    "addItem(" + makeStr(childPath(background_frame_path,2)) + ")\n"
-    "addItem(" + makeStr(childPath(background_frame_path,3)) + ")\n"
-    // Adding the body
-    "addItem(" + makeStr(childPath(first_body_path,2)) + ")\n";
-
-  if (command_string!=expected_command_string) {
-    cerr << "command_string:\n";
-    cerr << command_string << "\n";
-    cerr << "expected_command_string:\n";
-    cerr << expected_command_string << "\n";
-  }
-
-  assert(command_string==expected_command_string);
+  assert(treeMatchesWrapper(tree,world_wrapper));
 }
 }
 
@@ -344,7 +350,6 @@ static void
     int value
   )
 {
-
   visitNumericSubWrapper(
     world_wrapper,
     path,
@@ -426,8 +431,7 @@ static void testChangingTheTargetBody()
   Body &body = scene.addBody();
   charmapper.addMotionPass();
   WorldWrapper world_wrapper(world);
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+  StubTreeObserver tree_observer;
   string motion_pass_path = "Charmapper1|Motion Pass";
 
   {
@@ -616,25 +620,33 @@ static void testRemovingABodyFromTheScene()
   TreePath body_path =
     childPath(scene_path,SceneWrapper::firstBodyChildIndex());
 
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+  FakeTree tree = makeFakeTree(world_wrapper);
+
+  TreeUpdatingObserver
+   tree_observer(tree,world_wrapper,ignore_item_removed_function);
 
   executeOperation2(world_wrapper,body_path,"Remove",tree_observer);
 
-  string command_string = command_stream.str();
-  string expected_command_string =
-    "removeItem(" + makeStr(body_path) + ")\n"
-    "itemReplaced([0,0,0,0])\n"
-    ;
+  string expected_tree_string =
+    "Charmapper1\n"
+    "  Motion Pass\n"
+    "    Pos Expr\n"
+    "      Target Body: ComboBox(options=[None],value=None)\n"
+    "      Local Position\n"
+    "        X: Slider(value=0)\n"
+    "        Y: Slider(value=0)\n"
+    "      Global Position: "
+      "ComboBox(options=[Components,From Body],value=Components)\n"
+    "        X: Slider(value=0)\n"
+    "        Y: Slider(value=0)\n"
+    "Scene1\n"
+    "  background_motion\n"
+    "    0\n"
+    "      0: Slider(value=0)\n"
+    "      1: Slider(value=0)\n"
+    "  current_frame: Slider(value=0)\n";
 
-  if (command_string != expected_command_string) {
-    cerr << "command_string:\n";
-    cerr << command_string << "\n";
-    cerr << "expected_command_string:\n";
-    cerr << expected_command_string << "\n";
-  }
-
-  assert(command_string == expected_command_string);
+  assert(textOfTree(tree) == expected_tree_string);
   assert(!pos_expr.target_body_link.hasValue());
 }
 
@@ -646,8 +658,11 @@ static void testRemovingAPosExprFromAMotionPass()
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   motion_pass.addPosExpr();
   WorldWrapper world_wrapper(world);
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+
+  FakeTree tree = makeFakeTree(world_wrapper);
+
+  TreeUpdatingObserver
+     tree_observer(tree,world_wrapper,ignore_item_removed_function);
 
   executeWrapperOperation(
     world_wrapper,
@@ -656,9 +671,7 @@ static void testRemovingAPosExprFromAMotionPass()
   );
 
   assert(motion_pass.nExprs()==0);
-  string command_string = command_stream.str();
-  string expected_command_string = "removeItem([0,0,0])\n";
-  assert(command_string==expected_command_string);
+  assert(treeMatchesWrapper(tree,world_wrapper));
 }
 
 
@@ -667,13 +680,13 @@ static void testRemovingACharmapper()
   FakeWorld world;
   world.addCharmapper();
   WorldWrapper world_wrapper(world);
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+
+  FakeTree tree = makeFakeTree(world_wrapper);
+  TreeUpdatingObserver
+    tree_observer(tree,world_wrapper,ignore_item_removed_function);
   executeWrapperOperation(world_wrapper,"Charmapper1","Remove",tree_observer);
   assert(world.nMembers()==0);
-  string expected_command_string = "removeItem([0])\n";
-  string command_string = command_stream.str();
-  assert(command_string==expected_command_string);
+  assert(treeMatchesWrapper(tree,world_wrapper));
 }
 
 
@@ -688,22 +701,12 @@ static void testRemovingAScene()
   motion_pass.addPosExpr();
 
   WorldWrapper world_wrapper(world);
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+
+  FakeTree tree = makeFakeTree(world_wrapper);
+  TreeUpdatingObserver tree_observer(tree,world_wrapper,ignore_item_removed_function);
   executeWrapperOperation(world_wrapper,"Scene1","Remove",tree_observer);
   assert(world.nMembers()==1);
-  string expected_command_string =
-    "removeItem([0])\n"
-    "itemReplaced([0,0,0,0])\n"
-    ;
-  string command_string = command_stream.str();
-
-  if (command_string != expected_command_string) {
-    cerr << "command_string: " << command_string << "\n";
-    cerr << "expected_command_string: " << expected_command_string << "\n";
-  }
-
-  assert(command_string==expected_command_string);
+  assert(treeMatchesWrapper(tree,world_wrapper));
 }
 
 
@@ -881,8 +884,7 @@ static void testUsingACharmapperVariable()
 
   WorldWrapper world_wrapper(world);
 
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+  StubTreeObserver tree_observer;
 
   executeWrapperOperation(
     world_wrapper,
@@ -945,14 +947,15 @@ static void testUsingACharmapperVariable()
 
 namespace {
 struct VariableLimitsTester {
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer{command_stream};
   FakeWorld world;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::VariablePass &variable_pass = charmapper.addVariablePass();
   Charmapper::VariablePass::VariableIndex variable_index =
     variable_pass.addVariable("x");
   WorldWrapper wrapper{world};
+
+  FakeTree tree = makeFakeTree(wrapper);
+  TreeUpdatingObserver tree_observer{tree,wrapper,ignore_item_removed_function};
 
   void addMinimum()
   {
@@ -974,34 +977,29 @@ struct VariableLimitsTester {
     );
   }
 
+  void setNumericValue(const string &path_string,int arg)
+  {
+    TreePath path = makePath(wrapper,path_string);
+    tree.setItemNumericValue(path,arg);
+
+    setWrapperValue( wrapper, path_string, arg, tree_observer );
+  }
+
   void setMinimum(int arg)
   {
-    setWrapperValue(
-      wrapper,
-      "Charmapper1|Variable Pass|x|minimum",
-      arg,
-      tree_observer
-    );
+    string path_string = "Charmapper1|Variable Pass|x|minimum";
+    setNumericValue(path_string,arg);
   }
 
   void setMaximum(int arg)
   {
-    setWrapperValue(
-      wrapper,
-      "Charmapper1|Variable Pass|x|maximum",
-      arg,
-      tree_observer
-    );
+    string path_string = "Charmapper1|Variable Pass|x|maximum";
+    setNumericValue(path_string,arg);
   }
 
   Charmapper::Variable &variable()
   {
     return variable_pass.variables[variable_index];
-  }
-
-  string commandString()
-  {
-    return command_stream.str();
   }
 };
 }
@@ -1019,14 +1017,7 @@ static void testChangingVariableLimits()
 
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
-    string expected_command_string =
-      "addItem([0,0,0,1])\n"
-      "valueChanged([0,0,0])\n"
-      "valueChanged([0,0,0])\n"
-      "addItem([0,0,0,2])\n"
-      "valueChanged([0,0,0])\n"
-      "valueChanged([0,0,0])\n";
-    assert(tester.commandString() == expected_command_string);
+    assert(treeMatchesWrapper(tester.tree,tester.wrapper));
   }
   {
     VariableLimitsTester tester;
@@ -1038,14 +1029,7 @@ static void testChangingVariableLimits()
 
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
-    string expected_command_string =
-      "addItem([0,0,0,1])\n"
-      "valueChanged([0,0,0])\n"
-      "valueChanged([0,0,0])\n"
-      "addItem([0,0,0,1])\n"
-      "valueChanged([0,0,0])\n"
-      "valueChanged([0,0,0])\n";
-    assert(tester.commandString() == expected_command_string);
+    assert(treeMatchesWrapper(tester.tree, tester.wrapper));
   }
 }
 
@@ -1243,8 +1227,8 @@ static void testAddingAFrameToTheScene()
   WorldWrapper wrapper(world);
   WrapperState state = stateFromText(text);
   wrapper.setState(state);
-  ostringstream command_stream;
-  CommandStreamTreeObserver tree_observer(command_stream);
+  FakeTree tree = makeFakeTree(wrapper);
+  TreeUpdatingObserver tree_observer(tree,wrapper,ignore_item_removed_function);
 
   executeWrapperOperation(
     wrapper,"Scene1|background_motion","Add Frame",tree_observer
@@ -1275,12 +1259,7 @@ static void testAddingAFrameToTheScene()
 
   assert(resulting_text == expected_text);
 
-  string expected_commands =
-    "addItem([0,0,1])\n";
-
-  string commands = command_stream.str();
-
-  assert(commands == expected_commands);
+  assert(treeMatchesWrapper(tree,wrapper));
 }
 
 

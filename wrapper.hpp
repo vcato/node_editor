@@ -194,15 +194,9 @@ struct NumericWrapper : Wrapper {
 
   virtual Value value() const = 0;
 
-  static Value noMinimumValue()
-  {
-    return std::numeric_limits<Value>::min();
-  }
+  static Value noMinimumValue() { return noNumericMinimum(); }
 
-  static Value noMaximumValue()
-  {
-    return std::numeric_limits<Value>::max();
-  }
+  static Value noMaximumValue() { return noNumericMaximum(); }
 
   virtual Value minimumValue() const
   {

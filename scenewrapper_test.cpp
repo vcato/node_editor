@@ -6,6 +6,8 @@
 #include "basicvariant.hpp"
 #include "wrapperstate.hpp"
 #include "makestr.hpp"
+#include "treeupdating.hpp"
+#include "faketree.hpp"
 
 using std::istringstream;
 using std::ostringstream;
@@ -30,12 +32,6 @@ static void setWrapperStateFromText(const Wrapper &wrapper,const char *text)
 }
 
 
-static void printTree(ostream &stream,const Wrapper &wrapper,int indent = 0)
-{
-  printStateOn(stream,stateOf(wrapper),indent);
-}
-
-
 static SceneWrapper::SceneObserver unusedObserver()
 {
   return
@@ -54,25 +50,6 @@ static SceneWrapper::SceneObserver ignoringObserver()
 }
 
 
-namespace {
-struct TreeObserverStub : Wrapper::TreeObserver {
-  void itemAdded(const TreePath &) override
-  {
-  }
-
-  void itemReplaced(const TreePath &) override
-  {
-    assert(false);
-  }
-
-  void itemRemoved(const TreePath &) override
-  {
-    assert(false);
-  }
-};
-}
-
-
 static void testHierarchy()
 {
   Scene scene;
@@ -81,7 +58,7 @@ static void testHierarchy()
   SceneWrapper::SceneObserver observer = unusedObserver();
   SceneWrapper wrapper(scene,&observer,"Scene");
   ostringstream stream;
-  printTree(stream,wrapper);
+  printStateOn(stream,stateOf(wrapper));
   string output = stream.str();
 
   auto expected_output =
@@ -121,58 +98,47 @@ static void testHierarchy()
 
 
 static void
-  addBody2(const Wrapper &wrapper,const TreePath &path,ostream &stream)
-{
-  struct TreeObserver : Wrapper::TreeObserver {
-    ostream &stream;
-
-    TreeObserver(ostream &stream_arg)
-    : stream(stream_arg)
-    {
-    }
-
-    void itemAdded(const TreePath &path) override
-    {
-      stream << "addItem: path=" << path << "\n";
-    }
-
-    void itemReplaced(const TreePath &) override
-    {
-      assert(false);
-    }
-
-    void itemRemoved(const TreePath &) override
-    {
-      assert(false);
-    }
-
-    void itemLabelChanged(const TreePath &) override
-    {
-      assert(false);
-    }
-
-    void itemValueChanged(const TreePath &) override
-    {
-      assert(false);
-    }
-  };
-
-  TreeObserver operation_handler(stream);
-
-  executeAddBodyFunction(wrapper,path,operation_handler);
-}
-
-
-static void
-  addBodyTo(const Wrapper &wrapper,const TreePath &path,ostream &stream)
+  addBodyTo(
+    const Wrapper &wrapper,
+    const TreePath &path,
+    TreeObserver &tree_observer
+  )
 {
   visitSubWrapper(
     wrapper,
     path,
     [&](const Wrapper &body_wrapper){
-      addBody2(body_wrapper,path,stream);
+      executeAddBodyFunction(body_wrapper,path,tree_observer);
     }
   );
+}
+
+
+static FakeTree makeFakeTree(const Wrapper &wrapper)
+{
+  FakeTree tree;
+  addChildTreeItems(tree, wrapper, TreePath());
+  return tree;
+}
+
+
+static string textOfTree(const FakeTree &tree)
+{
+  ostringstream stream;
+  tree.printOn(stream);
+  string tree_string = stream.str();
+  return tree_string;
+}
+
+
+static bool
+   treeMatchesWrapper(const FakeTree &tree,const Wrapper &world_wrapper)
+{
+  FakeTree new_tree = makeFakeTree(world_wrapper);
+  string expected_tree_string = textOfTree(new_tree);
+  string tree_string = textOfTree(tree);
+
+  return tree_string == expected_tree_string;
 }
 
 
@@ -193,34 +159,21 @@ static void testAddingBodies()
   TreePath first_grandchild_body_path = {
     scene_first_body_child_index,body_index,body_index
   };
-  addBodyTo(scene_wrapper,scene_path,stream);
-  addBodyTo(scene_wrapper,first_body_path,stream);
-  addBodyTo(scene_wrapper,first_child_body_path,stream);
+
+  auto ignore_item_removed_function = [](const TreePath &){};
+  FakeTree tree = makeFakeTree(scene_wrapper);
+  TreeUpdatingObserver
+    tree_observer(tree,scene_wrapper,ignore_item_removed_function);
+
+  addBodyTo(scene_wrapper,scene_path,tree_observer);
+  addBodyTo(scene_wrapper,first_body_path,tree_observer);
+  addBodyTo(scene_wrapper,first_child_body_path,tree_observer);
 
   assert(scene.nBodies()==1);
   assert(scene.bodies()[0].nChildren()==1);
   assert(scene.bodies()[0].allChildren()[0].nChildren()==1);
 
-  string commands = stream.str();
-  string expected_commands =
-    "addItem: path=" + makeStr(childPath(background_frame_path,0)) + "\n"
-    "addItem: path=" + makeStr(childPath(background_frame_path,1)) + "\n"
-    "addItem: path=" + makeStr(first_body_path)               + "\n"
-    "addItem: path=" + makeStr(childPath(background_frame_path,2)) + "\n"
-    "addItem: path=" + makeStr(childPath(background_frame_path,3)) + "\n"
-    "addItem: path=" + makeStr(first_child_body_path)         + "\n"
-    "addItem: path=" + makeStr(childPath(background_frame_path,4)) + "\n"
-    "addItem: path=" + makeStr(childPath(background_frame_path,5)) + "\n"
-    "addItem: path=" + makeStr(first_grandchild_body_path)    + "\n";
-
-  if (commands!=expected_commands) {
-    cerr << "commands:\n";
-    cerr << commands << "\n";
-    cerr << "expected_commands:\n";
-    cerr << expected_commands << "\n";
-  }
-
-  assert(commands==expected_commands);
+  assert(treeMatchesWrapper(tree,scene_wrapper));
 }
 
 

@@ -200,7 +200,7 @@ observeddiagrams_test: observeddiagrams_test.o observeddiagrams.o \
 scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
   generatename.o wrapperstate.o stringutil.o wrapper.o printindent.o \
   streamparser.o diagramwrapperstate.o diagram.o diagramnode.o linetext.o \
-  statementtext.o observeddiagram.o
+  statementtext.o observeddiagram.o treeupdating.o faketree.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
@@ -212,7 +212,7 @@ worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
   point2dobject.o globalvec.o point2d.o printindent.o any.o contains.o \
   diagramexecutor.o anyio.o evaluatelinetext.o streamparser.o \
   diagramwrapperstate.o testdiagramevaluator.o observeddiagrams.o \
-  observeddiagram.o stringparser.o diagramstate.o
+  observeddiagram.o stringparser.o diagramstate.o faketree.o treeupdating.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \

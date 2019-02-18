@@ -4,7 +4,6 @@
 struct StubTreeObserver : Wrapper::TreeObserver {
   void itemAdded(const TreePath &) override
   {
-    assert(false);
   }
 
   void itemReplaced(const TreePath &) override
@@ -13,16 +12,13 @@ struct StubTreeObserver : Wrapper::TreeObserver {
 
   void itemRemoved(const TreePath &) override
   {
-    assert(false);
   }
 
   void itemLabelChanged(const TreePath &) override
   {
-    assert(false);
   }
 
   void itemValueChanged(const TreePath &) override
   {
-    assert(false);
   }
 };

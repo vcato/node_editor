@@ -5,13 +5,31 @@
 #include <string>
 #include <vector>
 #include <cassert>
+#include <climits>
 #include "treewidget.hpp"
 
 
-struct FakeSlider {
+struct FakeWidget {
+  virtual ~FakeWidget() = default;
+
+  virtual void printOn(std::ostream &) = 0;
+};
+
+
+struct FakeSlider : FakeWidget {
   int value = 0;
   int minimum = 0;
   int maximum = 100;
+
+  void printOn(std::ostream &) override;
+};
+
+
+struct FakeComboBox : FakeWidget {
+  std::vector<std::string> options;
+  std::string value;
+
+  void printOn(std::ostream &) override;
 };
 
 
@@ -20,7 +38,7 @@ struct FakeTreeItem {
   std::string label;
   std::vector<FakeTreeItem> children;
   bool label_is_editable;
-  std::unique_ptr<FakeSlider> value_widget_ptr;
+  std::unique_ptr<FakeWidget> value_widget_ptr;
 
   FakeTreeItem()
   : is_expanded(true),
@@ -35,7 +53,7 @@ struct FakeTreeItem {
   friend FakeTreeItem& insertChildItem(FakeTreeItem &parent_item,int index)
   {
     parent_item.children.insert(
-      parent_item.children.begin()+index,
+      parent_item.children.begin() + index,
       FakeTreeItem()
     );
 
@@ -52,10 +70,7 @@ struct FakeTreeItem {
     item.label = text;
   }
 
-  FakeSlider *maybeSlider()
-  {
-    return value_widget_ptr.get();
-  }
+  FakeSlider *maybeSlider();
 };
 
 
@@ -89,26 +104,15 @@ struct FakeTree : TreeWidget {
       NumericValue value,
       NumericValue minimum_value,
       NumericValue maximum_value
-    )
-  {
-    FakeTreeItem &item =
-      createItem(*this,new_item_path,label_properties);
-    item.value_widget_ptr = std::make_unique<FakeSlider>();
-    item.value_widget_ptr->value = value;
-    item.value_widget_ptr->minimum = minimum_value;
-    item.value_widget_ptr->maximum = maximum_value;
-  }
+    );
 
   void
     createEnumerationItem(
       const TreePath &new_item_path,
       const LabelProperties &label_properties,
-      const std::vector<std::string> &/*options*/,
-      int /*value*/
-    ) override
-  {
-    createItem(*this,new_item_path,label_properties);
-  }
+      const std::vector<std::string> &options,
+      int value
+    ) override;
 
   void
     createStringItem(
@@ -124,6 +128,8 @@ struct FakeTree : TreeWidget {
 
   void removeItem(const TreePath &path) override;
 
+  void setItemNumericValue( const TreePath &, NumericValue value );
+
   void
     setItemNumericValue(
       const TreePath &,
@@ -131,6 +137,8 @@ struct FakeTree : TreeWidget {
       NumericValue minimum_value,
       NumericValue maximum_value
     ) override;
+
+  void printOn(std::ostream &) const;
 
   Item root;
 };

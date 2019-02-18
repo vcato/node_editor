@@ -70,27 +70,6 @@ void TreeEditor::setEnumerationIndex(const TreePath &path,int index)
 }
 
 
-namespace {
-struct TreeObserverStub : TreeObserver {
-  virtual void itemAdded(const TreePath &)
-  {
-  }
-
-  virtual void itemReplaced(const TreePath &)
-  {
-  }
-
-  virtual void itemRemoved(const TreePath &)
-  {
-  }
-
-  virtual void enumerationValuesChanged(const TreePath &) const
-  {
-  }
-};
-}
-
-
 void TreeEditor::replaceChildTreeItems(const TreePath &parent_path)
 {
   removeChildItems(parent_path);
