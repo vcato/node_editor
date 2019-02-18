@@ -564,17 +564,13 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
   Color unselected_color{0.25,0.25,0.5};
   Color selected_color{0.5,0.5,0};
 
-  // Draw the rectangle around all the inputs and outputs.
-  if (is_selected) {
-    drawFilledRoundedRect(render_info.body_outer_rect,selected_color);
-  }
-  else {
-    drawFilledRoundedRect(render_info.body_outer_rect,unselected_color);
-  }
+  Color fill_color = is_selected ? selected_color : unselected_color;
 
+  // Draw a rectangle around all the text lines.
+  drawFilledRoundedRect(render_info.body_outer_rect,fill_color);
   drawRoundedRect(render_info.body_outer_rect);
 
-  // Draw the text lines
+  // Draw the text lines.
 
   int n_lines = render_info.text_objects.size();
 

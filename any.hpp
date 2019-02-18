@@ -291,4 +291,24 @@ inline Optional<Any>
   return function_member(parameters);
 }
 
+
+inline std::vector<Any> makeVector()
+{
+  std::vector<Any> result;
+  return result;
+}
+
+
+inline std::vector<Any> makeVector(Any a,Any b)
+{
+  return std::vector<Any>{std::move(a),std::move(b)};
+}
+
+
+inline std::vector<Any> makeVector(float a,float b)
+{
+  return std::vector<Any>{a,b};
+}
+
+
 #endif /* ANY_HPP_ */

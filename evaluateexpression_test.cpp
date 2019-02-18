@@ -48,25 +48,6 @@ struct Tester {
 }
 
 
-static vector<Any> makeVector()
-{
-  vector<Any> result;
-  return result;
-}
-
-
-static vector<Any> makeVector(Any a,Any b)
-{
-  return vector<Any>{std::move(a),std::move(b)};
-}
-
-
-static vector<Any> makeVector(float a,float b)
-{
-  return vector<Any>{a,b};
-}
-
-
 static Optional<Any>
   evaluateStringWithTester(const string &arg,Tester &tester)
 {

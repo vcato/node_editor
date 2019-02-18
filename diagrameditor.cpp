@@ -404,7 +404,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   size_t n_lines = node.lines.size();
   float input_bottom_y = 0;
 
-  {
+  { // Add input connector circles
     float y = top_y;
     int n_inputs = node.nInputs();
 
@@ -432,7 +432,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   vector<float> line_end_ys(n_lines);
   float line_bottom_y = 0;
 
-  {
+  { // Add text objects for each line.
     float y = top_y;
 
     for (size_t line_index=0; line_index!=n_lines; ++line_index) {
@@ -460,12 +460,13 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
     line_end_ys[line_index] -= text_offset;
   }
 
+  // Add output connector circles
   for (
     size_t
       statement_index = 0,
       n_statements=node.statements.size(),
       line_index = 0;
-    statement_index!=n_statements;
+    statement_index != n_statements;
     ++statement_index
   ) {
     const auto &statement = node.statements[statement_index];

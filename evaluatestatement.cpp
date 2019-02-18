@@ -1,4 +1,4 @@
-#include "evaluatelinetext.hpp"
+#include "evaluatestatement.hpp"
 
 #include "stringparser.hpp"
 #include "evaluateexpression.hpp"
@@ -11,8 +11,8 @@ using std::cerr;
 
 
 Optional<Any>
-  evaluateLineText(
-    const string &line_text_arg,
+  evaluateStatement(
+    const string &statement,
     const vector<Any> &input_values,
     Executor &executor,
     ostream &error_stream,
@@ -20,7 +20,7 @@ Optional<Any>
   )
 {
   int character_index = 0;
-  StringParser parser{line_text_arg,character_index};
+  StringParser parser{statement,character_index};
   parser.skipWhitespace();
   int input_index = 0;
 

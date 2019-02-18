@@ -5,42 +5,90 @@
 #include "linetext.hpp"
 #include "diagramio.hpp"
 #include "anyio.hpp"
-#include "evaluatelinetext.hpp"
+#include "evaluatestatement.hpp"
 
 using std::ostream;
+using std::string;
 using std::vector;
 using std::ostringstream;
 using std::cerr;
 using Node = DiagramNode;
 
 
+namespace {
+struct LineRange {
+  const int begin_line_index;
+  const int end_line_index;
+};
+}
+
+
+static LineRange
+  statementLineRange(const Node &node,int desired_statement_index)
+{
+  int line_index = 0;
+  int statement_index = 0;
+
+  for (;;) {
+    int n_lines_in_statement = node.statements[statement_index].n_lines;
+    int next_line_index = line_index + n_lines_in_statement;
+
+    if (statement_index == desired_statement_index) {
+      return LineRange{line_index,next_line_index};
+    }
+
+    ++statement_index;
+    line_index = next_line_index;
+  }
+}
+
+
+static string
+  buildStatementString(const Node &node,int desired_statement_index)
+{
+  LineRange line_range = statementLineRange(node,desired_statement_index);
+  int line_index = line_range.begin_line_index;
+  int next_line_index = line_range.end_line_index;
+
+  string statement = "";
+
+  while (line_index != next_line_index) {
+    statement += node.lines[line_index].text + " ";
+    ++line_index;
+  }
+
+  return statement;
+}
+
+
 static void
-  evaluateDiagramNodeLine(
+  evaluateDiagramNodeStatement(
     const Diagram &,
     DiagramState &diagram_state,
     const Node &node,
-    NodeIndex node_index,
-    int line_index,
+    DiagramState::NodeState &node_state,
+    int statement_index,
     int output_index,
     Executor &executor,
     const vector<Any> &input_values
   )
 {
-  const Node::Line &line = node.lines[line_index];
+  string statement = buildStatementString(node,statement_index);
 
-  ostringstream line_error_stream;
+  ostringstream statement_error_stream;
+
+  auto allocate_environment_function =
+    [&](const Environment *parent_environment_ptr) -> Environment& {
+      return diagram_state.allocateEnvironment(parent_environment_ptr);
+    };
 
   Optional<Any> maybe_output_value =
-    evaluateLineText(
-      line.text,
+    evaluateStatement(
+      statement,
       input_values,
       executor,
-      line_error_stream
-      ,
-      /* allocate_environment_function */
-      [&](const Environment *parent_environment_ptr) -> Environment& {
-        return diagram_state.allocateEnvironment(parent_environment_ptr);
-      }
+      statement_error_stream,
+      allocate_environment_function
     );
 
 #if 0
@@ -51,18 +99,24 @@ static void
   cerr << "result: " << maybe_output_value << "\n";
 #endif
 
-  diagram_state.node_states[node_index].line_errors[line_index] =
-    line_error_stream.str();
+  {
+    LineRange line_range = statementLineRange(node,statement_index);
+    int begin = line_range.begin_line_index;
+    int end = line_range.end_line_index;
+
+    for (int line_index = begin; line_index != end; ++line_index) {
+      node_state.line_errors[line_index] = statement_error_stream.str();
+    }
+  }
 
   if (output_index>=0) {
     if (maybe_output_value) {
-      diagram_state.node_states[node_index].output_values[output_index] =
-        *maybe_output_value;
+      node_state.output_values[output_index] = *maybe_output_value;
     }
     else {
       std::ostream &error_stream = executor.debugStream();
-      error_stream << "Error: " << line_error_stream.str() << "\n";
-      error_stream << "  line: " << line.text << "\n";
+      error_stream << "Error: " << statement_error_stream.str() << "\n";
+      error_stream << "  statement: " << statement << "\n";
 
       for (int i=0, n_inputs=input_values.size(); i!=n_inputs; ++i) {
         error_stream << "input_values[" << i << "]=" << input_values[i] << "\n";
@@ -79,15 +133,19 @@ static void
     int node_index,
     vector<bool> &evaluated_flags,
     Executor &executor
+  );
+
+
+static void
+  evaluateNode(
+    const Diagram &diagram,
+    DiagramState &diagram_state,
+    const Node &node,
+    DiagramState::NodeState &node_state,
+    vector<bool> &evaluated_flags,
+    Executor &executor
   )
 {
-  assert(node_index>=0);
-
-  if (evaluated_flags[node_index]) {
-    return;
-  }
-
-  const Node &node = diagram.node(node_index);
   int n_inputs = node.inputs.size();
 
   for (int i=0; i!=n_inputs; ++i) {
@@ -104,12 +162,10 @@ static void
     }
   }
 
-  int n_expressions = node.statements.size();
+  int n_statements = node.statements.size();
   int next_output_index = 0;
-  int next_input_index = 0;
   int n_outputs = node.nOutputs();
   int n_lines = node.nLines();
-  DiagramState::NodeState &node_state = diagram_state.node_states[node_index];
 
   assert(node_state.output_values.empty());
   assert(node_state.line_errors.empty());
@@ -136,29 +192,55 @@ static void
     input_values.push_back(source_value);
   }
 
-  for (int i=0; i!=n_expressions; ++i) {
+  for (
+    int statement_index=0;
+    statement_index!=n_statements;
+    ++statement_index
+  ) {
     int output_index = -1;
 
-    if (node.statements[i].has_output) {
+    if (node.statements[statement_index].has_output) {
       output_index = next_output_index;
       ++next_output_index;
     }
 
-    if (node.lines[i].n_inputs==1) {
-      next_input_index += node.lines[i].n_inputs;
-    }
-
-    evaluateDiagramNodeLine(
+    evaluateDiagramNodeStatement(
       diagram,
       diagram_state,
       node,
-      node_index,
-      i,
+      node_state,
+      statement_index,
       output_index,
       executor,
       input_values
     );
   }
+}
+
+
+static void
+  updateNodeEvaluation(
+    const Diagram &diagram,
+    DiagramState &diagram_state,
+    int node_index,
+    vector<bool> &evaluated_flags,
+    Executor &executor
+  )
+{
+  assert(node_index>=0);
+
+  if (evaluated_flags[node_index]) {
+    return;
+  }
+
+  evaluateNode(
+    diagram,
+    diagram_state,
+    diagram.node(node_index),
+    diagram_state.node_states[node_index],
+    evaluated_flags,
+    executor
+  );
 
   evaluated_flags[node_index] = true;
 }

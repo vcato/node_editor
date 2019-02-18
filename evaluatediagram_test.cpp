@@ -121,6 +121,11 @@ struct SingleNodeTester : Tester {
   {
     return diagram_state.node_states[node_index].line_errors;
   }
+
+  vector<Any> &outputValues()
+  {
+    return diagram_state.node_states[node_index].output_values;
+  }
 };
 }
 
@@ -261,6 +266,16 @@ static void testLocalVariableWithError()
 }
 
 
+static void testStatementsCoveringMultipleLines()
+{
+  string node_text = "[1,\n2]";
+  SingleNodeTester tester(node_text);
+  tester.doEvaluation();
+  Any expected_result = makeVector(1,2);
+  assert(tester.outputValues()[0] == expected_result);
+}
+
+
 int main()
 {
   testSimpleReturn();
@@ -272,4 +287,5 @@ int main()
   testDiagramReturningWrongType();
   testLocalVariable();
   testLocalVariableWithError();
+  testStatementsCoveringMultipleLines();
 }
