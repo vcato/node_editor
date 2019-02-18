@@ -17,6 +17,12 @@ struct ObservedDiagram {
   ObservedDiagram(Diagram &diagram_arg,Holder &holder_arg);
   ~ObservedDiagram();
 
+  ObservedDiagram(const ObservedDiagram &) = delete;
+  void operator=(const ObservedDiagram &) = delete;
+
+  ObservedDiagram &operator=(ObservedDiagram &&) = default;
+  ObservedDiagram(ObservedDiagram &&) = default;
+
   void notifyObserversThatDiagramStateChanged();
 
   struct Observer {

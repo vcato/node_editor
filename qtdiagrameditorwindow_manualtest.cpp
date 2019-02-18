@@ -18,7 +18,7 @@ static void
   ostringstream error_stream;
   DiagramExecutionContext context = {show_stream,error_stream};
   DiagramExecutor executor(context,context.parent_environment_ptr);
-  diagram_state = DiagramState();
+  diagram_state.clear();
   evaluateDiagram(diagram,executor,diagram_state);
 
   cerr << "result: " << executor.maybe_return_value << "\n";

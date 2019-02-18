@@ -2,7 +2,7 @@
 
 #include "stringparser.hpp"
 #include "evaluateexpression.hpp"
-
+#include "anyio.hpp"
 
 using std::string;
 using std::vector;
@@ -15,7 +15,8 @@ Optional<Any>
     const string &line_text_arg,
     const vector<Any> &input_values,
     Executor &executor,
-    ostream &error_stream
+    ostream &error_stream,
+    const AllocateEnvironmentFunction &allocate_environment_function
   )
 {
   int character_index = 0;
@@ -73,6 +74,28 @@ Optional<Any>
 
       if (!executor.tryExecuteReturn(*maybe_value,error_stream)) {
         return Any();
+      }
+
+      return Any();
+    }
+
+    if (parser.peekChar() == '=') {
+      const string &variable_name = identifier;
+      parser.skipChar();
+      Optional<Any> maybe_result = evaluateExpression(data);
+
+      if (maybe_result) {
+        Environment &env =
+          allocate_environment_function(executor.parent_environment_ptr);
+        env[variable_name] = *maybe_result;
+
+        // We have to make the newly allocated environment be the current
+        // environment here.
+        executor.parent_environment_ptr = &env;
+      }
+      else {
+        // We got an error evaluating the expression, so we can't do
+        // the assignment.
       }
 
       return Any();

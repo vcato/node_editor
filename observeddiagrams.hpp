@@ -7,6 +7,8 @@
 struct ObservedDiagrams : ObservedDiagram::Holder {
   using DiagramChangedCallback = std::function<void(const Diagram &)>;
   ObservedDiagrams(DiagramChangedCallback = [](const Diagram &){});
+  ObservedDiagrams(const ObservedDiagrams &) = delete;
+  void operator=(const ObservedDiagrams &) = delete;
 
   ~ObservedDiagrams();
 

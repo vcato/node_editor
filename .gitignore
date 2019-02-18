@@ -36,3 +36,4 @@ fileaccessor_test
 observeddiagrams_test
 qtslider_manualtest
 maybeint_test
+diagramstate_test

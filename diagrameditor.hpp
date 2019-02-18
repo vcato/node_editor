@@ -197,7 +197,7 @@ class DiagramEditor {
       NodeConnectorIndex::null();
     Diagram *diagram_ptr2 = nullptr;
     DiagramObserverPtr diagram_observer_ptr;
-    DiagramState diagram_state;
+    const DiagramState *diagram_state_ptr = nullptr;
     NodeIndex focused_node_index = noNodeIndex();
     Point2D temp_source_pos;
     Optional<ViewportRect> maybe_selection_rectangle;
@@ -270,7 +270,7 @@ class DiagramEditor {
       ) const;
 
     void setDiagramPtr(Diagram *);
-    void setDiagramState(const DiagramState &);
+    void setDiagramStatePtr(const DiagramState *);
 
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;

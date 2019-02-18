@@ -210,7 +210,7 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
     }
 
     ObservedDiagram &observed_diagram = *maybe_observed_diagram;
-    observed_diagram.diagram_state = DiagramState();
+    observed_diagram.diagram_state.clear();
 
     Optional<Any> result =
       maybeEvaluateWith(

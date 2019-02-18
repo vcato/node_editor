@@ -12,6 +12,7 @@
 using std::vector;
 using std::cerr;
 using std::string;
+using std::ostringstream;
 
 
 static const char *averaging_diagram_text =
@@ -84,74 +85,85 @@ static const char *averaging_diagram_text =
   "}\n";
 
 
-static Any
-  evaluateDiagramReturningAny(
-    const Diagram &diagram,
-    const Environment &environment = {}
-  )
-{
-  std::ostringstream show_stream;
-  DiagramExecutionContext context{show_stream,/*error_stream*/cerr};
-  context.parent_environment_ptr = &environment;
-  DiagramExecutor executor(context, context.parent_environment_ptr);
-  evaluateDiagram(diagram,executor);
-  return std::move(*executor.maybe_return_value);
-}
+namespace {
+struct Tester {
+  Diagram diagram;
+  ostringstream show_stream;
+  Environment environment;
+  DiagramState diagram_state;
+  ostringstream error_stream;
+  DiagramExecutionContext context{show_stream,error_stream,&environment};
+  DiagramExecutor executor{context, context.parent_environment_ptr};
 
-
-static Point2D
-  evaluateDiagramReturningPoint2D(
-    const Diagram &diagram,
-    const Environment &environment = {}
-  )
-{
-  Any return_value = evaluateDiagramReturningAny(diagram,environment);
-  Optional<Point2D> maybe_point2d = maybePoint2D(return_value);
-  assert(maybe_point2d);
-  return *maybe_point2d;
-}
-
-
-static float
-  evaluateDiagramReturningFloat(
-    const Diagram &diagram,
-    const Environment &environment = {}
-  )
-{
-  Any return_value = evaluateDiagramReturningAny(diagram,environment);
-
-  if (!return_value.isFloat()) {
-    cerr << "Got a " << return_value.typeName() << " instead of float\n";
+  void doEvaluation()
+  {
+    evaluateDiagram(diagram, executor, diagram_state);
   }
 
-  assert(return_value.isFloat());
-  return return_value.asFloat();
+  Optional<Any> &maybeReturnValue()
+  {
+    return executor.maybe_return_value;
+  }
+};
+}
+
+
+namespace {
+struct SingleNodeTester : Tester {
+  const NodeIndex node_index;
+
+  SingleNodeTester(const string &node_text)
+  : node_index(diagram.createNodeWithText(node_text))
+  {
+  }
+
+  vector<string> &lineErrors()
+  {
+    return diagram_state.node_states[node_index].line_errors;
+  }
+};
+}
+
+
+static Point2D evaluateDiagramReturningPoint2D(Tester &tester)
+{
+  tester.doEvaluation();
+  return *maybePoint2D(*tester.maybeReturnValue());
+}
+
+
+static float evaluateDiagramReturningFloat(Tester &tester)
+{
+  tester.doEvaluation();
+  return tester.maybeReturnValue()->asFloat();
 }
 
 
 static void testSimpleReturn()
 {
-  Diagram diagram;
-  diagram.createNodeWithText("return [1,2]");
-  Point2D result = evaluateDiagramReturningPoint2D(diagram);
-  assert(result==Point2D(1,2));
+  Tester tester;
+  tester.diagram.createNodeWithText("return [1,2]");
+  Point2D result = evaluateDiagramReturningPoint2D(tester);
+  assert(result == Point2D(1,2));
 }
 
 
 static void testConnectedReturn()
 {
-  Diagram diagram;
+  Tester tester;
+  Diagram &diagram = tester.diagram;
   NodeIndex node1 = diagram.createNodeWithText("[1,2]");
   NodeIndex node2 = diagram.createNodeWithText("return $");
   diagram.connectNodes(node1,0,node2,0);
-  Point2D result = evaluateDiagramReturningPoint2D(diagram);
-  assert(result==Point2D(1,2));
+  Point2D result = evaluateDiagramReturningPoint2D(tester);
+  assert(result == Point2D(1,2));
 }
 
 
 static void testBuildingVector()
 {
-  Diagram diagram;
+  Tester tester;
+  Diagram &diagram = tester.diagram;
   NodeIndex x_node = diagram.createNodeWithText("x");
   NodeIndex y_node = diagram.createNodeWithText("y");
   NodeIndex build_vector_node = diagram.createNodeWithText("[$,$]");
@@ -160,74 +172,92 @@ static void testBuildingVector()
   diagram.connectNodes(y_node,0,build_vector_node,1);
   diagram.connectNodes(build_vector_node,0,return_node,0);
 
-  Environment environment;
-  environment["x"] = 1;
-  environment["y"] = 2;
+  tester.environment["x"] = 1;
+  tester.environment["y"] = 2;
 
-  Point2D result = evaluateDiagramReturningPoint2D(diagram,environment);
+  Point2D result = evaluateDiagramReturningPoint2D(tester);
   assert(result==Point2D(1,2));
 }
 
 
 static void testLocalPositionDiagram()
 {
-  Diagram diagram = localPositionDiagram();
+  Tester tester;
+  tester.diagram = localPositionDiagram();
+  tester.environment["x"] = 1;
+  tester.environment["y"] = 2;
 
-  Environment environment;
-  environment["x"] = 1;
-  environment["y"] = 2;
+  Point2D result = evaluateDiagramReturningPoint2D(tester);
 
-  Point2D result = evaluateDiagramReturningPoint2D(diagram,environment);
   assert(result==Point2D(1,2));
 }
 
 
 static void testAveragingDiagram()
 {
-  Diagram diagram = makeDiagram(averaging_diagram_text);
-  Environment environment;
-  environment["x"] = 1;
-  environment["y"] = 3;
+  Tester tester;
+  tester.diagram = makeDiagram(averaging_diagram_text);
+  tester.environment["x"] = 1;
+  tester.environment["y"] = 3;
 
-  Point2D result = evaluateDiagramReturningPoint2D(diagram,environment);
+  Point2D result = evaluateDiagramReturningPoint2D(tester);
+
   assert(result==Point2D(2,2));
 }
 
 
 static void testExpression()
 {
-  Diagram diagram;
-  Environment environment;
-  environment["x"] = 6;
-  diagram.createNodeWithText("return x+5");
-  float result = evaluateDiagramReturningFloat(diagram,environment);
+  Tester tester;
+  tester.environment["x"] = 6;
+  tester.diagram.createNodeWithText("return x+5");
+
+  float result = evaluateDiagramReturningFloat(tester);
+
   assert(result==11);
 }
 
 
 static void testDiagramReturningWrongType()
 {
-  string expected_error_message = "Returning float instead of vector.\n";
-  Diagram diagram;
-  NodeIndex node_index = diagram.createNodeWithText("return 5");
+  string node_text = "return 5";
   string expected_return_type_name = Any(vector<Any>{1,2}).typeName();
+  string expected_error_message = "Returning float instead of vector.\n";
 
-  std::ostringstream show_stream;
-  DiagramExecutionContext context{show_stream,/*error_stream*/cerr};
-  DiagramExecutor executor(context, /*parent_environment_ptr*/nullptr);
+  SingleNodeTester tester(node_text);
+
+  DiagramExecutor &executor = tester.executor;
   executor.optional_expected_return_type_name = expected_return_type_name;
-  DiagramState diagram_state;
-  evaluateDiagram(diagram,executor,diagram_state);
+  tester.doEvaluation();
 
-  assert(!executor.maybe_return_value);
+  assert(!tester.maybeReturnValue());
+  assert(tester.lineErrors()[0] == expected_error_message);
+}
 
-  string error_message = diagram_state.node_states[node_index].line_errors[0];
 
-  if (error_message != expected_error_message) {
-    cerr << "error_message: " << error_message << "\n";
-  }
+static void testLocalVariable()
+{
+  string node_text = "x=5\nreturn x*x";
+  float expected_return_value = 25;
 
-  assert(error_message == expected_error_message);
+  SingleNodeTester tester(node_text);
+
+  tester.doEvaluation();
+
+  assert(tester.maybeReturnValue() == expected_return_value);
+}
+
+
+static void testLocalVariableWithError()
+{
+  string node_text = "x=(5\nreturn x*x";
+  string expected_line1_error_message = "Missing ')'\n";
+  SingleNodeTester tester(node_text);
+
+  tester.doEvaluation();
+
+  assert(tester.lineErrors()[0] == expected_line1_error_message);
+  assert(!tester.maybeReturnValue());
 }
 
 
@@ -240,4 +270,6 @@ int main()
   testAveragingDiagram();
   testExpression();
   testDiagramReturningWrongType();
+  testLocalVariable();
+  testLocalVariableWithError();
 }

@@ -35,7 +35,7 @@ world {
   }
   charmapper1 {
     variable_pass {
-      var: 51 {
+      var: 52 {
         name: "percent"
         minimum: 0
         maximum: 100
@@ -67,7 +67,8 @@ world {
                 x: 492
                 y: 382
               }
-              line: "return $*(percent/100) + $*(1-(percent/100)) + $"
+              line: "fraction=percent/100"
+              line: "return $*fraction + $*(1-fraction) + $"
               connection {
                 input_index: 0
                 source_node_id: 6

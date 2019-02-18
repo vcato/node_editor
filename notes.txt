@@ -106,3 +106,45 @@ Be able to remove variable min/max
 
 Having the worldwrapper_test use a FakeTree should make the tests easier.
 We should now be able to use the TreeUpdatingObserver.
+---
+I'd like to be able to assign new variables when evaluating a diagram.
+Currently, when we are evaluating a diagram node, we have an input
+environment, and it is const.  If we were to assign a value to a variable,
+we'd really want to create a new environment and not modify the existing
+environment.
+
+It seems like these environments will be part of the diagram state.
+Maybe we have a set of unique_ptrs to environments that we've created.
+
+How does this work at the individual level of evaluateExpression()?
+
+ExpressionEvaluatorData could have an environment allocator of some sort
+so that when evaluateExpression() decides it needs a new environment it
+has a way to do it.  We could be storing these environments inside the
+DiagramState.
+
+We could also say that evaluateExpression() takes an input environment
+and an expression string and outputs an environment and a value.
+The output environment may be the same as the input environment, or it
+may be a new environment.
+
+evaluateLineText() is probably where we'd handle an assignment, so that
+an assignment isn't considered an expression.
+
+Need executor::newEnvironment()
+
+The DiagramExecutor needs to be able to allocate an environment from the
+DiagramState, but it doesn't have access to the DiagramState.  How do
+error end up being kept in the diagram state?
+  evaluateDiagramNodeLine() is what stores the error in the diagram state.
+  It has access to both the DiagramState and the Executor.  It calls
+  evaluateLineText().
+
+Review testEvaluateAfterDeletingAnInput().
+
+Inputs aren't clearly associated with lines.
+* If you have two lines, and the first line has no inputs, and the second
+  line has two inputs, it looks like the first input goes with the first
+  line and the second input goes with the second line.  It would be better
+  if the lines were spaced such that it was clear which inputs went with
+  each line.

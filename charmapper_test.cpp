@@ -8,13 +8,14 @@ using std::string;
 using std::map;
 
 
-static map<const Diagram *,DiagramState> applyCharmapper(Charmapper &charmapper)
+static map<const Diagram *,DiagramState>
+  applyCharmapper(Charmapper &charmapper)
 {
   DiagramExecutionContext
     context{/*show_stream*/cerr,/*error_stream*/cerr};
   TestDiagramEvaluator evaluator(context);
   charmapper.apply(evaluator);
-  return evaluator.diagram_state_map;
+  return std::move(evaluator.diagram_state_map);
 }
 
 

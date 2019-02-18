@@ -31,7 +31,17 @@ static void
   ostringstream line_error_stream;
 
   Optional<Any> maybe_output_value =
-    evaluateLineText(line.text,input_values,executor,line_error_stream);
+    evaluateLineText(
+      line.text,
+      input_values,
+      executor,
+      line_error_stream
+      ,
+      /* allocate_environment_function */
+      [&](const Environment *parent_environment_ptr) -> Environment& {
+        return diagram_state.allocateEnvironment(parent_environment_ptr);
+      }
+    );
 
 #if 0
   cerr << "Evaluated line " << line.text << "\n";
@@ -50,7 +60,7 @@ static void
         *maybe_output_value;
     }
     else {
-      std::ostream &error_stream = executor.errorStream();
+      std::ostream &error_stream = executor.debugStream();
       error_stream << "Error: " << line_error_stream.str() << "\n";
       error_stream << "  line: " << line.text << "\n";
 

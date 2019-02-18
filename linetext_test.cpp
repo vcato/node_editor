@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "streamexecutor.hpp"
+#include "fakeexecutor.hpp"
 #include "scene.hpp"
 #include "sceneobjects.hpp"
 #include "maybepoint2d.hpp"
@@ -25,16 +25,69 @@ using std::function;
 using std::ostream;
 
 
-static Any lineTextValue(const char *text,const vector<Any> &input_values)
-{
-  ostringstream stream;
-  StreamExecutor executor = {stream,cerr};
+namespace {
+struct Tester {
+  ostringstream execution_stream;
+  Environment environment;
+  vector<Any> input_values;
+  ostringstream output_stream;
   ostringstream error_stream;
-  Optional<Any> maybe_result =
-    evaluateLineText(text,input_values,executor,error_stream);
+  ostringstream debug_stream;
+
+  FakeExecutor
+    executor{
+      &environment,
+      execution_stream,
+      output_stream,
+      debug_stream
+    };
+
+  Optional<Any> evaluate(const string &text)
+  {
+    // We'll assume that we're not evaluating lines that do assignment
+    // right now, so we don't need an environment allocator.
+    auto allocate_environment_function =
+      [](const Environment *) -> Environment& { assert(false); };
+
+    Optional<Any> maybe_result =
+      evaluateLineText(
+        text,
+        input_values,
+        executor,
+        error_stream,
+        allocate_environment_function
+      );
+    return maybe_result;
+  }
+
+  string errorString()
+  {
+    return error_stream.str();
+  }
+
+  string outputString()
+  {
+    return output_stream.str();
+  }
+
+  string debugString()
+  {
+    return debug_stream.str();
+  }
+};
+}
+
+
+static Any lineTextValue(const char *text,vector<Any> input_values_arg)
+{
+  Tester tester;
+  tester.input_values = std::move(input_values_arg);
+
+  Optional<Any> maybe_result = tester.evaluate(text);
+
   assert(maybe_result);
-  string output = stream.str();
-  assert(output=="");
+  assert(tester.outputString() == "");
+  assert(tester.debugString() == "");
   return std::move(*maybe_result);
 }
 
@@ -51,49 +104,18 @@ static bool lineTextHasInput(const string &text)
 }
 
 
-namespace {
-struct FakeExecutor : Executor {
-  ostringstream &execution_stream;
-
-  using Executor::Executor;
-
-  void executeShow(const Any&) override
-  {
-  }
-
-  bool tryExecuteReturn(const Any& arg,ostream &/*error_stream*/) override
-  {
-    execution_stream << "return(";
-    printOn(execution_stream, arg, /*indent_level*/0);
-    execution_stream << ")\n";
-    return true;
-  }
-
-  std::ostream& errorStream() override { return cerr; }
-
-  FakeExecutor(
-    const Environment *parent_environment_ptr,
-    ostringstream &execution_stream_arg
-  )
-  : Executor(parent_environment_ptr),
-    execution_stream(execution_stream_arg)
-  {
-  }
-};
-}
-
-
 static Any lineTextValue(const string &line_text)
 {
-  ostringstream dummy_stream;
-  StreamExecutor executor = {dummy_stream,cerr};
-  ostringstream error_stream;
-  Optional<Any> maybe_result =
-    evaluateLineText(line_text,/*input_values*/{},executor,error_stream);
+  Tester tester;
+
+  Optional<Any> maybe_result = tester.evaluate(line_text);
 
   if (!maybe_result) {
     return Any();
   }
+
+  assert(tester.debugString() == "");
+  assert(tester.outputString() == "");
 
   return std::move(*maybe_result);
 }
@@ -108,33 +130,21 @@ static vector<Any> makeVector(float a,float b)
 }
 
 
-namespace {
-struct Tester {
-  ostringstream execution_stream;
-  Environment environment;
-  vector<Any> input_values;
-};
-}
-
-
 static void testInvalid(const string &line_text)
 {
   Tester tester;
-  FakeExecutor executor(&tester.environment,tester.execution_stream);
-  ostringstream error_stream;
-  Optional<Any> maybe_result =
-    evaluateLineText(line_text,tester.input_values,executor,error_stream);
+
+  Optional<Any> maybe_result = tester.evaluate(line_text);
+
   assert(!maybe_result);
 }
 
 
-static Any testLineTextWithoutError(const string &text,Tester &tester)
+static Any testLineTextWithoutError(const string &text, Tester &tester)
 {
-  FakeExecutor executor(&tester.environment,tester.execution_stream);
-  ostringstream error_stream;
-  Optional<Any> result =
-    evaluateLineText( text, tester.input_values, executor, error_stream );
-  assert(error_stream.str() == "");
+  Optional<Any> result = tester.evaluate(text);
+
+  assert(tester.errorString() == "");
   assert(result);
   return std::move(*result);
 }
@@ -232,5 +242,4 @@ int main()
   testCallingSceneBodyPos();
 
   testCase1();
-
 }

@@ -4,6 +4,7 @@
 
 
 using std::cerr;
+using std::make_pair;
 
 
 ObservedDiagrams::ObservedDiagrams(

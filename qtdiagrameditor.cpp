@@ -12,7 +12,7 @@
 #include "diagramio.hpp"
 #include "qtmenu.hpp"
 #include "draw.hpp"
-#include "streamexecutor.hpp"
+#include "fakeexecutor.hpp"
 
 
 using std::cerr;

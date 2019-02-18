@@ -39,9 +39,9 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 }
 
 
-void DiagramEditor::setDiagramState(const DiagramState &arg)
+void DiagramEditor::setDiagramStatePtr(const DiagramState *arg)
 {
-  diagram_state = arg;
+  diagram_state_ptr = arg;
 
   redraw();
 }
@@ -60,17 +60,17 @@ void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
   if (diagram_observer_ptr) {
     diagram_observer_ptr->diagram_state_changed_callback =
       [this]{
-        setDiagramState(diagram_observer_ptr->diagramState());
+        setDiagramStatePtr(&diagram_observer_ptr->diagramState());
       };
   }
 
   if (diagram_observer_ptr) {
     setDiagramPtr(&diagram_observer_ptr->diagram());
-    setDiagramState(diagram_observer_ptr->diagramState());
+    setDiagramStatePtr(&diagram_observer_ptr->diagramState());
   }
   else {
     setDiagramPtr(nullptr);
-    setDiagramState(DiagramState());
+    setDiagramStatePtr(nullptr);
   }
 }
 
@@ -1152,7 +1152,16 @@ ViewportLine
 
 string DiagramEditor::lineError(NodeIndex node_index,int line_index) const
 {
-  return diagram_state.node_states[node_index].line_errors[line_index];
+  if (diagram_state_ptr) {
+    return diagram_state_ptr->node_states[node_index].line_errors[line_index];
+  }
+  else {
+    // We requested the line error for a diagram when we have no diagram
+    // state.  It seems like this shouldn't happen in practice.  If the
+    // diagram editor window is open, it should be observing a diagram, and
+    // that diagram should be evaluated, in which case it has a state.
+    assert(false);
+  }
 }
 
 

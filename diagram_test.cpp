@@ -3,7 +3,7 @@
 #include <cassert>
 #include <sstream>
 #include "evaluatediagram.hpp"
-#include "streamexecutor.hpp"
+#include "fakeexecutor.hpp"
 
 
 using std::ostringstream;
@@ -16,8 +16,15 @@ using std::cerr;
 
 static void evaluateDiagram(Diagram &diagram,DiagramState &diagram_state)
 {
-  ostringstream dummy_stream;
-  StreamExecutor executor(dummy_stream,cerr);
+  ostringstream output_stream;
+  ostringstream execution_stream;
+  FakeExecutor
+    executor(
+      /*parent_environment_ptr*/ nullptr,
+      execution_stream,
+      output_stream,
+      /*debug_stream*/cerr
+    );
   evaluateDiagram(diagram,executor,diagram_state);
 }
 
@@ -42,10 +49,17 @@ static void testEvaluation2()
 }
 
 
-static void evaluate(Diagram &diagram,ostream &stream)
+static void evaluate(Diagram &diagram,ostream &output_stream)
 {
-  ostringstream error_stream;
-  StreamExecutor executor(stream,error_stream);
+  ostringstream debug_stream;
+  ostringstream execution_stream;
+  FakeExecutor
+    executor(
+      /*parent_environment_ptr*/nullptr,
+      execution_stream,
+      output_stream,
+      debug_stream
+    );
   DiagramState diagram_state;
   evaluateDiagram(diagram,executor,diagram_state);
 }
@@ -131,6 +145,8 @@ static void testEvaluateAfterDeletingAnInput()
   ostringstream stream;
   diagram.removeInvalidInputs();
   evaluate(diagram,stream);
+
+  // should we be expecting something here?
 }
 
 
