@@ -285,6 +285,23 @@ ViewportTextObject
 }
 
 
+ViewportTextObject
+  DiagramEditor::inputTextObject(
+    const string &s,
+    float left_x,
+    float top_y
+  ) const
+{
+  return
+    alignedTextObject(
+      s,
+      ViewportCoords(left_x,top_y),
+      /*horizontal_alignment*/0,
+      /*vertical_alignment*/1
+    );
+}
+
+
 ViewportRect
   DiagramEditor::nodeBodyRect(
     const Node &node,
@@ -304,33 +321,22 @@ ViewportRect
   float bottom_y = top_y;
 
   vector<string> strings = node.strings();
+  vector<ViewportRect> string_rects;
 
+  // Make a rectangle for each string
   for (const auto& s : strings) {
-    ViewportRect r =
-      rectAroundText(
-        alignedTextObject(
-          s,
-          ViewportCoords(left_x,bottom_y),
-          /*horizontal_alignment*/0,
-          /*vertical_alignment*/1
-        )
-      );
+    ViewportRect r = rectAroundText( inputTextObject(s,left_x,bottom_y) );
+    string_rects.push_back(r);
     bottom_y = r.start.y;
   }
 
   int n_inputs = node.nInputs();
   int n_lines = strings.size();
 
-  while (n_lines<n_inputs) {
+  // Extend the bottom if we have more inputs than lines.
+  while (n_lines < n_inputs) {
     ViewportRect r =
-      rectAroundText(
-        alignedTextObject(
-          "$",
-          ViewportCoords(left_x,bottom_y),
-          /*horizontal_alignment*/0,
-          /*vertical_alignment*/1
-        )
-      );
+      rectAroundText( inputTextObject("$",left_x,bottom_y) );
     bottom_y = r.start.y;
     ++n_lines;
   }
@@ -339,16 +345,7 @@ ViewportRect
   // text objects.
   float right_x = header_rect.end.x;
 
-  for (const auto &s : strings) {
-    ViewportRect r =
-      rectAroundText(
-        alignedTextObject(
-          s,
-          ViewportCoords(left_x,top_y),
-          /*horizontal_alignment*/0,
-          /*vertical_alignment*/1
-        )
-      );
+  for (const auto &r : string_rects) {
     if (r.end.x > right_x) {
       right_x = r.end.x;
     }
@@ -363,23 +360,6 @@ ViewportRect
 }
 
 
-ViewportTextObject
-  DiagramEditor::inputTextObject(
-    const string &s,
-    float left_x,
-    float y
-  ) const
-{
-  return
-    alignedTextObject(
-      s,
-      ViewportCoords(left_x,y),
-      /*horizontal_alignment*/0,
-      /*vertical_alignment*/1
-    );
-}
-
-
 NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 {
   const DiagramTextObject &header_text_object = node.header_text_object;
@@ -388,18 +368,18 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   ViewportRect header_rect = nodeHeaderRect(header_text_object);
 
   NodeRenderInfo render_info;
-  ViewportRect body_rect = nodeBodyRect(node,header_rect);
   render_info.header_rect = header_rect;
 
+  ViewportRect body_rect = nodeBodyRect(node, header_rect);
   float left_x = body_rect.start.x;
   float right_x = body_rect.end.x;
+  float top_y = body_rect.end.y;
 
   float margin = 5;
 
   float left_outer_x = left_x - margin;
   float right_outer_x = right_x + margin;
 
-  float top_y = body_rect.end.y;
 
   size_t n_lines = node.lines.size();
   float input_bottom_y = 0;
@@ -409,7 +389,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
     int n_inputs = node.nInputs();
 
     for (int i=0; i!=n_inputs; ++i) {
-      ViewportTextObject t = inputTextObject("$",left_x,y);
+      ViewportTextObject t = inputTextObject("$", left_x, y);
       ViewportRect r = rectAroundText(t);
       float line_start_y = r.start.y;
       float line_end_y = r.end.y;
@@ -422,7 +402,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       c.radius = connector_radius;
       render_info.input_connector_circles.push_back(c);
 
-      y = r.start.y;
+      y = line_start_y;
     }
 
     input_bottom_y = y;
@@ -436,10 +416,10 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
     float y = top_y;
 
     for (size_t line_index=0; line_index!=n_lines; ++line_index) {
-      const auto &line = node.lines[line_index];
-      ViewportTextObject t = inputTextObject(line.text,left_x,y);
-      render_info.text_objects.push_back(t);
+      const auto &line_text = node.lines[line_index].text;
+      ViewportTextObject t = inputTextObject(line_text, left_x, y);
       ViewportRect r = rectAroundText(t);
+      render_info.text_objects.push_back(t);
       line_start_ys[line_index] = r.start.y;
       line_end_ys[line_index] = r.end.y;
       y = r.start.y;
@@ -448,6 +428,8 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
     line_bottom_y = y;
   }
 
+  // If the height of the inputs is greater than the height of the lines,
+  // then we'll offset the lines vertically so that they are centered.
   float text_offset = 0;
 
   if (input_bottom_y < line_bottom_y) {
@@ -461,32 +443,31 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   }
 
   // Add output connector circles
-  for (
-    size_t
-      statement_index = 0,
-      n_statements=node.statements.size(),
-      line_index = 0;
-    statement_index != n_statements;
-    ++statement_index
-  ) {
-    const auto &statement = node.statements[statement_index];
-    const auto statement_n_lines = statement.n_lines;
-    float expression_start_y =
-      line_start_ys[line_index + statement_n_lines - 1];
-    float expression_end_y = line_end_ys[line_index];
-    float expression_center_y = (expression_start_y + expression_end_y)/2;
+  {
+    size_t statement_index = 0;
+    size_t n_statements = node.statements.size();
+    size_t line_index = 0;
 
-    if (statement.has_output) {
-      float connector_x = (right_outer_x + connector_radius + 5);
-      float connector_y = expression_center_y;
+    for (; statement_index != n_statements; ++statement_index) {
+      const auto &statement = node.statements[statement_index];
+      const auto statement_n_lines = statement.n_lines;
+      float expression_start_y =
+        line_start_ys[line_index + statement_n_lines - 1];
+      float expression_end_y = line_end_ys[line_index];
+      float expression_center_y = (expression_start_y + expression_end_y)/2;
 
-      Circle c;
-      c.center = Point2D(connector_x,connector_y);
-      c.radius = connector_radius;
-      render_info.output_connector_circles.push_back(c);
+      if (statement.has_output) {
+        float connector_x = (right_outer_x + connector_radius + 5);
+        float connector_y = expression_center_y;
+
+        Circle c;
+        c.center = Point2D(connector_x,connector_y);
+        c.radius = connector_radius;
+        render_info.output_connector_circles.push_back(c);
+      }
+
+      line_index += statement_n_lines;
     }
-
-    line_index += statement_n_lines;
   }
 
   render_info.body_outer_rect = body_rect;
