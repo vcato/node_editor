@@ -128,3 +128,59 @@ objects based on these rectangles.  It would be easier if we were just
 dealing with rectangles, and then fitting the text objects into the rectangles
 later.  Seems like this could work if we had a convention, like that the
 upper left corner of the rectangle specifies the text object location.
+
+
+I think it would be best to make a series of sizes.  We'll start at
+a low level with the sizes of the indivudal text lines and input
+connectors.  We'll build up the vertical sizes of the lines, and the
+horizontal size.  Once all sizes are determined, we'll go back and
+lay out everything from the top back down to the individual items.
+
+
+// We can define the positions inductively like this:
+given:
+  n_inputs[i]
+  line_heights[i]
+  line_widths[i]
+  connector_width
+  connector_height
+  left_x
+  top_y
+
+calculate:
+  input_heights[i] = connector_height*n_inputs[i]
+  region_heights[i] = max(input_heights[i],line_heights[i])
+  body_height = sum{i}(region_heights[i])
+  body_width = max{i}(line_widths[i])
+  region_x[i] = left_x
+  region_y[0] = top_y
+  region_y[i+1] = region_y[i] - region_height[i]
+  input_x[i] = left_x - connector_width
+
+  first_input_index[0] = 0
+  first_input_index[i+1] = first_input_index[i] + n_inputs[i]
+
+  input_y[first_input_index[i]] =
+    region_y[i] + (region_heights[i] - input_heights[i])/2
+
+  input_y[first_input_index[i]+a+1] =
+    input_y[first_input_index[i]+a] + input_height
+
+  line_y[i] = region_y[i] - (region_heights[i] - line_heights[i])/2
+
+  output_width[i] = connector_width
+  output_height[i] = connector_height
+  output_x[i] = region_x[i] + region_width[i]
+  output_y[i] = region_y[i] - (region_heights[i] - connector_height)/2
+
+results:
+  line_x[i]
+  line_y[i]
+  input_x[j]
+  input_y[j]
+  input_width[j]
+  input_height[j]
+  output_x[k]
+  output_y[k]
+  output_width[k]
+  output_height[k]
