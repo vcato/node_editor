@@ -54,23 +54,26 @@ CONTAINS = contains.o
 EVALUATEEXPRESSION = evaluateexpression.o \
   $(STRINGPARSER) $(MAYBEPOINT2D) $(CONTAINS)
 EVALUATESTATEMENT = evaluatestatement.o $(EVALUATEEXPRESSION)
-ANYIO = anyio.o
-EVALUATEDIAGRAM = evaluatediagram.o $(EVALUATESTATEMENT) $(ANYIO)
+PRINTINDENT = printindent.o
+ANYIO = anyio.o $(PRINTINDENT)
 DIAGRAMSTATE = diagramstate.o
-SCENE = scene.o
+EVALUATEDIAGRAM = evaluatediagram.o $(EVALUATESTATEMENT) $(ANYIO) $(DIAGRAMSTATE)
+SCENE = scene.o $(GENERATENAME)
 POINT2DOBJECT=  point2dobject.o
 GLOBALVEC = globalvec.o
 SCENEOBJECTS = sceneobjects.o $(POINT2DOBJECT) $(GLOBALVEC)
-MAKEDIAGRAM = makediagram.o
+MAKEDIAGRAM = makediagram.o $(DIAGRAMIO)
 DEFAULTDIAGRAMS = defaultdiagrams.o $(MAKEDIAGRAM)
 CHARMAPPEROBJECTS = charmapperobjects.o
-CHARMAPPER = charmapper.o $(DEFAULTDIAGRAMS) $(CHARMAPPEROBJECTS)
+CHARMAPPER = charmapper.o \
+  $(DEFAULTDIAGRAMS) $(CHARMAPPEROBJECTS) $(MAYBEPOINT2D) $(SCENEOBJECTS) \
+  $(ANY)
 DIAGRAMEXECUTOR = diagramexecutor.o
 ANY = any.o
 WORLD = world.o \
   $(OBSERVEDDIAGRAMS) $(GENERATENAME) $(SCENEWINDOW) $(EVALUATEDIAGRAM) \
   $(DIAGRAMSTATE) $(SCENE) $(SCENEOBJECTS) $(CHARMAPPER) $(DIAGRAMEXECUTOR) \
-  $(ANY)
+  $(ANY) $(OBSERVEDDIAGRAM)
 QTSLOT = qtslot.o moc_qtslot.o
 QTMENU = qtmenu.o $(QTSLOT)
 QTTREEWIDGETITEM = qttreewidgetitem.o
@@ -79,7 +82,8 @@ QTSPINBOX = qtspinbox.o moc_qtspinbox.o
 QTCOMBOBOX = qtcombobox.o moc_qtcombobox.o
 QTLINEEDIT = qtlineedit.o moc_qtlineedit.o
 TREEUPDATING = treeupdating.o
-WRAPPERUTIL = wrapperutil.o
+OBSERVEDDIAGRAM = observeddiagram.o
+WRAPPERUTIL = wrapperutil.o $(OBSERVEDDIAGRAM)
 DIAGRAM = diagram.o
 NODETEXTEDITOR = nodetexteditor.o
 LINETEXT = linetext.o
@@ -87,15 +91,13 @@ STATEMENTTEXT = statementtext.o
 STRINGUTIL = stringutil.o
 DIAGRAMNODE = diagramnode.o $(LINETEXT) $(STATEMENTTEXT) $(STRINGUTIL)
 CIRCLE = circle.o
-DIAGRAMWRAPPERSTATE = diagramwrapperstate.o
-PRINTINDENT = printindent.o
-WRAPPERSTATE = wrapperstate.o $(PRINTINDENT)
+DIAGRAMWRAPPERSTATE = diagramwrapperstate.o $(DIAGRAMNODE) $(DIAGRAM)
+WRAPPERSTATE = wrapperstate.o $(PRINTINDENT) $(STRINGUTIL) $(STREAMPARSER)
 STREAMPARSER = streamparser.o
 DIAGRAMIO = diagramio.o $(DIAGRAMWRAPPERSTATE) $(WRAPPERSTATE) $(STREAMPARSER)
 DIAGRAMEDITOR = diagrameditor.o \
   $(DIAGRAM) $(NODETEXTEDITOR) $(DIAGRAMNODE) $(CIRCLE) $(DIAGRAMIO)
 DIAGRAMEDITORWINDOW = diagrameditorwindow.o $(DIAGRAMEDITOR)
-OBSERVEDDIAGRAM = observeddiagram.o
 TREEEDITOR = treeeditor.o \
   $(TREEUPDATING) $(WRAPPERUTIL) $(DIAGRAMEDITORWINDOW) $(DIAGRAMEDITOR) \
   $(OBSERVEDDIAGRAM)
@@ -111,11 +113,18 @@ QTSCENETREE = qtscenetree.o
 QTSCENEVIEWER = qtsceneviewer.o
 QTSCENEWINDOW = qtscenewindow.o $(QTSCENETREE) $(QTSCENEVIEWER)
 QTWORLD = qtworld.o $(WORLD) $(QTSCENEWINDOW)
-WRAPPER = wrapper.o
+WRAPPER = wrapper.o $(DIAGRAMWRAPPERSTATE)
 CHARMAPPERWRAPPER = charmapperwrapper.o
 SCENEWRAPPER = scenewrapper.o
 WORLDWRAPPER = worldwrapper.o $(CHARMAPPERWRAPPER) $(SCENEWRAPPER)
 MAINWINDOW = mainwindow.o
+FAKETREEEDITOR = faketreeeditor.o
+FAKETREE = faketree.o
+FAKEDIAGRAMEDITOR = fakediagrameditor.o
+FAKEDIAGRAMEDITORWINDOWS = fakediagrameditorwindows.o
+POINT2D = point2d.o
+TESTDIAGRAMEVALUATOR = testdiagramevaluator.o \
+  $(EVALUATEDIAGRAM) $(DIAGRAMEXECUTOR)
 
 moc_%.cpp: %.hpp
 	moc-qt4 $^ >$@
@@ -148,10 +157,9 @@ charmapperobjects_test: charmapperobjects_test.o charmapperobjects.o \
   printindent.o scene.o generatename.o point2d.o anyio.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-evaluateexpression_test: evaluateexpression_test.o evaluateexpression.o \
-  maybepoint2d.o charmapperobjects.o scene.o generatename.o sceneobjects.o \
-  point2dobject.o globalvec.o point2d.o any.o printindent.o contains.o \
-  anyio.o stringutil.o streamparser.o stringparser.o
+evaluateexpression_test: evaluateexpression_test.o\
+  $(EVALUATEEXPRESSION) $(STRINGUTIL) $(CHARMAPPEROBJECTS) $(SCENE) \
+  $(SCENEOBJECTS) $(ANYIO) $(ANY)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 evaluatestatement_test: evaluatestatement_test.o evaluatestatement.o scene.o \
@@ -228,15 +236,7 @@ wrapper_test: wrapper_test.o wrapper.o diagram.o diagramnode.o linetext.o \
 scene_test: scene_test.o scene.o generatename.o point2d.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-world_test: world_test.o world.o scene.o scenewindow.o scenetree.o \
-  generatename.o charmapper.o defaultdiagrams.o diagram.o diagramio.o \
-  diagramnode.o linetext.o statementtext.o stringutil.o sceneviewer.o \
-  evaluatediagram.o evaluateexpression.o makediagram.o maybepoint2d.o \
-  sceneobjects.o charmapperobjects.o point2dobject.o globalvec.o \
-  point2d.o any.o printindent.o contains.o diagramexecutor.o anyio.o \
-  evaluatestatement.o streamparser.o wrapperstate.o diagramwrapperstate.o \
-  testdiagramevaluator.o observeddiagrams.o observeddiagram.o stringparser.o \
-  diagramstate.o
+world_test: world_test.o $(WORLD)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapperstate_test: wrapperstate_test.o wrapperstate.o stringutil.o wrapper.o \
@@ -249,63 +249,36 @@ diagramwrapperstate_test: diagramwrapperstate_test.o diagram.o diagramnode.o \
   wrapperstate.o printindent.o streamparser.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-observeddiagrams_test: observeddiagrams_test.o observeddiagrams.o \
-  observeddiagram.o
+observeddiagrams_test: observeddiagrams_test.o \
+  $(OBSERVEDDIAGRAMS) $(OBSERVEDDIAGRAM)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-scenewrapper_test: scenewrapper_test.o scenewrapper.o scene.o wrapperutil.o \
-  generatename.o wrapperstate.o stringutil.o wrapper.o printindent.o \
-  streamparser.o diagramwrapperstate.o diagram.o diagramnode.o linetext.o \
-  statementtext.o observeddiagram.o treeupdating.o faketree.o
+scenewrapper_test: scenewrapper_test.o \
+  $(SCENEWRAPPER) $(WRAPPERSTATE) $(SCENE) $(WRAPPER) $(WRAPPERUTIL) \
+  $(TREEUPDATING) $(FAKETREE)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-worldwrapper_test: worldwrapper_test.o world.o scene.o worldwrapper.o \
-  scenewrapper.o charmapperwrapper.o charmapper.o diagram.o defaultdiagrams.o \
-  diagramnode.o diagramio.o linetext.o statementtext.o stringutil.o \
-  wrapperutil.o wrapper.o scenewindow.o scenetree.o generatename.o \
-  sceneviewer.o evaluatediagram.o evaluateexpression.o wrapperstate.o \
-  makediagram.o maybepoint2d.o charmapperobjects.o sceneobjects.o \
-  point2dobject.o globalvec.o point2d.o printindent.o any.o contains.o \
-  diagramexecutor.o anyio.o evaluatestatement.o streamparser.o \
-  diagramwrapperstate.o testdiagramevaluator.o observeddiagrams.o \
-  observeddiagram.o stringparser.o diagramstate.o faketree.o treeupdating.o
+worldwrapper_test: worldwrapper_test.o \
+  $(WORLDWRAPPER) $(DIAGRAM) $(DIAGRAMNODE) $(FAKETREE) $(OBSERVEDDIAGRAM) \
+  $(WRAPPERUTIL) $(WRAPPERSTATE) $(WRAPPER) $(SCENE) $(WORLD) $(TREEUPDATING) \
+  $(TESTDIAGRAMEVALUATOR)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-charmapper_test: charmapper_test.o scene.o charmapper.o defaultdiagrams.o \
-  diagram.o diagramio.o diagramnode.o linetext.o statementtext.o \
-  stringutil.o generatename.o evaluatediagram.o evaluateexpression.o \
-  makediagram.o maybepoint2d.o point2dobject.o charmapperobjects.o \
-  sceneobjects.o globalvec.o point2d.o any.o printindent.o contains.o \
-  diagramexecutor.o anyio.o evaluatestatement.o streamparser.o wrapperstate.o \
-  diagramwrapperstate.o testdiagramevaluator.o stringparser.o diagramstate.o
+charmapper_test: charmapper_test.o \
+  $(CHARMAPPER) $(SCENE) $(POINT2D) $(DIAGRAM) $(TESTDIAGRAMEVALUATOR)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-treeeditor_test: treeeditor_test.o treeeditor.o wrapper.o wrapperutil.o \
-  diagrameditor.o diagram.o diagramnode.o circle.o linetext.o \
-  statementtext.o stringutil.o fakediagrameditorwindows.o \
-  evaluateexpression.o wrapperstate.o diagramio.o point2d.o vector2d.o \
-  diagrameditorwindow.o printindent.o maybepoint2d.o any.o contains.o \
-  anyio.o streamparser.o diagramwrapperstate.o fakediagrameditor.o \
-  nodetexteditor.o observeddiagram.o observeddiagrams.o faketreeeditor.o \
-  stringparser.o faketree.o treeupdating.o
+treeeditor_test: treeeditor_test.o \
+  $(OBSERVEDDIAGRAMS) $(TREEEDITOR) $(FAKEDIAGRAMEDITORWINDOWS) \
+  $(FAKEDIAGRAMEDITOR) $(FAKETREE) $(WRAPPER)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-mainwindow_test: mainwindow_test.o mainwindow.o worldwrapper.o \
-  charmapperwrapper.o charmapper.o \
-  scenewrapper.o scene.o scenewindow.o \
-  defaultdiagrams.o diagram.o diagramio.o diagramnode.o linetext.o \
-  statementtext.o stringutil.o \
-  treeeditor.o wrapper.o world.o scenetree.o generatename.o sceneviewer.o \
-  wrapperutil.o diagrameditor.o circle.o fakediagrameditorwindows.o \
-  evaluatediagram.o evaluateexpression.o wrapperstate.o makediagram.o \
-  point2d.o vector2d.o diagrameditorwindow.o maybepoint2d.o \
-  charmapperobjects.o sceneobjects.o point2dobject.o globalvec.o \
-  printindent.o any.o contains.o diagramexecutor.o anyio.o \
-  evaluatestatement.o streamparser.o diagramwrapperstate.o fakediagrameditor.o \
-  nodetexteditor.o testdiagramevaluator.o observeddiagrams.o \
-  observeddiagram.o faketreeeditor.o stringparser.o faketree.o treeupdating.o \
-  diagramstate.o
+mainwindow_test: mainwindow_test.o \
+  $(MAINWINDOW) $(WORLD) $(FAKETREEEDITOR) $(WRAPPERUTIL) $(FAKETREE) \
+  $(WRAPPER) $(WORLDWRAPPER) $(DIAGRAMEDITOR) $(FAKEDIAGRAMEDITOR) \
+  $(FAKEDIAGRAMEDITORWINDOWS) $(TREEEDITOR)
 	$(CXX) -o $@ $^ $(LDFLAGS)
+
 
 qtscenewindow_manualtest: qtscenewindow_manualtest.o qtscenewindow.o \
   qtsceneviewer.o draw.o scene.o qttreewidgetitem.o qtscenetree.o \
