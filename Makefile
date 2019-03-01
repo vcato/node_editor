@@ -43,34 +43,79 @@ build_manual_tests: \
   qtslider_manualtest \
   qtdiagrameditorwindow_manualtest
 
-main: main.o diagrameditor.o \
-  qtmainwindow.o          moc_qtmainwindow.o \
-  qtspinbox.o             moc_qtspinbox.o \
-  qttreeeditor.o          moc_qttreeeditor.o \
-  qtdiagrameditor.o       moc_qtdiagrameditor.o \
-  qtslot.o                moc_qtslot.o \
-  qtcombobox.o            moc_qtcombobox.o \
-  qtlineedit.o            moc_qtlineedit.o \
-  qtslider.o              moc_qtslider.o \
-  qtdiagrameditorwindow.o \
-  mainwindow.o \
-  circle.o stringutil.o linetext.o diagramnode.o diagram.o \
-  wrapper.o statementtext.o generatename.o \
-  qtmenu.o \
-  treeeditor.o \
-  evaluatediagram.o diagramio.o \
-  defaultdiagrams.o \
-  world.o worldwrapper.o charmapperwrapper.o \
-  scenewrapper.o charmapper.o qtsceneviewer.o scene.o draw.o qtworld.o \
-  qtscenewindow.o qttreewidgetitem.o scenewindow.o \
-  qtscenetree.o scenetree.o sceneviewer.o wrapperutil.o evaluateexpression.o \
-  wrapperstate.o makediagram.o point2d.o vector2d.o diagrameditorwindow.o \
-  maybepoint2d.o charmapperobjects.o sceneobjects.o point2dobject.o \
-  globalvec.o printindent.o any.o contains.o diagramexecutor.o anyio.o \
-  evaluatestatement.o streamparser.o diagramwrapperstate.o nodetexteditor.o \
-  testdiagramevaluator.o observeddiagrams.o observeddiagram.o stringparser.o \
-  treeupdating.o diagramstate.o
-	$(CXX) -o $@ $^ $(LDFLAGS) 
+OBSERVEDDIAGRAMS = observeddiagrams.o
+GENERATENAME = generatename.o
+SCENETREE = scenetree.o
+SCENEVIEWER = sceneviewer.o
+SCENEWINDOW = scenewindow.o $(SCENETREE) $(SCENEVIEWER)
+STRINGPARSER = stringparser.o
+MAYBEPOINT2D = maybepoint2d.o
+CONTAINS = contains.o
+EVALUATEEXPRESSION = evaluateexpression.o \
+  $(STRINGPARSER) $(MAYBEPOINT2D) $(CONTAINS)
+EVALUATESTATEMENT = evaluatestatement.o $(EVALUATEEXPRESSION)
+ANYIO = anyio.o
+EVALUATEDIAGRAM = evaluatediagram.o $(EVALUATESTATEMENT) $(ANYIO)
+DIAGRAMSTATE = diagramstate.o
+SCENE = scene.o
+POINT2DOBJECT=  point2dobject.o
+GLOBALVEC = globalvec.o
+SCENEOBJECTS = sceneobjects.o $(POINT2DOBJECT) $(GLOBALVEC)
+MAKEDIAGRAM = makediagram.o
+DEFAULTDIAGRAMS = defaultdiagrams.o $(MAKEDIAGRAM)
+CHARMAPPEROBJECTS = charmapperobjects.o
+CHARMAPPER = charmapper.o $(DEFAULTDIAGRAMS) $(CHARMAPPEROBJECTS)
+DIAGRAMEXECUTOR = diagramexecutor.o
+ANY = any.o
+WORLD = world.o \
+  $(OBSERVEDDIAGRAMS) $(GENERATENAME) $(SCENEWINDOW) $(EVALUATEDIAGRAM) \
+  $(DIAGRAMSTATE) $(SCENE) $(SCENEOBJECTS) $(CHARMAPPER) $(DIAGRAMEXECUTOR) \
+  $(ANY)
+QTSLOT = qtslot.o moc_qtslot.o
+QTMENU = qtmenu.o $(QTSLOT)
+QTTREEWIDGETITEM = qttreewidgetitem.o
+QTSLIDER = qtslider.o moc_qtslider.o
+QTSPINBOX = qtspinbox.o moc_qtspinbox.o
+QTCOMBOBOX = qtcombobox.o moc_qtcombobox.o
+QTLINEEDIT = qtlineedit.o moc_qtlineedit.o
+TREEUPDATING = treeupdating.o
+WRAPPERUTIL = wrapperutil.o
+DIAGRAM = diagram.o
+NODETEXTEDITOR = nodetexteditor.o
+LINETEXT = linetext.o
+STATEMENTTEXT = statementtext.o
+STRINGUTIL = stringutil.o
+DIAGRAMNODE = diagramnode.o $(LINETEXT) $(STATEMENTTEXT) $(STRINGUTIL)
+CIRCLE = circle.o
+DIAGRAMWRAPPERSTATE = diagramwrapperstate.o
+PRINTINDENT = printindent.o
+WRAPPERSTATE = wrapperstate.o $(PRINTINDENT)
+STREAMPARSER = streamparser.o
+DIAGRAMIO = diagramio.o $(DIAGRAMWRAPPERSTATE) $(WRAPPERSTATE) $(STREAMPARSER)
+DIAGRAMEDITOR = diagrameditor.o \
+  $(DIAGRAM) $(NODETEXTEDITOR) $(DIAGRAMNODE) $(CIRCLE) $(DIAGRAMIO)
+DIAGRAMEDITORWINDOW = diagrameditorwindow.o $(DIAGRAMEDITOR)
+OBSERVEDDIAGRAM = observeddiagram.o
+TREEEDITOR = treeeditor.o \
+  $(TREEUPDATING) $(WRAPPERUTIL) $(DIAGRAMEDITORWINDOW) $(DIAGRAMEDITOR) \
+  $(OBSERVEDDIAGRAM)
+DRAW = draw.o
+QTDIAGRAMEDITOR = qtdiagrameditor.o moc_qtdiagrameditor.o $(DRAW)
+QTDIAGRAMEDITORWINDOW = qtdiagrameditorwindow.o $(QTDIAGRAMEDITOR)
+QTTREEEDITOR = qttreeeditor.o moc_qttreeeditor.o \
+  $(QTTREEWIDGETITEM) $(QTSLIDER) $(QTSPINBOX) $(QTCOMBOBOX) $(QTLINEEDIT) \
+  $(TREEEDITOR) $(QTDIAGRAMEDITORWINDOW)
+QTMAINWINDOW = qtmainwindow.o moc_qtmainwindow.o \
+  $(QTMENU) $(QTTREEEDITOR) $(MAINWINDOW)
+QTSCENETREE = qtscenetree.o
+QTSCENEVIEWER = qtsceneviewer.o
+QTSCENEWINDOW = qtscenewindow.o $(QTSCENETREE) $(QTSCENEVIEWER)
+QTWORLD = qtworld.o $(WORLD) $(QTSCENEWINDOW)
+WRAPPER = wrapper.o
+CHARMAPPERWRAPPER = charmapperwrapper.o
+SCENEWRAPPER = scenewrapper.o
+WORLDWRAPPER = worldwrapper.o $(CHARMAPPERWRAPPER) $(SCENEWRAPPER)
+MAINWINDOW = mainwindow.o
 
 moc_%.cpp: %.hpp
 	moc-qt4 $^ >$@
@@ -78,6 +123,10 @@ moc_%.cpp: %.hpp
 %.pass: %
 	./$*
 	touch $@
+
+main: main.o \
+  $(QTMAINWINDOW) $(QTWORLD) $(WRAPPER) $(WORLDWRAPPER)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 optional_test: optional_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
