@@ -28,20 +28,25 @@ static void
 }
 
 
+namespace {
+struct HolderStub : ObservedDiagram::Holder {
+  void notifyDiagramUnobserved(Diagram &) override {}
+  void notifyDiagramChanged(Diagram &) override {}
+};
+}
+
+
 int main(int argc,char **argv)
 {
   QApplication app(argc,argv);
   Diagram diagram;
+  HolderStub holder_stub;
+  ObservedDiagram observed_diagram(diagram,holder_stub);
+
+  // The window needs to be declared after the observed diagram so that
+  // the window will be destroyed before the observed diagram that it is
+  // using.
   QtDiagramEditorWindow window;
-
-  struct DummyHolder : ObservedDiagram::Holder {
-    void notifyDiagramUnobserved(Diagram &) override {}
-    void notifyDiagramChanged(Diagram &) override {}
-  };
-
-  DummyHolder dummy_holder;
-
-  ObservedDiagram observed_diagram(diagram,dummy_holder);
 
   auto diagram_changed_function = [&](){
     reevaluateDiagram(observed_diagram.diagram,observed_diagram.diagram_state);
