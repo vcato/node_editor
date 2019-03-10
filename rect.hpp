@@ -1,10 +1,12 @@
 #include "point2d.hpp"
+#include "size2d.hpp"
 
 
 template <typename Tag>
 struct TaggedRect {
   TaggedPoint2D<Tag> start, end;
   using Point2D = TaggedPoint2D<Tag>;
+  using Size2D = TaggedSize2D<Tag>;
 
   bool contains(const Point2D &p)
   {
@@ -26,8 +28,14 @@ struct TaggedRect {
   {
     float x = (start.x + end.x)/2;
     float y = (start.y + end.y)/2;
-
     return Point2D(x,y);
+  }
+
+  Size2D size() const
+  {
+    float x = end.x - start.x;
+    float y = end.y - start.y;
+    return Size2D(x,y);
   }
 };
 

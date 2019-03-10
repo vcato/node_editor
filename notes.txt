@@ -188,3 +188,6 @@ results:
   output_height[k]
 
 The top function we need to modify is DiagramEditor::nodeRenderInfo()
+---
+We should be able to make tests that show that the new layout and the old
+layout get the same result in certain simple cases.

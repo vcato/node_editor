@@ -228,32 +228,19 @@ ViewportTextObject
 }
 
 
+ViewportSize DiagramEditor::textSize(const string &text) const
+{
+  return rectAroundText(text).size();
+}
+
+
 ViewportRect
   DiagramEditor::rectAroundTextObject(
     const ViewportTextObject &text_object
   ) const
 {
-#if 1
-  auto position = text_object.position;
-
-  auto x = position.x;
-  auto y = position.y;
-  ViewportRect r0 = rectAroundText(text_object.text);
-
-  auto bx = x + r0.start.x;
-  auto ex = x + r0.end.x;
-  auto by = y + r0.start.y;
-  auto ey = y + r0.end.y;
-
-  auto begin = ViewportCoords{bx,by};
-  auto end =   ViewportCoords{ex,ey};
-
-  return {begin,end};
-#else
-  TaggedVector2D<ViewportCoordsTag> offset =
-    text_object.position - ViewportCoords{0,0};
+  ViewportVector offset = text_object.position - ViewportCoords{0,0};
   return rectAroundText(text_object.text) + offset;
-#endif
 }
 
 
@@ -401,17 +388,12 @@ struct NodeLayoutParams {
   using Length = float;
   using Coord = float;
   vector<int> line_n_inputs;
-  vector<Length> line_text_heights;
-  vector<Length> line_text_widths;
-  Length connector_width;
-  Length connector_height;
+  vector<ViewportSize> line_text_sizes;
+  ViewportSize connector_size;
   Coord left_x;
   Coord top_y;
 };
 }
-
-
-using ViewportSize = TaggedVector2D<ViewportCoordsTag>;
 
 
 #if ADD_CALCULATE_NODE_LAYOUT
@@ -478,9 +460,30 @@ using Rect = TaggedRect<void>;
 
 
 #if ADD_CALCULATE_NODE_LAYOUT
-static ViewportRect makeRect(Point2D position,Size2D size)
+static ViewportRect makeRect(ViewportCoords position,ViewportSize size)
 {
-  return {ViewportCoords{position},ViewportCoords{position + size}};
+  return {position, position + size};
+}
+#endif
+
+
+#if ADD_CALCULATE_NODE_LAYOUT
+static vector<float>
+  transformed(
+    const vector<ViewportSize> &sizes,
+    const float ViewportSize::*member_ptr
+  )
+{
+  vector<float> result;
+
+  std::transform(
+    sizes.begin(),
+    sizes.end(),
+    inserter(result,result.begin()),
+    std::mem_fn(member_ptr)
+  );
+
+  return result;
 }
 #endif
 
@@ -497,12 +500,13 @@ static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
   using Index = int;
   const auto n_lines = arg.line_n_inputs.size();
   const auto n_inputs = sumOf(arg.line_n_inputs);
-  const auto &line_text_widths = arg.line_text_widths;
-  const auto &line_text_heights = arg.line_text_heights;
+  const auto &line_text_sizes = arg.line_text_sizes;
+  const auto line_text_widths =
+    transformed(arg.line_text_sizes,&ViewportSize::x);
   const auto left_x = arg.left_x;
   const auto top_y = arg.top_y;
-  Length connector_height = arg.connector_height;
-  Length connector_width = arg.connector_width;
+  Length connector_width = arg.connector_size.x;
+  Length connector_height = arg.connector_size.y;
   const vector<int> &line_n_inputs = arg.line_n_inputs;
   vector<Length> region_heights(n_lines);
   vector<Coord> input_ys(n_inputs);
@@ -521,7 +525,7 @@ static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
     // Determine the required height for the inputs of line i.
     Length line_input_height = connector_height * line_n_inputs[i];
 
-    region_heights[i] = std::max(line_input_height,line_text_heights[i]);
+    region_heights[i] = std::max(line_input_height,line_text_sizes[i].y);
     region_ys[i] = (i==0) ? top_y : region_ys[i-1] - region_heights[i-1];
     first_input_indices[i] =
       (i==0) ? 0 : first_input_indices[i-1] + line_n_inputs[i-1];
@@ -540,7 +544,7 @@ static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
 
     // Lay out the line texts vertically
     line_text_ys[i] =
-      region_ys[i] - (region_heights[i] - line_text_heights[i])/2;
+      region_ys[i] - (region_heights[i] - line_text_sizes[i].y)/2;
   }
 
   Length body_height = sumOf(region_heights);
@@ -558,22 +562,22 @@ static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
   for (auto i : range(0,n_lines)) {
     line_rects.push_back(
       makeRect(
-        Point2D(region_x,region_ys[i]),
-        Size2D(line_text_widths[i],line_text_heights[i])
+        ViewportCoords(region_x,region_ys[i]),
+        ViewportSize(line_text_widths[i],line_text_sizes[i].y)
       )
     );
 
     input_rects.push_back(
       makeRect(
-        Point2D(input_x,input_ys[i]),
-        Size2D(input_width,input_height)
+        ViewportCoords(input_x,input_ys[i]),
+        ViewportSize(input_width,input_height)
       )
     );
 
     output_rects.push_back(
       makeRect(
-        Point2D(output_x,output_ys[i]),
-        Size2D(output_width,output_height)
+        ViewportCoords(output_x,output_ys[i]),
+        ViewportSize(output_width,output_height)
       )
     );
   }
@@ -587,17 +591,23 @@ static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
 #if !ADD_CALCULATE_NODE_LAYOUT
 NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 {
+  const float connector_distance = 5;
+    // Distance between the connector circles and the node body.
   const DiagramTextObject &header_text_object = node.header_text_object;
 
   // We need to determine a rectangle that fits around the contents.
   ViewportRect header_rect = nodeHeaderRect(header_text_object);
 
   ViewportRect body_rect = nodeBodyRect(node, header_rect);
+  // We should be able to determine the left_x and top_y from the header_rect
+  // directly.
   float left_x = body_rect.start.x;
   float right_x = body_rect.end.x;
   float top_y = body_rect.end.y;
 
   float margin = 5;
+    // Horizontal distance between the text of the node lines and the
+    // outer rectangle of the node body.
 
   float left_outer_x = left_x - margin;
   float right_outer_x = right_x + margin;
@@ -618,7 +628,8 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       float line_start_y = r.start.y;
       float line_end_y = r.end.y;
       float line_center_y = (line_start_y + line_end_y)/2;
-      float connector_x = (left_outer_x - connector_radius - 5);
+      float connector_x =
+        (left_outer_x - connector_radius - connector_distance);
       float connector_y = line_center_y;
 
       Circle c;
@@ -684,7 +695,9 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       float expression_center_y = (expression_start_y + expression_end_y)/2;
 
       if (statement.has_output) {
-        float connector_x = (right_outer_x + connector_radius + 5);
+        // What is this 5?
+        float connector_x =
+          (right_outer_x + connector_radius + connector_distance);
         float connector_y = expression_center_y;
 
         Circle c;
@@ -710,10 +723,22 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   return render_info;
 }
 #else
-NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
+NodeRenderInfo DiagramEditor::nodeRenderInfo2(const Node &node) const
 {
   const DiagramTextObject &header_text_object = node.header_text_object;
   ViewportRect header_rect = nodeHeaderRect(header_text_object);
+
+  NodeLayoutParams params;
+
+  for (auto &line : node.lines) {
+    params.line_n_inputs.push_back(line.n_inputs);
+    params.line_text_sizes.push_back(textSize(line.text));
+  }
+
+  params.connector_size = {connector_radius*2, connector_radius*2};
+  params.left_x =
+
+  calculateNodeLayout();
 
   NodeRenderInfo render_info;
 

@@ -134,6 +134,7 @@ class DiagramEditor {
 
     bool aNodeIsFocused() const;
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
+    NodeRenderInfo nodeRenderInfo2(const Node &node) const;
     int nSelectedNodes() const;
     bool nodeIsSelected(NodeIndex);
     int addNode(const std::string &text,const DiagramCoords &position);
@@ -235,6 +236,8 @@ class DiagramEditor {
 
     ViewportRect
       rectAroundTextObject(const ViewportTextObject &text_object) const;
+
+    ViewportSize textSize(const std::string &text) const;
 
     ViewportTextObject
       inputTextObject(const std::string &s,float left_x,float y) const;
