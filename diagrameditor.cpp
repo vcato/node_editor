@@ -4,10 +4,14 @@
 #include <cmath>
 #include <cfloat>
 #include <algorithm>
+#include <numeric>
 #include <fstream>
 #include <iostream>
 #include "ostreamvector.hpp"
 #include "diagramio.hpp"
+#include "size2d.hpp"
+
+#define ADD_CALCULATE_NODE_LAYOUT 0
 
 using std::string;
 using std::vector;
@@ -226,9 +230,38 @@ ViewportTextObject
 
 
 ViewportRect
+  DiagramEditor::rectAroundTextObject(
+    const ViewportTextObject &text_object
+  ) const
+{
+#if 1
+  auto position = text_object.position;
+
+  auto x = position.x;
+  auto y = position.y;
+  ViewportRect r0 = rectAroundText(text_object.text);
+
+  auto bx = x + r0.start.x;
+  auto ex = x + r0.end.x;
+  auto by = y + r0.start.y;
+  auto ey = y + r0.end.y;
+
+  auto begin = ViewportCoords{bx,by};
+  auto end =   ViewportCoords{ex,ey};
+
+  return {begin,end};
+#else
+  TaggedVector2D<ViewportCoordsTag> offset =
+    text_object.position - ViewportCoords{0,0};
+  return rectAroundText(text_object.text) + offset;
+#endif
+}
+
+
+ViewportRect
   DiagramEditor::nodeRect(const DiagramTextObject &text_object) const
 {
-  return withMargin(rectAroundText(viewportTextObject(text_object)),5);
+  return withMargin(rectAroundTextObject(viewportTextObject(text_object)),5);
 }
 
 
@@ -276,7 +309,7 @@ ViewportTextObject
   ViewportTextObject text_object;
   text_object.text = text;
   text_object.position = ViewportCoords(0,0);
-  ViewportRect rect = rectAroundText(text_object);
+  ViewportRect rect = rectAroundTextObject(text_object);
   Vector2D offset =
     alignmentPoint(rect,horizontal_alignment,vertical_alignment) -
     ViewportCoords(0,0);
@@ -302,6 +335,8 @@ ViewportTextObject
 }
 
 
+// Instead of calling inputTextObject, we could pass the input text
+// objects for each line, then we could make this static.
 ViewportRect
   DiagramEditor::nodeBodyRect(
     const Node &node,
@@ -318,25 +353,27 @@ ViewportRect
   // Start with the bottom being at the top.
   // For each string, we determine its rectangle, and then move the bottom
   // to the bottom of that rectangle.
+
+  vector<string> line_texts = node.lineTexts();
+
   float bottom_y = top_y;
 
-  vector<string> strings = node.strings();
-  vector<ViewportRect> string_rects;
+  vector<ViewportRect> line_rects;
 
   // Make a rectangle for each string
-  for (const auto& s : strings) {
-    ViewportRect r = rectAroundText( inputTextObject(s,left_x,bottom_y) );
-    string_rects.push_back(r);
+  for (const auto& s : line_texts) {
+    ViewportRect r = rectAroundTextObject( inputTextObject(s,left_x,bottom_y) );
+    line_rects.push_back(r);
     bottom_y = r.start.y;
   }
 
   int n_inputs = node.nInputs();
-  int n_lines = strings.size();
+  int n_lines = line_texts.size();
 
   // Extend the bottom if we have more inputs than lines.
   while (n_lines < n_inputs) {
     ViewportRect r =
-      rectAroundText( inputTextObject("$",left_x,bottom_y) );
+      rectAroundTextObject( inputTextObject("$",left_x,bottom_y) );
     bottom_y = r.start.y;
     ++n_lines;
   }
@@ -345,7 +382,7 @@ ViewportRect
   // text objects.
   float right_x = header_rect.end.x;
 
-  for (const auto &r : string_rects) {
+  for (const auto &r : line_rects) {
     if (r.end.x > right_x) {
       right_x = r.end.x;
     }
@@ -360,15 +397,201 @@ ViewportRect
 }
 
 
+namespace {
+struct NodeLayoutParams {
+  using Length = float;
+  using Coord = float;
+  vector<int> line_n_inputs;
+  vector<Length> line_text_heights;
+  vector<Length> line_text_widths;
+  Length connector_width;
+  Length connector_height;
+  Coord left_x;
+  Coord top_y;
+};
+}
+
+
+using ViewportSize = TaggedVector2D<ViewportCoordsTag>;
+
+
+#if ADD_CALCULATE_NODE_LAYOUT
+namespace {
+struct NodeLayout {
+  vector<ViewportRect> lines;
+  vector<ViewportRect> inputs;
+  vector<ViewportRect> outputs;
+  ViewportSize body_size;
+};
+}
+#endif
+
+
+namespace {
+template <typename Index>
+struct Range {
+  Index begin_index;
+  Index end_index;
+
+  struct iterator {
+    Index index;
+
+    bool operator==(iterator arg) const { return index==arg.index; }
+    bool operator!=(iterator arg) const { return !operator==(arg); }
+    iterator& operator++() { ++index; return *this; }
+    Index operator*() const { return index; }
+  };
+
+  iterator begin() const { return iterator{begin_index}; }
+  iterator end() const { return iterator{end_index}; }
+};
+}
+
+
+template <typename Begin,typename End>
+static auto range(Begin begin,End end)
+{
+  using CommonType = std::common_type_t<Begin,End>;
+  const CommonType common_begin = begin;
+  const CommonType common_end = end;
+  return Range<CommonType>{common_begin,common_end};
+}
+
+
+template <typename Container>
+static auto sumOf(const Container &container)
+{
+  using Value = decltype(container[0]);
+  return std::accumulate( container.begin(), container.end(), Value{});
+}
+
+
+template <typename Container>
+static auto maxOf(const Container &container)
+{
+  auto iter = std::max_element(container.begin(), container.end());
+  assert(iter != container.end());
+  return *iter;
+}
+
+
+using Rect = TaggedRect<void>;
+
+
+#if ADD_CALCULATE_NODE_LAYOUT
+static ViewportRect makeRect(Point2D position,Size2D size)
+{
+  return {ViewportCoords{position},ViewportCoords{position + size}};
+}
+#endif
+
+
+#if ADD_CALCULATE_NODE_LAYOUT
+static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
+{
+  // Create regions where each region is the area that the line text
+  // will be drawn inside.  These regions will have a height that is
+  // the maximum of the line text height and the height necessary for
+  // all the inputs.
+  using Length = float;
+  using Coord = float;
+  using Index = int;
+  const auto n_lines = arg.line_n_inputs.size();
+  const auto n_inputs = sumOf(arg.line_n_inputs);
+  const auto &line_text_widths = arg.line_text_widths;
+  const auto &line_text_heights = arg.line_text_heights;
+  const auto left_x = arg.left_x;
+  const auto top_y = arg.top_y;
+  Length connector_height = arg.connector_height;
+  Length connector_width = arg.connector_width;
+  const vector<int> &line_n_inputs = arg.line_n_inputs;
+  vector<Length> region_heights(n_lines);
+  vector<Coord> input_ys(n_inputs);
+  vector<Coord> region_ys(n_lines);
+  vector<Coord> output_ys(n_lines);
+  vector<Coord> line_text_ys(n_lines);
+  vector<Index> first_input_indices(n_lines);
+  const auto input_x = left_x - connector_width;
+  const auto input_width = connector_width;
+  const auto input_height = connector_height;
+  const auto output_width = connector_width;
+  const auto output_height = connector_height;
+  const auto region_x = left_x;
+
+  for (auto i : range(0,n_lines)) {
+    // Determine the required height for the inputs of line i.
+    Length line_input_height = connector_height * line_n_inputs[i];
+
+    region_heights[i] = std::max(line_input_height,line_text_heights[i]);
+    region_ys[i] = (i==0) ? top_y : region_ys[i-1] - region_heights[i-1];
+    first_input_indices[i] =
+      (i==0) ? 0 : first_input_indices[i-1] + line_n_inputs[i-1];
+
+    // Lay out the inputs vertically
+    for (auto j : range(0,line_n_inputs[i])) {
+      if (j==0) {
+        input_ys[first_input_indices[i] + j] =
+          region_ys[i] + (region_heights[i] - line_input_height)/2;
+      }
+      else {
+        input_ys[first_input_indices[i] + j] =
+          input_ys[first_input_indices[i]+j-1] + input_height;
+      }
+    }
+
+    // Lay out the line texts vertically
+    line_text_ys[i] =
+      region_ys[i] - (region_heights[i] - line_text_heights[i])/2;
+  }
+
+  Length body_height = sumOf(region_heights);
+  Length body_width = maxOf(line_text_widths);
+  const auto output_x = region_x + body_width;
+
+  for (auto i : range(0,n_lines)) {
+    output_ys[i] = region_ys[i] - (region_heights[i] - connector_height)/2;
+  }
+
+  vector<ViewportRect> line_rects;
+  vector<ViewportRect> input_rects;
+  vector<ViewportRect> output_rects;
+
+  for (auto i : range(0,n_lines)) {
+    line_rects.push_back(
+      makeRect(
+        Point2D(region_x,region_ys[i]),
+        Size2D(line_text_widths[i],line_text_heights[i])
+      )
+    );
+
+    input_rects.push_back(
+      makeRect(
+        Point2D(input_x,input_ys[i]),
+        Size2D(input_width,input_height)
+      )
+    );
+
+    output_rects.push_back(
+      makeRect(
+        Point2D(output_x,output_ys[i]),
+        Size2D(output_width,output_height)
+      )
+    );
+  }
+
+  ViewportSize body_size = {body_width,body_height};
+  return NodeLayout{line_rects,input_rects,output_rects,body_size};
+}
+#endif
+
+
+#if !ADD_CALCULATE_NODE_LAYOUT
 NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 {
   const DiagramTextObject &header_text_object = node.header_text_object;
 
   // We need to determine a rectangle that fits around the contents.
   ViewportRect header_rect = nodeHeaderRect(header_text_object);
-
-  NodeRenderInfo render_info;
-  render_info.header_rect = header_rect;
 
   ViewportRect body_rect = nodeBodyRect(node, header_rect);
   float left_x = body_rect.start.x;
@@ -384,13 +607,15 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   size_t n_lines = node.lines.size();
   float input_bottom_y = 0;
 
+  vector<Circle> input_connector_circles;
+
   { // Add input connector circles
     float y = top_y;
     int n_inputs = node.nInputs();
 
     for (int i=0; i!=n_inputs; ++i) {
       ViewportTextObject t = inputTextObject("$", left_x, y);
-      ViewportRect r = rectAroundText(t);
+      ViewportRect r = rectAroundTextObject(t);
       float line_start_y = r.start.y;
       float line_end_y = r.end.y;
       float line_center_y = (line_start_y + line_end_y)/2;
@@ -400,7 +625,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       Circle c;
       c.center = Point2D(connector_x,connector_y);
       c.radius = connector_radius;
-      render_info.input_connector_circles.push_back(c);
+      input_connector_circles.push_back(c);
 
       y = line_start_y;
     }
@@ -411,6 +636,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   vector<float> line_start_ys(n_lines);
   vector<float> line_end_ys(n_lines);
   float line_bottom_y = 0;
+  vector<ViewportTextObject> text_objects;
 
   { // Add text objects for each line.
     float y = top_y;
@@ -418,8 +644,8 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
     for (size_t line_index=0; line_index!=n_lines; ++line_index) {
       const auto &line_text = node.lines[line_index].text;
       ViewportTextObject t = inputTextObject(line_text, left_x, y);
-      ViewportRect r = rectAroundText(t);
-      render_info.text_objects.push_back(t);
+      ViewportRect r = rectAroundTextObject(t);
+      text_objects.push_back(t);
       line_start_ys[line_index] = r.start.y;
       line_end_ys[line_index] = r.end.y;
       y = r.start.y;
@@ -437,10 +663,12 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   }
 
   for (size_t line_index=0; line_index!=n_lines; ++line_index) {
-    render_info.text_objects[line_index].position.y -= text_offset;
+    text_objects[line_index].position.y -= text_offset;
     line_start_ys[line_index] -= text_offset;
     line_end_ys[line_index] -= text_offset;
   }
+
+  vector<Circle> output_connector_circles;
 
   // Add output connector circles
   {
@@ -463,19 +691,44 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
         Circle c;
         c.center = Point2D(connector_x,connector_y);
         c.radius = connector_radius;
-        render_info.output_connector_circles.push_back(c);
+        output_connector_circles.push_back(c);
       }
 
       line_index += statement_n_lines;
     }
   }
 
+  NodeRenderInfo render_info;
+
+  render_info.header_rect = header_rect;
   render_info.body_outer_rect = body_rect;
   render_info.body_outer_rect.start.x = left_outer_x;
   render_info.body_outer_rect.end.x = right_outer_x;
+  render_info.input_connector_circles = input_connector_circles;
+  render_info.output_connector_circles = output_connector_circles;
+  render_info.text_objects = text_objects;
 
   return render_info;
 }
+#else
+NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
+{
+  const DiagramTextObject &header_text_object = node.header_text_object;
+  ViewportRect header_rect = nodeHeaderRect(header_text_object);
+
+  NodeRenderInfo render_info;
+
+  render_info.header_rect = header_rect;
+  render_info.body_outer_rect = body_rect;
+  render_info.body_outer_rect.start.x = left_outer_x;
+  render_info.body_outer_rect.end.x = right_outer_x;
+  render_info.input_connector_circles = input_connector_circles;
+  render_info.output_connector_circles = output_connector_circles;
+  render_info.text_objects = text_objects;
+
+  return render_info;
+}
+#endif
 
 
 bool
@@ -647,7 +900,8 @@ struct DiagramEditor::CursorPositionFinder {
     const ViewportTextObject &line_text_object =
       render_info.text_objects[line_index];
 
-    ViewportRect line_rect = diagram_editor.rectAroundText(line_text_object);
+    ViewportRect line_rect =
+      diagram_editor.rectAroundTextObject(line_text_object);
 
     if (is_feasible_point(line_rect)) {
       int best_column_index = diagram_editor.closestColumn(line_text_object,p);

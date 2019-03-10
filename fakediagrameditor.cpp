@@ -6,21 +6,20 @@ using std::cerr;
 
 static int character_width = 10;
 
-ViewportRect
-  FakeDiagramEditor::rectAroundText(
-    const ViewportTextObject &text_object
-  ) const
+
+ViewportRect FakeDiagramEditor::rectAroundText(const std::string &text) const
 {
-  assert(text_object.text.find('\n')==text_object.text.npos);
+  assert(text.find('\n') == text.npos);
     // Don't have the logic for handling multi-line text objects yet.
 
-  // Just assume all characters are fixed size for now.
-  ViewportCoords begin_pos =
-    viewportCoordsFromDiagramCoords(text_object.position);
+  ViewportCoords begin_pos = {0,0};
   ViewportCoords end_pos = begin_pos;
-  end_pos.x += text_object.text.length() * character_width;
+
+  // Just assume all characters are fixed size for now.
+  end_pos.x += text.length() * character_width;
   end_pos.y += characterHeight();
-  return {begin_pos,end_pos};
+
+  return ViewportRect{begin_pos,end_pos};
 }
 
 

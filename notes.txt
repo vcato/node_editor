@@ -139,26 +139,26 @@ lay out everything from the top back down to the individual items.
 
 // We can define the positions inductively like this:
 given:
-  n_inputs[i]
-  line_heights[i]
-  line_widths[i]
+  line_n_inputs[i]
+  line_text_heights[i]
+  line_text_widths[i]
   connector_width
   connector_height
   left_x
   top_y
 
 calculate:
-  input_heights[i] = connector_height*n_inputs[i]
-  region_heights[i] = max(input_heights[i],line_heights[i])
+  input_heights[i] = connector_height*line_n_inputs[i]
+  region_heights[i] = max(input_heights[i],line_text_heights[i])
   body_height = sum{i}(region_heights[i])
-  body_width = max{i}(line_widths[i])
+  body_width = max{i}(line_text_widths[i])
   region_x[i] = left_x
   region_y[0] = top_y
   region_y[i+1] = region_y[i] - region_height[i]
   input_x[i] = left_x - connector_width
 
   first_input_index[0] = 0
-  first_input_index[i+1] = first_input_index[i] + n_inputs[i]
+  first_input_index[i+1] = first_input_index[i] + line_n_inputs[i]
 
   input_y[first_input_index[i]] =
     region_y[i] + (region_heights[i] - input_heights[i])/2
@@ -166,12 +166,14 @@ calculate:
   input_y[first_input_index[i]+a+1] =
     input_y[first_input_index[i]+a] + input_height
 
-  line_y[i] = region_y[i] - (region_heights[i] - line_heights[i])/2
+  line_y[i] = region_y[i] - (region_heights[i] - line_text_heights[i])/2
 
   output_width[i] = connector_width
   output_height[i] = connector_height
   output_x[i] = region_x[i] + region_width[i]
   output_y[i] = region_y[i] - (region_heights[i] - connector_height)/2
+  input_width[i] = connector_width
+  input_height[i] = connector_height
 
 results:
   line_x[i]
@@ -184,3 +186,5 @@ results:
   output_y[k]
   output_width[k]
   output_height[k]
+
+The top function we need to modify is DiagramEditor::nodeRenderInfo()

@@ -5,22 +5,21 @@
 #include "vector2d.hpp"
 
 
+// Need to remove this
 #define USE_BASIC_POINT2D 0
 
 
 template <typename Tag> struct TaggedPoint2D;
 
 template <>
-struct TaggedPoint2D<void> {
-  float x,y;
-
+struct TaggedPoint2D<void> : EuclideanPair<float> {
   TaggedPoint2D()
-  : x(0), y(0)
+  : EuclideanPair<float>(0,0)
   {
   }
 
   TaggedPoint2D(float x_arg,float y_arg)
-  : x(x_arg), y(y_arg)
+  : EuclideanPair<float>(x_arg,y_arg)
   {
   }
 
@@ -72,12 +71,21 @@ inline TaggedPoint2D<Tag> &
 }
 
 
+#if 1
 template <typename Tag>
 inline Vector2D
   operator-(const TaggedPoint2D<Tag> &a,const TaggedPoint2D<Tag> &b)
 {
   return Vector2D( a.x-b.x, a.y-b.y );
 }
+#else
+template <typename Tag>
+inline TaggedVector2D<Tag>
+  operator-(const TaggedPoint2D<Tag> &a,const TaggedPoint2D<Tag> &b)
+{
+  return { a.x-b.x, a.y-b.y };
+}
+#endif
 
 
 template <typename Tag>
@@ -90,6 +98,7 @@ inline TaggedPoint2D<Tag>
 }
 
 
+#if 1
 template <typename Tag>
 inline TaggedPoint2D<Tag>
   operator+(const TaggedPoint2D<Tag> &a,const Vector2D &b)
@@ -98,6 +107,16 @@ inline TaggedPoint2D<Tag>
   float y = a.y + b.y;
   return {x,y};
 }
+#else
+template <typename Tag>
+inline TaggedPoint2D<Tag>
+  operator+(const TaggedPoint2D<Tag> &a,const TaggedVector2D<Tag> &b)
+{
+  float x = a.x + b.x;
+  float y = a.y + b.y;
+  return {x,y};
+}
+#endif
 
 
 extern std::ostream& operator<<(std::ostream &stream,const Point2D &p);

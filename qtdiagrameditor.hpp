@@ -57,7 +57,9 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void drawFilledRect(const ViewportRect &rect);
     void drawFilledRoundedRect(const ViewportRect &rect,const Color &);
     void drawFilledCircle(const Circle &circle);
-    ViewportRect rectAroundText(const ViewportTextObject &text_object) const;
+    ViewportRect rectAroundText(const std::string &text) const;
+    ViewportRect
+      rectAroundTextObject(const ViewportTextObject &text_object) const;
 
     void
       drawAlignedText(

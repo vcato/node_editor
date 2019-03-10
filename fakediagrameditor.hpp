@@ -186,8 +186,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   Vector2D viewOffset() const { return view_offset; }
 
-  ViewportRect
-    rectAroundText(const ViewportTextObject &text_object) const override;
+  ViewportRect rectAroundText(const std::string &) const override;
 
   int characterHeight() const { return 10; }
 

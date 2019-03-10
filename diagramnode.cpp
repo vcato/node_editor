@@ -120,7 +120,7 @@ void Node::addInputsAndOutputs()
 }
 
 
-std::vector<std::string> Node::strings() const
+std::vector<std::string> Node::lineTexts() const
 {
   std::vector<std::string> result;
 
@@ -136,7 +136,7 @@ string Node::text() const
 {
   string result;
 
-  for (auto &line_text : strings()) {
+  for (auto &line_text : lineTexts()) {
     result += line_text + '\n';
   }
 

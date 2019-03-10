@@ -2,31 +2,34 @@
 #define VECTOR2D_HPP
 
 #include <iosfwd>
+#include "euclideanpair.hpp"
 
 
-struct Vector2D {
-  float x,y;
-
-  Vector2D()
-  : x(0), y(0)
+template <typename Tag>
+struct TaggedVector2D : EuclideanPair<float> {
+  TaggedVector2D()
+  : EuclideanPair<float>(0,0)
   {
   }
 
-  Vector2D(float x_arg,float y_arg)
-  : x(x_arg), y(y_arg)
+  TaggedVector2D(float x_arg,float y_arg)
+  : EuclideanPair<float>(x_arg,y_arg)
   {
   }
 
-  bool operator==(const Vector2D &arg) const
+  bool operator==(const TaggedVector2D &arg) const
   {
     return x==arg.x && y==arg.y;
   }
 
-  bool operator!=(const Vector2D &arg) const
+  bool operator!=(const TaggedVector2D &arg) const
   {
     return !operator==(arg);
   }
 };
+
+
+using Vector2D = TaggedVector2D<void>;
 
 
 inline Vector2D operator+(const Vector2D &a,const Vector2D &b)
@@ -35,9 +38,10 @@ inline Vector2D operator+(const Vector2D &a,const Vector2D &b)
 }
 
 
-inline Vector2D operator*(const Vector2D &a,float b)
+template <typename Tag>
+inline TaggedVector2D<Tag> operator*(const TaggedVector2D<Tag> &a,float b)
 {
-  return Vector2D(a.x*b, a.y*b);
+  return {a.x*b, a.y*b};
 }
 
 

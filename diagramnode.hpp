@@ -42,7 +42,7 @@ class DiagramNode {
     std::string joinLines(int start,int n_lines,char separator) const;
     void addInputsAndOutputs();
     bool isEmpty() const;
-    std::vector<std::string> strings() const;
+    std::vector<std::string> lineTexts() const;
 
     void joinLines(const TextPosition &);
     void breakLine(const TextPosition &);

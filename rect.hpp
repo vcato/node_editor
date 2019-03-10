@@ -30,3 +30,11 @@ struct TaggedRect {
     return Point2D(x,y);
   }
 };
+
+
+template <typename Tag>
+TaggedRect<Tag>
+  operator+(const TaggedRect<Tag> &rect,const TaggedVector2D<Tag> &offset)
+{
+  return {rect.start + offset, rect.end + offset};
+}

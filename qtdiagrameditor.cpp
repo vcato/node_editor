@@ -427,33 +427,26 @@ ViewportLine
 }
 
 
-ViewportRect
-  QtDiagramEditor::rectAroundText(const ViewportTextObject &text_object) const
+ViewportRect QtDiagramEditor::rectAroundText(const std::string &text_arg) const
 {
-  std::string text = text_object.text;
+  std::string text = text_arg;
 
   if (text == "") {
     // We want to avoid the box collapsing down to nothing.
     text = " ";
   }
 
-  auto position = text_object.position;
-
   QFontMetrics fm = fontMetrics();
   auto rect = fm.boundingRect(qString(text));
 
   auto tl = rect.topLeft();
-  auto br = rect.bottomRight();
-  auto x = position.x;
-  auto y = position.y;
-  auto bx = x+tl.x();
-  auto ex = x+br.x()+1;
-  auto by = y-br.y()-1;
-  auto ey = y-tl.y();
-  auto begin = ViewportCoords{bx,by};
-  auto end =   ViewportCoords{ex,ey};
+  float bx0 = tl.x();
+  float ex0 = tl.x() + rect.width();
+  float by0 = -tl.y() - rect.height();
+  float ey0 = -tl.y();
+  ViewportRect r0 = {{bx0,by0},{ex0,ey0}};
 
-  return {begin,end};
+  return r0;
 }
 
 

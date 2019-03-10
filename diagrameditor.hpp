@@ -210,8 +210,7 @@ class DiagramEditor {
     };
 
     virtual void redraw() = 0;
-    virtual ViewportRect
-      rectAroundText(const ViewportTextObject &text_object) const = 0;
+    virtual ViewportRect rectAroundText(const std::string &) const = 0;
     virtual std::string askForSavePath() = 0;
     virtual std::string askForOpenPath() = 0;
     virtual void showError(const std::string &message) = 0;
@@ -225,10 +224,16 @@ class DiagramEditor {
     bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
     bool nodeInputContains(int node_index,int input_index,const Point2D &p);
     NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
+
+    ViewportRect
+      rectAroundTextObject(const ViewportTextObject &text_object) const;
+
     ViewportTextObject
       inputTextObject(const std::string &s,float left_x,float y) const;
+
     ViewportRect
       nodeBodyRect(const Node &,const ViewportRect &header_rect) const;
+
     ViewportRect nodeHeaderRect(const DiagramTextObject &text_object) const;
     bool
       nodeContains(
