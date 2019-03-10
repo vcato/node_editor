@@ -12,6 +12,12 @@ struct TaggedVector2D : EuclideanPair<float> {
   {
   }
 
+  template <typename Tag2>
+  explicit TaggedVector2D(const TaggedVector2D<Tag2> &arg)
+  : EuclideanPair<float>(arg)
+  {
+  }
+
   TaggedVector2D(float x_arg,float y_arg)
   : EuclideanPair<float>(x_arg,y_arg)
   {
@@ -32,9 +38,11 @@ struct TaggedVector2D : EuclideanPair<float> {
 using Vector2D = TaggedVector2D<void>;
 
 
-inline Vector2D operator+(const Vector2D &a,const Vector2D &b)
+template <typename Tag>
+TaggedVector2D<Tag>
+  operator+(const TaggedVector2D<Tag> &a,const TaggedVector2D<Tag> &b)
 {
-  return Vector2D(a.x+b.x, a.y+b.y);
+  return {a.x+b.x, a.y+b.y};
 }
 
 

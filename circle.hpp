@@ -2,13 +2,15 @@
 #define CIRCLE_HPP_
 
 #include "point2d.hpp"
+#include "viewportcoords.hpp"
 
 
+// Need to be able to tag circles with coordinate systems.
 struct Circle {
-  Point2D center;
+  ViewportCoords center;
   float radius;
 
-  bool contains(const Point2D &p);
+  bool contains(const ViewportCoords &p);
 };
 
 #endif /* CIRCLE_HPP_ */

@@ -30,7 +30,7 @@ ViewportLine
   ) const
 {
   ViewportCoords bottom =
-    text_object.position + Vector2D(character_width*column_index,0);
-  ViewportCoords top = bottom + Vector2D(0,characterHeight());
+    text_object.position + ViewportVector(character_width*column_index,0);
+  ViewportCoords top = bottom + ViewportVector(0,characterHeight());
   return ViewportLine{bottom,top};
 }

@@ -224,6 +224,12 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
 }
 
 
+static void drawLine(const ViewportCoords &p1,const ViewportCoords &p2)
+{
+  drawLine(Point2D(p1),Point2D(p2));
+}
+
+
 void
   QtDiagramEditor::drawClosedLine(
     const std::vector<ViewportCoords> &vertices
@@ -355,7 +361,7 @@ std::vector<ViewportCoords>
 
 std::vector<ViewportCoords> QtDiagramEditor::verticesOf(const Circle &circle)
 {
-  Point2D center = circle.center;
+  ViewportCoords center = circle.center;
   float radius = circle.radius;
   std::vector<ViewportCoords> vertices;
 
@@ -421,8 +427,9 @@ ViewportLine
   float cursor_height = textHeight();
   float text_width = textWidth(text_object.text.substr(0,column_index));
   float descent = fontMetrics().descent();
-  ViewportCoords p = text_object.position + Vector2D{text_width,-descent};
-  ViewportLine cursor_line{ p, p+Vector2D{0,cursor_height} };
+
+  ViewportCoords p = text_object.position + ViewportVector{text_width,-descent};
+  ViewportLine cursor_line{ p, p + ViewportVector{0,cursor_height} };
   return cursor_line;
 }
 

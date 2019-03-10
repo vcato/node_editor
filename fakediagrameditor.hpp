@@ -48,7 +48,7 @@ struct FakeDiagramEditor : DiagramEditor {
     maybe_chosen_path.reset();
   }
 
-  void userPressesMouseAt(const Point2D &p)
+  void userPressesMouseAt(const ViewportCoords &p)
   {
     leftMousePressedAt(ViewportCoords(p),EventModifiers());
   }
@@ -117,12 +117,12 @@ struct FakeDiagramEditor : DiagramEditor {
 
   void userClicksOnNode(NodeIndex n)
   {
-    userClicksAt(viewportCoordsFromDiagramCoords(nodeCenter(n)));
+    userClicksAt(nodeCenter(n));
   }
 
   ViewportCoords viewportCoordsForCenterOfNode(NodeIndex n)
   {
-    return viewportCoordsFromDiagramCoords(nodeCenter(n));
+    return nodeCenter(n);
   }
 
   void userClicksWithShiftPressedAt(const ViewportCoords &p)
@@ -184,7 +184,7 @@ struct FakeDiagramEditor : DiagramEditor {
     ++redraw_count;
   }
 
-  Vector2D viewOffset() const { return view_offset; }
+  ViewportVector viewOffset() const { return view_offset; }
 
   ViewportRect rectAroundText(const std::string &) const override;
 
@@ -211,17 +211,17 @@ struct FakeDiagramEditor : DiagramEditor {
     an_error_was_shown = true;
   }
 
-  Point2D nodeCenter(NodeIndex node_index)
+  ViewportCoords nodeCenter(NodeIndex node_index)
   {
     return nodeRenderInfo(diagram().node(node_index)).body_outer_rect.center();
   }
 
-  Point2D nodeInputPosition(NodeIndex node_index,int output_index)
+  ViewportCoords nodeInputPosition(NodeIndex node_index,int output_index)
   {
     return nodeInputCircle(node(node_index),output_index).center;
   }
 
-  Point2D nodeOutputPosition(NodeIndex node_index,int output_index)
+  ViewportCoords nodeOutputPosition(NodeIndex node_index,int output_index)
   {
     return nodeOutputCircle(node(node_index),output_index).center;
   }

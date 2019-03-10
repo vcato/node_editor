@@ -8,6 +8,7 @@
 
 struct DiagramCoordsTag;
 using DiagramCoords = TaggedPoint2D<DiagramCoordsTag>;
+using DiagramVector = TaggedVector2D<DiagramCoordsTag>;
 
 
 struct DiagramTextObject {

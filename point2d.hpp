@@ -4,17 +4,18 @@
 #include <iosfwd>
 #include "vector2d.hpp"
 
-
-// Need to remove this
-#define USE_BASIC_POINT2D 0
-
-
 template <typename Tag> struct TaggedPoint2D;
 
-template <>
-struct TaggedPoint2D<void> : EuclideanPair<float> {
+template <typename Tag>
+struct TaggedPoint2D : EuclideanPair<float> {
   TaggedPoint2D()
   : EuclideanPair<float>(0,0)
+  {
+  }
+
+  template <typename Tag2>
+  explicit TaggedPoint2D(const TaggedPoint2D<Tag2> &arg)
+  : EuclideanPair<float>(arg)
   {
   }
 
@@ -31,19 +32,6 @@ struct TaggedPoint2D<void> : EuclideanPair<float> {
   bool operator!=(const TaggedPoint2D &arg) const
   {
     return !operator==(arg);
-  }
-};
-
-
-template <typename Tag>
-struct TaggedPoint2D : TaggedPoint2D<void> {
-  using TaggedPoint2D<void>::TaggedPoint2D;
-
-  TaggedPoint2D() = default;
-
-  explicit TaggedPoint2D(const TaggedPoint2D<void> &arg)
-  : TaggedPoint2D<void>(arg)
-  {
   }
 };
 
@@ -71,17 +59,59 @@ inline TaggedPoint2D<Tag> &
 }
 
 
-#if 1
+// In General, two coordinate system tags do not have a common
+// coordinate system.
+template <typename Tag1,typename Tag2>
+struct CommonCoordinateSystem {};
+
+
+// If the coordinate systems are the same, then the common coordinate
+// system is the one coordinate system.
 template <typename Tag>
-inline Vector2D
-  operator-(const TaggedPoint2D<Tag> &a,const TaggedPoint2D<Tag> &b)
-{
-  return Vector2D( a.x-b.x, a.y-b.y );
-}
-#else
+struct CommonCoordinateSystem<Tag,Tag> {
+  using type = Tag;
+};
+
+
+// This is needed to get around ambiguity.
+template <>
+struct CommonCoordinateSystem<void,void> {
+  using type = void;
+};
+
+
+// Every coordinate system is also considered to be in the void
+// coordinate system.
+template <typename Tag>
+struct CommonCoordinateSystem<Tag,void> {
+  using type = void;
+};
+
+
+// Every coordinate system is also considered to be in the void
+// coordinate system.
+template <typename Tag>
+struct CommonCoordinateSystem<void,Tag> {
+  using type = void;
+};
+
+
+template <typename Tag1,typename Tag2>
+using CommonCoordinateSystem_t =
+  typename CommonCoordinateSystem<Tag1,Tag2>::type;
+
+
+#if 1
 template <typename Tag>
 inline TaggedVector2D<Tag>
   operator-(const TaggedPoint2D<Tag> &a,const TaggedPoint2D<Tag> &b)
+{
+  return { a.x-b.x, a.y-b.y };
+}
+#else
+template <typename Tag1,typename Tag2>
+TaggedVector2D<CommonCoordinateSystem_t<Tag1,Tag2>>
+  operator-(const TaggedPoint2D<Tag1> &a,const TaggedPoint2D<Tag2> &b)
 {
   return { a.x-b.x, a.y-b.y };
 }
@@ -90,7 +120,7 @@ inline TaggedVector2D<Tag>
 
 template <typename Tag>
 inline TaggedPoint2D<Tag>
-  operator-(const TaggedPoint2D<Tag> &a,const Vector2D &b)
+  operator-(const TaggedPoint2D<Tag> &a,const TaggedVector2D<Tag> &b)
 {
   float x = a.x - b.x;
   float y = a.y - b.y;
@@ -98,25 +128,14 @@ inline TaggedPoint2D<Tag>
 }
 
 
-#if 1
-template <typename Tag>
-inline TaggedPoint2D<Tag>
-  operator+(const TaggedPoint2D<Tag> &a,const Vector2D &b)
+template <typename Tag1,typename Tag2>
+TaggedPoint2D<CommonCoordinateSystem_t<Tag1,Tag2>>
+  operator+(const TaggedPoint2D<Tag1> &a,const TaggedVector2D<Tag2> &b)
 {
   float x = a.x + b.x;
   float y = a.y + b.y;
   return {x,y};
 }
-#else
-template <typename Tag>
-inline TaggedPoint2D<Tag>
-  operator+(const TaggedPoint2D<Tag> &a,const TaggedVector2D<Tag> &b)
-{
-  float x = a.x + b.x;
-  float y = a.y + b.y;
-  return {x,y};
-}
-#endif
 
 
 extern std::ostream& operator<<(std::ostream &stream,const Point2D &p);

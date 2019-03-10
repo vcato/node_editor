@@ -37,7 +37,7 @@ static WrapperState &
 static WrapperState makeDiagramNodeWrapperState(const Node &node,int i)
 {
   WrapperState node_state("node");
-  const Point2D &pos = node.position();
+  const DiagramCoords &pos = node.position();
   int id = i+1;
 
   createChild(node_state,"id",id);

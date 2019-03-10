@@ -21,11 +21,10 @@ using std::ofstream;
 using Node = DiagramNode;
 
 
-template <typename Tag>
-inline TaggedRect<Tag> withMargin(const TaggedRect<Tag> &rect,float margin)
+static ViewportRect withMargin(const ViewportRect &rect,float margin)
 {
-  auto offset = Vector2D{margin,margin};
-  return TaggedRect<Tag>{rect.start-offset,rect.end+offset};
+  auto offset = ViewportVector{margin,margin};
+  return {rect.start-offset, rect.end+offset};
 }
 
 
@@ -310,7 +309,7 @@ ViewportTextObject
   text_object.text = text;
   text_object.position = ViewportCoords(0,0);
   ViewportRect rect = rectAroundTextObject(text_object);
-  Vector2D offset =
+  ViewportVector offset =
     alignmentPoint(rect,horizontal_alignment,vertical_alignment) -
     ViewportCoords(0,0);
   text_object.position = position - offset;
@@ -623,7 +622,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       float connector_y = line_center_y;
 
       Circle c;
-      c.center = Point2D(connector_x,connector_y);
+      c.center = ViewportCoords(connector_x,connector_y);
       c.radius = connector_radius;
       input_connector_circles.push_back(c);
 
@@ -689,7 +688,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
         float connector_y = expression_center_y;
 
         Circle c;
-        c.center = Point2D(connector_x,connector_y);
+        c.center = ViewportCoords(connector_x,connector_y);
         c.radius = connector_radius;
         output_connector_circles.push_back(c);
       }
@@ -775,7 +774,7 @@ bool
   DiagramEditor::nodeInputContains(
     int node_index,
     int input_index,
-    const Point2D &p
+    const ViewportCoords &p
   )
 {
   return nodeInputCircle(node(node_index),input_index).contains(p);
@@ -793,7 +792,7 @@ bool
   DiagramEditor::nodeOutputContains(
     int node_index,
     int output_index,
-    const Point2D &p
+    const ViewportCoords &p
   )
 {
   return nodeOutputCircle(node(node_index),output_index).contains(p);
@@ -801,7 +800,7 @@ bool
 
 
 NodeConnectorIndex
-  DiagramEditor::indexOfNodeConnectorContaining(const Point2D &p)
+  DiagramEditor::indexOfNodeConnectorContaining(const ViewportCoords &p)
 {
   for (NodeIndex i : diagram().existingNodeIndices()) {
     int n_inputs = node(i).nInputs();
@@ -1263,7 +1262,8 @@ void DiagramEditor::mouseMovedTo(const ViewportCoords &mouse_position)
     for (NodeIndex i : selected_node_indices) {
       assert(original_node_positions.count(i));
       node(i).header_text_object.position =
-        original_node_positions[i] + (mouse_position - mouse_press_position);
+        original_node_positions[i] +
+        diagramVectorFromViewportVector(mouse_position - mouse_press_position);
     }
     redraw();
     return;
@@ -1343,12 +1343,24 @@ NodeIndex DiagramEditor::selectedNodeIndex() const
 }
 
 
+DiagramVector
+  DiagramEditor::diagramVectorFromViewportVector(
+    const ViewportVector &arg
+  ) const
+{
+  // We can't scale the view yet, so a diagram vector and viewport vector
+  // are always the same.
+  return DiagramVector{arg.x,arg.y};
+}
+
+
 auto
   DiagramEditor::viewportCoordsFromDiagramCoords(
-    const Point2D &diagram_coords
+    // This should be DiagramCoords
+    const DiagramCoords &diagram_coords
   ) const -> ViewportCoords
 {
-  return ViewportCoords(diagram_coords + view_offset);
+  return ViewportCoords(Point2D(diagram_coords) + Vector2D(view_offset));
 }
 
 

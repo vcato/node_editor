@@ -152,8 +152,10 @@ class DiagramEditor {
     ViewportRect nodeRect(const DiagramTextObject &text_object) const;
     const Node &node(NodeIndex arg) const { return diagram().node(arg); }
 
-    ViewportCoords
-      viewportCoordsFromDiagramCoords(const Point2D &diagram_coords) const;
+    DiagramVector
+      diagramVectorFromViewportVector(const ViewportVector &) const;
+
+    ViewportCoords viewportCoordsFromDiagramCoords(const DiagramCoords &) const;
 
     DiagramCoords
       diagramCoordsFromViewportCoords(
@@ -199,9 +201,9 @@ class DiagramEditor {
     DiagramObserverPtr diagram_observer_ptr;
     const DiagramState *diagram_state_ptr = nullptr;
     NodeIndex focused_node_index = noNodeIndex();
-    Point2D temp_source_pos;
+    ViewportCoords temp_source_pos;
     Optional<ViewportRect> maybe_selection_rectangle;
-    Vector2D view_offset{0,0};
+    ViewportVector view_offset{0,0};
     void notifyDiagramChanged();
 
   private:
@@ -221,9 +223,15 @@ class DiagramEditor {
     NodeIndex selectedNodeIndex() const;
     void setSelectedNodeIndex(NodeIndex arg);
     void updateNodeInputs(int node_index);
-    bool nodeOutputContains(int node_index,int output_index,const Point2D &p);
-    bool nodeInputContains(int node_index,int input_index,const Point2D &p);
-    NodeConnectorIndex indexOfNodeConnectorContaining(const Point2D &p);
+    bool
+      nodeOutputContains(
+        int node_index,
+        int output_index,
+        const ViewportCoords &p
+      );
+    bool
+      nodeInputContains(int node_index,int input_index,const ViewportCoords &);
+    NodeConnectorIndex indexOfNodeConnectorContaining(const ViewportCoords &);
 
     ViewportRect
       rectAroundTextObject(const ViewportTextObject &text_object) const;
@@ -283,7 +291,7 @@ class DiagramEditor {
     ViewportCoords mouse_press_position;
     std::map<NodeIndex,DiagramCoords> original_node_positions;
     MouseMode mouse_mode = MouseMode::none;
-    Vector2D mouse_down_view_offset;
+    ViewportVector mouse_down_view_offset;
 };
 
 #endif /* DIAGRAMEDITOR_HPP_ */

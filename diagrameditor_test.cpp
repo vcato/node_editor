@@ -320,24 +320,21 @@ static void testShiftSelectingMultipleNodes()
 
   editor.userClicksOnNode(n1);
 
-  editor.userClicksWithShiftPressedAt(
-    editor.viewportCoordsFromDiagramCoords(editor.nodeCenter(n2))
-  );
+  editor.userClicksWithShiftPressedAt( editor.nodeCenter(n2) );
 
   assert(editor.nSelectedNodes()==2);
   assert(editor.nodeIsSelected(n1));
   assert(editor.nodeIsSelected(n2));
 
-  ViewportCoords mouse_down_position =
-    editor.viewportCoordsFromDiagramCoords(editor.nodeCenter(n1));
+  ViewportCoords mouse_down_position = editor.nodeCenter(n1);
 
   editor.userPressesMouseAt(mouse_down_position);
   assert(editor.nSelectedNodes()==2);
   ViewportCoords mouse_release_position =
     ViewportCoords(mouse_down_position.x+10,mouse_down_position.y);
   editor.userMovesMouseTo(mouse_release_position);
-  assert(diagram.node(n1).position()==Point2D(10,0));
-  assert(diagram.node(n2).position()==Point2D(10,100));
+  assert(diagram.node(n1).position()==DiagramCoords(10,0));
+  assert(diagram.node(n2).position()==DiagramCoords(10,100));
   editor.userReleasesMouseAt(mouse_release_position);
   editor.userPressesBackspace();
   assert(diagram.nExistingNodes()==0);
@@ -388,7 +385,7 @@ static void testTranslatingView()
   modifiers.alt_is_pressed = true;
   editor.userPressesMiddleMouseAt(ViewportCoords(10,10),modifiers);
   editor.userMovesMouseTo(ViewportCoords(20,10));
-  assert(editor.viewOffset()==Vector2D(10,0));
+  assert(editor.viewOffset()==ViewportVector(10,0));
 }
 
 
@@ -407,13 +404,13 @@ static void testTranslatingView2()
 
   editor.userMovesMouseTo(ViewportCoords(20,10));
 
-  assert(editor.viewOffset()==Vector2D(10,0));
+  assert(editor.viewOffset()==ViewportVector(10,0));
   NodeRenderInfo translated_render_info =
     editor.nodeRenderInfo(diagram.node(node_index));
 
   assert(
     translated_render_info.header_rect.start ==
-    orig_render_info.header_rect.start + Vector2D(10,0)
+    orig_render_info.header_rect.start + ViewportVector(10,0)
   );
 }
 
@@ -525,9 +522,7 @@ static void testConnectingNodes()
 
   int diagram_change_count = 0;
   tester.diagramChangedCallback() = [&]{ ++diagram_change_count; };
-  editor.userReleasesMouseAt(
-    editor.viewportCoordsFromDiagramCoords(editor.nodeInputPosition(node2,0))
-  );
+  editor.userReleasesMouseAt( editor.nodeInputPosition(node2,0) );
   assert(diagramHasConnection(diagram,node1,0,node2,0));
   assert(diagram_change_count==1);
 }
@@ -637,7 +632,7 @@ static void testCopyingANodeByCtrlDrag()
   NodeIndex n = diagram.createNodeWithText("5");
   FakeDiagramEditor &editor = tester.editor;
   ViewportCoords press_position = editor.viewportCoordsForCenterOfNode(n);
-  ViewportCoords release_position = press_position + Vector2D(0,-20);
+  ViewportCoords release_position = press_position + ViewportVector(0,-20);
 
   editor.userCtrlPressesLeftMouseAt(press_position);
 
