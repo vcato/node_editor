@@ -33,13 +33,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     QSize sizeHint() const override { return QSize(640,480); }
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
     ViewportPoint screenToViewportCoords(int x,int y) const;
-
-    bool
-      contains(
-        const DiagramTextObject &text_object,
-        const ViewportPoint &p
-      );
-
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
@@ -68,7 +61,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
         bool is_selected,
         const ViewportRect &
       );
-    void drawBoxedText(const DiagramTextObject &text_object,bool is_selected);
     int textHeight() const;
     int textWidth(const std::string &s) const;
     static constexpr float node_input_radius = 5;

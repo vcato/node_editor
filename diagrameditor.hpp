@@ -150,7 +150,6 @@ class DiagramEditor {
       viewportTextObject(
         const DiagramTextObject &diagram_text_object
       ) const;
-    ViewportRect nodeRect(const DiagramTextObject &text_object) const;
     const Node &node(NodeIndex arg) const { return diagram().node(arg); }
 
     DiagramVector
@@ -282,7 +281,6 @@ class DiagramEditor {
 
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;
-    static constexpr float connector_radius = 5;
     ViewportPoint mouse_press_position;
     std::map<NodeIndex,DiagramPoint> original_node_positions;
     MouseMode mouse_mode = MouseMode::none;

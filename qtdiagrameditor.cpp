@@ -151,16 +151,6 @@ auto QtDiagramEditor::screenToViewportCoords(int x,int y) const
 }
 
 
-bool
-  QtDiagramEditor::contains(
-    const DiagramTextObject &text_object,
-    const ViewportPoint &p
-  )
-{
-  return nodeRect(text_object).contains(p);
-}
-
-
 void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
@@ -477,17 +467,6 @@ void
 
   drawRect(rect);
   drawText(text_object);
-}
-
-
-void
-  QtDiagramEditor::drawBoxedText(
-    const DiagramTextObject &text_object,
-    bool is_selected
-  )
-{
-  ViewportRect rect = nodeRect(text_object);
-  drawBoxedText2(viewportTextObject(text_object),is_selected,rect);
 }
 
 
