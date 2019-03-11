@@ -167,7 +167,7 @@ void DiagramEditor::escapePressed()
 int
   DiagramEditor::addNode(
     const std::string &text,
-    const DiagramCoords &position
+    const DiagramPoint &position
   )
 {
   // The node editor keeps a pointer to a node, but Nodes may move in memory.
@@ -239,7 +239,7 @@ ViewportRect
     const ViewportTextObject &text_object
   ) const
 {
-  ViewportVector offset = text_object.position - ViewportCoords{0,0};
+  ViewportVector offset = text_object.position - ViewportPoint{0,0};
   return rectAroundText(text_object.text) + offset;
 }
 
@@ -255,9 +255,9 @@ ViewportRect
   DiagramEditor::nodeHeaderRect(const DiagramTextObject &text_object) const
 {
   if (text_object.text=="") {
-    ViewportCoords start =
+    ViewportPoint start =
       viewportCoordsFromDiagramCoords(text_object.position);
-    ViewportCoords end = start;
+    ViewportPoint end = start;
     return ViewportRect{start,end};
   }
 
@@ -265,12 +265,12 @@ ViewportRect
 }
 
 
-ViewportCoords
-  DiagramEditor::alignmentPoint(
+static ViewportPoint
+  alignmentPoint(
     const ViewportRect &rect,
     float horizontal_alignment,
     float vertical_alignment
-  ) const
+  )
 {
   float h = horizontal_alignment;
   float v = vertical_alignment;
@@ -280,54 +280,66 @@ ViewportCoords
   float y2 = rect.end.y;
   float x = x1*(1-h) + x2*h;
   float y = y1*(1-v) + y2*v;
-  return ViewportCoords(x,y);
+  return ViewportPoint(x,y);
 }
 
 
-ViewportTextObject
-  DiagramEditor::alignedTextObject(
-    const std::string &text,
-    const ViewportCoords &position,
+static ViewportVector
+  alignmentOffset(
+    const ViewportRect &rect,
     float horizontal_alignment,
     float vertical_alignment
-  ) const
+  )
 {
-  ViewportTextObject text_object;
-  text_object.text = text;
-  text_object.position = ViewportCoords(0,0);
-  ViewportRect rect = rectAroundTextObject(text_object);
+  return
+    ViewportPoint(0,0) -
+    alignmentPoint(rect,horizontal_alignment,vertical_alignment);
+}
+
+
+static ViewportPoint
+  alignedTextPosition(
+    const ViewportRect &rect,
+    const ViewportPoint &position,
+    float horizontal_alignment,
+    float vertical_alignment
+  )
+{
   ViewportVector offset =
-    alignmentPoint(rect,horizontal_alignment,vertical_alignment) -
-    ViewportCoords(0,0);
-  text_object.position = position - offset;
-  return text_object;
+    alignmentOffset(rect, horizontal_alignment, vertical_alignment);
+  return position + offset;
+}
+
+
+static ViewportPoint
+  inputTextPosition(
+    const ViewportRect &rect,
+    float left_x,
+    float top_y
+  )
+{
+  ViewportPoint position(left_x,top_y);
+  float horizontal_alignment = 0;
+  float vertical_alignment = 1;
+  return
+    alignedTextPosition(rect,position,horizontal_alignment,vertical_alignment);
 }
 
 
 ViewportTextObject
   DiagramEditor::inputTextObject(
-    const string &s,
+    const string &text,
     float left_x,
     float top_y
   ) const
 {
-  return
-    alignedTextObject(
-      s,
-      ViewportCoords(left_x,top_y),
-      /*horizontal_alignment*/0,
-      /*vertical_alignment*/1
-    );
+  ViewportRect rect = rectAroundText(text);
+  ViewportPoint aligned_position = inputTextPosition(rect,left_x,top_y);
+  return ViewportTextObject{text, aligned_position};
 }
 
 
-// Instead of calling inputTextObject, we could pass the input text
-// objects for each line, then we could make this static.
-ViewportRect
-  DiagramEditor::nodeBodyRect(
-    const Node &node,
-    const ViewportRect &header_rect
-  ) const
+static ViewportPoint nodeBodyTopLeft(const ViewportRect &header_rect)
 {
   // The top of the rectangle should be the bottom of the header text
   // object.
@@ -336,30 +348,50 @@ ViewportRect
   // The left side should be the left of the header rect
   float left_x = header_rect.start.x;
 
+  return ViewportPoint{left_x,top_y};
+}
+
+
+// Instead of calling inputTextObject, we could pass the input text
+// objects for each line, then we could make this static.
+static ViewportRect
+  nodeBodyRect(
+    int n_inputs,
+    const ViewportRect &header_rect,
+    const vector<ViewportRect> &line_text_rects,
+    const ViewportRect &dollar_rect
+  )
+{
+  ViewportPoint top_left = nodeBodyTopLeft(header_rect);
+  float left_x = top_left.x;
+  float top_y = top_left.y;
+
   // Start with the bottom being at the top.
   // For each string, we determine its rectangle, and then move the bottom
   // to the bottom of that rectangle.
-
-  vector<string> line_texts = node.lineTexts();
 
   float bottom_y = top_y;
 
   vector<ViewportRect> line_rects;
 
   // Make a rectangle for each string
-  for (const auto& s : line_texts) {
-    ViewportRect r = rectAroundTextObject( inputTextObject(s,left_x,bottom_y) );
+  for (const auto& rect : line_text_rects) {
+    ViewportPoint aligned_position = inputTextPosition(rect,left_x,bottom_y);
+    ViewportVector offset = aligned_position - ViewportPoint{0,0};
+    ViewportRect r = rect + offset;
     line_rects.push_back(r);
     bottom_y = r.start.y;
   }
 
-  int n_inputs = node.nInputs();
-  int n_lines = line_texts.size();
+  // int n_inputs = node.nInputs();
+  int n_lines = line_text_rects.size();
 
   // Extend the bottom if we have more inputs than lines.
   while (n_lines < n_inputs) {
-    ViewportRect r =
-      rectAroundTextObject( inputTextObject("$",left_x,bottom_y) );
+    ViewportPoint aligned_position =
+      inputTextPosition(dollar_rect,left_x,bottom_y);
+    ViewportVector offset = aligned_position - ViewportPoint{0,0};
+    ViewportRect r = dollar_rect + offset;
     bottom_y = r.start.y;
     ++n_lines;
   }
@@ -376,8 +408,8 @@ ViewportRect
 
   ViewportRect body_rect;
 
-  body_rect.start = ViewportCoords(left_x,bottom_y);
-  body_rect.end = ViewportCoords(right_x,top_y);
+  body_rect.start = ViewportPoint(left_x,bottom_y);
+  body_rect.end = ViewportPoint(right_x,top_y);
 
   return body_rect;
 }
@@ -460,7 +492,7 @@ using Rect = TaggedRect<void>;
 
 
 #if ADD_CALCULATE_NODE_LAYOUT
-static ViewportRect makeRect(ViewportCoords position,ViewportSize size)
+static ViewportRect makeRect(ViewportPoint position,ViewportSize size)
 {
   return {position, position + size};
 }
@@ -562,21 +594,21 @@ static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
   for (auto i : range(0,n_lines)) {
     line_rects.push_back(
       makeRect(
-        ViewportCoords(region_x,region_ys[i]),
+        ViewportPoint(region_x,region_ys[i]),
         ViewportSize(line_text_widths[i],line_text_sizes[i].y)
       )
     );
 
     input_rects.push_back(
       makeRect(
-        ViewportCoords(input_x,input_ys[i]),
+        ViewportPoint(input_x,input_ys[i]),
         ViewportSize(input_width,input_height)
       )
     );
 
     output_rects.push_back(
       makeRect(
-        ViewportCoords(output_x,output_ys[i]),
+        ViewportPoint(output_x,output_ys[i]),
         ViewportSize(output_width,output_height)
       )
     );
@@ -598,12 +630,22 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
   // We need to determine a rectangle that fits around the contents.
   ViewportRect header_rect = nodeHeaderRect(header_text_object);
 
-  ViewportRect body_rect = nodeBodyRect(node, header_rect);
+  vector<ViewportRect> line_text_rects;
+
+  for (const auto& text : node.lineTexts()) {
+    line_text_rects.push_back(rectAroundText(text));
+  }
+
+  ViewportRect dollar_rect = rectAroundText("$");
+
+  ViewportRect body_rect =
+    nodeBodyRect(node.nInputs(), header_rect, line_text_rects, dollar_rect);
   // We should be able to determine the left_x and top_y from the header_rect
   // directly.
-  float left_x = body_rect.start.x;
   float right_x = body_rect.end.x;
-  float top_y = body_rect.end.y;
+  ViewportPoint top_left = nodeBodyTopLeft(header_rect);
+  float left_x = top_left.x;
+  float top_y = top_left.y;
 
   float margin = 5;
     // Horizontal distance between the text of the node lines and the
@@ -633,7 +675,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       float connector_y = line_center_y;
 
       Circle c;
-      c.center = ViewportCoords(connector_x,connector_y);
+      c.center = ViewportPoint(connector_x,connector_y);
       c.radius = connector_radius;
       input_connector_circles.push_back(c);
 
@@ -701,7 +743,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
         float connector_y = expression_center_y;
 
         Circle c;
-        c.center = ViewportCoords(connector_x,connector_y);
+        c.center = ViewportPoint(connector_x,connector_y);
         c.radius = connector_radius;
         output_connector_circles.push_back(c);
       }
@@ -758,7 +800,7 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo2(const Node &node) const
 bool
   DiagramEditor::nodeContains(
     NodeIndex node_index,
-    const ViewportCoords &p
+    const ViewportPoint &p
   ) const
 {
   Node &node = diagram().node(node_index);
@@ -776,7 +818,7 @@ bool
 }
 
 
-NodeIndex DiagramEditor::indexOfNodeContaining(const ViewportCoords &p) const
+NodeIndex DiagramEditor::indexOfNodeContaining(const ViewportPoint &p) const
 {
   for (NodeIndex i : diagram().existingNodeIndices()) {
     if (nodeContains(i,p)) {
@@ -799,7 +841,7 @@ bool
   DiagramEditor::nodeInputContains(
     int node_index,
     int input_index,
-    const ViewportCoords &p
+    const ViewportPoint &p
   )
 {
   return nodeInputCircle(node(node_index),input_index).contains(p);
@@ -817,7 +859,7 @@ bool
   DiagramEditor::nodeOutputContains(
     int node_index,
     int output_index,
-    const ViewportCoords &p
+    const ViewportPoint &p
   )
 {
   return nodeOutputCircle(node(node_index),output_index).contains(p);
@@ -825,7 +867,7 @@ bool
 
 
 NodeConnectorIndex
-  DiagramEditor::indexOfNodeConnectorContaining(const ViewportCoords &p)
+  DiagramEditor::indexOfNodeConnectorContaining(const ViewportPoint &p)
 {
   for (NodeIndex i : diagram().existingNodeIndices()) {
     int n_inputs = node(i).nInputs();
@@ -888,7 +930,7 @@ static void order(float &a,float &b)
 int
   DiagramEditor::closestColumn(
     const ViewportTextObject &line_text_object,
-    const ViewportCoords &p
+    const ViewportPoint &p
   ) const
 {
   int best_column_index = 0;
@@ -912,7 +954,7 @@ int
 struct DiagramEditor::CursorPositionFinder {
   const DiagramEditor &diagram_editor;
   const NodeRenderInfo &render_info;
-  const ViewportCoords &p;
+  const ViewportPoint &p;
 
   template <typename IsFeasiblePointFunction>
   Optional<NodeTextEditor::CursorPosition>
@@ -970,7 +1012,7 @@ struct DiagramEditor::CursorPositionFinder {
 NodeTextEditor::CursorPosition
   DiagramEditor::closestCursorPositionTo(
     NodeIndex node_index,
-    const ViewportCoords &p
+    const ViewportPoint &p
   ) const
 {
   NodeRenderInfo render_info = nodeRenderInfo(node(node_index));
@@ -1003,7 +1045,7 @@ NodeTextEditor::CursorPosition
 }
 
 
-void DiagramEditor::mouseReleasedAt(ViewportCoords mouse_release_position)
+void DiagramEditor::mouseReleasedAt(ViewportPoint mouse_release_position)
 {
   if (mouse_mode==MouseMode::translate_view) {
     mouse_mode = MouseMode::none;
@@ -1110,7 +1152,7 @@ void DiagramEditor::clearSelection()
 
 void
   DiagramEditor::middleMousePressedAt(
-    ViewportCoords p,
+    ViewportPoint p,
     EventModifiers modifiers
   )
 {
@@ -1124,7 +1166,7 @@ void
 
 void
   DiagramEditor::leftMousePressedAt(
-    ViewportCoords p,
+    ViewportPoint p,
     EventModifiers modifiers
   )
 {
@@ -1268,7 +1310,7 @@ bool DiagramEditor::aNodeIsSelected() const
 }
 
 
-void DiagramEditor::mouseMovedTo(const ViewportCoords &mouse_position)
+void DiagramEditor::mouseMovedTo(const ViewportPoint &mouse_position)
 {
   if (mouse_mode==MouseMode::translate_view) {
     view_offset =
@@ -1382,19 +1424,19 @@ DiagramVector
 auto
   DiagramEditor::viewportCoordsFromDiagramCoords(
     // This should be DiagramCoords
-    const DiagramCoords &diagram_coords
-  ) const -> ViewportCoords
+    const DiagramPoint &diagram_coords
+  ) const -> ViewportPoint
 {
-  return ViewportCoords(Point2D(diagram_coords) + Vector2D(view_offset));
+  return ViewportPoint(Point2D(diagram_coords) + Vector2D(view_offset));
 }
 
 
-DiagramCoords
+DiagramPoint
   DiagramEditor::diagramCoordsFromViewportCoords(
-    const ViewportCoords &viewport_coords
+    const ViewportPoint &viewport_coords
   ) const
 {
-  return DiagramCoords(viewport_coords - view_offset);
+  return DiagramPoint(viewport_coords - view_offset);
 }
 
 
@@ -1438,7 +1480,7 @@ string DiagramEditor::lineError(NodeIndex node_index,int line_index) const
 }
 
 
-auto DiagramEditor::maybeNodeLineAt(const ViewportCoords &p) const
+auto DiagramEditor::maybeNodeLineAt(const ViewportPoint &p) const
   -> Optional<NodeLineIndex>
 {
   int i = indexOfNodeContaining(p);
@@ -1455,7 +1497,7 @@ auto DiagramEditor::maybeNodeLineAt(const ViewportCoords &p) const
 
 
 Optional<string>
-  DiagramEditor::maybeToolTipTextAt(const ViewportCoords &p) const
+  DiagramEditor::maybeToolTipTextAt(const ViewportPoint &p) const
 {
   Optional<NodeLineIndex> maybe_node_line_index = maybeNodeLineAt(p);
 

@@ -211,7 +211,7 @@ static void testSettingDiagramPtrWithAnEmptyFocusedNode()
   Tester tester;
   Diagram &diagram = tester.diagram;
   FakeDiagramEditor &editor = tester.editor;
-  editor.userClicksAt(ViewportCoords(100,100));
+  editor.userClicksAt(ViewportPoint(100,100));
   editor.setDiagramObserver(0);
   assert(diagram.existingNodeIndices().empty());
 }
@@ -222,9 +222,9 @@ static void testClickingOnBackgroundTwice()
   Tester tester;
   FakeDiagramEditor &editor = tester.editor;
   editor.redraw_count = 0;
-  editor.userClicksAt(ViewportCoords(100,100));
+  editor.userClicksAt(ViewportPoint(100,100));
   assert(editor.redraw_count==2);
-  editor.userClicksAt(ViewportCoords(200,200));
+  editor.userClicksAt(ViewportPoint(200,200));
   assert(editor.redraw_count==4);
 }
 
@@ -234,7 +234,7 @@ static void testEscapeWithAFocusedEmptyNode()
   Tester tester;
   FakeDiagramEditor &editor = tester.editor;
   Diagram &diagram = tester.diagram;
-  editor.userClicksAt(ViewportCoords(100,100));
+  editor.userClicksAt(ViewportPoint(100,100));
   assert(diagram.nNodes()==1);
   int n_redraws = editor.redraw_count;
   editor.userPressesEscape();
@@ -315,8 +315,8 @@ static void testShiftSelectingMultipleNodes()
   Tester tester;
   FakeDiagramEditor &editor = tester.editor;
   Diagram &diagram = tester.diagram;
-  NodeIndex n1 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,0));
-  NodeIndex n2 = editor.userAddsANodeWithTextAt("test",DiagramCoords(0,100));
+  NodeIndex n1 = editor.userAddsANodeWithTextAt("test",DiagramPoint(0,0));
+  NodeIndex n2 = editor.userAddsANodeWithTextAt("test",DiagramPoint(0,100));
 
   editor.userClicksOnNode(n1);
 
@@ -326,15 +326,15 @@ static void testShiftSelectingMultipleNodes()
   assert(editor.nodeIsSelected(n1));
   assert(editor.nodeIsSelected(n2));
 
-  ViewportCoords mouse_down_position = editor.nodeCenter(n1);
+  ViewportPoint mouse_down_position = editor.nodeCenter(n1);
 
   editor.userPressesMouseAt(mouse_down_position);
   assert(editor.nSelectedNodes()==2);
-  ViewportCoords mouse_release_position =
-    ViewportCoords(mouse_down_position.x+10,mouse_down_position.y);
+  ViewportPoint mouse_release_position =
+    ViewportPoint(mouse_down_position.x+10,mouse_down_position.y);
   editor.userMovesMouseTo(mouse_release_position);
-  assert(diagram.node(n1).position()==DiagramCoords(10,0));
-  assert(diagram.node(n2).position()==DiagramCoords(10,100));
+  assert(diagram.node(n1).position()==DiagramPoint(10,0));
+  assert(diagram.node(n2).position()==DiagramPoint(10,100));
   editor.userReleasesMouseAt(mouse_release_position);
   editor.userPressesBackspace();
   assert(diagram.nExistingNodes()==0);
@@ -343,14 +343,14 @@ static void testShiftSelectingMultipleNodes()
 
 static void
   testRectangleSelectingMultipleNodes(
-    const ViewportCoords &start,
-    const ViewportCoords &end
+    const ViewportPoint &start,
+    const ViewportPoint &end
   )
 {
   Tester tester;
   FakeDiagramEditor &editor = tester.editor;
-  NodeIndex n1 = editor.userAddsANodeWithTextAt("x",DiagramCoords(10,10));
-  NodeIndex n2 = editor.userAddsANodeWithTextAt("y",DiagramCoords(20,20));
+  NodeIndex n1 = editor.userAddsANodeWithTextAt("x",DiagramPoint(10,10));
+  NodeIndex n2 = editor.userAddsANodeWithTextAt("y",DiagramPoint(20,20));
 
   editor.userPressesMouseAt(start);
   editor.userMovesMouseTo(end);
@@ -364,7 +364,7 @@ static void
 static void testRectangleSelectingMultipleNodes1()
 {
   testRectangleSelectingMultipleNodes(
-    /*start*/ViewportCoords(0,0),/*end*/ViewportCoords(40,40)
+    /*start*/ViewportPoint(0,0),/*end*/ViewportPoint(40,40)
   );
 }
 
@@ -372,7 +372,7 @@ static void testRectangleSelectingMultipleNodes1()
 static void testRectangleSelectingMultipleNodes2()
 {
   testRectangleSelectingMultipleNodes(
-    /*start*/ViewportCoords(40,40),/*end*/ViewportCoords(0,0)
+    /*start*/ViewportPoint(40,40),/*end*/ViewportPoint(0,0)
   );
 }
 
@@ -383,8 +383,8 @@ static void testTranslatingView()
   FakeDiagramEditor &editor = tester.editor;
   EventModifiers modifiers;
   modifiers.alt_is_pressed = true;
-  editor.userPressesMiddleMouseAt(ViewportCoords(10,10),modifiers);
-  editor.userMovesMouseTo(ViewportCoords(20,10));
+  editor.userPressesMiddleMouseAt(ViewportPoint(10,10),modifiers);
+  editor.userMovesMouseTo(ViewportPoint(20,10));
   assert(editor.viewOffset()==ViewportVector(10,0));
 }
 
@@ -397,12 +397,12 @@ static void testTranslatingView2()
   NodeIndex node_index = diagram.createNodeWithText("test");
   EventModifiers modifiers;
   modifiers.alt_is_pressed = true;
-  editor.userPressesMiddleMouseAt(ViewportCoords(10,10),modifiers);
+  editor.userPressesMiddleMouseAt(ViewportPoint(10,10),modifiers);
 
   NodeRenderInfo orig_render_info =
     editor.nodeRenderInfo(diagram.node(node_index));
 
-  editor.userMovesMouseTo(ViewportCoords(20,10));
+  editor.userMovesMouseTo(ViewportPoint(20,10));
 
   assert(editor.viewOffset()==ViewportVector(10,0));
   NodeRenderInfo translated_render_info =
@@ -515,9 +515,9 @@ static void testConnectingNodes()
   Diagram &diagram = tester.diagram;
   FakeDiagramEditor &editor = tester.editor;
   NodeIndex node1 =
-    editor.userAddsANodeWithTextAt("1",DiagramCoords(0,0));
+    editor.userAddsANodeWithTextAt("1",DiagramPoint(0,0));
   NodeIndex node2 =
-    editor.userAddsANodeWithTextAt("return $",DiagramCoords(100,0));
+    editor.userAddsANodeWithTextAt("return $",DiagramPoint(100,0));
   editor.userPressesMouseAt(editor.nodeOutputPosition(node1,0));
 
   int diagram_change_count = 0;
@@ -528,7 +528,7 @@ static void testConnectingNodes()
 }
 
 
-static ViewportCoords linePoint(const ViewportLine &l,float fraction)
+static ViewportPoint linePoint(const ViewportLine &l,float fraction)
 {
   return l.start + (l.end - l.start) * fraction;
 }
@@ -551,7 +551,7 @@ static void testClickingOnAFocusedNode(const ClickingOnAFocusedNodeTest &test)
   Tester tester;
   FakeDiagramEditor &editor = tester.editor;
   NodeIndex node =
-    editor.userAddsANodeWithTextAt(test.node_text,DiagramCoords(0,0));
+    editor.userAddsANodeWithTextAt(test.node_text,DiagramPoint(0,0));
 
   // Click on the node to select it.
   editor.userClicksOnNode(node);
@@ -631,8 +631,8 @@ static void testCopyingANodeByCtrlDrag()
   Diagram &diagram = tester.diagram;
   NodeIndex n = diagram.createNodeWithText("5");
   FakeDiagramEditor &editor = tester.editor;
-  ViewportCoords press_position = editor.viewportCoordsForCenterOfNode(n);
-  ViewportCoords release_position = press_position + ViewportVector(0,-20);
+  ViewportPoint press_position = editor.viewportCoordsForCenterOfNode(n);
+  ViewportPoint release_position = press_position + ViewportVector(0,-20);
 
   editor.userCtrlPressesLeftMouseAt(press_position);
 

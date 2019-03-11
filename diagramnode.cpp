@@ -194,7 +194,7 @@ size_t Node::countOutputs(const Node &node)
 }
 
 
-void Node::setPosition(const DiagramCoords &arg)
+void Node::setPosition(const DiagramPoint &arg)
 {
   header_text_object.position = arg;
 }

@@ -145,16 +145,16 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
 
 
 auto QtDiagramEditor::screenToViewportCoords(int x,int y) const
-  -> ViewportCoords
+  -> ViewportPoint
 {
-  return ViewportCoords{static_cast<float>(x),height()-static_cast<float>(y)};
+  return ViewportPoint{static_cast<float>(x),height()-static_cast<float>(y)};
 }
 
 
 bool
   QtDiagramEditor::contains(
     const DiagramTextObject &text_object,
-    const ViewportCoords &p
+    const ViewportPoint &p
   )
 {
   return nodeRect(text_object).contains(p);
@@ -165,7 +165,7 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
   QMouseEvent &event = *event_ptr;
-  ViewportCoords p = screenToViewportCoords(event.x(),event.y());
+  ViewportPoint p = screenToViewportCoords(event.x(),event.y());
 
   if (event.button()==Qt::LeftButton) {
     Qt::KeyboardModifiers qt_modifiers = event.modifiers();
@@ -208,7 +208,7 @@ void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
-  ViewportCoords mouse_release_position =
+  ViewportPoint mouse_release_position =
     screenToViewportCoords(event_ptr->x(),event_ptr->y());
 
   mouseReleasedAt(mouse_release_position);
@@ -217,14 +217,14 @@ void QtDiagramEditor::mouseReleaseEvent(QMouseEvent *event_ptr)
 
 void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
 {
-  ViewportCoords mouse_position =
+  ViewportPoint mouse_position =
     screenToViewportCoords(event_ptr->x(),event_ptr->y());
 
   mouseMovedTo(mouse_position);
 }
 
 
-static void drawLine(const ViewportCoords &p1,const ViewportCoords &p2)
+static void drawLine(const ViewportPoint &p1,const ViewportPoint &p2)
 {
   drawLine(Point2D(p1),Point2D(p2));
 }
@@ -232,7 +232,7 @@ static void drawLine(const ViewportCoords &p1,const ViewportCoords &p2)
 
 void
   QtDiagramEditor::drawClosedLine(
-    const std::vector<ViewportCoords> &vertices
+    const std::vector<ViewportPoint> &vertices
   )
 {
   int n = vertices.size();
@@ -245,7 +245,7 @@ void
 
 void
   QtDiagramEditor::drawPolygon(
-    const std::vector<ViewportCoords> &vertices,
+    const std::vector<ViewportPoint> &vertices,
     const Color &color
   )
 {
@@ -292,35 +292,35 @@ void
 }
 
 
-void QtDiagramEditor::drawPolygon(const std::vector<ViewportCoords> &vertices)
+void QtDiagramEditor::drawPolygon(const std::vector<ViewportPoint> &vertices)
 {
   drawPolygon(vertices,Color{0.5,0.5,0});
 }
 
 
-std::vector<ViewportCoords>
+std::vector<ViewportPoint>
   QtDiagramEditor::verticesOf(const ViewportRect &rect)
 {
-  std::vector<ViewportCoords> vertices;
+  std::vector<ViewportPoint> vertices;
 
   float x1 = rect.start.x;
   float y1 = rect.start.y;
   float x2 = rect.end.x;
   float y2 = rect.end.y;
 
-  vertices.push_back(ViewportCoords{x1,y1});
-  vertices.push_back(ViewportCoords{x2,y1});
-  vertices.push_back(ViewportCoords{x2,y2});
-  vertices.push_back(ViewportCoords{x1,y2});
+  vertices.push_back(ViewportPoint{x1,y1});
+  vertices.push_back(ViewportPoint{x2,y1});
+  vertices.push_back(ViewportPoint{x2,y2});
+  vertices.push_back(ViewportPoint{x1,y2});
 
   return vertices;
 }
 
 
-std::vector<ViewportCoords>
+std::vector<ViewportPoint>
   QtDiagramEditor::roundedVerticesOf(const ViewportRect &rect,float offset)
 {
-  std::vector<ViewportCoords> vertices;
+  std::vector<ViewportPoint> vertices;
   float radius = 5;
   float v = radius*sqrtf(2)/2;
 
@@ -337,21 +337,21 @@ std::vector<ViewportCoords>
   float y2a = y2 - radius;
   float y2b = y2a + v;
 
-  vertices.push_back(ViewportCoords{x1,y1a});
-  vertices.push_back(ViewportCoords{x1b,y1b});
-  vertices.push_back(ViewportCoords{x1a,y1});
+  vertices.push_back(ViewportPoint{x1,y1a});
+  vertices.push_back(ViewportPoint{x1b,y1b});
+  vertices.push_back(ViewportPoint{x1a,y1});
 
-  vertices.push_back(ViewportCoords{x2a,y1});
-  vertices.push_back(ViewportCoords{x2b,y1b});
-  vertices.push_back(ViewportCoords{x2,y1a});
+  vertices.push_back(ViewportPoint{x2a,y1});
+  vertices.push_back(ViewportPoint{x2b,y1b});
+  vertices.push_back(ViewportPoint{x2,y1a});
 
-  vertices.push_back(ViewportCoords{x2,y2a});
-  vertices.push_back(ViewportCoords{x2b,y2b});
-  vertices.push_back(ViewportCoords{x2a,y2});
+  vertices.push_back(ViewportPoint{x2,y2a});
+  vertices.push_back(ViewportPoint{x2b,y2b});
+  vertices.push_back(ViewportPoint{x2a,y2});
 
-  vertices.push_back(ViewportCoords{x1a,y2});
-  vertices.push_back(ViewportCoords{x1b,y2b});
-  vertices.push_back(ViewportCoords{x1,y2a});
+  vertices.push_back(ViewportPoint{x1a,y2});
+  vertices.push_back(ViewportPoint{x1b,y2b});
+  vertices.push_back(ViewportPoint{x1,y2a});
 
   return vertices;
 }
@@ -359,18 +359,18 @@ std::vector<ViewportCoords>
 
 
 
-std::vector<ViewportCoords> QtDiagramEditor::verticesOf(const Circle &circle)
+std::vector<ViewportPoint> QtDiagramEditor::verticesOf(const Circle &circle)
 {
-  ViewportCoords center = circle.center;
+  ViewportPoint center = circle.center;
   float radius = circle.radius;
-  std::vector<ViewportCoords> vertices;
+  std::vector<ViewportPoint> vertices;
 
   for (int i=0; i!=10; ++i) {
     float fraction = i/10.0;
     float angle = 2*M_PI * fraction;
     float x = center.x + cos(angle)*radius;
     float y = center.y + sin(angle)*radius;
-    vertices.push_back(ViewportCoords{x,y});
+    vertices.push_back(ViewportPoint{x,y});
   }
 
   return vertices;
@@ -428,7 +428,7 @@ ViewportLine
   float text_width = textWidth(text_object.text.substr(0,column_index));
   float descent = fontMetrics().descent();
 
-  ViewportCoords p = text_object.position + ViewportVector{text_width,-descent};
+  ViewportPoint p = text_object.position + ViewportVector{text_width,-descent};
   ViewportLine cursor_line{ p, p + ViewportVector{0,cursor_height} };
   return cursor_line;
 }
@@ -457,23 +457,9 @@ ViewportRect QtDiagramEditor::rectAroundText(const std::string &text_arg) const
 }
 
 
-void
-  QtDiagramEditor::drawAlignedText(
-    const std::string &text,
-    const ViewportCoords &position,
-    float horizontal_alignment,
-    float vertical_alignment
-  )
-{
-  ViewportTextObject text_object =
-    alignedTextObject(text,position,horizontal_alignment,vertical_alignment);
-  drawText(text_object);
-}
-
-
 void QtDiagramEditor::drawText(const ViewportTextObject &text_object)
 {
-  ViewportCoords position = text_object.position;
+  ViewportPoint position = text_object.position;
   renderText(position.x,position.y,0,qString(text_object.text));
 }
 
@@ -676,7 +662,7 @@ bool QtDiagramEditor::event(QEvent *event_ptr)
     auto help_event_ptr = static_cast<QHelpEvent*>(event_ptr);
     QHelpEvent &help_event = *help_event_ptr;
     QPoint pos = help_event.globalPos();
-    ViewportCoords p = screenToViewportCoords(help_event.x(),help_event.y());
+    ViewportPoint p = screenToViewportCoords(help_event.x(),help_event.y());
     Optional<string> maybe_tool_tip_text = maybeToolTipTextAt(p);
 
     if (maybe_tool_tip_text) {

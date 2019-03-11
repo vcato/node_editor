@@ -7,10 +7,10 @@
 
 // Need to be able to tag circles with coordinate systems.
 struct Circle {
-  ViewportCoords center;
+  ViewportPoint center;
   float radius;
 
-  bool contains(const ViewportCoords &p);
+  bool contains(const ViewportPoint &p);
 };
 
 #endif /* CIRCLE_HPP_ */

@@ -52,7 +52,7 @@ static void testWithOneNodeAndUnknownSection()
     "}\n";
   Diagram d = makeDiagram(diagram_text);
   assert(d.nExistingNodes()==1);
-  assert(d.node(0).position()==DiagramCoords(0,0));
+  assert(d.node(0).position()==DiagramPoint(0,0));
   assert(d.node(0).lines[0].text=="x=5");
 }
 
@@ -76,7 +76,7 @@ static void testWithOneNode()
   assert(diagram_text==expected_text);
   Diagram d2 = makeDiagram(diagram_text);
   assert(d2.nExistingNodes()==1);
-  assert(d2.node(0).position()==DiagramCoords(0,0));
+  assert(d2.node(0).position()==DiagramPoint(0,0));
   assert(d2.node(0).lines[0].text=="x=5");
 }
 
@@ -118,7 +118,7 @@ static void testWithTwoConnectedNodes()
   assert(diagram_text==expected_text);
   Diagram d2 = makeDiagram(diagram_text);
   assert(d2.nExistingNodes()==2);
-  assert(d2.node(0).position()==DiagramCoords(101,102));
+  assert(d2.node(0).position()==DiagramPoint(101,102));
 }
 
 

@@ -4,6 +4,6 @@ struct ViewportCoordsTag;
 
 
 // Rename this to ViewportPoint
-using ViewportCoords = TaggedPoint2D<ViewportCoordsTag>;
+using ViewportPoint = TaggedPoint2D<ViewportCoordsTag>;
 using ViewportVector = TaggedVector2D<ViewportCoordsTag>;
 using ViewportSize = TaggedSize2D<ViewportCoordsTag>;

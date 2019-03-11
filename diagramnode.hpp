@@ -31,8 +31,8 @@ class DiagramNode {
 
     void setText(const std::string &text);
     std::string text() const;
-    void setPosition(const DiagramCoords &);
-    const DiagramCoords &position() const { return header_text_object.position; }
+    void setPosition(const DiagramPoint &);
+    const DiagramPoint &position() const { return header_text_object.position; }
     int nLines() const { return lines.size(); }
     int nInputs() const { return inputs.size(); }
     int nOutputs() const { return outputs.size(); }

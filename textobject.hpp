@@ -7,19 +7,19 @@
 
 
 struct DiagramCoordsTag;
-using DiagramCoords = TaggedPoint2D<DiagramCoordsTag>;
+using DiagramPoint = TaggedPoint2D<DiagramCoordsTag>;
 using DiagramVector = TaggedVector2D<DiagramCoordsTag>;
 
 
 struct DiagramTextObject {
   std::string text;
-  DiagramCoords position;
+  DiagramPoint position;
 };
 
 
 struct ViewportTextObject {
   std::string text;
-  ViewportCoords position;
+  ViewportPoint position;
 };
 
 #endif /* TEXTOBJECT_HPP_ */

@@ -23,7 +23,7 @@ struct FakeDiagramEditor : DiagramEditor {
   NodeIndex
     userAddsANodeWithTextAt(
       const std::string &text,
-      const DiagramCoords &position
+      const DiagramPoint &position
     )
   {
     return addNode(text,position);
@@ -31,7 +31,7 @@ struct FakeDiagramEditor : DiagramEditor {
 
   int userAddsANodeWithText(const std::string &text)
   {
-    return userAddsANodeWithTextAt(text,DiagramCoords(0,0));
+    return userAddsANodeWithTextAt(text,DiagramPoint(0,0));
   }
 
   void userPressesExportDiagram(const std::string &chosen_path)
@@ -48,26 +48,26 @@ struct FakeDiagramEditor : DiagramEditor {
     maybe_chosen_path.reset();
   }
 
-  void userPressesMouseAt(const ViewportCoords &p)
+  void userPressesMouseAt(const ViewportPoint &p)
   {
-    leftMousePressedAt(ViewportCoords(p),EventModifiers());
+    leftMousePressedAt(ViewportPoint(p),EventModifiers());
   }
 
   void
     userPressesMiddleMouseAt(
-      const ViewportCoords &p,
+      const ViewportPoint &p,
       const EventModifiers &modifiers
     )
   {
     middleMousePressedAt(p,modifiers);
   }
 
-  void userMovesMouseTo(const ViewportCoords &p)
+  void userMovesMouseTo(const ViewportPoint &p)
   {
     mouseMovedTo(p);
   }
 
-  void userReleasesMouseAt(const ViewportCoords &p)
+  void userReleasesMouseAt(const ViewportPoint &p)
   {
     mouseReleasedAt(p);
   }
@@ -104,12 +104,12 @@ struct FakeDiagramEditor : DiagramEditor {
     return result;
   }
 
-  void userCtrlPressesLeftMouseAt(const ViewportCoords &p)
+  void userCtrlPressesLeftMouseAt(const ViewportPoint &p)
   {
     leftMousePressedAt(p,ctrlModifier());
   }
 
-  void userClicksAt(const ViewportCoords &p)
+  void userClicksAt(const ViewportPoint &p)
   {
     leftMousePressedAt(p,EventModifiers());
     mouseReleasedAt(p);
@@ -120,12 +120,12 @@ struct FakeDiagramEditor : DiagramEditor {
     userClicksAt(nodeCenter(n));
   }
 
-  ViewportCoords viewportCoordsForCenterOfNode(NodeIndex n)
+  ViewportPoint viewportCoordsForCenterOfNode(NodeIndex n)
   {
     return nodeCenter(n);
   }
 
-  void userClicksWithShiftPressedAt(const ViewportCoords &p)
+  void userClicksWithShiftPressedAt(const ViewportPoint &p)
   {
     EventModifiers modifiers;
     modifiers.shift_is_pressed = true;
@@ -211,17 +211,17 @@ struct FakeDiagramEditor : DiagramEditor {
     an_error_was_shown = true;
   }
 
-  ViewportCoords nodeCenter(NodeIndex node_index)
+  ViewportPoint nodeCenter(NodeIndex node_index)
   {
     return nodeRenderInfo(diagram().node(node_index)).body_outer_rect.center();
   }
 
-  ViewportCoords nodeInputPosition(NodeIndex node_index,int output_index)
+  ViewportPoint nodeInputPosition(NodeIndex node_index,int output_index)
   {
     return nodeInputCircle(node(node_index),output_index).center;
   }
 
-  ViewportCoords nodeOutputPosition(NodeIndex node_index,int output_index)
+  ViewportPoint nodeOutputPosition(NodeIndex node_index,int output_index)
   {
     return nodeOutputCircle(node(node_index),output_index).center;
   }

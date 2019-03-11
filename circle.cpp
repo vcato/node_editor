@@ -2,7 +2,7 @@
 #include <cmath>
 
 
-static float distanceBetween(const ViewportCoords &a,const ViewportCoords &b)
+static float distanceBetween(const ViewportPoint &a,const ViewportPoint &b)
 {
   float dx = a.x - b.x;
   float dy = a.y - b.y;
@@ -11,7 +11,7 @@ static float distanceBetween(const ViewportCoords &a,const ViewportCoords &b)
 }
 
 
-bool Circle::contains(const ViewportCoords &p)
+bool Circle::contains(const ViewportPoint &p)
 {
   return distanceBetween(center,p)<=radius;
 }

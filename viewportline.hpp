@@ -5,8 +5,8 @@
 
 
 struct ViewportLine {
-  ViewportCoords start;
-  ViewportCoords end;
+  ViewportPoint start;
+  ViewportPoint end;
 };
 
 #endif /* LINE_HPP_ */

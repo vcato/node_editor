@@ -127,17 +127,17 @@ class DiagramEditor {
     void textTyped(const std::string &new_text);
     void exportDiagramPressed();
     void importDiagramPressed();
-    void leftMousePressedAt(ViewportCoords,EventModifiers);
-    void middleMousePressedAt(ViewportCoords p,EventModifiers modifiers);
-    void mouseReleasedAt(ViewportCoords mouse_release_position);
-    void mouseMovedTo(const ViewportCoords &);
+    void leftMousePressedAt(ViewportPoint,EventModifiers);
+    void middleMousePressedAt(ViewportPoint,EventModifiers modifiers);
+    void mouseReleasedAt(ViewportPoint mouse_release_position);
+    void mouseMovedTo(const ViewportPoint &);
 
     bool aNodeIsFocused() const;
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
     NodeRenderInfo nodeRenderInfo2(const Node &node) const;
     int nSelectedNodes() const;
     bool nodeIsSelected(NodeIndex);
-    int addNode(const std::string &text,const DiagramCoords &position);
+    int addNode(const std::string &text,const DiagramPoint &position);
     void selectNode(NodeIndex);
     void alsoSelectNode(NodeIndex node_index);
     void focusNode(int node_index,Diagram &diagram);
@@ -156,11 +156,11 @@ class DiagramEditor {
     DiagramVector
       diagramVectorFromViewportVector(const ViewportVector &) const;
 
-    ViewportCoords viewportCoordsFromDiagramCoords(const DiagramCoords &) const;
+    ViewportPoint viewportCoordsFromDiagramCoords(const DiagramPoint &) const;
 
-    DiagramCoords
+    DiagramPoint
       diagramCoordsFromViewportCoords(
-        const ViewportCoords &canvas_coords
+        const ViewportPoint &canvas_coords
       ) const;
 
     void
@@ -170,14 +170,6 @@ class DiagramEditor {
         int input_node_index,
         int input_index
       );
-
-    ViewportTextObject
-      alignedTextObject(
-        const std::string &text,
-        const ViewportCoords &position,
-        float horizontal_alignment,
-        float vertical_alignment
-      ) const;
 
     ViewportLine
       cursorLine(
@@ -192,8 +184,8 @@ class DiagramEditor {
       );
 
     std::string lineError(NodeIndex node_index,int line_index) const;
-    Optional<NodeLineIndex> maybeNodeLineAt(const ViewportCoords &p) const;
-    Optional<std::string> maybeToolTipTextAt(const ViewportCoords &p) const;
+    Optional<NodeLineIndex> maybeNodeLineAt(const ViewportPoint &p) const;
+    Optional<std::string> maybeToolTipTextAt(const ViewportPoint &p) const;
 
     NodeTextEditor text_editor;
     NodeConnectorIndex selected_node_connector_index =
@@ -202,7 +194,7 @@ class DiagramEditor {
     DiagramObserverPtr diagram_observer_ptr;
     const DiagramState *diagram_state_ptr = nullptr;
     NodeIndex focused_node_index = noNodeIndex();
-    ViewportCoords temp_source_pos;
+    ViewportPoint temp_source_pos;
     Optional<ViewportRect> maybe_selection_rectangle;
     ViewportVector view_offset{0,0};
     void notifyDiagramChanged();
@@ -228,11 +220,11 @@ class DiagramEditor {
       nodeOutputContains(
         int node_index,
         int output_index,
-        const ViewportCoords &p
+        const ViewportPoint &p
       );
     bool
-      nodeInputContains(int node_index,int input_index,const ViewportCoords &);
-    NodeConnectorIndex indexOfNodeConnectorContaining(const ViewportCoords &);
+      nodeInputContains(int node_index,int input_index,const ViewportPoint &);
+    NodeConnectorIndex indexOfNodeConnectorContaining(const ViewportPoint &);
 
     ViewportRect
       rectAroundTextObject(const ViewportTextObject &text_object) const;
@@ -242,16 +234,23 @@ class DiagramEditor {
     ViewportTextObject
       inputTextObject(const std::string &s,float left_x,float y) const;
 
-    ViewportRect
-      nodeBodyRect(const Node &,const ViewportRect &header_rect) const;
+#if 0
+    static ViewportRect
+      nodeBodyRect(
+        int n_inputs,
+        const ViewportRect &header_rect,
+        const std::vector<ViewportRect> &line_text_rects,
+        const ViewportRect &dollar_rect
+      );
+#endif
 
     ViewportRect nodeHeaderRect(const DiagramTextObject &text_object) const;
     bool
       nodeContains(
         NodeIndex node_index,
-        const ViewportCoords &p
+        const ViewportPoint &p
       ) const;
-    NodeIndex indexOfNodeContaining(const ViewportCoords &p) const;
+    NodeIndex indexOfNodeContaining(const ViewportPoint &p) const;
     void clearFocus();
     void clearSelection();
     Node& focusedNode(Diagram &diagram);
@@ -264,17 +263,10 @@ class DiagramEditor {
         int column_index
       ) const = 0;
 
-    ViewportCoords
-      alignmentPoint(
-        const ViewportRect &rect,
-        float horizontal_alignment,
-        float vertical_alignment
-      ) const;
-
     int
       closestColumn(
         const ViewportTextObject &line_text_object,
-        const ViewportCoords &
+        const ViewportPoint &
       ) const;
 
     struct CursorPositionFinder;
@@ -282,7 +274,7 @@ class DiagramEditor {
     NodeTextEditor::CursorPosition
       closestCursorPositionTo(
         NodeIndex node_index,
-        const ViewportCoords &p
+        const ViewportPoint &p
       ) const;
 
     void setDiagramPtr(Diagram *);
@@ -291,8 +283,8 @@ class DiagramEditor {
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;
     static constexpr float connector_radius = 5;
-    ViewportCoords mouse_press_position;
-    std::map<NodeIndex,DiagramCoords> original_node_positions;
+    ViewportPoint mouse_press_position;
+    std::map<NodeIndex,DiagramPoint> original_node_positions;
     MouseMode mouse_mode = MouseMode::none;
     ViewportVector mouse_down_view_offset;
 };

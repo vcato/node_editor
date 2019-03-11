@@ -32,25 +32,25 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void initializeGL() override { }
     QSize sizeHint() const override { return QSize(640,480); }
     void keyPressEvent(QKeyEvent *key_event_ptr) override;
-    ViewportCoords screenToViewportCoords(int x,int y) const;
+    ViewportPoint screenToViewportCoords(int x,int y) const;
 
     bool
       contains(
         const DiagramTextObject &text_object,
-        const ViewportCoords &p
+        const ViewportPoint &p
       );
 
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
     void drawAll();
-    void drawClosedLine(const std::vector<ViewportCoords> &vertices);
-    void drawPolygon(const std::vector<ViewportCoords> &vertices);
-    void drawPolygon(const std::vector<ViewportCoords> &vertices,const Color &);
-    static std::vector<ViewportCoords> verticesOf(const ViewportRect &rect);
-    static std::vector<ViewportCoords>
+    void drawClosedLine(const std::vector<ViewportPoint> &vertices);
+    void drawPolygon(const std::vector<ViewportPoint> &vertices);
+    void drawPolygon(const std::vector<ViewportPoint> &vertices,const Color &);
+    static std::vector<ViewportPoint> verticesOf(const ViewportRect &rect);
+    static std::vector<ViewportPoint>
       roundedVerticesOf(const ViewportRect &rect,float offset);
-    std::vector<ViewportCoords> verticesOf(const Circle &circle);
+    std::vector<ViewportPoint> verticesOf(const Circle &circle);
     void drawRect(const ViewportRect &arg);
     void drawRoundedRect(const ViewportRect &arg);
     void drawCircle(const Circle &circle);
@@ -60,14 +60,6 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     ViewportRect rectAroundText(const std::string &text) const;
     ViewportRect
       rectAroundTextObject(const ViewportTextObject &text_object) const;
-
-    void
-      drawAlignedText(
-        const std::string &text,
-        const ViewportCoords &position,
-        float horizontal_alignment,
-        float vertical_alignment
-      );
 
     void drawText(const ViewportTextObject &text_object);
     void
