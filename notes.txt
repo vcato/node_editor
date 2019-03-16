@@ -101,5 +101,3 @@ window, and then provide a diagram that generates what we will draw.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
----
-Be able to remove variable min/max
