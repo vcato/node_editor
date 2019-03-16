@@ -312,11 +312,20 @@ static void testAddingABodyToTheScene()
 
 
 static bool
-   treeMatchesWrapper(const FakeTree &tree,const Wrapper &world_wrapper)
+   treeMatchesWrapper(
+     const FakeTree &tree,
+     const Wrapper &world_wrapper,
+     bool debug = false
+    )
 {
   FakeTree new_tree = makeFakeTree(world_wrapper);
   string expected_tree_string = textOfTree(new_tree);
   string tree_string = textOfTree(tree);
+
+  if (debug) {
+    cerr << "tree_string:" << tree_string << "\n";
+    cerr << "expected_tree_string:" << expected_tree_string << "\n";
+  }
 
   return tree_string == expected_tree_string;
 }
@@ -977,6 +986,26 @@ struct VariableLimitsTester {
     );
   }
 
+  void removeMinimum()
+  {
+    executeWrapperOperation(
+      wrapper,
+      "Charmapper1|Variable Pass|x|minimum",
+      "Remove",
+      tree_observer
+    );
+  }
+
+  void removeMaximum()
+  {
+    executeWrapperOperation(
+      wrapper,
+      "Charmapper1|Variable Pass|x|maximum",
+      "Remove",
+      tree_observer
+    );
+  }
+
   void setNumericValue(const string &path_string,int arg)
   {
     TreePath path = makePath(wrapper,path_string);
@@ -1017,7 +1046,7 @@ static void testChangingVariableLimits()
 
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
-    assert(treeMatchesWrapper(tester.tree,tester.wrapper));
+    assert(treeMatchesWrapper(tester.tree, tester.wrapper));
   }
   {
     VariableLimitsTester tester;
@@ -1029,6 +1058,21 @@ static void testChangingVariableLimits()
 
     assert(tester.variable().maybe_minimum->value == 10);
     assert(tester.variable().maybe_maximum->value == 20);
+    assert(treeMatchesWrapper(tester.tree, tester.wrapper));
+  }
+  {
+    VariableLimitsTester tester;
+
+    tester.addMaximum();
+    tester.addMinimum();
+    tester.removeMinimum();
+
+    assert(!tester.variable().maybe_minimum);
+    assert(treeMatchesWrapper(tester.tree, tester.wrapper));
+
+    tester.removeMaximum();
+
+    assert(!tester.variable().maybe_maximum);
     assert(treeMatchesWrapper(tester.tree, tester.wrapper));
   }
 }

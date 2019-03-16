@@ -130,6 +130,8 @@ struct QtTreeWidget : QTreeWidget, TreeWidget {
 
   std::function<void(const TreePath &,const std::string &value)>
     line_edit_item_value_changed_function;
+
+  struct Impl;
 };
 
 

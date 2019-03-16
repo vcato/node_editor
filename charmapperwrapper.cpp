@@ -108,33 +108,49 @@ struct ChannelWrapper : LeafWrapper<NumericWrapper> {
   using ValueChangedFunction =
     std::function<void(const TreePath &,TreeObserver &)>;
   ValueChangedFunction value_changed_function;
+  using RemoveFunction = std::function<void(const TreePath &,TreeObserver &)>;
+  RemoveFunction remove_function;
 
   ChannelWrapper(
     Channel &channel_arg,
     const char *label_arg,
     const WrapperData &callbacks_arg,
     ValueChangedFunction value_changed_function_arg =
-      [](const TreePath &,TreeObserver &){}
+      [](const TreePath &,TreeObserver &){},
+    RemoveFunction remove_function_arg = [](const TreePath &,TreeObserver &){}
   )
   : channel(channel_arg),
     label_member(label_arg),
     callbacks(callbacks_arg),
-    value_changed_function(value_changed_function_arg)
+    value_changed_function(value_changed_function_arg),
+    remove_function(remove_function_arg)
   {
   }
 
+  static int removeOperationIndex() { return 0; }
+
   std::vector<OperationName> operationNames() const override
   {
-    return {};
+    if (remove_function) {
+      return {"Remove"};
+    }
+    else {
+      return {};
+    }
   }
 
   void
     executeOperation(
-      int /*operation_index*/,
-      const TreePath &/*path*/,
-      TreeObserver &
+      int operation_index,
+      const TreePath &path,
+      TreeObserver &observer
     ) const override
   {
+    if (operation_index == removeOperationIndex()) {
+      remove_function(path,observer);
+      return;
+    }
+
     assert(false);
   }
 
@@ -1001,6 +1017,21 @@ struct VariableWrapper : NumericWrapper {
       variable.maybe_maximum->value = value;
     }
 
+    void removeChannel(Channel &channel) const
+    {
+      if (variable.maybe_minimum && &channel == &*variable.maybe_minimum) {
+        variable.maybe_minimum.reset();
+        return;
+      }
+
+      if (variable.maybe_maximum && &channel == &*variable.maybe_maximum) {
+        variable.maybe_maximum.reset();
+        return;
+      }
+
+      assert(false);
+    }
+
     TreePath minimumPath(const TreePath &variable_path) const
     {
       return childPath(variable_path,1);
@@ -1110,12 +1141,30 @@ struct VariableWrapper : NumericWrapper {
     ChannelWrapper rangeWrapper(Channel &channel, const char *label) const
     {
       auto range_changed_function =
-        [](const TreePath &minmax_path,TreeObserver &tree_observer){
+        [&channel](
+          const TreePath &minmax_path,TreeObserver &tree_observer
+        ) {
           TreePath variable_path = parentPath(minmax_path);
           tree_observer.itemValueChanged(variable_path);
         };
 
-      return {channel,label,wrapper_data,range_changed_function};
+      auto remove_function =
+        [this,&channel](
+          const TreePath &minmax_path,TreeObserver &tree_observer
+        ) {
+          removeChannel(channel);
+          tree_observer.itemRemoved(minmax_path);
+          tree_observer.itemValueChanged(parentPath(minmax_path));
+          return;
+        };
+
+      return {
+        channel,
+        label,
+        wrapper_data,
+        range_changed_function,
+        remove_function
+      };
     }
 
     ChannelWrapper minimumWrapper() const

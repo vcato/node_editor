@@ -213,6 +213,84 @@ static QtItemWrapperWidget &
 }
 
 
+struct QtTreeWidget::Impl {
+  static void
+    setupSpinBox(
+      QtTreeWidget &tree_widget,
+      QtSpinBox &spin_box,
+      QTreeWidgetItem &item
+    )
+  {
+    spin_box.value_changed_function =
+      [&tree_widget,&item](int value){
+        tree_widget.handleSpinBoxItemValueChanged(&item,value);
+      };
+  }
+
+  static void
+    setupSlider(
+      QtTreeWidget &tree_widget,
+      QtSlider &slider,
+      QTreeWidgetItem &item
+    )
+  {
+    slider.value_changed_function =
+      [&tree_widget,&item](int value){
+        tree_widget.handleSliderItemValueChanged(&item,value);
+      };
+  }
+
+  static QBoxLayout &boxLayout(QtItemWrapperWidget &wrapper_widget)
+  {
+    auto *box_layout_ptr =
+      dynamic_cast<QBoxLayout *>(wrapper_widget.layout());
+    assert(box_layout_ptr);
+    QBoxLayout &box_layout = *box_layout_ptr;
+    return box_layout;
+  }
+
+  static void
+    destroyValueWidget(QtItemWrapperWidget &wrapper_widget)
+  {
+    QWidget *value_widget_ptr = wrapper_widget.value_widget_ptr;
+    wrapper_widget.value_widget_ptr = 0;
+
+    QBoxLayout &box_layout = boxLayout(wrapper_widget);
+    box_layout.removeWidget(wrapper_widget.value_widget_ptr);
+
+    delete value_widget_ptr;
+  }
+
+  static QtSlider &
+    createSlider(
+      QtTreeWidget &tree_widget,
+      QtItemWrapperWidget &wrapper_widget,
+      QTreeWidgetItem &item
+    )
+  {
+    QBoxLayout &box_layout = boxLayout(wrapper_widget);
+    auto& slider = createWidget<QtSlider>(box_layout);
+    wrapper_widget.value_widget_ptr = &slider;
+    setupSlider(tree_widget,slider,item);
+    return slider;
+  }
+
+  static QtSpinBox &
+    createSpinBox(
+      QtTreeWidget &tree_widget,
+      QtItemWrapperWidget &wrapper_widget,
+      QTreeWidgetItem &item
+    )
+  {
+    QBoxLayout &box_layout = boxLayout(wrapper_widget);
+    auto& spin_box = createWidget<QtSpinBox>(box_layout);
+    setupSpinBox(tree_widget,spin_box,item);
+    wrapper_widget.value_widget_ptr = &spin_box;
+    return spin_box;
+  }
+};
+
+
 void
   QtTreeEditor::setItemNumericValue(
     const TreePath &path,
@@ -227,48 +305,35 @@ void
   assert(value_widget_ptr);
 
   bool use_slider = useSliderForRange(minimum_value,maximum_value);
+  auto *slider_ptr = dynamic_cast<QtSlider*>(value_widget_ptr);
+  auto *spin_box_ptr = dynamic_cast<QtSpinBox*>(value_widget_ptr);
 
-  if (auto *slider_ptr = dynamic_cast<QtSlider*>(value_widget_ptr)) {
+  if (use_slider && !slider_ptr) {
+    assert(spin_box_ptr);
+    spin_box_ptr = nullptr;
+    Impl::destroyValueWidget(wrapper_widget);
+    slider_ptr = &Impl::createSlider(*this,wrapper_widget,item);
+  }
+
+  if (!use_slider && !spin_box_ptr) {
+    assert(slider_ptr);
+    slider_ptr = nullptr;
+    Impl::destroyValueWidget(wrapper_widget);
+    spin_box_ptr = &Impl::createSpinBox(*this,wrapper_widget,item);
+  }
+
+  if (slider_ptr) {
     auto &slider = *slider_ptr;
-
-    if (use_slider) {
-      slider.setMinimum(minimum_value);
-      slider.setMaximum(maximum_value);
-      slider.setValue(value);
-    }
-    else {
-      assert(false);
-    }
+    slider.setMinimum(minimum_value);
+    slider.setMaximum(maximum_value);
+    slider.setValue(value);
   }
   else {
-    auto *spin_box_ptr = dynamic_cast<QtSpinBox*>(value_widget_ptr);
     assert(spin_box_ptr);
     auto &spin_box = *spin_box_ptr;
-
-    if (use_slider) {
-      auto *box_layout_ptr =
-        dynamic_cast<QBoxLayout *>(wrapper_widget.layout());
-      assert(box_layout_ptr);
-      QBoxLayout &box_layout = *box_layout_ptr;
-      box_layout.removeWidget(wrapper_widget.value_widget_ptr);
-      wrapper_widget.value_widget_ptr = 0;
-      delete &spin_box;
-
-      auto& slider = createWidget<QtSlider>(box_layout);
-      slider.value_changed_function =
-        [this,&item](int value){ handleSliderItemValueChanged(&item,value); };
-
-      slider.setMinimum(minimum_value);
-      slider.setMaximum(maximum_value);
-      slider.setValue(value);
-
-      wrapper_widget.value_widget_ptr = &slider;
-    }
-    else {
-      spin_box.setMinimum(minimum_value);
-      spin_box.setMaximum(maximum_value);
-      spin_box.setValue(value);
-    }
+    spin_box.setMinimum(minimum_value);
+    spin_box.setMaximum(maximum_value);
+    spin_box.setValue(value);
   }
 }
 
@@ -380,10 +445,7 @@ void
   spin_box.setValue(value);
   spin_box.setMinimum(minimum_value);
   spin_box.setMaximum(maximum_value);
-  spin_box.value_changed_function =
-    [this,&item](int value){
-      handleSpinBoxItemValueChanged(&item,value);
-    };
+  Impl::setupSpinBox(*this,spin_box,item);
 }
 
 
@@ -405,8 +467,7 @@ void
   QtSlider &slider =
     tree_widget.createItemWidget<QtSlider>(item,label_properties);
 
-  slider.value_changed_function =
-    [this,&item](int value){ handleSliderItemValueChanged(&item,value); };
+  Impl::setupSlider(*this,slider,item);
 
   slider.setValue(value);
   slider.setMinimum(minimum_value);
