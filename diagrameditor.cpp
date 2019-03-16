@@ -321,6 +321,8 @@ static ViewportPoint
 }
 
 
+// This gives the position if I place the upper left
+// corner of the rectangle at a certain position.
 static ViewportPoint
   inputTextPosition(
     const ViewportRect &rect,
@@ -437,18 +439,6 @@ struct NodeLayoutParams {
 }
 
 
-#if ADD_CALCULATE_NODE_LAYOUT
-namespace {
-struct NodeLayout {
-  vector<ViewportRect> lines;
-  vector<ViewportRect> inputs;
-  vector<ViewportRect> outputs;
-  ViewportSize body_size;
-};
-}
-#endif
-
-
 namespace {
 template <typename Index>
 struct Range {
@@ -500,135 +490,6 @@ static auto maxOf(const Container &container)
 using Rect = TaggedRect<void>;
 
 
-#if ADD_CALCULATE_NODE_LAYOUT
-static ViewportRect makeRect(ViewportPoint position,ViewportSize size)
-{
-  return {position, position + size};
-}
-#endif
-
-
-#if ADD_CALCULATE_NODE_LAYOUT
-static vector<float>
-  transformed(
-    const vector<ViewportSize> &sizes,
-    const float ViewportSize::*member_ptr
-  )
-{
-  vector<float> result;
-
-  std::transform(
-    sizes.begin(),
-    sizes.end(),
-    inserter(result,result.begin()),
-    std::mem_fn(member_ptr)
-  );
-
-  return result;
-}
-#endif
-
-
-#if ADD_CALCULATE_NODE_LAYOUT
-static NodeLayout calculateNodeLayout(const NodeLayoutParams &arg)
-{
-  // Create regions where each region is the area that the line text
-  // will be drawn inside.  These regions will have a height that is
-  // the maximum of the line text height and the height necessary for
-  // all the inputs.
-  using Length = float;
-  using Coord = float;
-  using Index = int;
-  const auto n_lines = arg.line_n_inputs.size();
-  const auto n_inputs = sumOf(arg.line_n_inputs);
-  const auto &line_text_sizes = arg.line_text_sizes;
-  const auto line_text_widths =
-    transformed(arg.line_text_sizes,&ViewportSize::x);
-  const auto left_x = arg.left_x;
-  const auto top_y = arg.top_y;
-  Length connector_width = arg.connector_size.x;
-  Length connector_height = arg.connector_size.y;
-  const vector<int> &line_n_inputs = arg.line_n_inputs;
-  vector<Length> region_heights(n_lines);
-  vector<Coord> input_ys(n_inputs);
-  vector<Coord> region_ys(n_lines);
-  vector<Coord> output_ys(n_lines);
-  vector<Coord> line_text_ys(n_lines);
-  vector<Index> first_input_indices(n_lines);
-  const auto input_x = left_x - connector_width;
-  const auto input_width = connector_width;
-  const auto input_height = connector_height;
-  const auto output_width = connector_width;
-  const auto output_height = connector_height;
-  const auto region_x = left_x;
-
-  for (auto i : range(0,n_lines)) {
-    // Determine the required height for the inputs of line i.
-    Length line_input_height = connector_height * line_n_inputs[i];
-
-    region_heights[i] = std::max(line_input_height,line_text_sizes[i].y);
-    region_ys[i] = (i==0) ? top_y : region_ys[i-1] - region_heights[i-1];
-    first_input_indices[i] =
-      (i==0) ? 0 : first_input_indices[i-1] + line_n_inputs[i-1];
-
-    // Lay out the inputs vertically
-    for (auto j : range(0,line_n_inputs[i])) {
-      if (j==0) {
-        input_ys[first_input_indices[i] + j] =
-          region_ys[i] + (region_heights[i] - line_input_height)/2;
-      }
-      else {
-        input_ys[first_input_indices[i] + j] =
-          input_ys[first_input_indices[i]+j-1] + input_height;
-      }
-    }
-
-    // Lay out the line texts vertically
-    line_text_ys[i] =
-      region_ys[i] - (region_heights[i] - line_text_sizes[i].y)/2;
-  }
-
-  Length body_height = sumOf(region_heights);
-  Length body_width = maxOf(line_text_widths);
-  const auto output_x = region_x + body_width;
-
-  for (auto i : range(0,n_lines)) {
-    output_ys[i] = region_ys[i] - (region_heights[i] - connector_height)/2;
-  }
-
-  vector<ViewportRect> line_rects;
-  vector<ViewportRect> input_rects;
-  vector<ViewportRect> output_rects;
-
-  for (auto i : range(0,n_lines)) {
-    line_rects.push_back(
-      makeRect(
-        ViewportPoint(region_x,region_ys[i]),
-        ViewportSize(line_text_widths[i],line_text_sizes[i].y)
-      )
-    );
-
-    input_rects.push_back(
-      makeRect(
-        ViewportPoint(input_x,input_ys[i]),
-        ViewportSize(input_width,input_height)
-      )
-    );
-
-    output_rects.push_back(
-      makeRect(
-        ViewportPoint(output_x,output_ys[i]),
-        ViewportSize(output_width,output_height)
-      )
-    );
-  }
-
-  ViewportSize body_size = {body_width,body_height};
-  return NodeLayout{line_rects,input_rects,output_rects,body_size};
-}
-#endif
-
-
 static vector<ViewportRect>
   calculateInputConnectorRects(
     const float left_outer_x,
@@ -672,8 +533,7 @@ static Circle connectorCircleInRect(const ViewportRect &connector_rect)
 static vector<ViewportRect>
   calculateOutputConnectorRects(
     const Node &node,
-    const vector<float> &line_start_ys,
-    const vector<float> &line_end_ys,
+    const vector<ViewportRect> &line_rects,
     const float right_outer_x,
     const float connector_distance
   )
@@ -690,8 +550,9 @@ static vector<ViewportRect>
 
       if (statement.has_output) {
         float statement_start_y =
-          line_start_ys[line_index + statement_n_lines - 1];
-        float statement_end_y = line_end_ys[line_index];
+          line_rects[line_index + statement_n_lines - 1].start.y;
+        float statement_end_y = line_rects[line_index].end.y;
+
         float connector_left_x = right_outer_x + connector_distance;
         float connector_right_x = connector_left_x + connector_radius*2;
         ViewportRect rect{
@@ -722,11 +583,34 @@ static vector<Circle>
 }
 
 
+// text_rect: the bounding box of some text if it was positioned at 0,0, 
+// rect:  a rectangle that we want to fit the text inside.
+// returns the correspnoding position of the text.
+// That is if the text with bounding box text_rect is rendered at
+// the returned position, it will fit inside the given rect.
+static ViewportPoint
+  textPosition(const ViewportRect &rect,const ViewportRect &text_rect)
+{
+  float extra_x = rect.size().x - text_rect.size().x;
+  float extra_y = rect.size().y - text_rect.size().y;
+  float offset_x = extra_x/2;
+  float offset_y = extra_y/2;
+  float adjusted_start_x = rect.start.x + offset_x;
+  float adjusted_start_y = rect.start.y + offset_y;
+  float pos_x = adjusted_start_x - text_rect.start.x;
+  float pos_y = adjusted_start_y - text_rect.start.y;
+
+  return ViewportPoint(pos_x,pos_y);
+}
+
+
 static NodeRenderInfo
   calculateNodeRenderInfo(
     const Node &node,
     const ViewportRect &header_rect,
     const vector<ViewportRect> &line_text_rects,
+      // These rectangles show the bounding box of the line text if
+      // the position was at 0,0.
     const ViewportRect &dollar_rect,
     const float connector_radius
   )
@@ -736,13 +620,14 @@ static NodeRenderInfo
     // Distance between the connector circles and the node body.
   ViewportPoint top_left = nodeBodyTopLeft(header_rect);
 
+  // We determine the line positions so that their rectangles stack
+  // on top of each other.
   const vector<ViewportPoint> line_text_positions =
     calculateLineTextPositions(top_left,line_text_rects);
 
-  const vector<ViewportRect> line_rects =
+  vector<ViewportRect> line_rects =
     calculateLineRects(line_text_rects,line_text_positions);
 
-  const float right_x = calculateRightX(header_rect,line_rects);
   const float left_x = top_left.x;
   const float top_y = top_left.y;
   size_t n_lines = line_text_rects.size();
@@ -765,51 +650,80 @@ static NodeRenderInfo
       line_height
     );
 
-  vector<Circle> input_connector_circles =
-    connectorCirclesInRects(input_connector_rects);
+  Optional<float> maybe_bottom_y;
 
-  float input_bottom_y = top_y;
+  {
+    // Layout the lines and the input connectors that go with each line.
+    float line_top_y = top_y;
+    int line_start_input = 0;
 
-  if (n_inputs > 0) {
-    input_bottom_y = input_connector_rects.back().start.y;
+    for (size_t line_index=0; line_index!=n_lines; ++line_index) {
+      float line_height = line_rects[line_index].size().y;
+      float total_input_height = 0;
+      int line_n_inputs = node.lines[line_index].n_inputs;
+
+      for (int i=0; i!=line_n_inputs; ++i) {
+        total_input_height +=
+          input_connector_rects[line_start_input + i].size().y;
+      }
+
+      float height = std::max(line_height, total_input_height);
+      float input_top_y = line_top_y - (height - total_input_height)/2;
+
+      for (int i=0; i!=line_n_inputs; ++i) {
+        float input_bottom_y =
+          input_top_y - input_connector_rects[line_start_input + i].size().y;
+        input_connector_rects[line_start_input + i].end.y = input_top_y;
+        input_connector_rects[line_start_input + i].start.y = input_bottom_y;
+        input_top_y = input_bottom_y;
+      }
+
+      float line_bottom_y = line_top_y - height;
+
+      line_rects[line_index].end.y = line_top_y;
+      line_rects[line_index].start.y = line_bottom_y;
+
+      line_top_y = line_bottom_y;
+      line_start_input += line_n_inputs;
+    }
+
+    maybe_bottom_y = line_top_y;
   }
 
-  float line_bottom_y = line_rects.back().start.y;
-  float bottom_y = std::min(line_bottom_y, input_bottom_y);
-
-  // If the height of the inputs is greater than the height of the lines,
-  // then we'll offset the lines vertically so that they are centered.
-  const float text_offset = (line_bottom_y - bottom_y)/2;
-
-  vector<float> line_start_ys(n_lines);
-  vector<float> line_end_ys(n_lines);
-
-  for (size_t line_index=0; line_index!=n_lines; ++line_index) {
-    line_start_ys[line_index] = line_rects[line_index].start.y - text_offset;
-    line_end_ys[line_index] = line_rects[line_index].end.y - text_offset;
-  }
+  float &bottom_y = *maybe_bottom_y;
 
   vector<ViewportTextObject> text_objects;
 
   // Add text objects for each line.
   for (size_t line_index=0; line_index!=n_lines; ++line_index) {
     const auto &line_text = node.lines[line_index].text;
-    ViewportPoint aligned_position = line_text_positions[line_index];
+    float start_x = line_rects[line_index].start.x;
+    float start_y = line_rects[line_index].start.y;
+    float end_x = line_rects[line_index].end.x;
+    float end_y = line_rects[line_index].end.y;
+    ViewportPoint start{start_x, start_y};
+    ViewportPoint end{end_x, end_y};
+    ViewportRect rect{start,end};
+    ViewportPoint aligned_position =
+      textPosition(rect,line_text_rects[line_index]);
+
     text_objects.push_back(ViewportTextObject{line_text, aligned_position});
-    text_objects[line_index].position.y -= text_offset;
   }
 
+  const float right_x = calculateRightX(header_rect,line_rects);
   float right_outer_x = right_x + margin;
 
   // Add output connector circles
   vector<ViewportRect> output_connector_rects =
     calculateOutputConnectorRects(
       node,
-      line_start_ys,
-      line_end_ys,
+      line_rects,
       right_outer_x,
       connector_distance
     );
+
+  vector<Circle> input_connector_circles =
+    connectorCirclesInRects(input_connector_rects);
 
   vector<Circle> output_connector_circles =
     connectorCirclesInRects(output_connector_rects);
@@ -832,12 +746,10 @@ static NodeRenderInfo
 }
 
 
-#if !ADD_CALCULATE_NODE_LAYOUT
 NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
 {
   const DiagramTextObject &header_text_object = node.header_text_object;
 
-  // We need to determine a rectangle that fits around the contents.
   ViewportRect header_rect = nodeHeaderRect(header_text_object);
 
   vector<ViewportRect> line_text_rects;
@@ -857,37 +769,6 @@ NodeRenderInfo DiagramEditor::nodeRenderInfo(const Node &node) const
       connector_radius
     );
 }
-#else
-NodeRenderInfo DiagramEditor::nodeRenderInfo2(const Node &node) const
-{
-  const DiagramTextObject &header_text_object = node.header_text_object;
-  ViewportRect header_rect = nodeHeaderRect(header_text_object);
-
-  NodeLayoutParams params;
-
-  for (auto &line : node.lines) {
-    params.line_n_inputs.push_back(line.n_inputs);
-    params.line_text_sizes.push_back(textSize(line.text));
-  }
-
-  params.connector_size = {connector_radius*2, connector_radius*2};
-  params.left_x =
-
-  calculateNodeLayout();
-
-  NodeRenderInfo render_info;
-
-  render_info.header_rect = header_rect;
-  render_info.body_outer_rect = body_rect;
-  render_info.body_outer_rect.start.x = left_outer_x;
-  render_info.body_outer_rect.end.x = right_outer_x;
-  render_info.input_connector_circles = input_connector_circles;
-  render_info.output_connector_circles = output_connector_circles;
-  render_info.text_objects = text_objects;
-
-  return render_info;
-}
-#endif
 
 
 bool
