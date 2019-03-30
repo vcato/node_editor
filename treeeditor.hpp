@@ -15,7 +15,11 @@ struct TreeEditor {
     void setWorldPtr(Wrapper *arg);
     Wrapper *worldPtr() const { return world_ptr; }
     int nDiagramEditorWindows() const;
+
     void setWorldState(const WrapperState &);
+      // This allows us to tell the tree editor that we want to change the
+      // state of the world wrapper to the given state.  It applies the
+      // new state to the wrapper and updates the tree.
 
   protected:
     struct MenuItem {

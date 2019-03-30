@@ -123,6 +123,72 @@ a callback through the wrapper.
   for diagrams, so we just need a way to be able to ask a wrapper
   for an observer.
   * TreeObserverPtr Wrapper::makeObserver()
-  * We're already using the term TermObserver for the interface which
+  * We're already using the term Observer for the interface which
     handles tree changes.  I think we should rename it to something
     like TreeChangeHandler, or maybe TreeInterface.
+
+
+* Maybe instead of giving a Wrapper to the TreeEditor, we give it a
+  Wrapper observer.  The TreeEditor then sets the wrapper observer's
+  listener so that it can be notified when wrapper hierarchy changes.
+  
+struct Wrapper {
+};
+
+
+struct Observer {
+  Listener &listener;
+  Wrapper &wrapper;
+
+  Observer(Subject &,Listener &);
+  ~Observer();
+
+  Observer(const Observer &) = delete;
+  void operator=(const Observer &) = delete;
+};
+
+
+struct TreeMediator {
+  ObserverPtr observer_ptr;
+  Tree &tree;
+
+  struct Listener : TreeListener {
+    TreeMediator &mediator;
+
+    void itemAdditem() override {
+      mediator.treeItemAdded();
+    }
+  };
+
+  void setObserver(ObserverPtr observer_ptr_arg)
+  {
+    observer_ptr = std::move(observer_ptr_arg);
+
+    if (observer_ptr) {
+      observer_ptr->listener_ptr = &listener;
+    }
+  }
+};
+
+
+The TreeEditor::setWorldState() should be removed once the TreeEditor can
+observe the wrapper state changes.  The main window can then just apply
+the new state to the wrapper and the tree editor should automatically
+have its tree updated.
+
+Insteading of passing the tree path to the wrapper when we do operations
+that require calls to the tree observer (which needs to pass the tree path),
+the wrappers could build the path as they are created.
+
+Maybe each wrapper should have a pointer to its parent wrapper and keep
+its own index.  We can build a tree path from a wrapper by using its
+index and following its parent wrappers.
+
+We don't want to assume that the world has an empty path.  We may want
+to allow multiple worlds.
+
+* We could have a virtual path() method, so that each child can override
+  how the path is determined.  Most children are going to determine the
+  path in the same way though.  The WorldWrapper will be an exception where
+  it will just return the path that was given to it when it was first
+  created.

@@ -165,10 +165,21 @@ static string textOfWrapper(const Wrapper &wrapper)
 }
 
 
+namespace {
+struct Tester {
+  FakeWorld world;
+  WorldWrapper wrapper{world};
+};
+}
+
+
 static void testAddingACharmapper()
 {
-  FakeWorld world;
-  WorldWrapper wrapper(world);
+  // Need to have a tester so we can avoid duplicating how the world
+  // wrappers are constructed.
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
   world.addCharmapper();
   wrapper.withChildWrapper(0,[](const Wrapper &child_wrapper){
     assert(child_wrapper.label()=="Charmapper1");
@@ -178,8 +189,8 @@ static void testAddingACharmapper()
 
 static void testPrintingState()
 {
-  FakeWorld world;
-  WorldWrapper wrapper(world);
+  Tester tester;
+  WorldWrapper &wrapper = tester.wrapper;
   string text = textOfWrapper(wrapper);
   string expected_text =
     "world {\n"
@@ -190,11 +201,12 @@ static void testPrintingState()
 
 static void testPrintingCharmapperState()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   /*Charmapper::MotionPass::PosExpr &pos_expr =*/ motion_pass.addPosExpr();
-  WorldWrapper wrapper(world);
 
   string text = textOfWrapper(wrapper);
 
@@ -244,14 +256,15 @@ static void testAddingABodyToTheScene()
   // Check that the tree observer is called to handle changing the
   // enumeration values in the source body.
 
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.global_position.switchToFromBody();
 
   world.addScene();
-  WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
 
   FakeTree tree = makeFakeTree(world_wrapper);
@@ -334,10 +347,12 @@ static bool
 namespace scene_and_charmapper_tests {
 static void testAddingABodyToABody()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Scene &scene = world.addScene();
   scene.addBody();
-  WorldWrapper world_wrapper(world);
 
   FakeTree tree = makeFakeTree(world_wrapper);
 
@@ -374,13 +389,15 @@ static void
 namespace scene_and_charmapper_tests {
 static void testChangingABodyPositionInTheScene()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   PosExpr &pos_expr = motion_pass.addPosExpr();
   Scene &scene = world.addScene(); // child 1
   Scene::Body &body = scene.addBody(); // child 0
-  WorldWrapper world_wrapper(world);
 
   pos_expr.target_body_link = BodyLink(&scene,&body);
   assert(pos_expr.target_body_link.hasValue());
@@ -432,14 +449,16 @@ static void
 namespace scene_and_charmapper_tests {
 static void testChangingTheTargetBody()
 {
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   using Body = Scene::Body;
-  FakeWorld world;
 
   Charmapper &charmapper = world.addCharmapper();
   Scene &scene = world.addScene();
   Body &body = scene.addBody();
   charmapper.addMotionPass();
-  WorldWrapper world_wrapper(world);
   StubTreeObserver tree_observer;
   string motion_pass_path = "Charmapper1|Motion Pass";
 
@@ -538,7 +557,9 @@ static void
 namespace scene_and_charmapper_tests {
 static void testUsingCharmapperToMoveABody()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
 
   Charmapper &charmapper = world.addCharmapper();
   Scene &scene = world.addScene();
@@ -546,7 +567,6 @@ static void testUsingCharmapperToMoveABody()
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link = BodyLink(&scene,&body);
-  WorldWrapper wrapper(world);
   auto &components =
     charmapper.motionPass(0).expr(0).global_position.components();
   string global_position_path =
@@ -570,7 +590,9 @@ static void testUsingCharmapperToMoveABody()
 namespace scene_and_charmapper_tests {
 static void testWithTwoCharmappers()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
 
   Scene &scene = world.addScene();
   Scene::Body &body1 = scene.addBody();
@@ -587,8 +609,6 @@ static void testWithTwoCharmappers()
   PosExpr &pos_expr2 = motion_pass2.addPosExpr();
   pos_expr2.target_body_link = BodyLink(&scene,&body2);
   pos_expr2.global_position.components().x.value = 2;
-
-  WorldWrapper wrapper(world);
 
   setWrapperValue(
     wrapper,
@@ -615,7 +635,10 @@ static void testRemovingABodyFromTheScene()
   // Check that the tree observer is called to handle changing the
   // enumeration values in the target body.
 
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   PosExpr &pos_expr = motion_pass.addPosExpr();
@@ -624,7 +647,6 @@ static void testRemovingABodyFromTheScene()
   Scene::Body &body = scene.addBody();
   pos_expr.target_body_link = BodyLink(&scene,&body);
 
-  WorldWrapper world_wrapper(world);
   TreePath scene_path = {1};
   TreePath body_path =
     childPath(scene_path,SceneWrapper::firstBodyChildIndex());
@@ -662,11 +684,13 @@ static void testRemovingABodyFromTheScene()
 
 static void testRemovingAPosExprFromAMotionPass()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   motion_pass.addPosExpr();
-  WorldWrapper world_wrapper(world);
 
   FakeTree tree = makeFakeTree(world_wrapper);
 
@@ -686,9 +710,11 @@ static void testRemovingAPosExprFromAMotionPass()
 
 static void testRemovingACharmapper()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   world.addCharmapper();
-  WorldWrapper world_wrapper(world);
 
   FakeTree tree = makeFakeTree(world_wrapper);
   TreeUpdatingObserver
@@ -701,7 +727,10 @@ static void testRemovingACharmapper()
 
 static void testRemovingAScene()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Scene &scene = world.addScene();
   scene.addBody();
 
@@ -709,7 +738,6 @@ static void testRemovingAScene()
   Charmapper::MotionPass &motion_pass = charmapper.addMotionPass();
   motion_pass.addPosExpr();
 
-  WorldWrapper world_wrapper(world);
 
   FakeTree tree = makeFakeTree(world_wrapper);
   TreeUpdatingObserver tree_observer(tree,world_wrapper,ignore_item_removed_function);
@@ -721,7 +749,10 @@ static void testRemovingAScene()
 
 static void testChangingGlobalPositionDiagram()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Charmapper &charmapper = world.addCharmapper();
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
@@ -730,7 +761,6 @@ static void testChangingGlobalPositionDiagram()
   pos_expr.target_body_link.set(&scene,&body);
   Diagram &diagram = pos_expr.global_position.diagram;
   replaceNodeText(diagram,"return $\n","return [1,2]");
-  WorldWrapper world_wrapper(world);
 
   {
     float x = body.position.x(scene.displayFrame());
@@ -773,7 +803,10 @@ static void applyCharmapper(Charmapper &charmapper)
 
 static void testChangingLocalPositionDiagram()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Charmapper &charmapper = world.addCharmapper();
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
@@ -792,7 +825,6 @@ static void testChangingLocalPositionDiagram()
     pos_expr.global_position.fromBody().local_position.diagram;
   NodeIndex x_node_index = diagramNodeIndex(diagram,"x");
   diagram.deleteNode(x_node_index);
-  WorldWrapper world_wrapper(world);
   notifyDiagramChanged(
     world_wrapper,
     "Charmapper1|Motion Pass|Pos Expr|Global Position|Local Position"
@@ -803,7 +835,10 @@ static void testChangingLocalPositionDiagram()
 
 static void testChangingPosExprDiagram()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Charmapper &charmapper = world.addCharmapper();
   Scene &scene = world.addScene();
   Scene::Body &body = scene.addBody();
@@ -818,7 +853,6 @@ static void testChangingPosExprDiagram()
   NodeIndex global_position_node_index =
     diagramNodeIndex(diagram,"global_position");
   diagram.setNodeText(global_position_node_index,"[10,20]");
-  WorldWrapper world_wrapper(world);
 
   notifyDiagramChanged(
     world_wrapper,
@@ -832,7 +866,10 @@ static void testChangingPosExprDiagram()
 
 static void testPosExprDiagramThatReferencesAScene()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Charmapper &charmapper = world.addCharmapper();
   Scene &scene = world.addScene();
   Scene::Body &body1 = scene.addBody("body1");
@@ -850,7 +887,6 @@ static void testPosExprDiagramThatReferencesAScene()
     "return PosExpr(body=target_body,pos=Scene1.body2.pos())"
   );
   pos_expr.diagram = diagram;
-  WorldWrapper world_wrapper(world);
 
   notifyDiagramChanged(
     world_wrapper,
@@ -864,12 +900,14 @@ static void testPosExprDiagramThatReferencesAScene()
 
 static void testSettingCurrentFrameIndexToAnInvalidValue()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Scene &scene = world.addScene();
   Scene::Body &body1 = scene.addBody("body1");
   setBodyPosition(body1,scene.backgroundFrame(),Point2D(10,20));
 
-  WorldWrapper world_wrapper(world);
 
   setWrapperValue(world_wrapper,"Scene1|current_frame",1);
 
@@ -883,7 +921,10 @@ static void testUsingACharmapperVariable()
   using MotionPass = Charmapper::MotionPass;
   using Body = Scene::Body;
 
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &world_wrapper = tester.wrapper;
+
   Scene &scene = world.addScene();
   Body &body = scene.addBody("body1");
   Charmapper &charmapper = world.addCharmapper();
@@ -891,7 +932,6 @@ static void testUsingACharmapperVariable()
   PosExpr &pos_expr = motion_pass.addPosExpr();
   pos_expr.target_body_link.set(&scene,&body);
 
-  WorldWrapper world_wrapper(world);
 
   StubTreeObserver tree_observer;
 
@@ -955,13 +995,11 @@ static void testUsingACharmapperVariable()
 
 
 namespace {
-struct VariableLimitsTester {
-  FakeWorld world;
+struct VariableLimitsTester : Tester {
   Charmapper &charmapper = world.addCharmapper();
   Charmapper::VariablePass &variable_pass = charmapper.addVariablePass();
   Charmapper::VariablePass::VariableIndex variable_index =
     variable_pass.addVariable("x");
-  WorldWrapper wrapper{world};
 
   FakeTree tree = makeFakeTree(wrapper);
   TreeUpdatingObserver tree_observer{tree,wrapper,ignore_item_removed_function};
@@ -1082,8 +1120,10 @@ static void testChangingVariableLimits()
 
 static void testSettingEmptyState()
 {
-  FakeWorld world;
-  WorldWrapper wrapper(world);
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
+
   WrapperState state = stateOf(wrapper);
   StubTreeObserver tree_observer;
   wrapper.setState(state);
@@ -1093,13 +1133,18 @@ static void testSettingEmptyState()
 
 static void testSettingStateWithScene()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
+
   world.addScene();
-  WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
 
-  FakeWorld world2;
-  WorldWrapper(world2).setState(state);
+  Tester tester2;
+  FakeWorld &world2 = tester2.world;
+  WorldWrapper &wrapper2 = tester2.wrapper;
+  wrapper2.setState(state);
+
   assert(world2.nMembers()==1);
   world2.sceneMember(0);
 }
@@ -1107,15 +1152,19 @@ static void testSettingStateWithScene()
 
 static void testSettingStateWithSceneWithBody()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
+
   Scene &scene = world.addScene();
   scene.addBody();
 
-  WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
 
-  FakeWorld world2;
-  WorldWrapper(world2).setState(state);
+  Tester tester2;
+  FakeWorld &world2 = tester2.world;
+  WorldWrapper &wrapper2 = tester2.wrapper;
+  wrapper2.setState(state);
   assert(world2.nMembers()==1);
   world2.sceneMember(0);
 }
@@ -1123,14 +1172,18 @@ static void testSettingStateWithSceneWithBody()
 
 static void testSettingStateWithCharmapper()
 {
-  FakeWorld world;
+  Tester tester;
+  FakeWorld &world = tester.world;
+  WorldWrapper &wrapper = tester.wrapper;
+
   world.addCharmapper();
 
-  WorldWrapper wrapper(world);
   WrapperState state = stateOf(wrapper);
 
-  FakeWorld world2;
-  WorldWrapper(world2).setState(state);
+  Tester tester2;
+  FakeWorld &world2 = tester2.world;
+  WorldWrapper &wrapper2 = tester2.wrapper;
+  wrapper2.setState(state);
   assert(world2.nMembers()==1);
   world2.charmapperMember(0);
 }
@@ -1196,8 +1249,8 @@ static void testSettingStateWithPosExpr()
     "}\n";
 
   WrapperState state = stateFromText(text);
-  FakeWorld world;
-  WorldWrapper wrapper(world);
+  Tester tester;
+  WorldWrapper &wrapper = tester.wrapper;
   wrapper.setState(state);
   assert(stateOf(wrapper)==state);
 }
@@ -1217,8 +1270,8 @@ static void testSettingStateWithVariablePass()
     "}\n";
 
   WrapperState state = stateFromText(text);
-  FakeWorld world;
-  WorldWrapper wrapper(world);
+  Tester tester;
+  WorldWrapper &wrapper = tester.wrapper;
   wrapper.setState(state);
   assert(stateOf(wrapper)==state);
 }
@@ -1245,8 +1298,8 @@ static void testSettingStateTwice()
     "  }\n"
     "}\n";
 
-  FakeWorld world;
-  WorldWrapper wrapper(world);
+  Tester tester;
+  WorldWrapper &wrapper = tester.wrapper;
   WrapperState state = stateFromText(text);
   wrapper.setState(state);
   wrapper.setState(state);
@@ -1267,8 +1320,8 @@ static void testAddingAFrameToTheScene()
     "  }\n"
     "}\n";
 
-  FakeWorld world;
-  WorldWrapper wrapper(world);
+  Tester tester;
+  WorldWrapper &wrapper = tester.wrapper;
   WrapperState state = stateFromText(text);
   wrapper.setState(state);
   FakeTree tree = makeFakeTree(wrapper);
