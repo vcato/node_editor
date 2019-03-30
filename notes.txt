@@ -106,3 +106,23 @@ move all nodes below it.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
+---
+It would be good to have a way to move bodies in the scene.
+We could just consider this to be a basic function of the scene.  We would
+just need a way to have a callback so when a body is moved, we can
+update the tree.
+
+This is the first time that something wrapped has been able to change
+without using a wrapper.   The only access the tree editor has to
+the scene is through the wrapper, so we have to have a way to install
+a callback through the wrapper.
+* I guess one alternative would be a polling mechanism, where we
+  ask the wrapper for tree changes, but this seems awkward.  The wrapper
+  would have to buffer any changes until it was asked for them.
+* This isn't really that different from the observer mechanism we have
+  for diagrams, so we just need a way to be able to ask a wrapper
+  for an observer.
+  * TreeObserverPtr Wrapper::makeObserver()
+  * We're already using the term TermObserver for the interface which
+    handles tree changes.  I think we should rename it to something
+    like TreeChangeHandler, or maybe TreeInterface.
