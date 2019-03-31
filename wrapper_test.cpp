@@ -12,14 +12,24 @@ using std::cerr;
 
 
 namespace {
-struct ZWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
-  virtual Label label() const { return "Z"; }
+struct ComponentWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
 };
 }
 
 
 namespace {
-struct YWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
+struct ZWrapper : ComponentWrapper {
+  virtual Label label() const { return "Z"; }
+
+  using ComponentWrapper::ComponentWrapper;
+};
+}
+
+
+namespace {
+struct YWrapper : ComponentWrapper {
+  using ComponentWrapper::ComponentWrapper;
+
   virtual Label label() const { return "Y"; }
 
   virtual int nChildren() const { return 1; }
@@ -41,7 +51,9 @@ struct YWrapper : NoOperationWrapper<LeafWrapper<VoidWrapper>> {
 
 
 namespace {
-struct XWrapper : NoOperationWrapper<VoidWrapper> {
+struct XWrapper : ComponentWrapper {
+  using ComponentWrapper::ComponentWrapper;
+
   virtual Label label() const { return "X"; }
 
   virtual int nChildren() const { return 1; }
@@ -69,13 +81,18 @@ struct XWrapper : NoOperationWrapper<VoidWrapper> {
 
 namespace {
 struct TestWrapper : NoOperationWrapper<VoidWrapper> {
+};
+}
+
+
+namespace {
+struct TestWrapper1 : TestWrapper {
   Label label() const { return "test"; }
 
   virtual int nChildren() const
   {
     return 1;
   }
-
   virtual void
     withChildWrapper(
       int child_index,
@@ -99,7 +116,7 @@ struct TestWrapper : NoOperationWrapper<VoidWrapper> {
 
 
 namespace {
-struct TestWrapper2 : NoOperationWrapper<VoidWrapper> {
+struct TestWrapper2 : TestWrapper {
   vector<TestWrapper2> children;
   string label_member;
   Diagram *diagram_ptr = nullptr;
@@ -156,7 +173,7 @@ struct TestWrapper2 : NoOperationWrapper<VoidWrapper> {
 
 static void testWithEmptyString()
 {
-  TestWrapper wrapper;
+  TestWrapper1 wrapper;
   TreePath result = makePath(wrapper,"");
   assert(result.empty());
 }
@@ -164,7 +181,7 @@ static void testWithEmptyString()
 
 static void testWithSingleComponent()
 {
-  TreePath result = makePath(TestWrapper(),"X");
+  TreePath result = makePath(TestWrapper1(),"X");
   TreePath expected_result = {0};
   assert(result==expected_result);
 }
@@ -172,7 +189,7 @@ static void testWithSingleComponent()
 
 static void testWithTwoComponents()
 {
-  TreePath result = makePath(TestWrapper(),"X|Y");
+  TreePath result = makePath(TestWrapper1(),"X|Y");
   TreePath expected_result = {0,0};
   assert(result==expected_result);
 }
@@ -180,7 +197,7 @@ static void testWithTwoComponents()
 
 static void testWithThreeComponents()
 {
-  TreePath result = makePath(TestWrapper(),"X|Y|Z");
+  TreePath result = makePath(TestWrapper1(),"X|Y|Z");
   TreePath expected_result = {0,0,0};
   assert(result==expected_result);
 }

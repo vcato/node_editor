@@ -11,6 +11,7 @@
 #include "optional.hpp"
 #include "observeddiagram.hpp"
 
+
 class Diagram;
 class DiagramState;
 struct Wrapper;

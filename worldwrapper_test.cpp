@@ -182,7 +182,7 @@ static void testAddingACharmapper()
   WorldWrapper &wrapper = tester.wrapper;
   world.addCharmapper();
   wrapper.withChildWrapper(0,[](const Wrapper &child_wrapper){
-    assert(child_wrapper.label()=="Charmapper1");
+    assert(child_wrapper.label() == "Charmapper1");
   });
 }
 

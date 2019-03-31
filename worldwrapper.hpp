@@ -9,7 +9,10 @@ struct WorldWrapper : VoidWrapper
 {
   World &world;
 
-  WorldWrapper(World &world_arg) : world(world_arg) { }
+  WorldWrapper(World &world_arg)
+  : world(world_arg)
+  {
+  }
 
   std::vector<std::string> operationNames() const;
 

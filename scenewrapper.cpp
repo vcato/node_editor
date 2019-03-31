@@ -240,7 +240,7 @@ struct BodyWrapper : VoidWrapper {
       int operation_index,
       const TreePath &path,
       TreeObserver &tree_observer
-    ) const;
+    ) const override;
 
   void withChildWrapper(int child_index,const WrapperVisitor &visitor) const
   {
