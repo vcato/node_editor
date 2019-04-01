@@ -164,15 +164,15 @@ void
     const Point2D &new_position
   )
 {
-  body.position.x.set(frame,new_position.x);
-  body.position.y.set(frame,new_position.y);
+  body.position_map.x.set(frame,new_position.x);
+  body.position_map.y.set(frame,new_position.y);
 }
 
 
 Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame)
 {
-  auto x = body.position.x(frame);
-  auto y = body.position.y(frame);
+  auto x = body.position_map.x(frame);
+  auto y = body.position_map.y(frame);
 
   return Point2D(x,y);
 }
@@ -180,8 +180,8 @@ Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame)
 
 Vector2D bodyLocalPosition(const Scene::Body &body,const Scene::Frame &frame)
 {
-  auto x = body.position.x(frame);
-  auto y = body.position.y(frame);
+  auto x = body.position_map.x(frame);
+  auto y = body.position_map.y(frame);
   return {x,y};
 }
 

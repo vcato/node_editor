@@ -131,8 +131,8 @@ void SceneViewer::mouseMovedTo(const ViewportPoint &p)
   setBodyGlobalPosition(clicked_on_body,scene.backgroundFrame(),new_position);
 
   vector<int> variable_indices;
-  variable_indices.push_back(clicked_on_body.position.x.var_index);
-  variable_indices.push_back(clicked_on_body.position.y.var_index);
+  variable_indices.push_back(clicked_on_body.position_map.x.var_index);
+  variable_indices.push_back(clicked_on_body.position_map.y.var_index);
 
   assert(listener_ptr);
   listener_ptr->frameVariablesChanged(

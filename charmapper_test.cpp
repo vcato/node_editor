@@ -29,7 +29,7 @@ static void testWithTargetBody()
   pos_expr.target_body_link.set(&scene,&body);
   pos_expr.global_position.components().x.value = 15;
   applyCharmapper(charmapper);
-  Scene::VarValue result = body.position.x(scene.displayFrame());
+  Scene::VarValue result = body.position_map.x(scene.displayFrame());
   assert(result==15);
 }
 
@@ -56,9 +56,9 @@ static void testWithFrame()
   pos_expr.target_body_link = BodyLink(&scene,&body);
   pos_expr.global_position.components().x.value = 15;
 
-  body.position.x.set(scene.backgroundFrame(),0);
+  body.position_map.x.set(scene.backgroundFrame(),0);
   applyCharmapper(charmapper);
-  assert(body.position.x(scene.displayFrame()) == 15);
+  assert(body.position_map.x(scene.displayFrame()) == 15);
 }
 
 
@@ -187,7 +187,7 @@ static void testGlobalPositionDiagram(const string &node_text,float expected_x)
   clearDiagram(diagram);
   diagram.createNodeWithText(node_text);
   applyCharmapper(charmapper);
-  assert(body1.position.x(scene.displayFrame())==expected_x);
+  assert(body1.position_map.x(scene.displayFrame())==expected_x);
 }
 
 

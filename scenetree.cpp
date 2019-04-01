@@ -46,13 +46,13 @@ static void
   {
     auto &new_x_item = addItemTo(new_position_item);
     ostringstream stream;
-    stream << "X: " << body.position.x(frame);
+    stream << "X: " << body.position_map.x(frame);
     new_x_item.label = stream.str();
   }
   {
     auto &new_y_item = addItemTo(new_position_item);
     ostringstream stream;
-    stream << "Y: " << body.position.y(frame);
+    stream << "Y: " << body.position_map.y(frame);
     new_y_item.label = stream.str();
   }
   addBodiesTo(new_body_item,body.allChildren(),frame);

@@ -254,7 +254,7 @@ struct BodyWrapper : VoidWrapper {
     }
 
     if (child_index==position_map_index) {
-      visitor(Point2DMapWrapper("position map",body.position,wrapper_data));
+      visitor(Point2DMapWrapper("position map",body.position_map,wrapper_data));
       return;
     }
 
@@ -285,7 +285,7 @@ struct BodyWrapper : VoidWrapper {
       else if (child_state.tag=="position_map") {
         Point2DMapWrapper(
           "position_map",
-          body.position,
+          body.position_map,
           wrapper_data
         ).setState(child_state);
       }

@@ -407,7 +407,7 @@ static void testChangingABodyPositionInTheScene()
   setNumericValue(world_wrapper,path,1);
 
   // The charmap should override this value
-  assert(body.position.x(scene.displayFrame())==0);
+  assert(body.position_map.x(scene.displayFrame())==0);
 }
 }
 
@@ -493,7 +493,7 @@ static void testChangingTheTargetBody()
   );
 
   assert(pos_expr.target_body_link.bodyPtr()==&body);
-  assert(body.position.x(scene.displayFrame())==15);
+  assert(body.position_map.x(scene.displayFrame())==15);
 
   setEnumerationValue(
     world_wrapper,
@@ -503,7 +503,7 @@ static void testChangingTheTargetBody()
   );
 
   assert(!pos_expr.target_body_link.hasValue());
-  assert(body.position.x(scene.displayFrame())==0);
+  assert(body.position_map.x(scene.displayFrame())==0);
 }
 }
 
@@ -576,7 +576,7 @@ static void testUsingCharmapperToMoveABody()
 
   setWrapperValue(wrapper,global_position_path + "|X",15);
   assert(components.x.value==15);
-  assert(body.position.x(scene.displayFrame())==15);
+  assert(body.position_map.x(scene.displayFrame())==15);
 
   string scene_viewer_commands =
     world.scene_window.viewer_member.command_stream.str();
@@ -584,7 +584,7 @@ static void testUsingCharmapperToMoveABody()
 
   setWrapperValue(wrapper,global_position_path + "|Y",20);
   assert(components.y.value==20);
-  assert(body.position.y(scene.displayFrame())==20);
+  assert(body.position_map.y(scene.displayFrame())==20);
 }
 }
 
@@ -622,7 +622,7 @@ static void testWithTwoCharmappers()
 
   // Make sure both charmaps still have an effect after changing a value
   // in one of them.
-  float x_position_of_body_2 = body2.position.x(scene.displayFrame());
+  float x_position_of_body_2 = body2.position_map.x(scene.displayFrame());
   assert(x_position_of_body_2==2);
 }
 }
@@ -765,7 +765,7 @@ static void testChangingGlobalPositionDiagram()
   replaceNodeText(diagram,"return $\n","return [1,2]");
 
   {
-    float x = body.position.x(scene.displayFrame());
+    float x = body.position_map.x(scene.displayFrame());
     assert(x==0);
   }
 
@@ -773,7 +773,7 @@ static void testChangingGlobalPositionDiagram()
   notifyDiagramChanged(world_wrapper,path_string);
 
   {
-    float x = body.position.x(scene.displayFrame());
+    float x = body.position_map.x(scene.displayFrame());
     assert(x==1);
   }
 }
@@ -821,7 +821,7 @@ static void testChangingLocalPositionDiagram()
 
   applyCharmapper(charmapper);
 
-  assert(body.position.x(scene.displayFrame())==1);
+  assert(body.position_map.x(scene.displayFrame())==1);
 
   Diagram &diagram =
     pos_expr.global_position.fromBody().local_position.diagram;
@@ -831,7 +831,7 @@ static void testChangingLocalPositionDiagram()
     world_wrapper,
     "Charmapper1|Motion Pass|Pos Expr|Global Position|Local Position"
   );
-  assert(body.position.x(scene.displayFrame())==0);
+  assert(body.position_map.x(scene.displayFrame())==0);
 }
 
 
@@ -849,7 +849,7 @@ static void testChangingPosExprDiagram()
   pos_expr.target_body_link.set(&scene,&body);
 
   applyCharmapper(charmapper);
-  assert(body.position.x(scene.displayFrame())==0);
+  assert(body.position_map.x(scene.displayFrame())==0);
 
   Diagram &diagram = pos_expr.diagram;
   NodeIndex global_position_node_index =
@@ -861,7 +861,7 @@ static void testChangingPosExprDiagram()
     "Charmapper1|Motion Pass|Pos Expr"
   );
 
-  auto body_x = body.position.x(scene.displayFrame());
+  auto body_x = body.position_map.x(scene.displayFrame());
   assert(body_x==10);
 }
 
@@ -882,7 +882,7 @@ static void testPosExprDiagramThatReferencesAScene()
   setBodyPosition(body2,scene.backgroundFrame(),Point2D(10,20));
 
   applyCharmapper(charmapper);
-  assert(body1.position.x(scene.displayFrame())==0);
+  assert(body1.position_map.x(scene.displayFrame())==0);
 
   Diagram diagram;
   diagram.createNodeWithText(
@@ -895,7 +895,7 @@ static void testPosExprDiagramThatReferencesAScene()
     "Charmapper1|Motion Pass|Pos Expr"
   );
 
-  auto body_x = body1.position.x(scene.displayFrame());
+  auto body_x = body1.position_map.x(scene.displayFrame());
   assert(body_x==10);
 }
 

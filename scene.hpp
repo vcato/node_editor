@@ -191,13 +191,13 @@ class Scene {
             const Point2DMap &position_arg,
             Body *parent_ptr_arg
           )
-        : position(position_arg),
+        : position_map(position_arg),
           name(name_arg),
           parent_ptr(parent_ptr_arg)
         {
         }
 
-        Point2DMap position;
+        Point2DMap position_map;
         std::string name;
 
         int nChildren() const { return children.size(); }

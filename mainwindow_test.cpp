@@ -404,15 +404,15 @@ static void testCreatingABodyWithAnAveragePosition()
   FakeWorld &world = tester.world;
   Scene::Frame &frame = world.sceneMember(0).scene.displayFrame();
   Scene::Body &body1 = world.sceneMember(0).scene.bodies()[0];
-  assert(body1.position.x(frame)==2);
+  assert(body1.position_map.x(frame)==2);
   Scene::Body &body2 = world.sceneMember(0).scene.bodies()[1];
-  assert(body2.position.x(frame)==4);
+  assert(body2.position_map.x(frame)==4);
 
   Scene::Body &body3 = world.sceneMember(0).scene.bodies()[2];
 
   // Body 3's x value should be 3, since we should be calculating it as
   // (2+4)/2.
-  assert(body3.position.x(frame)==3);
+  assert(body3.position_map.x(frame)==3);
 }
 
 
