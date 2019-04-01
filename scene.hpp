@@ -274,11 +274,46 @@ extern void
 
 extern Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame);
 
+extern Vector2D
+  bodyLocalPosition(const Scene::Body &body,const Scene::Frame &frame);
+
 extern Point2D
   globalPos(
     const Scene::Body &body,
     const Point2D &local,
     const Scene::Frame &frame
   );
+
+template <typename Function>
+void
+  forEachBodyPosition(
+    const Scene::Bodies &bodies,
+    const Point2D &parent_global_position,
+    const Scene::Frame& frame,
+    const Function &f
+  )
+{
+  for (const Scene::Body &body : bodies) {
+    Vector2D local_offset = bodyLocalPosition(body,frame);
+    Point2D global_position = parent_global_position + local_offset;
+    f(body,global_position);
+    forEachBodyPosition(body.allChildren(), global_position, frame, f);
+  }
+}
+
+
+template <typename Function>
+void forEachSceneBodyPosition(const Scene &scene,const Function &f)
+{
+  Point2D parent_global_position(0,0);
+
+  forEachBodyPosition(
+    scene.bodies(),
+    parent_global_position,
+    scene.displayFrame(),
+    f
+  );
+}
+
 
 #endif /* SCENE_HPP_ */

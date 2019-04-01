@@ -1,3 +1,6 @@
+#ifndef RECT_HPP_
+#define RECT_HPP_
+
 #include "point2d.hpp"
 #include "size2d.hpp"
 
@@ -8,7 +11,7 @@ struct TaggedRect {
   using Point2D = TaggedPoint2D<Tag>;
   using Size2D = TaggedSize2D<Tag>;
 
-  bool contains(const Point2D &p)
+  bool contains(const Point2D &p) const
   {
     return
       p.x >= start.x && p.x <= end.x &&
@@ -46,3 +49,5 @@ TaggedRect<Tag>
 {
   return {rect.start + offset, rect.end + offset};
 }
+
+#endif /* RECT_HPP_ */

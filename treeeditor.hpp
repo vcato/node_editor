@@ -9,6 +9,8 @@
 
 struct Wrapper;
 
+#define USE_TREE_EDITOR_ITEM_VALUE_CHANGED 0
+
 
 struct TreeEditor {
   public:
@@ -20,6 +22,10 @@ struct TreeEditor {
       // This allows us to tell the tree editor that we want to change the
       // state of the world wrapper to the given state.  It applies the
       // new state to the wrapper and updates the tree.
+
+#if USE_TREE_EDITOR_ITEM_VALUE_CHANGED
+    void itemValueChanged(const TreePath &);
+#endif
 
   protected:
     struct MenuItem {

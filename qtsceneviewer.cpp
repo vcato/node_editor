@@ -1,7 +1,11 @@
 #include "qtsceneviewer.hpp"
 
 #include <iostream>
+#include <QMouseEvent>
 #include "draw.hpp"
+#include "viewportdraw.hpp"
+#include "sceneviewerimpl.hpp"
+
 
 using std::cerr;
 using Frame = Scene::Frame;
@@ -17,35 +21,6 @@ QtSceneViewer::~QtSceneViewer()
 }
 
 
-static void
-  drawBodies(
-    const Scene::Bodies &bodies,
-    const Point2D &parent_global_position,
-    const Frame& frame
-  )
-{
-  for (const Scene::Body &body : bodies) {
-    float gx = parent_global_position.x;
-    float gy = parent_global_position.y;
-    float x1 = gx + body.position.x(frame);
-    float y1 = gy + body.position.y(frame);
-    Point2D global_position(x1,y1);
-    float x2 = x1 + 10;
-    float y2 = y1 + 10;
-    Point2D p1(x1,y1);
-    Point2D p2(x2,y1);
-    Point2D p3(x2,y2);
-    Point2D p4(x1,y2);
-    drawLine(p1,p2);
-    drawLine(p2,p3);
-    drawLine(p3,p4);
-    drawLine(p4,p1);
-    ignore(body);
-    drawBodies(body.allChildren(),global_position,frame);
-  }
-}
-
-
 void QtSceneViewer::paintGL()
 {
   begin2DDrawing(width(),height());
@@ -56,13 +31,44 @@ void QtSceneViewer::paintGL()
 
   const Scene &scene = *scene_ptr;
 
-  Point2D parent_global_position(0,0);
+  auto drawRect =
+    [](const Scene::Body &,const ViewportRect &rect){ ::drawRect(rect); };
 
-  drawBodies(scene.bodies(),parent_global_position,scene.displayFrame());
+  scene_viewer::forEachSceneBodyRect(scene,drawRect);
 }
 
 
 void QtSceneViewer::redrawScene()
 {
   update();
+}
+
+
+void QtSceneViewer::mousePressEvent(QMouseEvent *event_ptr)
+{
+  assert(event_ptr);
+  QMouseEvent &event = *event_ptr;
+
+  ViewportPoint p =
+    screenToViewportCoords2(event.x(),event.y(),width(),height());
+
+  mousePressedAt(p);
+}
+
+
+void QtSceneViewer::mouseReleaseEvent(QMouseEvent *)
+{
+  mouseReleased();
+}
+
+
+void QtSceneViewer::mouseMoveEvent(QMouseEvent * event_ptr)
+{
+  assert(event_ptr);
+  QMouseEvent &event = *event_ptr;
+
+  ViewportPoint p =
+    screenToViewportCoords2(event.x(),event.y(),width(),height());
+
+  mouseMovedTo(p);
 }

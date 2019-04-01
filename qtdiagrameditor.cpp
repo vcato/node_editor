@@ -13,6 +13,16 @@
 #include "qtmenu.hpp"
 #include "draw.hpp"
 #include "fakeexecutor.hpp"
+#include "viewportgeo.hpp"
+#include "viewportdraw.hpp"
+
+
+auto QtDiagramEditor::screenToViewportCoords(int x,int y) const
+  -> ViewportPoint
+{
+  return screenToViewportCoords2(x,y,width(),height());
+}
+
 
 
 using std::cerr;
@@ -144,13 +154,6 @@ void QtDiagramEditor::keyPressEvent(QKeyEvent *key_event_ptr)
 }
 
 
-auto QtDiagramEditor::screenToViewportCoords(int x,int y) const
-  -> ViewportPoint
-{
-  return ViewportPoint{static_cast<float>(x),height()-static_cast<float>(y)};
-}
-
-
 void QtDiagramEditor::mousePressEvent(QMouseEvent *event_ptr)
 {
   assert(event_ptr);
@@ -214,191 +217,15 @@ void QtDiagramEditor::mouseMoveEvent(QMouseEvent * event_ptr)
 }
 
 
-static void drawLine(const ViewportPoint &p1,const ViewportPoint &p2)
-{
-  drawLine(Point2D(p1),Point2D(p2));
-}
-
-
-void
-  QtDiagramEditor::drawClosedLine(
-    const std::vector<ViewportPoint> &vertices
-  )
-{
-  int n = vertices.size();
-
-  for (int i=0; i!=n; ++i) {
-    drawLine(vertices[i],vertices[(i+1)%n]);
-  }
-}
-
-
-void
-  QtDiagramEditor::drawPolygon(
-    const std::vector<ViewportPoint> &vertices,
-    const Color &color
-  )
-{
-  int n_vertices = vertices.size();
-  int vertex_size = 2;
-  int color_size = 3;
-  std::vector<float> vertex_data;
-  vertex_data.resize(n_vertices*vertex_size);
-  std::vector<float> color_data;
-  color_data.resize(n_vertices*color_size);
-
-  for (int i=0; i!=n_vertices; ++i) {
-    vertex_data[i*vertex_size + 0] = vertices[i].x;
-    vertex_data[i*vertex_size + 1] = vertices[i].y;
-
-    color_data[i*color_size + 0] = color.r;
-    color_data[i*color_size + 1] = color.g;
-    color_data[i*color_size + 2] = color.b;
-  }
-
-  glVertexPointer(
-    vertex_size,/*type*/GL_FLOAT,/*stride*/0,vertex_data.data()
-  );
-  glColorPointer(
-    color_size,/*type*/GL_FLOAT,/*stride*/0,color_data.data()
-  );
-
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_COLOR_ARRAY);
-
-  {
-    std::vector<unsigned int> index_data(n_vertices);
-    for (int i=0; i!=n_vertices; ++i) {
-      index_data[i] = i;
-    }
-    GLsizei count = n_vertices;
-    GLenum type = GL_UNSIGNED_INT;
-
-    glDrawElements(GL_POLYGON,count,type,index_data.data());
-  }
-
-  glDisableClientState(GL_COLOR_ARRAY);
-  glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-
 void QtDiagramEditor::drawPolygon(const std::vector<ViewportPoint> &vertices)
 {
-  drawPolygon(vertices,Color{0.5,0.5,0});
-}
-
-
-std::vector<ViewportPoint>
-  QtDiagramEditor::verticesOf(const ViewportRect &rect)
-{
-  std::vector<ViewportPoint> vertices;
-
-  float x1 = rect.start.x;
-  float y1 = rect.start.y;
-  float x2 = rect.end.x;
-  float y2 = rect.end.y;
-
-  vertices.push_back(ViewportPoint{x1,y1});
-  vertices.push_back(ViewportPoint{x2,y1});
-  vertices.push_back(ViewportPoint{x2,y2});
-  vertices.push_back(ViewportPoint{x1,y2});
-
-  return vertices;
-}
-
-
-std::vector<ViewportPoint>
-  QtDiagramEditor::roundedVerticesOf(const ViewportRect &rect,float offset)
-{
-  std::vector<ViewportPoint> vertices;
-  float radius = 5;
-  float v = radius*sqrtf(2)/2;
-
-  float x1 = rect.start.x - offset;
-  float x1a = x1 + radius;
-  float x1b = x1a - v;
-  float y1 = rect.start.y - offset;
-  float y1a = y1 + radius;
-  float y1b = y1a - v;
-  float x2 = rect.end.x + offset;
-  float x2a = x2 - radius;
-  float x2b = x2a + v;
-  float y2 = rect.end.y + offset;
-  float y2a = y2 - radius;
-  float y2b = y2a + v;
-
-  vertices.push_back(ViewportPoint{x1,y1a});
-  vertices.push_back(ViewportPoint{x1b,y1b});
-  vertices.push_back(ViewportPoint{x1a,y1});
-
-  vertices.push_back(ViewportPoint{x2a,y1});
-  vertices.push_back(ViewportPoint{x2b,y1b});
-  vertices.push_back(ViewportPoint{x2,y1a});
-
-  vertices.push_back(ViewportPoint{x2,y2a});
-  vertices.push_back(ViewportPoint{x2b,y2b});
-  vertices.push_back(ViewportPoint{x2a,y2});
-
-  vertices.push_back(ViewportPoint{x1a,y2});
-  vertices.push_back(ViewportPoint{x1b,y2b});
-  vertices.push_back(ViewportPoint{x1,y2a});
-
-  return vertices;
-}
-
-
-
-
-std::vector<ViewportPoint> QtDiagramEditor::verticesOf(const Circle &circle)
-{
-  ViewportPoint center = circle.center;
-  float radius = circle.radius;
-  std::vector<ViewportPoint> vertices;
-
-  for (int i=0; i!=10; ++i) {
-    float fraction = i/10.0;
-    float angle = 2*M_PI * fraction;
-    float x = center.x + cos(angle)*radius;
-    float y = center.y + sin(angle)*radius;
-    vertices.push_back(ViewportPoint{x,y});
-  }
-
-  return vertices;
-}
-
-
-void QtDiagramEditor::drawRect(const ViewportRect &arg)
-{
-  drawClosedLine(verticesOf(arg));
-}
-
-
-void QtDiagramEditor::drawRoundedRect(const ViewportRect &arg)
-{
-  float offset = 0.5;
-  drawClosedLine(roundedVerticesOf(arg,offset));
-}
-
-
-void QtDiagramEditor::drawCircle(const Circle &circle)
-{
-  drawClosedLine(verticesOf(circle));
+  ::drawPolygon(vertices,Color{0.5,0.5,0});
 }
 
 
 void QtDiagramEditor::drawFilledRect(const ViewportRect &rect)
 {
-  drawPolygon(verticesOf(rect));
-}
-
-
-void
-  QtDiagramEditor::drawFilledRoundedRect(
-    const ViewportRect &rect,const Color &color
-  )
-{
-  float offset = 0;
-  drawPolygon(roundedVerticesOf(rect,offset),color);
+  drawPolygon(verticesOfRect(rect));
 }
 
 

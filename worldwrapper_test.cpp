@@ -125,6 +125,8 @@ struct FakeSceneWindow : SceneWindow {
 
 namespace {
 struct FakeWorld : World {
+  using World::World;
+
   FakeSceneWindow scene_window;
   bool window_is_created = false;
 

@@ -5,7 +5,6 @@
 #include "viewportcoords.hpp"
 
 
-// Need to be able to tag circles with coordinate systems.
 struct Circle {
   ViewportPoint center;
   float radius;

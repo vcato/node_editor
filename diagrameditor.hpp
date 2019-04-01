@@ -18,9 +18,9 @@
 #include "viewportline.hpp"
 #include "diagramstate.hpp"
 #include "observeddiagram.hpp"
+#include "viewportrect.hpp"
 
 using DiagramRect = TaggedRect<DiagramCoordsTag>;
-using ViewportRect = TaggedRect<ViewportCoordsTag>;
 
 
 struct EventModifiers {

@@ -7,6 +7,7 @@ struct QtWorld : World {
   QtMainWindow &main_window;
 
   QtWorld(QtMainWindow &main_window_arg);
+
   SceneWindow& createSceneViewerWindow(SceneMember &) override;
 
   void destroySceneViewerWindow(SceneWindow &window) override;

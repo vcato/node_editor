@@ -65,11 +65,16 @@ Charmapper& World::addCharmapper()
 
 Scene& World::addScene()
 {
-  unique_ptr<SceneMember> scene_member_ptr = make_unique<SceneMember>();
+  unique_ptr<SceneMember> scene_member_ptr =
+    make_unique<SceneMember>(*this);
   scene_member_ptr->name = generateMemberName("Scene");
   Scene& scene = scene_member_ptr->scene;
   SceneWindow &scene_window = createSceneViewerWindow(*scene_member_ptr);
-  scene_window.setScenePtr(&scene,scene_member_ptr->name);
+  scene_window.setScenePtr(
+    &scene,
+    &scene_member_ptr->listener,
+    scene_member_ptr->name
+  );
   scene_member_ptr->scene_window_ptr = &scene_window;
   world_members.push_back(std::move(scene_member_ptr));
   return scene;
@@ -273,12 +278,34 @@ CharmapperMember &World::charmapperMember(int index)
 
 SceneMember &World::sceneMember(int index)
 {
+  const World &const_self = *this;
+  return const_cast<SceneMember &>(const_self.sceneMember(index));
+}
+
+
+const SceneMember &World::sceneMember(int index) const
+{
   Member *member_ptr = world_members[index].get();
   assert(member_ptr);
-  SceneMember *scene_member_ptr =
-    dynamic_cast<SceneMember*>(member_ptr);
+  const SceneMember *scene_member_ptr =
+    dynamic_cast<const SceneMember*>(member_ptr);
   assert(scene_member_ptr);
   return *scene_member_ptr;
+}
+
+
+int World::memberIndex(const Member &desired_member) const
+{
+  Optional<int> maybe_found_member_index;
+
+  forEachMember([&](const Member &member,int member_index){
+    if (&member == &desired_member) {
+      maybe_found_member_index = member_index;
+    }
+  });
+
+  assert(maybe_found_member_index);
+  return *maybe_found_member_index;
 }
 
 
@@ -300,4 +327,37 @@ unique_ptr<Member> World::removeMember(int index)
 void World::notifyDiagramChanged(const Diagram &)
 {
   applyCharmaps();
+}
+
+
+void
+  World::sceneMemberFrameVariblesChanged(
+    SceneMember &scene_member,
+    int frame_index,
+    const vector<int> &variable_indices
+  )
+{
+  if (scene_frame_variables_changed_function) {
+    scene_frame_variables_changed_function(
+      memberIndex(scene_member),
+      frame_index,
+      variable_indices
+    );
+  }
+}
+
+
+void
+  World::forEachMember(
+    const std::function<void(const Member &,int member_index)> &f
+  ) const
+{
+  int n_members = nMembers();
+
+  for (int i=0; i!=n_members; ++i) {
+    const Member *member_ptr = world_members[i].get();
+    assert(member_ptr);
+
+    f(*member_ptr,i);
+  }
 }

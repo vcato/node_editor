@@ -10,7 +10,6 @@
 #include "observeddiagrams.hpp"
 
 
-
 class World {
   public:
     struct MemberVisitor;
@@ -32,6 +31,8 @@ class World {
 
     CharmapperMember &charmapperMember(int member_index);
     SceneMember &sceneMember(int member_index);
+    const SceneMember &sceneMember(int member_index) const;
+    int memberIndex(const Member &) const;
 
     void
       forEachSceneMember(
@@ -80,8 +81,34 @@ class World {
     };
 
     struct SceneMember : Member {
+      struct Listener : SceneListener {
+        SceneMember &member;
+
+        Listener(SceneMember &member_arg)
+        : member(member_arg)
+        {
+        }
+
+        void
+          frameVariablesChanged(
+            int frame_index,
+            std::vector<int> &variable_indices
+          ) override
+        {
+          member.frameVariablesChanged(frame_index,variable_indices);
+        }
+      };
+
       Scene scene;
       SceneWindow *scene_window_ptr = nullptr;
+      Listener listener;
+      World &world;
+
+      SceneMember(World &world_arg)
+      : listener(*this),
+        world(world_arg)
+      {
+      }
 
       virtual void accept(const MemberVisitor &visitor)
       {
@@ -91,6 +118,16 @@ class World {
       virtual void acceptConst(const ConstMemberVisitor &visitor) const
       {
         visitor.visitScene(*this);
+      }
+
+      void frameVariablesChanged(
+        int frame_index,
+        std::vector<int> &variable_indices
+      )
+      {
+        world.sceneMemberFrameVariblesChanged(
+          *this,frame_index,variable_indices
+        );
       }
     };
 
@@ -104,19 +141,58 @@ class World {
       virtual void visitScene(const SceneMember &) const = 0;
     };
 
-    ObservedDiagrams observed_diagrams;
+    using SceneFrameVariablesChangedFunctionType =
+      void (
+        int scene_member_index,
+        int frame_index,
+        const std::vector<int> &variable_indices
+      );
 
-  private:
-    const Member* findMember(const std::string &name) const;
+    ObservedDiagrams observed_diagrams;
+    std::function<SceneFrameVariablesChangedFunctionType>
+      scene_frame_variables_changed_function;
 
   private:
     using WorldMembers = std::vector<std::unique_ptr<Member>>;
 
     WorldMembers world_members;
 
+    const Member* findMember(const std::string &name) const;
     virtual SceneWindow& createSceneViewerWindow(SceneMember &) = 0;
     virtual void destroySceneViewerWindow(SceneWindow &) = 0;
     std::string generateMemberName(const std::string &prefix) const;
+
+    void
+      forEachMember(
+        const std::function<void(const Member &,int member_index)> &f
+      ) const;
+
+    template <typename TypedMember>
+    void
+      forEachMemberIndexOfType(
+        std::function<void(int member_index)> f
+      ) const
+    {
+      forEachMember([&](const Member &member,int member_index){
+        const Member *member_ptr = &member;
+        assert(member_ptr);
+
+        if (dynamic_cast<const TypedMember*>(member_ptr)) {
+          f(member_index);
+        }
+      });
+    }
+
+    template <typename TypedMember>
+    const TypedMember &typedMember(int member_index) const
+    {
+      const Member *member_ptr = world_members[member_index].get();
+      assert(member_ptr);
+      const TypedMember* typed_member_ptr =
+        dynamic_cast<const TypedMember*>(member_ptr);
+      assert(typed_member_ptr);
+      return *typed_member_ptr;
+    }
 
     template <typename TypedMember>
     void
@@ -124,18 +200,12 @@ class World {
         std::function<void(const TypedMember &,int member_index)> f
       ) const
     {
-      int n_members = nMembers();
+      auto callWithMember =
+        [&](int member_index){
+          f(typedMember<TypedMember>(member_index),member_index);
+        };
 
-      for (int i=0; i!=n_members; ++i) {
-        const Member *member_ptr = world_members[i].get();
-        assert(member_ptr);
-        const TypedMember* typed_member_ptr =
-          dynamic_cast<const TypedMember*>(member_ptr);
-
-        if (typed_member_ptr) {
-          f(*typed_member_ptr,i);
-        }
-      }
+      forEachMemberIndexOfType<TypedMember>(callWithMember);
     }
 
     template <typename TypedMember>
@@ -158,6 +228,13 @@ class World {
 
     std::vector<Charmapper*> allCharmapPtrs();
     void notifyDiagramChanged(const Diagram &);
+
+    void
+      sceneMemberFrameVariblesChanged(
+        SceneMember &scene_member,
+        int frame_index,
+        const std::vector<int> &variable_indices
+      );
 };
 
 

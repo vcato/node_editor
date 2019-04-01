@@ -13,11 +13,16 @@ void SceneWindow::notifySceneChanged()
 }
 
 
-void SceneWindow::setScenePtr(Scene *arg,const string &name)
+void
+  SceneWindow::setScenePtr(
+    Scene *scene_ptr,
+    SceneListener *listener_ptr,
+    const string &name
+  )
 {
-  viewer().setScenePtr(arg);
-  tree().setScenePtr(arg);
-  assert(arg);
+  viewer().setScenePtr(scene_ptr,listener_ptr);
+  tree().setScenePtr(scene_ptr);
+  assert(scene_ptr);
   setTitle(name);
 }
 

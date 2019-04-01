@@ -178,6 +178,14 @@ Point2D bodyPosition(const Scene::Body &body,const Scene::Frame &frame)
 }
 
 
+Vector2D bodyLocalPosition(const Scene::Body &body,const Scene::Frame &frame)
+{
+  auto x = body.position.x(frame);
+  auto y = body.position.y(frame);
+  return {x,y};
+}
+
+
 // We have globalPos as part of the scene, but globalVec is separate.  Not
 // sure why.
 Point2D

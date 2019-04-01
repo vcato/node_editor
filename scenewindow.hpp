@@ -10,8 +10,7 @@ class SceneWindow {
     void notifySceneChanged();
     void notifyBodyAdded(const Scene::Body &);
     void notifyRemovingBody(const Scene::Body &);
-    void setScenePtr(Scene *,const std::string &name);
-    void setDisplayFrame(const Scene::Frame &);
+    void setScenePtr(Scene *,SceneListener *,const std::string &name);
 
   private:
     virtual SceneViewer &viewer() = 0;

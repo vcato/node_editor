@@ -38,6 +38,13 @@ struct WorldWrapper : VoidWrapper
     return world.nMembers();
   }
 
+  TreePath
+    makeSceneVariablePath(
+      int scene_member_index,
+      int frame_index,
+      int variable_index
+    );
+
   void setState(const WrapperState&) const override;
 };
 

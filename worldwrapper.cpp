@@ -435,3 +435,14 @@ void WorldWrapper::setState(const WrapperState &state) const
 
   world.applyCharmaps();
 }
+
+
+TreePath
+  WorldWrapper::makeSceneVariablePath(
+    int /*scene_member_index*/,
+    int /*frame_index*/,
+    int /*variable_index*/
+  )
+{
+  assert(false);
+}

@@ -112,3 +112,7 @@ We could just consider this to be a basic function of the scene.  We would
 just need a way to have a callback so when a body is moved, we can
 update the tree.  This can be done in main() by installing a callback on
 the world and then telling the main window about the change.
+
+rename Circle to ViewportCircle.
+Rename Scene::Body::position to position_map
+Move the logic in main.cpp to MainWindow

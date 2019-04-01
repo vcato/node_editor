@@ -6,7 +6,8 @@
 
 
 QtWorld::QtWorld(QtMainWindow &main_window_arg)
-: main_window(main_window_arg)
+: World(),
+  main_window(main_window_arg)
 {
 }
 

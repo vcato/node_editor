@@ -70,5 +70,6 @@ void begin2DDrawing(GLsizei viewport_width,GLsizei viewport_height)
   GLint y = 0;
   glViewport(x,y,viewport_width,viewport_height);
   ortho2D(viewport_width,viewport_height);
+
   clearScreen();
 }

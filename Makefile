@@ -47,7 +47,8 @@ FAKEEXECUTOR = fakeexecutor.o
 OBSERVEDDIAGRAMS = observeddiagrams.o
 GENERATENAME = generatename.o
 SCENETREE = scenetree.o
-SCENEVIEWER = sceneviewer.o
+POINT2D = point2d.o
+SCENEVIEWER = sceneviewer.o $(POINT2D)
 SCENEWINDOW = scenewindow.o $(SCENETREE) $(SCENEVIEWER)
 STRINGPARSER = stringparser.o
 MAYBEPOINT2D = maybepoint2d.o
@@ -104,7 +105,10 @@ TREEEDITOR = treeeditor.o \
   $(TREEUPDATING) $(WRAPPERUTIL) $(DIAGRAMEDITORWINDOW) $(DIAGRAMEDITOR) \
   $(OBSERVEDDIAGRAM)
 DRAW = draw.o
-QTDIAGRAMEDITOR = qtdiagrameditor.o moc_qtdiagrameditor.o $(DRAW) $(QTMENU)
+VIEWPORTGEO = viewportgeo.o
+VIEWPORTDRAW = viewportdraw.o $(VIEWPORTGEO)
+QTDIAGRAMEDITOR = qtdiagrameditor.o moc_qtdiagrameditor.o \
+  $(VIEWPORTGEO) $(VIEWPORTDRAW) $(DRAW) $(QTMENU)
 QTDIAGRAMEDITORWINDOW = qtdiagrameditorwindow.o $(QTDIAGRAMEDITOR)
 QTTREEEDITOR = qttreeeditor.o moc_qttreeeditor.o \
   $(QTTREEWIDGETITEM) $(QTSLIDER) $(QTSPINBOX) $(QTCOMBOBOX) $(QTLINEEDIT) \
@@ -113,7 +117,7 @@ MAINWINDOW = mainwindow.o
 QTMAINWINDOW = qtmainwindow.o moc_qtmainwindow.o \
   $(QTMENU) $(QTTREEEDITOR) $(MAINWINDOW)
 QTSCENETREE = qtscenetree.o $(QTTREEWIDGETITEM)
-QTSCENEVIEWER = qtsceneviewer.o $(DRAW)
+QTSCENEVIEWER = qtsceneviewer.o $(VIEWPORTDRAW) $(DRAW)
 QTSCENEWINDOW = qtscenewindow.o $(QTSCENETREE) $(QTSCENEVIEWER)
 QTWORLD = qtworld.o $(WORLD) $(QTSCENEWINDOW)
 WRAPPER = wrapper.o $(DIAGRAMWRAPPERSTATE)
@@ -124,7 +128,6 @@ FAKETREEEDITOR = faketreeeditor.o
 FAKETREE = faketree.o
 FAKEDIAGRAMEDITOR = fakediagrameditor.o
 FAKEDIAGRAMEDITORWINDOWS = fakediagrameditorwindows.o
-POINT2D = point2d.o
 TESTDIAGRAMEVALUATOR = testdiagramevaluator.o \
   $(EVALUATEDIAGRAM) $(DIAGRAMEXECUTOR)
 

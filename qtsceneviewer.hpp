@@ -14,6 +14,10 @@ class QtSceneViewer : public QGLWidget, public SceneViewer {
   private:
     void paintGL() override;
     void redrawScene() override;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+
     QSize sizeHint() const override { return QSize(640,480); }
 };
 

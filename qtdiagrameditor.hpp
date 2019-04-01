@@ -6,14 +6,10 @@
 #include "diagrameditor.hpp"
 #include "circle.hpp"
 #include "viewportline.hpp"
+#include "color.hpp"
 
 
 class QKeyEvent;
-
-
-struct Color {
-  float r,g,b;
-};
 
 
 class QtDiagramEditor : public QGLWidget, public DiagramEditor {
@@ -37,18 +33,8 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
     void drawAll();
-    void drawClosedLine(const std::vector<ViewportPoint> &vertices);
     void drawPolygon(const std::vector<ViewportPoint> &vertices);
-    void drawPolygon(const std::vector<ViewportPoint> &vertices,const Color &);
-    static std::vector<ViewportPoint> verticesOf(const ViewportRect &rect);
-    static std::vector<ViewportPoint>
-      roundedVerticesOf(const ViewportRect &rect,float offset);
-    std::vector<ViewportPoint> verticesOf(const Circle &circle);
-    void drawRect(const ViewportRect &arg);
-    void drawRoundedRect(const ViewportRect &arg);
-    void drawCircle(const Circle &circle);
     void drawFilledRect(const ViewportRect &rect);
-    void drawFilledRoundedRect(const ViewportRect &rect,const Color &);
     void drawFilledCircle(const Circle &circle);
     ViewportRect rectAroundText(const std::string &text) const;
     ViewportRect
