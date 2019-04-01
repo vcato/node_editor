@@ -11,11 +11,14 @@ using std::cerr;
 using std::string;
 using std::unique_ptr;
 using std::istream;
+using std::make_unique;
 
 
-void MainWindow::setWorldPtr(Wrapper *world_ptr_arg)
+void MainWindow::setWorldPtr(World *world_ptr_arg)
 {
-  treeEditor().setWorldPtr(world_ptr_arg);
+  assert(world_ptr_arg);
+  _world_wrapper_ptr = make_unique<WorldWrapper>(*world_ptr_arg);
+  treeEditor().setWorldPtr(_world_wrapper_ptr.get());
 }
 
 

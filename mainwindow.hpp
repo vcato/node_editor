@@ -1,10 +1,12 @@
 #include "treeeditor.hpp"
 #include "fileaccessor.hpp"
+#include "world.hpp"
+#include "worldwrapper.hpp"
 
 
 class MainWindow {
   public:
-    void setWorldPtr(Wrapper *);
+    void setWorldPtr(World *);
     void setFileAccessorPtr(FileAccessor *);
 
   protected:
@@ -21,4 +23,5 @@ class MainWindow {
     virtual void _showError(const std::string &message) = 0;
 
     FileAccessor *_file_accessor_ptr = nullptr;
+    std::unique_ptr<WorldWrapper> _world_wrapper_ptr;
 };

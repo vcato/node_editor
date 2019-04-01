@@ -141,7 +141,7 @@ struct Tester {
 
   Tester()
   {
-    main_window.setWorldPtr(&world_wrapper);
+    main_window.setWorldPtr(&world);
     main_window.setFileAccessorPtr(&files);
   }
 };

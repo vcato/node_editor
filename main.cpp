@@ -16,7 +16,6 @@ int main(int argc,char** argv)
   main_window.setFileAccessorPtr(&files);
 
   QtWorld world(main_window);
-  WorldWrapper world_wrapper(world);
 
 #if 0
   world.scene_frame_variables_changed_function = [&](
@@ -39,7 +38,7 @@ int main(int argc,char** argv)
   // This logic should bein the main window
 #endif
 
-  main_window.setWorldPtr(&world_wrapper);
+  main_window.setWorldPtr(&world);
   main_window.resize(640,480);
   main_window.show();
   return app.exec();
