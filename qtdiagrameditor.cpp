@@ -229,7 +229,7 @@ void QtDiagramEditor::drawFilledRect(const ViewportRect &rect)
 }
 
 
-void QtDiagramEditor::drawFilledCircle(const Circle &circle)
+void QtDiagramEditor::drawFilledCircle(const ViewportCircle &circle)
 {
   drawPolygon(verticesOf(circle));
 }
@@ -320,7 +320,7 @@ static vector<T> operator+(const vector<T> &a,const vector<T> &b)
 }
 
 
-Circle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
+ViewportCircle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
 {
   NodeRenderInfo render_info = nodeRenderInfo(node(index.node_index));
 
@@ -333,7 +333,7 @@ Circle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
   }
 
   assert(false);
-  return Circle{};
+  return ViewportCircle{};
 }
 
 
@@ -387,7 +387,7 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
   // Draw the input connectors
 
   for (int i=0; i!=n_inputs; ++i) {
-    Circle c = render_info.input_connector_circles[i];
+    ViewportCircle c = render_info.input_connector_circles[i];
     drawCircle(c);
 
     if (node_index==selected_node_connector_index.node_index &&
@@ -400,7 +400,8 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
     if (input.source_node_index>=0) {
       const Node& source_node = this->node(input.source_node_index);
       int source_output_index = input.source_output_index;
-      Circle source_circle = nodeOutputCircle(source_node,source_output_index);
+      ViewportCircle source_circle =
+        nodeOutputCircle(source_node,source_output_index);
       drawLine(source_circle.center,c.center);
     }
   }
@@ -408,7 +409,7 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
   // Draw the output connectors
 
   for (int i=0; i!=n_outputs; ++i) {
-    Circle c = render_info.output_connector_circles[i];
+    ViewportCircle c = render_info.output_connector_circles[i];
     drawCircle(c);
     if (node_index==selected_node_connector_index.node_index &&
         i==selected_node_connector_index.output_index) {

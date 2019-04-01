@@ -521,9 +521,9 @@ static vector<ViewportRect>
 }
 
 
-static Circle connectorCircleInRect(const ViewportRect &connector_rect)
+static ViewportCircle connectorCircleInRect(const ViewportRect &connector_rect)
 {
-  Circle c;
+  ViewportCircle c;
   c.center = connector_rect.center();
   c.radius = connector_radius;
   return c;
@@ -570,10 +570,10 @@ static vector<ViewportRect>
 }
 
 
-static vector<Circle> 
+static vector<ViewportCircle>
   connectorCirclesInRects(const vector<ViewportRect> &rects)
 {
-  vector<Circle> circles;
+  vector<ViewportCircle> circles;
 
   for (auto &rect : rects) {
     circles.push_back(connectorCircleInRect(rect));
@@ -583,7 +583,7 @@ static vector<Circle>
 }
 
 
-// text_rect: the bounding box of some text if it was positioned at 0,0, 
+// text_rect: the bounding box of some text if it was positioned at 0,0,
 // rect:  a rectangle that we want to fit the text inside.
 // returns the correspnoding position of the text.
 // That is if the text with bounding box text_rect is rendered at
@@ -722,10 +722,10 @@ static NodeRenderInfo
       connector_distance
     );
 
-  vector<Circle> input_connector_circles =
+  vector<ViewportCircle> input_connector_circles =
     connectorCirclesInRects(input_connector_rects);
 
-  vector<Circle> output_connector_circles =
+  vector<ViewportCircle> output_connector_circles =
     connectorCirclesInRects(output_connector_rects);
 
   ViewportRect body_rect;
@@ -804,7 +804,7 @@ NodeIndex DiagramEditor::indexOfNodeContaining(const ViewportPoint &p) const
 }
 
 
-Circle DiagramEditor::nodeInputCircle(const Node &node,int input_index)
+ViewportCircle DiagramEditor::nodeInputCircle(const Node &node,int input_index)
 {
   NodeRenderInfo render_info = nodeRenderInfo(node);
   return render_info.input_connector_circles[input_index];
@@ -822,7 +822,8 @@ bool
 }
 
 
-Circle DiagramEditor::nodeOutputCircle(const Node &node,int output_index)
+ViewportCircle
+  DiagramEditor::nodeOutputCircle(const Node &node,int output_index)
 {
   NodeRenderInfo render_info = nodeRenderInfo(node);
   return render_info.output_connector_circles[output_index];

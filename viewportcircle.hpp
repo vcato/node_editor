@@ -1,15 +1,16 @@
-#ifndef CIRCLE_HPP_
-#define CIRCLE_HPP_
+#ifndef VIEWPORTCIRCLE_HPP_
+#define VIEWPORTCIRCLE_HPP_
 
 #include "point2d.hpp"
 #include "viewportcoords.hpp"
 
 
-struct Circle {
+struct ViewportCircle {
   ViewportPoint center;
   float radius;
 
   bool contains(const ViewportPoint &p);
 };
 
-#endif /* CIRCLE_HPP_ */
+
+#endif /* VIEWPORTCIRCLE_HPP_ */

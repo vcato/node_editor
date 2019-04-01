@@ -1,4 +1,4 @@
-#include "circle.hpp"
+#include "viewportcircle.hpp"
 #include <cmath>
 
 
@@ -11,7 +11,7 @@ static float distanceBetween(const ViewportPoint &a,const ViewportPoint &b)
 }
 
 
-bool Circle::contains(const ViewportPoint &p)
+bool ViewportCircle::contains(const ViewportPoint &p)
 {
   return distanceBetween(center,p)<=radius;
 }

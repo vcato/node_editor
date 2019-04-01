@@ -12,7 +12,7 @@
 #include "diagramnode.hpp"
 #include "nodetexteditor.hpp"
 #include "diagram.hpp"
-#include "circle.hpp"
+#include "viewportcircle.hpp"
 #include "rect.hpp"
 #include "optional.hpp"
 #include "viewportline.hpp"
@@ -34,8 +34,8 @@ struct NodeRenderInfo {
   ViewportRect header_rect;
   ViewportRect body_outer_rect;
   std::vector<ViewportTextObject> text_objects;
-  std::vector<Circle> input_connector_circles;
-  std::vector<Circle> output_connector_circles;
+  std::vector<ViewportCircle> input_connector_circles;
+  std::vector<ViewportCircle> output_connector_circles;
 };
 
 
@@ -143,9 +143,9 @@ class DiagramEditor {
     void focusNode(int node_index,Diagram &diagram);
     Diagram &diagram() const { assert(diagramPtr()); return *diagramPtr(); }
     void unfocus();
-    Circle nodeInputCircle(const Node &,int input_index);
+    ViewportCircle nodeInputCircle(const Node &,int input_index);
     Node &node(NodeIndex arg) { return diagram().node(arg); }
-    Circle nodeOutputCircle(const Node &node,int output_index);
+    ViewportCircle nodeOutputCircle(const Node &node,int output_index);
     ViewportTextObject
       viewportTextObject(
         const DiagramTextObject &diagram_text_object

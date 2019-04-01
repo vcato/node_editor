@@ -4,7 +4,7 @@
 #include <cassert>
 #include <QGLWidget>
 #include "diagrameditor.hpp"
-#include "circle.hpp"
+#include "viewportcircle.hpp"
 #include "viewportline.hpp"
 #include "color.hpp"
 
@@ -34,8 +34,8 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
     void drawAll();
     void drawPolygon(const std::vector<ViewportPoint> &vertices);
-    void drawFilledRect(const ViewportRect &rect);
-    void drawFilledCircle(const Circle &circle);
+    void drawFilledRect(const ViewportRect &);
+    void drawFilledCircle(const ViewportCircle &);
     ViewportRect rectAroundText(const std::string &text) const;
     ViewportRect
       rectAroundTextObject(const ViewportTextObject &text_object) const;
@@ -51,7 +51,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     int textWidth(const std::string &s) const;
     static constexpr float node_input_radius = 5;
 
-    Circle connectorCircle(NodeConnectorIndex) const;
+    ViewportCircle connectorCircle(NodeConnectorIndex) const;
     void drawNode(NodeIndex);
 
     void paintGL() override;

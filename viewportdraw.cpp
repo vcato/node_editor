@@ -36,7 +36,7 @@ void drawRect(const ViewportRect &arg)
 }
 
 
-void drawCircle(const Circle &circle)
+void drawCircle(const ViewportCircle &circle)
 {
   drawClosedLine(verticesOf(circle));
 }

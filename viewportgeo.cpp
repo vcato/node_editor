@@ -61,7 +61,7 @@ std::vector<ViewportPoint>
 }
 
 
-std::vector<ViewportPoint> verticesOf(const Circle &circle)
+std::vector<ViewportPoint> verticesOf(const ViewportCircle &circle)
 {
   ViewportPoint center = circle.center;
   float radius = circle.radius;
