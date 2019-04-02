@@ -106,11 +106,3 @@ move all nodes below it.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
----
-It would be good to have a way to move bodies in the scene.
-We could just consider this to be a basic function of the scene.  We would
-just need a way to have a callback so when a body is moved, we can
-update the tree.  This can be done in main() by installing a callback on
-the world and then telling the main window about the change.
-
-Move the logic in main.cpp to MainWindow
