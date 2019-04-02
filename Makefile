@@ -128,6 +128,7 @@ FAKETREEEDITOR = faketreeeditor.o
 FAKETREE = faketree.o
 FAKEDIAGRAMEDITOR = fakediagrameditor.o
 FAKEDIAGRAMEDITORWINDOWS = fakediagrameditorwindows.o
+FAKESCENEVIEWER = fakesceneviewer.o
 TESTDIAGRAMEVALUATOR = testdiagramevaluator.o \
   $(EVALUATEDIAGRAM) $(DIAGRAMEXECUTOR)
 
@@ -212,7 +213,7 @@ wrapper_test: wrapper_test.o $(WRAPPER) $(WRAPPERUTIL)
 scene_test: scene_test.o $(SCENE)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-world_test: world_test.o $(WORLD)
+world_test: world_test.o fakesceneviewer.o $(WORLD)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 wrapperstate_test: wrapperstate_test.o $(WRAPPERSTATE) $(WRAPPER)
@@ -241,7 +242,7 @@ treeeditor_test: treeeditor_test.o \
   $(FAKEDIAGRAMEDITOR) $(FAKETREE) $(WRAPPER)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-mainwindow_test: mainwindow_test.o \
+mainwindow_test: mainwindow_test.o $(FAKESCENEVIEWER) \
   $(MAINWINDOW) $(WORLD) $(FAKETREEEDITOR) $(WRAPPERUTIL) $(FAKETREE) \
   $(WRAPPER) $(WORLDWRAPPER) $(FAKEDIAGRAMEDITOR) \
   $(FAKEDIAGRAMEDITORWINDOWS) $(DIAGRAMEDITOR) $(TREEEDITOR)

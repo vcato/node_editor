@@ -19,6 +19,26 @@ void MainWindow::setWorldPtr(World *world_ptr_arg)
   assert(world_ptr_arg);
   _world_wrapper_ptr = make_unique<WorldWrapper>(*world_ptr_arg);
   treeEditor().setWorldPtr(_world_wrapper_ptr.get());
+
+  World &world = *world_ptr_arg;
+  WorldWrapper &world_wrapper = *_world_wrapper_ptr;
+  world.scene_frame_variables_changed_function = [&](
+    int scene_member_index,
+    int frame_index,
+    const std::vector<int> &variable_indices
+  )
+  {
+    for (int variable_index : variable_indices) {
+      TreePath variable_path;
+      world_wrapper.makeSceneVariablePath(
+        variable_path,
+        scene_member_index,
+        frame_index,
+        variable_index
+      );
+      treeEditor().itemValueChanged(variable_path);
+    }
+  };
 }
 
 

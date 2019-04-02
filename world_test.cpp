@@ -5,32 +5,11 @@
 #include "viewportrect.hpp"
 #include "sceneviewerimpl.hpp"
 #include "streamvector.hpp"
+#include "fakesceneviewer.hpp"
 
 using std::cerr;
 using std::string;
 using std::ostringstream;
-
-
-namespace {
-struct Viewer : SceneViewer {
-  void redrawScene() override { }
-
-  void userPressesMouseAt(const ViewportPoint &p)
-  {
-    mousePressedAt(p);
-  }
-
-  void userMovesMouseTo(const ViewportPoint &p)
-  {
-    mouseMovedTo(p);
-  }
-
-  void userReleasesMouse()
-  {
-    mouseReleased();
-  }
-};
-}
 
 
 namespace {
@@ -54,7 +33,7 @@ struct Tree : SceneTree {
 
 namespace {
 struct Window : SceneWindow {
-  Viewer viewer_member;
+  FakeSceneViewer viewer_member;
   Tree tree_member;
 
   SceneViewer &viewer() override { return viewer_member; }
@@ -141,26 +120,6 @@ static void testAddingAScene()
 }
 
 
-static ViewportPoint
-  centerOfBody(const Scene &scene,const Scene::Body &desired_body)
-{
-  Optional<ViewportRect> maybe_matching_rect;
-
-  auto match = [&](const Scene::Body &body,const ViewportRect &rect)
-  {
-    if (&body == &desired_body) {
-      maybe_matching_rect = rect;
-    }
-  };
-
-  scene_viewer::forEachSceneBodyRect(scene,match);
-
-  assert(maybe_matching_rect);
-
-  return maybe_matching_rect->center();
-}
-
-
 static void testMovingABody()
 {
   Tester tester;
@@ -171,7 +130,8 @@ static void testMovingABody()
   Scene::Body &body = scene.addBody();
 
   // Click on the body.
-  ViewportPoint center_of_body = centerOfBody(scene,body);
+  ViewportPoint center_of_body =
+    tester.world.window().viewer_member.centerOfBody(body);
   Window &window = tester.world.window();
   window.userPressesMouseAt(center_of_body);
 

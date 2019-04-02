@@ -38,8 +38,9 @@ struct WorldWrapper : VoidWrapper
     return world.nMembers();
   }
 
-  TreePath
+  void
     makeSceneVariablePath(
+      TreePath &,
       int scene_member_index,
       int frame_index,
       int variable_index

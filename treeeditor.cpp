@@ -119,12 +119,10 @@ void TreeEditor::setWorldState(const WrapperState &new_state)
 }
 
 
-#if USE_TREE_EDITOR_ITEM_VALUE_CHANGED
-void TreeEditor::itemValueChanged(const TreePath &)
+void TreeEditor::itemValueChanged(const TreePath &path)
 {
-  assert(false);
+  treeObserver(*this).itemValueChanged(path);
 }
-#endif
 
 
 void TreeEditor::executeOperation(const TreePath &path,int operation_index)

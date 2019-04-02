@@ -15,6 +15,8 @@ class SceneWrapper : public VoidWrapper {
 
     std::vector<OperationName> operationNames() const override;
 
+    void makeVariablePath(TreePath &,int frame_index,int variable_index) const;
+
     void
       executeOperation(
         int operation_index,

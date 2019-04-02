@@ -11,6 +11,7 @@
 #include "scenewrapper.hpp"
 #include "faketreeeditor.hpp"
 #include "faketree.hpp"
+#include "fakesceneviewer.hpp"
 
 using std::string;
 using std::vector;
@@ -57,22 +58,8 @@ struct FakeMainWindow : MainWindow {
 
 
 namespace {
-struct FakeSceneViewer : SceneViewer {
-  int redraw_count = 0;
-
-  virtual void redrawScene()
-  {
-    ++redraw_count;
-  }
-};
-}
-
-
-namespace {
-struct FakeSceneTree : SceneTree {
+struct FakeSceneTree : SceneTree, FakeTree {
   using Item = FakeTreeItem;
-
-  Item root;
 
   void setItems(const ItemData &root_arg) override
   {
@@ -554,6 +541,28 @@ static void testChangingAVariableRange()
 }
 
 
+static void testMovingABodyInTheSceneViewer()
+{
+  FakeWorld world;
+  Scene &scene = world.addScene();
+  Scene::Body &body = scene.addBody();
+  FakeMainWindow main_window;
+  main_window.setWorldPtr(&world);
+  FakeSceneViewer &viewer = world.scene_window.viewer_member;
+
+  ViewportPoint body_center = viewer.centerOfBody(body);
+
+  viewer.userPressesMouseAt(body_center);
+  viewer.userMovesMouseTo(body_center + ViewportVector(10,0));
+  viewer.userReleasesMouse();
+
+  float x = body.position_map.x(scene.backgroundFrame());
+  float y = body.position_map.y(scene.backgroundFrame());
+
+  assert(Point2D(x,y) == Point2D(10,0));
+}
+
+
 int main()
 {
   testAddingABodyToTheScene();
@@ -569,4 +578,5 @@ int main()
   testOpeningAProjectWhenADiagramEditorIsOpen();
   testChangingAVariableName();
   testChangingAVariableRange();
+  testMovingABodyInTheSceneViewer();
 }

@@ -406,6 +406,19 @@ SceneWrapper::SceneWrapper(
 }
 
 
+void
+  SceneWrapper::makeVariablePath(
+    TreePath &path,
+    int frame_index,
+    int variable_index
+  ) const
+{
+  path.push_back(background_motion_index);
+  path.push_back(frame_index);
+  path.push_back(variable_index);
+}
+
+
 std::vector<std::string> SceneWrapper::operationNames() const
 {
   return {"Add Body","Remove"};

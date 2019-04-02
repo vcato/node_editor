@@ -437,12 +437,19 @@ void WorldWrapper::setState(const WrapperState &state) const
 }
 
 
-TreePath
+void
   WorldWrapper::makeSceneVariablePath(
-    int /*scene_member_index*/,
-    int /*frame_index*/,
-    int /*variable_index*/
+    TreePath &path,
+    int scene_member_index,
+    int frame_index,
+    int variable_index
   )
 {
-  assert(false);
+  path.push_back(scene_member_index);
+
+  withChildWrapper(scene_member_index,[&](const Wrapper &wrapper){
+    const SceneWrapper &scene_wrapper =
+      dynamic_cast<const SceneWrapper &>(wrapper);
+    scene_wrapper.makeVariablePath(path,frame_index,variable_index);
+  });
 }

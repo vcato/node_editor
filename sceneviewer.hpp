@@ -19,11 +19,11 @@ class SceneViewer {
   public:
     void notifySceneChanged() { redrawScene(); }
     void setScenePtr(Scene *arg,SceneListener *);
+    const Scene *scenePtr() { return scene_ptr; }
 
   protected:
     Scene *scene_ptr = nullptr;
     SceneListener *listener_ptr = nullptr;
-    const Scene *scenePtr() { return scene_ptr; }
     void mousePressedAt(const ViewportPoint &p);
     void mouseMovedTo(const ViewportPoint &p);
     void mouseReleased();
