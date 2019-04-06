@@ -931,6 +931,17 @@ struct DiagramEditor::CursorPositionFinder {
   const NodeRenderInfo &render_info;
   const ViewportPoint &p;
 
+  ViewportRect lineRect(int line_index) const
+  {
+    const ViewportTextObject &line_text_object =
+      render_info.text_objects[line_index];
+
+    ViewportRect line_rect =
+      diagram_editor.rectAroundTextObject(line_text_object);
+
+    return line_rect;
+  }
+
   template <typename IsFeasiblePointFunction>
   Optional<NodeTextEditor::CursorPosition>
     maybeFind(
@@ -1015,6 +1026,14 @@ NodeTextEditor::CursorPosition
     return *maybe_cursor_position;
   }
 
+  cerr << "Couldn't find cursor:\n";
+  cerr << "  p: " << p << "\n";
+
+  for (int i=0; i!=n_lines; ++i) {
+    cerr << "  line " << i << "\n";
+    cerr << "    start: " << finder.lineRect(i).start << "\n";
+    cerr << "    end:   " << finder.lineRect(i).end << "\n";
+  }
   // Uh... where?
   assert(false);
 }

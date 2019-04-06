@@ -1,7 +1,7 @@
 #ifndef POINT2D_HPP_
 #define POINT2D_HPP_
 
-#include <iosfwd>
+#include <iostream>
 #include "vector2d.hpp"
 
 template <typename Tag> struct TaggedPoint2D;
@@ -101,21 +101,12 @@ using CommonCoordinateSystem_t =
   typename CommonCoordinateSystem<Tag1,Tag2>::type;
 
 
-#if 1
 template <typename Tag>
 inline TaggedVector2D<Tag>
   operator-(const TaggedPoint2D<Tag> &a,const TaggedPoint2D<Tag> &b)
 {
   return { a.x-b.x, a.y-b.y };
 }
-#else
-template <typename Tag1,typename Tag2>
-TaggedVector2D<CommonCoordinateSystem_t<Tag1,Tag2>>
-  operator-(const TaggedPoint2D<Tag1> &a,const TaggedPoint2D<Tag2> &b)
-{
-  return { a.x-b.x, a.y-b.y };
-}
-#endif
 
 
 template <typename Tag>
@@ -138,7 +129,13 @@ TaggedPoint2D<CommonCoordinateSystem_t<Tag1,Tag2>>
 }
 
 
-extern std::ostream& operator<<(std::ostream &stream,const Point2D &p);
+template <typename Tag>
+std::ostream&
+  operator<<(std::ostream &stream,const TaggedPoint2D<Tag> &p)
+{
+  stream << "(" << p.x << "," << p.y << ")";
+  return stream;
+}
 
 
 #endif /* POINT2D_HPP_ */
