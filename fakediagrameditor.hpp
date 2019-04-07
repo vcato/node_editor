@@ -237,6 +237,7 @@ struct FakeDiagramEditor : DiagramEditor {
   using DiagramEditor::nodeIsSelected;
   using DiagramEditor::viewportCoordsFromDiagramCoords;
   using DiagramEditor::cursorLine;
+  using DiagramEditor::rectAroundTextObject;
 };
 
 

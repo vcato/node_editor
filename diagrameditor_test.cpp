@@ -10,7 +10,7 @@ using std::cerr;
 using std::ofstream;
 using std::make_unique;
 using std::function;
-
+using CursorPosition = NodeTextEditor::CursorPosition;
 
 
 static const char *empty_diagram_text =
@@ -539,17 +539,35 @@ struct ClickingOnAFocusedNodeTest {
   using CursorPosition = NodeTextEditor::CursorPosition;
   string node_text;
   CursorPosition target_cursor_position{/*line*/0,/*column*/1};
-  float target_fraction = 0.5;
+  float target_cursor_fraction = 0.5;
   CursorPosition expected_cursor_position{/*line*/0,/*column*/1};
 };
 }
 
 
-static void testClickingOnAFocusedNode(const ClickingOnAFocusedNodeTest &test)
+static float
+  cursorPositionX(
+    const FakeDiagramEditor &editor,
+    const DiagramNode::TextPosition &cursor_position
+  )
+{
+  ViewportLine cursor_line =
+    editor.cursorLine(editor.focusedNodeIndex(),cursor_position);
+
+  return cursor_line.start.x;
+}
+
+
+static void
+  testClickingOnAFocusedNode2(
+    const ClickingOnAFocusedNodeTest &test,
+    const function<ViewportPoint (const FakeDiagramEditor&)> &point_function
+  )
 {
   // Have a diagram with a single node.
   Tester tester;
   FakeDiagramEditor &editor = tester.editor;
+
   NodeIndex node =
     editor.userAddsANodeWithTextAt(test.node_text,DiagramPoint(0,0));
 
@@ -561,19 +579,50 @@ static void testClickingOnAFocusedNode(const ClickingOnAFocusedNodeTest &test)
   editor.userClicksOnNode(node);
   assert(editor.aNodeIsFocused());
 
-  // Click again on the node to move the cursor.
-  ViewportLine cursor_line =
-    editor.cursorLine(editor.focusedNodeIndex(),test.target_cursor_position);
-  assert(cursor_line.start.y < cursor_line.end.y);
-
   int old_redraw_count = editor.redraw_count;
 
-  editor.userClicksAt(linePoint(cursor_line,test.target_fraction));
+  // Click again on the node to move the cursor.
+  editor.userClicksAt(point_function(editor));
 
   // The cursor position should have changed.
+  if (editor.cursorPosition() != test.expected_cursor_position) {
+    cerr << "editor.cursorPosition(): " << editor.cursorPosition() << "\n";
+    cerr << "test.expected_cursor_position: " << test.expected_cursor_position << "\n";
+  }
+
   assert(editor.cursorPosition() == test.expected_cursor_position);
   assert(editor.aNodeIsFocused());
   assert(editor.redraw_count == old_redraw_count+1);
+}
+
+
+static ViewportPoint
+  pointOnCursor(
+    const FakeDiagramEditor &editor,
+    const CursorPosition &position,
+    float fraction
+  )
+{
+  ViewportLine cursor_line =
+    editor.cursorLine(editor.focusedNodeIndex(),position);
+  assert(cursor_line.start.y < cursor_line.end.y);
+  return linePoint(cursor_line,fraction);
+}
+
+
+static void
+  testClickingOnAFocusedNode(
+    const ClickingOnAFocusedNodeTest &test
+  )
+{
+  auto point_function = [
+    &position = test.target_cursor_position,
+    fraction = test.target_cursor_fraction
+  ](const FakeDiagramEditor &editor) {
+    return pointOnCursor(editor,position,fraction);
+  };
+
+  testClickingOnAFocusedNode2(test,point_function);
 }
 
 
@@ -582,7 +631,7 @@ static void testClickingOnAFocusedNode1()
   ClickingOnAFocusedNodeTest test;
   test.node_text = "12";
   test.target_cursor_position = {/*line*/0,/*column*/1};
-  test.target_fraction = 0.5;
+  test.target_cursor_fraction = 0.5;
   test.expected_cursor_position = test.target_cursor_position;
 
   testClickingOnAFocusedNode(test);
@@ -594,7 +643,7 @@ static void testClickingOnAFocusedNode2()
   ClickingOnAFocusedNodeTest test;
   test.node_text = "abcd\ne";
   test.target_cursor_position = {/*line*/0,/*column*/3};
-  test.target_fraction = -0.5;
+  test.target_cursor_fraction = -0.5;
   test.expected_cursor_position = {/*line*/1,/*column*/1};
 
   testClickingOnAFocusedNode(test);
@@ -606,7 +655,19 @@ static void testClickingOnAFocusedNodeAboveFirstLine()
   ClickingOnAFocusedNodeTest test;
   test.node_text = "$ + $";
   test.target_cursor_position = {/*line*/0,/*column*/1};
-  test.target_fraction = 1.5;
+  test.target_cursor_fraction = 1.5;
+  test.expected_cursor_position = {/*line*/0,/*column*/1};
+
+  testClickingOnAFocusedNode(test);
+}
+
+
+static void testClickingOnAFocusedNodeAboveFirstLine2()
+{
+  ClickingOnAFocusedNodeTest test;
+  test.node_text = "$ + $\n$";
+  test.target_cursor_position = {/*line*/0,/*column*/1};
+  test.target_cursor_fraction = 1.5;
   test.expected_cursor_position = {/*line*/0,/*column*/1};
 
   testClickingOnAFocusedNode(test);
@@ -618,10 +679,52 @@ static void testClickingOnAFocusedNodeBelowFirstLine()
   ClickingOnAFocusedNodeTest test;
   test.node_text = "$ + $";
   test.target_cursor_position = {/*line*/0,/*column*/1};
-  test.target_fraction = -0.5;
+  test.target_cursor_fraction = -0.5;
   test.expected_cursor_position = {/*line*/0,/*column*/1};
 
   testClickingOnAFocusedNode(test);
+}
+
+
+static ViewportPoint
+  pointBetweenLines(
+    const FakeDiagramEditor &editor,
+    const ClickingOnAFocusedNodeTest &test
+  )
+{
+  const Diagram* diagram_ptr = editor.diagramPtr();
+  assert(diagram_ptr);
+  const Diagram& diagram = *diagram_ptr;
+  float x = cursorPositionX(editor, test.target_cursor_position);
+  NodeIndex node_index = editor.focusedNodeIndex();
+  NodeRenderInfo render_info = editor.nodeRenderInfo(diagram.node(node_index));
+  const ViewportRect &first_line_rect =
+    editor.rectAroundTextObject(render_info.text_objects[0]);
+  const ViewportRect &second_line_rect =
+    editor.rectAroundTextObject(render_info.text_objects[1]);
+  float first_line_bottom_y = first_line_rect.start.y;
+  float second_line_top_y = second_line_rect.end.y;
+  assert(second_line_top_y < first_line_bottom_y);
+  float y = (first_line_bottom_y + second_line_top_y)/2;
+
+  return ViewportPoint{x,y};
+}
+
+
+static void testClickingOnAFocusedNodeBetweenLines()
+{
+  ClickingOnAFocusedNodeTest test;
+  test.node_text = "$\n$+$+$";
+  test.target_cursor_position = {0,0};
+  test.expected_cursor_position = {0,0};
+
+  auto point_function =
+    [&](const FakeDiagramEditor &editor){
+      return pointBetweenLines(editor,test);
+    };
+
+
+  testClickingOnAFocusedNode2(test,point_function);
 }
 
 
@@ -670,7 +773,9 @@ int main()
   testClickingOnAFocusedNode1();
   testClickingOnAFocusedNode2();
   testClickingOnAFocusedNodeAboveFirstLine();
+  testClickingOnAFocusedNodeAboveFirstLine2();
   testClickingOnAFocusedNodeBelowFirstLine();
+  testClickingOnAFocusedNodeBetweenLines();
   testCopyingANodeByCtrlDrag();
 
   ImportTester().runWithEmptyDiagram();

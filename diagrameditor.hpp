@@ -174,13 +174,13 @@ class DiagramEditor {
       cursorLine(
         const Node &node,
         const NodeTextEditor::CursorPosition
-      );
+      ) const;
 
     ViewportLine
       cursorLine(
         NodeIndex focused_node_index,
         const NodeTextEditor::CursorPosition
-      );
+      ) const;
 
     std::string lineError(NodeIndex node_index,int line_index) const;
     Optional<NodeLineIndex> maybeNodeLineAt(const ViewportPoint &p) const;
@@ -197,6 +197,8 @@ class DiagramEditor {
     Optional<ViewportRect> maybe_selection_rectangle;
     ViewportVector view_offset{0,0};
     void notifyDiagramChanged();
+    ViewportRect
+      rectAroundTextObject(const ViewportTextObject &text_object) const;
 
   private:
     enum class MouseMode {
@@ -225,23 +227,10 @@ class DiagramEditor {
       nodeInputContains(int node_index,int input_index,const ViewportPoint &);
     NodeConnectorIndex indexOfNodeConnectorContaining(const ViewportPoint &);
 
-    ViewportRect
-      rectAroundTextObject(const ViewportTextObject &text_object) const;
-
     ViewportSize textSize(const std::string &text) const;
 
     ViewportTextObject
       inputTextObject(const std::string &s,float left_x,float y) const;
-
-#if 0
-    static ViewportRect
-      nodeBodyRect(
-        int n_inputs,
-        const ViewportRect &header_rect,
-        const std::vector<ViewportRect> &line_text_rects,
-        const ViewportRect &dollar_rect
-      );
-#endif
 
     ViewportRect nodeHeaderRect(const DiagramTextObject &text_object) const;
     bool
@@ -262,13 +251,23 @@ class DiagramEditor {
         int column_index
       ) const = 0;
 
+    struct ClosestColumnResult {
+      int column_index;
+      float distance;
+      float vertical_distance;
+    };
+
     int
       closestColumn(
         const ViewportTextObject &line_text_object,
         const ViewportPoint &
       ) const;
 
-    struct CursorPositionFinder;
+    ClosestColumnResult
+      closestColumn2(
+        const ViewportTextObject &line_text_object,
+        const ViewportPoint &
+      ) const;
 
     NodeTextEditor::CursorPosition
       closestCursorPositionTo(

@@ -106,23 +106,3 @@ move all nodes below it.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
----
-We have a bug where DiagramEditor::closestCursorPositionTo() can't find
-the cursor position.
-
-It's happening because we can have lines which are spaced far apart, and
-it doesn't check the space between lines.
-
-It happens when we have a line which has multiple inputs.
-For example, the first line has one input, and the second line has three
-inputs, and you click between the first and second lines.
-
-Should it:
-* Consider the line to be the entire vertical area?
-  * (i.e. all the inputs)
-* look between the lines
-* return a null indicating there is no match
-
-I'm thinking that looking between the lines is best.  It's the easiest
-to implement and it seems like pretty intuitive behavior and it is a general
-approach that can work for lots of layouts.

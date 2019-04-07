@@ -92,6 +92,11 @@ class DiagramNode {
         return line_index==arg.line_index && column_index==arg.column_index;
       }
 
+      bool operator!=(const TextPosition &arg) const
+      {
+        return !operator==(arg);
+      }
+
       friend std::ostream &
         operator<<(std::ostream &stream,const TextPosition &arg)
       {

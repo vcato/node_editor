@@ -908,91 +908,48 @@ int
     const ViewportPoint &p
   ) const
 {
+  return closestColumn2(line_text_object,p).column_index;
+}
+
+
+static float verticalDistance(const ViewportLine &l,const ViewportPoint &p)
+{
+  float ly = p.y < l.start.y ? l.start.y :
+             p.y > l.end.y ? l.end.y :
+             p.y;
+  return fabsf(ly - p.y);
+}
+
+
+DiagramEditor::ClosestColumnResult
+  DiagramEditor::closestColumn2(
+    const ViewportTextObject &line_text_object,
+    const ViewportPoint &p
+  ) const
+{
   int best_column_index = 0;
   int length = line_text_object.text.length();
   float min_distance = FLT_MAX;
+  Optional<float> maybe_best_vertical_distance;
 
   for (int column_index=0; column_index!=length+1; ++column_index) {
     ViewportLine l = textObjectCursorLine(line_text_object,column_index);
-    float d = fabsf(l.start.x - p.x);
+    float d = fabs(l.start.x - p.x);
 
     if (d < min_distance) {
       min_distance = d;
       best_column_index = column_index;
+      maybe_best_vertical_distance = verticalDistance(l,p);
     }
   }
 
-  return best_column_index;
+  return
+    ClosestColumnResult{
+      best_column_index,
+      min_distance,
+      *maybe_best_vertical_distance
+    };
 }
-
-
-struct DiagramEditor::CursorPositionFinder {
-  const DiagramEditor &diagram_editor;
-  const NodeRenderInfo &render_info;
-  const ViewportPoint &p;
-
-  ViewportRect lineRect(int line_index) const
-  {
-    const ViewportTextObject &line_text_object =
-      render_info.text_objects[line_index];
-
-    ViewportRect line_rect =
-      diagram_editor.rectAroundTextObject(line_text_object);
-
-    return line_rect;
-  }
-
-  template <typename IsFeasiblePointFunction>
-  Optional<NodeTextEditor::CursorPosition>
-    maybeFind(
-      int line_index,
-      const IsFeasiblePointFunction &is_feasible_point
-    )
-  {
-    const ViewportTextObject &line_text_object =
-      render_info.text_objects[line_index];
-
-    ViewportRect line_rect =
-      diagram_editor.rectAroundTextObject(line_text_object);
-
-    if (is_feasible_point(line_rect)) {
-      int best_column_index = diagram_editor.closestColumn(line_text_object,p);
-
-      return {{line_index,best_column_index}};
-    }
-
-    return {};
-  }
-
-  Optional<NodeTextEditor::CursorPosition> maybeFindInside(int line_index)
-  {
-    auto inside = [&](const ViewportRect &line_rect)
-    {
-      return (p.y >= line_rect.start.y && p.y <= line_rect.end.y);
-    };
-
-    return maybeFind(line_index,inside);
-  }
-
-  Optional<NodeTextEditor::CursorPosition> maybeFindAbove(int line_index)
-  {
-    auto above = [&](const ViewportRect &line_rect)
-    {
-      return (p.y > line_rect.end.y);
-    };
-
-    return maybeFind(line_index,above);
-  }
-
-  Optional<NodeTextEditor::CursorPosition> maybeFindBelow(int line_index)
-  {
-    auto below = [&](const ViewportRect &line_rect){
-      return (p.y < line_rect.start.y);
-    };
-
-    return maybeFind(line_index,below);
-  }
-};
 
 
 NodeTextEditor::CursorPosition
@@ -1006,36 +963,25 @@ NodeTextEditor::CursorPosition
 
   assert(n_lines!=0);
 
-  CursorPositionFinder finder{*this,render_info,p};
+  using CursorPosition = NodeTextEditor::CursorPosition;
+  Optional<CursorPosition> maybe_best_cursor_position;
+  float min_vertical_distance = FLT_MAX;
 
   for (int line_index=0; line_index != n_lines; ++line_index) {
-    if (auto maybe_cursor_position = finder.maybeFindInside(line_index)) {
-      return *maybe_cursor_position;
+    const ViewportTextObject &line_text_object =
+      render_info.text_objects[line_index];
+
+    ClosestColumnResult closest_result =
+      closestColumn2(line_text_object,p);
+
+    if (closest_result.vertical_distance < min_vertical_distance) {
+      maybe_best_cursor_position =
+        CursorPosition{line_index, closest_result.column_index};
+      min_vertical_distance = closest_result.vertical_distance;
     }
   }
 
-  int first_line = 0;
-
-  if (auto maybe_cursor_position = finder.maybeFindAbove(first_line)) {
-    return *maybe_cursor_position;
-  }
-
-  int last_line = n_lines - 1;
-
-  if (auto maybe_cursor_position = finder.maybeFindBelow(last_line)) {
-    return *maybe_cursor_position;
-  }
-
-  cerr << "Couldn't find cursor:\n";
-  cerr << "  p: " << p << "\n";
-
-  for (int i=0; i!=n_lines; ++i) {
-    cerr << "  line " << i << "\n";
-    cerr << "    start: " << finder.lineRect(i).start << "\n";
-    cerr << "    end:   " << finder.lineRect(i).end << "\n";
-  }
-  // Uh... where?
-  assert(false);
+  return *maybe_best_cursor_position;
 }
 
 
@@ -1438,7 +1384,7 @@ ViewportLine
   DiagramEditor::cursorLine(
     const Node &node,
     const NodeTextEditor::CursorPosition cursor_position
-  )
+  ) const
 {
   NodeRenderInfo render_info = nodeRenderInfo(node);
   int line_index = cursor_position.line_index;
@@ -1453,7 +1399,7 @@ ViewportLine
   DiagramEditor::cursorLine(
     NodeIndex focused_node_index,
     NodeTextEditor::CursorPosition cursor_position
-  )
+  ) const
 {
   return cursorLine(node(focused_node_index),cursor_position);
 }
