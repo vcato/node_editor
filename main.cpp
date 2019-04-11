@@ -17,27 +17,6 @@ int main(int argc,char** argv)
 
   QtWorld world(main_window);
 
-#if 0
-  world.scene_frame_variables_changed_function = [&](
-    int scene_member_index,
-    int frame_index,
-    const std::vector<int> &variable_indices
-  )
-  {
-    for (int variable_index : variable_indices) {
-      TreePath variable_path =
-        world_wrapper.makeSceneVariablePath(
-          scene_member_index,
-          frame_index,
-          variable_index
-        );
-      main_window.itemValueChanged(variable_path);
-    }
-  };
-#else
-  // This logic should bein the main window
-#endif
-
   main_window.setWorldPtr(&world);
   main_window.resize(640,480);
   main_window.show();
