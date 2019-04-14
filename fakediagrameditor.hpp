@@ -253,6 +253,8 @@ struct FakeDiagramEditor : DiagramEditor {
   using DiagramEditor::viewportCoordsFromDiagramCoords;
   using DiagramEditor::cursorLine;
   using DiagramEditor::rectAroundTextObject;
+  using DiagramEditor::checkDiagramStateIsCompatibleWithTheDiagram;
+  using DiagramEditor::lineError;
 };
 
 

@@ -13,8 +13,6 @@
 #include "faketree.hpp"
 #include "fakesceneviewer.hpp"
 
-#define ADD_TEST 1
-
 using std::string;
 using std::vector;
 using std::cerr;
@@ -333,7 +331,6 @@ static void testRemovingAPosExpr()
 }
 
 
-#if ADD_TEST
 static void testEditingALocalPositionDiagram()
 {
   Tester tester;
@@ -348,16 +345,17 @@ static void testEditingALocalPositionDiagram()
   tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass","Add Pos Expr"
   );
-  cerr << "---\n";
   tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass|Pos Expr|Local Position","Edit Diagram..."
   );
 
-  // This isn't failing because our fake diagram editor doesn't actually
-  // draw nodes.
-  assert(false);
+  // Verify that the lineError() method returns something valid, even
+  // though we haven't evaluated the local position diagram.
+  assert(tree_editor.diagram_editor_windows[0]);
+  FakeDiagramEditor &diagram_editor =
+    tree_editor.diagram_editor_windows[0]->diagram_editor;
+  assert(diagram_editor.lineError(/*node_index*/0,/*line_index*/0)=="");
 }
-#endif
 
 
 static void testCancellingSaveProject()
@@ -601,9 +599,7 @@ int main()
   testChangingABodyName();
   testRemovingABody();
   testRemovingAPosExpr();
-#if ADD_TEST
   testEditingALocalPositionDiagram();
-#endif
   testCancellingSaveProject();
   testCancellingOpenProject();
   testCreatingABodyWithAnAveragePosition();

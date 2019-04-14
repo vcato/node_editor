@@ -47,7 +47,6 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 
 void DiagramEditor::setDiagramStatePtr(const DiagramEvaluationState *arg)
 {
-  cerr << "DiagramEditor::setDiagramStatePtr: arg=" << arg << "\n";
   diagram_state_ptr = arg;
   checkDiagramStateIsCompatibleWithTheDiagram();
   redraw();
@@ -1413,10 +1412,10 @@ string DiagramEditor::lineError(NodeIndex node_index,int line_index) const
   }
   else {
     // We requested the line error for a diagram when we have no diagram
-    // state.  It seems like this shouldn't happen in practice.  If the
-    // diagram editor window is open, it should be observing a diagram, and
-    // that diagram should be evaluated, in which case it has a state.
-    assert(false);
+    // state.  This can happen if we are editing an unused diagram.
+    // For example, if you are editing the local position diagram for an
+    // IkPosExpr in charmapper when there is no target body.
+    return "";
   }
 }
 

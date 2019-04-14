@@ -344,7 +344,6 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
 
   Color unselected_color{0.25,0.25,0.5};
   Color selected_color{0.5,0.5,0};
-
   Color fill_color = is_selected ? selected_color : unselected_color;
 
   // Draw a rectangle around all the text lines.
