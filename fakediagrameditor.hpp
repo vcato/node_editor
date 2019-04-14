@@ -231,6 +231,21 @@ struct FakeDiagramEditor : DiagramEditor {
     notifyDiagramChanged();
   }
 
+  virtual void drawNode(NodeIndex)
+  {
+    assert(false);
+  }
+
+  virtual void drawLine(const ViewportLine &)
+  {
+    assert(false);
+  }
+
+  virtual void drawRect(const ViewportRect &)
+  {
+    assert(false);
+  }
+
   using DiagramEditor::aNodeIsFocused;
   using DiagramEditor::nodeRenderInfo;
   using DiagramEditor::nSelectedNodes;

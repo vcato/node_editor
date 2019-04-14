@@ -135,6 +135,7 @@ class DiagramEditor {
     bool aNodeIsFocused() const;
     NodeRenderInfo nodeRenderInfo(const Node &node) const;
     NodeRenderInfo nodeRenderInfo2(const Node &node) const;
+    ViewportCircle connectorCircle(NodeConnectorIndex) const;
     int nSelectedNodes() const;
     bool nodeIsSelected(NodeIndex);
     int addNode(const std::string &text,const DiagramPoint &position);
@@ -200,6 +201,7 @@ class DiagramEditor {
     ViewportRect
       rectAroundTextObject(const ViewportTextObject &text_object) const;
     void checkDiagramStateIsCompatibleWithTheDiagram();
+    void drawAll();
 
   private:
     enum class MouseMode {
@@ -211,6 +213,9 @@ class DiagramEditor {
     virtual std::string askForSavePath() = 0;
     virtual std::string askForOpenPath() = 0;
     virtual void showError(const std::string &message) = 0;
+    virtual void drawNode(NodeIndex) = 0;
+    virtual void drawLine(const ViewportLine &cursor_line) = 0;
+    virtual void drawRect(const ViewportRect &rect) = 0;
 
     static NodeIndex noNodeIndex() { return -1; }
     void deleteNode(int index);
@@ -246,6 +251,7 @@ class DiagramEditor {
     bool aNodeIsSelected() const;
     void selectNodesInRect(const ViewportRect &);
     bool nodeIsInRect(NodeIndex node_index,const ViewportRect &rect) const;
+
     virtual ViewportLine
       textObjectCursorLine(
         const ViewportTextObject &text_object,

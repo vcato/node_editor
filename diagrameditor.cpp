@@ -1475,3 +1475,45 @@ void DiagramEditor::checkDiagramStateIsCompatibleWithTheDiagram()
     assert(false);
   }
 }
+
+
+ViewportCircle DiagramEditor::connectorCircle(NodeConnectorIndex index) const
+{
+  NodeRenderInfo render_info = nodeRenderInfo(node(index.node_index));
+
+  if (index.input_index>=0) {
+    return render_info.input_connector_circles[index.input_index];
+  }
+
+  if (index.output_index>=0) {
+    return render_info.output_connector_circles[index.output_index];
+  }
+
+  assert(false);
+  return ViewportCircle{};
+}
+
+
+void DiagramEditor::drawAll()
+{
+  for (NodeIndex index : diagram().existingNodeIndices()) {
+    drawNode(index);
+  }
+
+  if (aNodeIsFocused()) {
+    ViewportLine cursor_line =
+      cursorLine(focused_node_index,text_editor.cursorPosition());
+    drawLine(cursor_line);
+  }
+
+  if (!selected_node_connector_index.isNull()) {
+    drawLine({
+      connectorCircle(selected_node_connector_index).center,
+      temp_source_pos
+    });
+  }
+
+  if (maybe_selection_rectangle) {
+    drawRect(*maybe_selection_rectangle);
+  }
+}

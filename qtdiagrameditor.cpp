@@ -281,6 +281,12 @@ void QtDiagramEditor::drawText(const ViewportTextObject &text_object)
 }
 
 
+void QtDiagramEditor::drawRect(const ViewportRect &rect)
+{
+  ::drawRect(rect);
+}
+
+
 void
   QtDiagramEditor::drawBoxedText2(
     const ViewportTextObject &text_object,
@@ -317,23 +323,6 @@ static vector<T> operator+(const vector<T> &a,const vector<T> &b)
   result.insert(result.end(),a.begin(),a.end());
   result.insert(result.end(),b.begin(),b.end());
   return result;
-}
-
-
-ViewportCircle QtDiagramEditor::connectorCircle(NodeConnectorIndex index) const
-{
-  NodeRenderInfo render_info = nodeRenderInfo(node(index.node_index));
-
-  if (index.input_index>=0) {
-    return render_info.input_connector_circles[index.input_index];
-  }
-
-  if (index.output_index>=0) {
-    return render_info.output_connector_circles[index.output_index];
-  }
-
-  assert(false);
-  return ViewportCircle{};
 }
 
 
@@ -402,7 +391,7 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
       int source_output_index = input.source_output_index;
       ViewportCircle source_circle =
         nodeOutputCircle(source_node,source_output_index);
-      drawLine(source_circle.center,c.center);
+      drawLine({source_circle.center, c.center});
     }
   }
 
@@ -419,28 +408,9 @@ void QtDiagramEditor::drawNode(NodeIndex node_index)
 }
 
 
-void QtDiagramEditor::drawAll()
+void QtDiagramEditor::drawLine(const ViewportLine &cursor_line)
 {
-  for (NodeIndex index : diagram().existingNodeIndices()) {
-    drawNode(index);
-  }
-
-  if (aNodeIsFocused()) {
-    ViewportLine cursor_line =
-      cursorLine(focused_node_index,text_editor.cursorPosition());
-    drawLine(cursor_line.start,cursor_line.end);
-  }
-
-  if (!selected_node_connector_index.isNull()) {
-    drawLine(
-      connectorCircle(selected_node_connector_index).center,
-      temp_source_pos
-    );
-  }
-
-  if (maybe_selection_rectangle) {
-    drawRect(*maybe_selection_rectangle);
-  }
+  ::drawLine(cursor_line.start, cursor_line.end);
 }
 
 

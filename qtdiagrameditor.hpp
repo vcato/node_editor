@@ -32,7 +32,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     void mousePressEvent(QMouseEvent *event_ptr) override;
     void mouseReleaseEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent * event_ptr) override;
-    void drawAll();
+    void drawLine(const ViewportLine &cursor_line) override;
     void drawPolygon(const std::vector<ViewportPoint> &vertices);
     void drawFilledRect(const ViewportRect &);
     void drawFilledCircle(const ViewportCircle &);
@@ -41,6 +41,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
       rectAroundTextObject(const ViewportTextObject &text_object) const;
 
     void drawText(const ViewportTextObject &text_object);
+    void drawRect(const ViewportRect &rect) override;
     void
       drawBoxedText2(
         const ViewportTextObject &text_object,
@@ -50,9 +51,7 @@ class QtDiagramEditor : public QGLWidget, public DiagramEditor {
     int textHeight() const;
     int textWidth(const std::string &s) const;
     static constexpr float node_input_radius = 5;
-
-    ViewportCircle connectorCircle(NodeConnectorIndex) const;
-    void drawNode(NodeIndex);
+    virtual void drawNode(NodeIndex);
 
     void paintGL() override;
     bool event(QEvent *) override;
