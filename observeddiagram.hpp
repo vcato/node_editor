@@ -7,7 +7,7 @@ struct Diagram;
 
 struct ObservedDiagram {
   Diagram &diagram;
-  DiagramState diagram_state;
+  Optional<DiagramState> maybe_diagram_state;
 
   struct Holder {
     virtual void notifyDiagramUnobserved(Diagram &) = 0;
@@ -39,9 +39,14 @@ struct ObservedDiagram {
     Observer(const Observer &) = delete;
     void operator=(const Observer &) = delete;
 
-    const DiagramState &diagramState()
+    const DiagramState *diagramStatePtr()
     {
-      return observed_diagram.diagram_state;
+      if (observed_diagram.maybe_diagram_state) {
+        return &*observed_diagram.maybe_diagram_state;
+      }
+      else {
+        return nullptr;
+      }
     }
 
     Diagram &diagram()

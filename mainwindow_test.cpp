@@ -324,6 +324,7 @@ static void testRemovingAPosExpr()
   tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass|Pos Expr","Edit Diagram..."
   );
+
   tree_editor.userSelectsContextMenuItem(
     "Charmapper1|Motion Pass|Pos Expr","Remove"
   );

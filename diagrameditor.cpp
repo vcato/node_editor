@@ -48,7 +48,7 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 void DiagramEditor::setDiagramStatePtr(const DiagramState *arg)
 {
   diagram_state_ptr = arg;
-
+  checkDiagramStateIsCompatibleWithTheDiagram();
   redraw();
 }
 
@@ -66,13 +66,13 @@ void DiagramEditor::setDiagramObserver(DiagramObserverPtr arg)
   if (diagram_observer_ptr) {
     diagram_observer_ptr->diagram_state_changed_callback =
       [this]{
-        setDiagramStatePtr(&diagram_observer_ptr->diagramState());
+        setDiagramStatePtr(diagram_observer_ptr->diagramStatePtr());
       };
   }
 
   if (diagram_observer_ptr) {
     setDiagramPtr(&diagram_observer_ptr->diagram());
-    setDiagramStatePtr(&diagram_observer_ptr->diagramState());
+    setDiagramStatePtr(diagram_observer_ptr->diagramStatePtr());
   }
   else {
     setDiagramPtr(nullptr);
@@ -1456,4 +1456,22 @@ Optional<string>
   }
 
   return error_message;
+}
+
+
+void DiagramEditor::checkDiagramStateIsCompatibleWithTheDiagram()
+{
+  if (!diagram_state_ptr) {
+    // No diagram state has been set.  We consider this okay.
+    // We may be showing a digram that hasn't been evaluated.
+    return;
+  }
+
+  const DiagramState &diagram_state = *diagram_state_ptr;
+  int node_states_vector_size = diagram_state.node_states.size();
+  int diagram_node_vector_size = diagram().nNodes();
+
+  if (node_states_vector_size != diagram_node_vector_size) {
+    assert(false);
+  }
 }

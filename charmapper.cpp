@@ -274,7 +274,7 @@ void Charmapper::apply(AbstractDiagramEvaluator &evaluator)
       auto n_exprs = pass.nExprs();
 
       for (int i=0; i!=n_exprs; ++i) {
-        auto &expr = pass.expr(i);
+        MotionPass::PosExpr &expr = pass.expr(i);
         BodyLink &target_body_link = expr.target_body_link;
 
         // The diagram generates a PosExpr object, which requires a target body.

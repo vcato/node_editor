@@ -49,7 +49,11 @@ int main(int argc,char **argv)
   QtDiagramEditorWindow window;
 
   auto diagram_changed_function = [&](){
-    reevaluateDiagram(observed_diagram.diagram,observed_diagram.diagram_state);
+    observed_diagram.maybe_diagram_state.emplace();
+    reevaluateDiagram(
+      observed_diagram.diagram,
+      *observed_diagram.maybe_diagram_state
+    );
     observed_diagram.notifyObserversThatDiagramStateChanged();
   };
 

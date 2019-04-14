@@ -199,6 +199,7 @@ class DiagramEditor {
     void notifyDiagramChanged();
     ViewportRect
       rectAroundTextObject(const ViewportTextObject &text_object) const;
+    void checkDiagramStateIsCompatibleWithTheDiagram();
 
   private:
     enum class MouseMode {

@@ -221,7 +221,7 @@ void TreeEditor::removeDiagramEditors(const TreePath &path)
 
 void TreeEditor::openDiagramEditor(const TreePath &path)
 {
-  auto &window = createDiagramEditor();
+  DiagramEditorWindow &window = createDiagramEditor();
   window.setDiagramObserver(diagramObserverPtr(world(),path));
   diagram_editor_window_ptrs.push_back(&window);
 
