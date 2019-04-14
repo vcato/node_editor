@@ -13,6 +13,8 @@
 #include "faketree.hpp"
 #include "fakesceneviewer.hpp"
 
+#define ADD_TEST 1
+
 using std::string;
 using std::vector;
 using std::cerr;
@@ -331,6 +333,33 @@ static void testRemovingAPosExpr()
 }
 
 
+#if ADD_TEST
+static void testEditingALocalPositionDiagram()
+{
+  Tester tester;
+  FakeTreeEditor &tree_editor = tester.main_window.tree_editor;
+
+  tree_editor.userSelectsContextMenuItem(
+    "Add Charmapper"
+  );
+  tree_editor.userSelectsContextMenuItem(
+    "Charmapper1","Add Motion Pass"
+  );
+  tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Motion Pass","Add Pos Expr"
+  );
+  cerr << "---\n";
+  tree_editor.userSelectsContextMenuItem(
+    "Charmapper1|Motion Pass|Pos Expr|Local Position","Edit Diagram..."
+  );
+
+  // This isn't failing because our fake diagram editor doesn't actually
+  // draw nodes.
+  assert(false);
+}
+#endif
+
+
 static void testCancellingSaveProject()
 {
   FakeMainWindow main_window;
@@ -572,6 +601,9 @@ int main()
   testChangingABodyName();
   testRemovingABody();
   testRemovingAPosExpr();
+#if ADD_TEST
+  testEditingALocalPositionDiagram();
+#endif
   testCancellingSaveProject();
   testCancellingOpenProject();
   testCreatingABodyWithAnAveragePosition();

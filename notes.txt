@@ -111,3 +111,5 @@ Need to have a test where we edit the local position diagram of a pos expr.
 The local position diagram isn't currently used.
 Expect an assertion in DiagramEditor::lineError()
 Modify Charmapper::apply()
+---
+Need to have DiagramEditor::drawNode()

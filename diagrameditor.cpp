@@ -47,6 +47,7 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 
 void DiagramEditor::setDiagramStatePtr(const DiagramEvaluationState *arg)
 {
+  cerr << "DiagramEditor::setDiagramStatePtr: arg=" << arg << "\n";
   diagram_state_ptr = arg;
   checkDiagramStateIsCompatibleWithTheDiagram();
   redraw();
