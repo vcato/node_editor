@@ -13,7 +13,7 @@
 
 
 class Diagram;
-class DiagramState;
+class DiagramEvaluationState;
 struct Wrapper;
 struct VoidWrapper;
 struct NumericWrapper;

@@ -6,18 +6,18 @@
 #include "environment.hpp"
 
 
-struct DiagramState {
+struct DiagramEvaluationState {
   struct NodeState {
     std::vector<Any> output_values;
     std::vector<std::string> line_errors;
   };
 
-  DiagramState() = default;
+  DiagramEvaluationState() = default;
 
-  void operator=(const DiagramState &) = delete;
-  DiagramState(const DiagramState &) = delete;
-  DiagramState(DiagramState &&) = default;
-  DiagramState &operator=(DiagramState &&) = default;
+  void operator=(const DiagramEvaluationState &) = delete;
+  DiagramEvaluationState(const DiagramEvaluationState &) = delete;
+  DiagramEvaluationState(DiagramEvaluationState &&) = default;
+  DiagramEvaluationState &operator=(DiagramEvaluationState &&) = default;
 
   std::vector<NodeState> node_states;
   std::vector<std::unique_ptr<Environment>> environment_ptrs;

@@ -90,7 +90,7 @@ struct Tester {
   Diagram diagram;
   ostringstream show_stream;
   Environment environment;
-  DiagramState diagram_state;
+  DiagramEvaluationState diagram_state;
   ostringstream error_stream;
   DiagramExecutionContext context{show_stream,error_stream,&environment};
   DiagramExecutor executor{context, context.parent_environment_ptr};

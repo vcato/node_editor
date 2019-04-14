@@ -113,5 +113,3 @@ Expect an assertion in DiagramEditor::lineError()
 Modify Charmapper::apply()
 ---
 Move QtDiagramEditor::drawAll() to the base class.
----
-Rename DiagramState to DiagramEvaluationState

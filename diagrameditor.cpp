@@ -45,7 +45,7 @@ void DiagramEditor::setDiagramPtr(Diagram *arg)
 }
 
 
-void DiagramEditor::setDiagramStatePtr(const DiagramState *arg)
+void DiagramEditor::setDiagramStatePtr(const DiagramEvaluationState *arg)
 {
   diagram_state_ptr = arg;
   checkDiagramStateIsCompatibleWithTheDiagram();
@@ -1467,7 +1467,7 @@ void DiagramEditor::checkDiagramStateIsCompatibleWithTheDiagram()
     return;
   }
 
-  const DiagramState &diagram_state = *diagram_state_ptr;
+  const DiagramEvaluationState &diagram_state = *diagram_state_ptr;
   int node_states_vector_size = diagram_state.node_states.size();
   int diagram_node_vector_size = diagram().nNodes();
 

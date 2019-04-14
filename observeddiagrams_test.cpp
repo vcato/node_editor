@@ -65,7 +65,7 @@ struct FakeDiagramEvaluator {
       observed_diagrams.findObservedDiagramFor(diagram);
 
     if (!maybe_observed_diagram) {
-      DiagramState temporary_diagram_state;
+      DiagramEvaluationState temporary_diagram_state;
       // evaluateDiagram(diagram,temporary_diagram_state);
       return;
     }

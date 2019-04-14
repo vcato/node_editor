@@ -181,7 +181,7 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
 
   Optional<Any>
     maybeEvaluateWith(
-      DiagramState &diagram_state,
+      DiagramEvaluationState &diagram_state,
       const Diagram &diagram,
       const Environment *parent_environment_ptr,
       const Optional<string> &optional_expected_type_name
@@ -204,7 +204,7 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
       observed_diagrams.findObservedDiagramFor(diagram);
 
     if (!maybe_observed_diagram) {
-      DiagramState temporary_diagram_state;
+      DiagramEvaluationState temporary_diagram_state;
       return
         maybeEvaluateWith(
           temporary_diagram_state,
@@ -216,7 +216,8 @@ struct ObservedDiagramEvaluator : AbstractDiagramEvaluator {
 
     ObservedDiagram &observed_diagram = *maybe_observed_diagram;
     observed_diagram.maybe_diagram_state.emplace();
-    DiagramState &diagram_state = *observed_diagram.maybe_diagram_state;
+    DiagramEvaluationState &diagram_state =
+      *observed_diagram.maybe_diagram_state;
 
     Optional<Any> result =
       maybeEvaluateWith(

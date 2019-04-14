@@ -1,9 +1,9 @@
 #include "abstractdiagramevaluator.hpp"
-#include "diagramstate.hpp"
+#include "diagramevaluationstate.hpp"
 
 
 struct TestDiagramEvaluator : AbstractDiagramEvaluator {
-  std::map<const Diagram *,DiagramState> diagram_state_map;
+  std::map<const Diagram *,DiagramEvaluationState> diagram_state_map;
 
   TestDiagramEvaluator(const DiagramExecutionContext &context)
   : AbstractDiagramEvaluator(context)

@@ -1,13 +1,13 @@
 #ifndef OBSERVEDDIAGRAM_HPP_
 #define OBSERVEDDIAGRAM_HPP_
 
-#include "diagramstate.hpp"
+#include "diagramevaluationstate.hpp"
 
 struct Diagram;
 
 struct ObservedDiagram {
   Diagram &diagram;
-  Optional<DiagramState> maybe_diagram_state;
+  Optional<DiagramEvaluationState> maybe_diagram_state;
 
   struct Holder {
     virtual void notifyDiagramUnobserved(Diagram &) = 0;
@@ -39,7 +39,7 @@ struct ObservedDiagram {
     Observer(const Observer &) = delete;
     void operator=(const Observer &) = delete;
 
-    const DiagramState *diagramStatePtr()
+    const DiagramEvaluationState *diagramStatePtr()
     {
       if (observed_diagram.maybe_diagram_state) {
         return &*observed_diagram.maybe_diagram_state;

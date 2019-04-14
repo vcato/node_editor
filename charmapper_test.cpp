@@ -8,7 +8,7 @@ using std::string;
 using std::map;
 
 
-static map<const Diagram *,DiagramState>
+static map<const Diagram *,DiagramEvaluationState>
   applyCharmapper(Charmapper &charmapper)
 {
   DiagramExecutionContext
@@ -207,10 +207,10 @@ static void testPosExprDiagramWithWrongReturnType()
   clearDiagram(diagram);
   NodeIndex node_index = diagram.createNodeWithText("return 5");
 
-  map<const Diagram *,DiagramState> diagram_state_map =
+  map<const Diagram *,DiagramEvaluationState> diagram_state_map =
     applyCharmapper(charmapper);
 
-  DiagramState &diagram_state = diagram_state_map[&diagram];
+  DiagramEvaluationState &diagram_state = diagram_state_map[&diagram];
   int line_index = 0;
   string error_message =
     diagram_state.node_states[node_index].line_errors[line_index];

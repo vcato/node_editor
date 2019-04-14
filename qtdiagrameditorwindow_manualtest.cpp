@@ -12,7 +12,10 @@ using std::ostringstream;
 
 
 static void
-  reevaluateDiagram(const Diagram &diagram,DiagramState &diagram_state)
+  reevaluateDiagram(
+    const Diagram &diagram,
+    DiagramEvaluationState &diagram_state
+  )
 {
   ostringstream show_stream;
   ostringstream error_stream;

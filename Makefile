@@ -11,7 +11,7 @@ run_unit_tests: \
   optional_test.pass \
   maybeint_test.pass \
   any_test.pass \
-  diagramstate_test.pass \
+  diagramevaluationstate_test.pass \
   fileaccessor_test.pass \
   charmapperobjects_test.pass \
   evaluateexpression_test.pass \
@@ -58,7 +58,7 @@ EVALUATEEXPRESSION = evaluateexpression.o \
 EVALUATESTATEMENT = evaluatestatement.o $(EVALUATEEXPRESSION)
 PRINTINDENT = printindent.o
 ANYIO = anyio.o $(PRINTINDENT)
-DIAGRAMSTATE = diagramstate.o
+DIAGRAMEVALUATIONSTATE = diagramevaluationstate.o
 ANY = any.o
 STRINGUTIL = stringutil.o
 LINETEXT = linetext.o $(STRINGUTIL)
@@ -66,7 +66,7 @@ STATEMENTTEXT = statementtext.o
 DIAGRAMNODE = diagramnode.o $(LINETEXT) $(STATEMENTTEXT) $(STRINGUTIL)
 DIAGRAM = diagram.o $(DIAGRAMNODE)
 EVALUATEDIAGRAM = evaluatediagram.o \
-  $(EVALUATESTATEMENT) $(ANYIO) $(DIAGRAMSTATE) $(DIAGRAM) $(ANY)
+  $(EVALUATESTATEMENT) $(ANYIO) $(DIAGRAMEVALUATIONSTATE) $(DIAGRAM) $(ANY)
 SCENE = scene.o $(GENERATENAME)
 POINT2DOBJECT=  point2dobject.o
 GLOBALVEC = globalvec.o
@@ -85,8 +85,8 @@ DIAGRAMEXECUTOR = diagramexecutor.o $(ANY)
 OBSERVEDDIAGRAM = observeddiagram.o
 WORLD = world.o \
   $(OBSERVEDDIAGRAMS) $(GENERATENAME) $(SCENEWINDOW) $(EVALUATEDIAGRAM) \
-  $(DIAGRAMSTATE) $(SCENE) $(SCENEOBJECTS) $(CHARMAPPER) $(DIAGRAMEXECUTOR) \
-  $(ANY) $(OBSERVEDDIAGRAM)
+  $(DIAGRAMEVALUATIONSTATE) $(SCENE) $(SCENEOBJECTS) $(CHARMAPPER) \
+  $(DIAGRAMEXECUTOR) $(ANY) $(OBSERVEDDIAGRAM)
 QTSLOT = qtslot.o moc_qtslot.o
 QTMENU = qtmenu.o $(QTSLOT)
 QTTREEWIDGETITEM = qttreewidgetitem.o
@@ -160,7 +160,8 @@ maybeint_test: maybeint_test.o
 any_test: any_test.o $(ANY) $(ANYIO)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
-diagramstate_test: diagramstate_test.o $(DIAGRAMSTATE)
+diagramevaluationstate_test: diagramevaluationstate_test.o \
+  $(DIAGRAMEVALUATIONSTATE)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 fileaccessor_test: fileaccessor_test.o
@@ -257,7 +258,7 @@ qtslider_manualtest: qtslider_manualtest.o $(QTSLIDER)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 qtdiagrameditorwindow_manualtest: qtdiagrameditorwindow_manualtest.o \
-  $(QTDIAGRAMEDITORWINDOW) $(DIAGRAMSTATE) $(EVALUATEDIAGRAM) \
+  $(QTDIAGRAMEDITORWINDOW) $(DIAGRAMEVALUATIONSTATE) $(EVALUATEDIAGRAM) \
   $(OBSERVEDDIAGRAM) $(DIAGRAMEDITORWINDOW) $(DIAGRAMEXECUTOR)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 

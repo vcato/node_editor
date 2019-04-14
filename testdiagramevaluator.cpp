@@ -1,7 +1,7 @@
 #include "testdiagramevaluator.hpp"
 
 #include "diagramexecutor.hpp"
-#include "diagramstate.hpp"
+#include "diagramevaluationstate.hpp"
 #include "evaluatediagram.hpp"
 
 using std::string;
@@ -15,7 +15,7 @@ Optional<Any>
   )
 {
   DiagramExecutor executor(context,parent_environment_ptr);
-  DiagramState &diagram_state = diagram_state_map[&diagram];
+  DiagramEvaluationState &diagram_state = diagram_state_map[&diagram];
   executor.optional_expected_return_type_name = optional_expected_type_name;
   evaluateDiagram(diagram,executor,diagram_state);
   return std::move(executor.maybe_return_value);

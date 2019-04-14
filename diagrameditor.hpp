@@ -16,7 +16,7 @@
 #include "rect.hpp"
 #include "optional.hpp"
 #include "viewportline.hpp"
-#include "diagramstate.hpp"
+#include "diagramevaluationstate.hpp"
 #include "observeddiagram.hpp"
 #include "viewportrect.hpp"
 
@@ -191,7 +191,7 @@ class DiagramEditor {
       NodeConnectorIndex::null();
     Diagram *diagram_ptr2 = nullptr;
     DiagramObserverPtr diagram_observer_ptr;
-    const DiagramState *diagram_state_ptr = nullptr;
+    const DiagramEvaluationState *diagram_state_ptr = nullptr;
     NodeIndex focused_node_index = noNodeIndex();
     ViewportPoint temp_source_pos;
     Optional<ViewportRect> maybe_selection_rectangle;
@@ -277,7 +277,7 @@ class DiagramEditor {
       ) const;
 
     void setDiagramPtr(Diagram *);
-    void setDiagramStatePtr(const DiagramState *);
+    void setDiagramStatePtr(const DiagramEvaluationState *);
 
     std::vector<NodeIndex> selected_node_indices;
     bool node_was_selected = false;

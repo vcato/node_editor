@@ -1,11 +1,13 @@
-#include "diagramstate.hpp"
+#include "diagramevaluationstate.hpp"
 
 
 using std::make_unique;
 
 
 Environment &
-  DiagramState::allocateEnvironment(const Environment *parent_environment_ptr)
+  DiagramEvaluationState::allocateEnvironment(
+    const Environment *parent_environment_ptr
+  )
 {
   environment_ptrs.emplace_back(
     make_unique<Environment>(parent_environment_ptr)
@@ -16,7 +18,7 @@ Environment &
 }
 
 
-void DiagramState::clear()
+void DiagramEvaluationState::clear()
 {
   node_states.clear();
   environment_ptrs.clear();

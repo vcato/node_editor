@@ -64,9 +64,9 @@ static string
 static void
   evaluateDiagramNodeStatement(
     const Diagram &,
-    DiagramState &diagram_state,
+    DiagramEvaluationState &diagram_state,
     const Node &node,
-    DiagramState::NodeState &node_state,
+    DiagramEvaluationState::NodeState &node_state,
     int statement_index,
     int output_index,
     Executor &executor,
@@ -129,7 +129,7 @@ static void
 static void
   updateNodeEvaluation(
     const Diagram &diagram,
-    DiagramState &diagram_state,
+    DiagramEvaluationState &diagram_state,
     int node_index,
     vector<bool> &evaluated_flags,
     Executor &executor
@@ -139,9 +139,9 @@ static void
 static void
   evaluateNode(
     const Diagram &diagram,
-    DiagramState &diagram_state,
+    DiagramEvaluationState &diagram_state,
     const Node &node,
-    DiagramState::NodeState &node_state,
+    DiagramEvaluationState::NodeState &node_state,
     vector<bool> &evaluated_flags,
     Executor &executor
   )
@@ -221,7 +221,7 @@ static void
 static void
   updateNodeEvaluation(
     const Diagram &diagram,
-    DiagramState &diagram_state,
+    DiagramEvaluationState &diagram_state,
     int node_index,
     vector<bool> &evaluated_flags,
     Executor &executor
@@ -250,7 +250,7 @@ void
   evaluateDiagram(
     const Diagram &diagram,
     Executor &executor,
-    DiagramState &diagram_state
+    DiagramEvaluationState &diagram_state
   )
 {
   int n_nodes = diagram.nNodes();
@@ -265,6 +265,6 @@ void
 
 void evaluateDiagram(const Diagram &diagram,Executor &executor)
 {
-  DiagramState diagram_state;
+  DiagramEvaluationState diagram_state;
   evaluateDiagram(diagram,executor,diagram_state);
 }
