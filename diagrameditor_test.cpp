@@ -615,10 +615,10 @@ static void
     const ClickingOnAFocusedNodeTest &test
   )
 {
-  auto point_function = [
-    &position = test.target_cursor_position,
-    fraction = test.target_cursor_fraction
-  ](const FakeDiagramEditor &editor) {
+  auto &position = test.target_cursor_position;
+  const auto fraction = test.target_cursor_fraction;
+
+  auto point_function = [&,fraction](const FakeDiagramEditor &editor) {
     return pointOnCursor(editor,position,fraction);
   };
 
