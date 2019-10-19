@@ -1,3 +1,6 @@
+#ifndef QTSLIDER_HPP_
+#define QTSLIDER_HPP_
+
 #include <QSlider>
 #include <functional>
 
@@ -34,3 +37,6 @@ struct QtSlider : QWidget
     void setSliderValue(int);
     void lineEditValueChanged(const std::string &);
 };
+
+
+#endif /* QTSLIDER_HPP_ */
