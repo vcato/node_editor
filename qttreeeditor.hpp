@@ -21,9 +21,6 @@ class QtTreeEditor : public QtTreeWidget, public TreeEditor {
   private:
     using LabelProperties = TreeWidget::LabelProperties;
 
-    static void setItemText(QTreeWidgetItem &item,const std::string &label);
-
-    QTreeWidgetItem &itemFromPath(const TreePath &path) const;
     void prepareMenu(const QPoint &pos);
     DiagramEditorWindow& createDiagramEditor() override;
     int itemChildCount(const TreePath &parent_item) const override;
@@ -44,8 +41,6 @@ class QtTreeEditor : public QtTreeWidget, public TreeEditor {
         const TreePath &path,
         const std::string &value
       );
-
-    void selectItem(const TreePath &path);
 
     QtTreeWidget &tree() { return *this; }
     const QtTreeWidget &tree() const { return *this; }

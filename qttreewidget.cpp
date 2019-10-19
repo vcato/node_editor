@@ -14,7 +14,7 @@
 using std::string;
 using std::vector;
 using std::cerr;
-
+using NumericValue = TreeWidget::NumericValue;
 
 struct QtTreeWidget::Impl {
   struct QtItemWrapperWidget : QWidget {
@@ -567,4 +567,33 @@ void QtTreeWidget::removeItem(const TreePath &path)
   auto parent_path = parentPath(path);
   auto child_index = path.back();
   ::removeChildItem(itemFromPath(parent_path),child_index);
+}
+
+
+int QtTreeWidget::itemChildCount(const TreePath &parent_path) const
+{
+  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
+  return parent_item.childCount();
+}
+
+
+void QtTreeWidget::removeChildItems(const TreePath &path)
+{
+  QTreeWidgetItem &item = itemFromPath(path);
+
+  while (item.childCount()>0) {
+    item.removeChild(item.child(item.childCount()-1));
+  }
+}
+
+
+void QtTreeWidget::selectItem(const TreePath &path)
+{
+  itemFromPath(path).setSelected(true);
+}
+
+
+void QtTreeWidget::setItemExpanded(const TreePath &path,bool new_expanded_state)
+{
+  itemFromPath(path).setExpanded(new_expanded_state);
 }

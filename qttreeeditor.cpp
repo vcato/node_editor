@@ -21,6 +21,7 @@ QtTreeEditor::QtTreeEditor()
     SIGNAL(itemSelectionChanged()),
     SLOT(itemSelectionChangedSlot())
   );
+
   connect(
     this,
     SIGNAL(customContextMenuRequested(const QPoint &)),
@@ -49,32 +50,15 @@ QtTreeEditor::QtTreeEditor()
 }
 
 
-void QtTreeEditor::setItemText(QTreeWidgetItem &item,const std::string &label)
-{
-  QtTreeWidget::setItemText(item,label);
-}
-
-
-QTreeWidgetItem &QtTreeEditor::itemFromPath(const std::vector<int> &path) const
-{
-  return tree().itemFromPath(path);
-}
-
-
 int QtTreeEditor::itemChildCount(const TreePath &parent_path) const
 {
-  QTreeWidgetItem &parent_item = itemFromPath(parent_path);
-  return parent_item.childCount();
+  return QtTreeWidget::itemChildCount(parent_path);
 }
 
 
 void QtTreeEditor::removeChildItems(const TreePath &path)
 {
-  QTreeWidgetItem &item = itemFromPath(path);
-
-  while (item.childCount()>0) {
-    item.removeChild(item.child(item.childCount()-1));
-  }
+  QtTreeWidget::removeChildItems(path);
 }
 
 
@@ -164,13 +148,7 @@ void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
 }
 
 
-void QtTreeEditor::selectItem(const TreePath &path)
-{
-  itemFromPath(path).setSelected(true);
-}
-
-
 void QtTreeEditor::setItemExpanded(const TreePath &path,bool new_expanded_state)
 {
-  itemFromPath(path).setExpanded(new_expanded_state);
+  QtTreeWidget::setItemExpanded(path,new_expanded_state);
 }

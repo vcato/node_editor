@@ -44,6 +44,7 @@ struct TreeEditor {
     std::vector<MenuItem> contextMenuItems(const TreePath &path);
 
     virtual void removeChildItems(const TreePath &path) = 0;
+
     virtual void
       setItemExpanded(const TreePath &path,bool new_expanded_state) = 0;
 

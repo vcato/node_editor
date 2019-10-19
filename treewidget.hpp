@@ -1,11 +1,13 @@
 #ifndef TREEWIDGET_HPP_
 #define TREEWIDGET_HPP_
 
+#include <string>
 #include "treepath.hpp"
-#include "wrappervaluetypes.hpp"
 
 
 struct TreeWidget {
+  using NumericValue = int;
+
   struct LabelProperties {
     std::string text;
   };
@@ -16,22 +18,22 @@ struct TreeWidget {
       const TreeWidget::LabelProperties &label_properties
     ) = 0;
 
-    virtual void
-      createNumericItem(
-        const TreePath &new_item_path,
-        const LabelProperties &,
-        NumericValue value,
-        NumericValue minimum_value,
-        NumericValue maximum_value
-      ) = 0;
+  virtual void
+    createNumericItem(
+      const TreePath &new_item_path,
+      const LabelProperties &,
+      NumericValue value,
+      NumericValue minimum_value,
+      NumericValue maximum_value
+    ) = 0;
 
-    virtual void
-      createEnumerationItem(
-        const TreePath &new_item_path,
-        const LabelProperties &,
-        const std::vector<std::string> &options,
-        int value
-      ) = 0;
+  virtual void
+    createEnumerationItem(
+      const TreePath &new_item_path,
+      const LabelProperties &,
+      const std::vector<std::string> &options,
+      int value
+    ) = 0;
 
   virtual void
     createStringItem(
