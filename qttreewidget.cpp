@@ -4,6 +4,7 @@
 #include <iostream>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QHeaderView>
 #include "qtlayout.hpp"
 #include "qtwidget.hpp"
 #include "qtcombobox.hpp"
@@ -129,6 +130,13 @@ QLabel&
   return label_widget;
 }
 
+
+
+QtTreeWidget::QtTreeWidget()
+{
+  assert(header());
+  header()->close();
+}
 
 
 template <typename T>

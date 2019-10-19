@@ -1,7 +1,6 @@
 #include "qttreeeditor.hpp"
 
 #include <QMenu>
-#include <QHeaderView>
 #include "qtmenu.hpp"
 #include "qtdiagrameditorwindow.hpp"
 
@@ -12,8 +11,6 @@ using std::string;
 
 QtTreeEditor::QtTreeEditor()
 {
-  assert(header());
-  header()->close();
   setContextMenuPolicy(Qt::CustomContextMenu);
 
   connect(

@@ -10,6 +10,8 @@ struct QLabel;
 
 class QtTreeWidget : public QTreeWidget, public TreeWidget {
   public:
+    QtTreeWidget();
+
     void
       createVoidItem(
         const TreePath &new_item_path,
