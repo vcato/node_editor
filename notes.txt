@@ -106,3 +106,182 @@ move all nodes below it.
 ---
 If a node in a diagram gets wider, it should push nodes that are connected
 to it to the right.
+---
+Maybe when we do something like Add PosExpr, we are adding a generic
+expression node that just has one of the predefined diagrams.
+We'd need to have a way of specifying the parameters.
+* One way would be to let this be handled at the tree level.  We'd have some
+  way of adding parameters that could be used by the expression.
+  * Pos Expr -> Add Parameter
+  * Pos Expr -> parameter -> Set Name
+  * Maybe parameters have attributes.  The attributes can be shown or hidden.
+    When we're using one of the predefined nodes, the attributes are hidden.
+
+struct Parameter {
+  struct name;
+  Type type;
+}
+
+struct Expression {
+  Diagram diagram;
+  vector<Parameter> parameters;
+}
+
+
+This seems similar to variables.
+
+Maybe we have predefined expression types, but we can convert an instance
+of a predefind expression into a generic expression.  The generic expression
+would then have things like parameter names which are visible.
+The diagram for a predefined expression would not be editable, but the
+diagram for a generic expression would be.
+
+* Have a way to create a new predefined expression from an instance of
+  a generic one.
+
+Maybe diagrams for predefined expressions should be viewable, but not
+editable.
+
+Let's think about the case where you have a PosExpr with a local position.
+The local position has a diagram which by default is just return [x,y].
+We allow this diagram to be edited, so why not the top diagram also?
+What if we want more parameters?  What if we want the parameters to
+have different names?  If we edit the local position diagram, are we
+converting the expression into a generic one?  Maybe we have a way to
+override base expressions, so we are saying that we have a PosExpr
+except that the local position diagram is different.
+
+// If everything is default:
+  PosExpr {
+  }
+// If we have a local position:
+  PosExpr {
+    local_position {
+      x: 7
+      y: 10
+    }
+  }
+// If we have a custom expression for the local position:
+  PosExpr {
+    local_position: [x+7,y] {
+      x: 2
+      y: 3
+    }
+  }
+// If we've customized the range of the parameters
+  PosExpr {
+    local_position: "[x+7,y]" {
+      x: 2
+      y: 3
+    }
+  }
+// If we've removed a parameter
+  PosExpr {
+    local_position: "[x+7,y]" {
+      x: 2
+      y: 3
+    }
+  }
+
+  PosExpr(local_position=(let x=2; let y=3; [x+7,y]))
+  PosExpr(local_position=[2,3])
+
+Maybe we have a "Customize" option.  If we were to customize a Local Position,
+we would get
+
+local_diagram: Point {
+  x: 2
+  y: 1
+}
+
+local_position: CustomPoint {
+  diagram: {
+    ...
+  }
+  parameter: {
+    name: "x"
+    value: 0
+  }
+  parameter: {
+    name: "y"
+    value: 0
+  }
+}
+
+local_diagram: Point {
+  x: CustomScalar {
+    diagram: {
+      ...
+    }
+    parameter: {
+      name: "blah"
+      value: 2
+    }
+  }
+}
+
+
+local_diagram: f {
+  x: 5
+  y: 6
+  z: 7
+}
+
+
+so in general, do we have
+
+  parameter: <function> { parameter ... }
+
+so if we have a custom diagram, is this really just a function?
+
+(x:float,y:float) -> Point = [x*2,y*2]
+
+return [Param("x",float),Param("y",float)]
+
+Doing it this way, the x,y children are defined by having Param calls.
+
+A parameter has a certain type of thing that it requires.
+The argument provides a certain type through a function.
+By default the argument uses the constructor for the parameter type, but
+it can use other functions.
+
+local_position: Point
+  x: sin
+    5
+  y: cos
+    5
+
+local_position: (x:float,y:float){ return [x,y]; }
+  x: 1
+  y: 2
+
+We need to be able to differentiate between the argument being a function
+and the argument being a function call
+
+local_position: Point(x:float,y:float)
+  x: sin(x:float)
+    x: 10
+  y: 6
+
+In general, it seems more natural for the user to be choosing a function
+rather than choosing an expression, so maybe you hhave to supply a
+lambda if you want a custom expression.
+
+local_position: [sin(5),cos($x)]
+  x: 5
+
+local_position: Point($x,$y)
+  x: 5
+  y: 6
+
+Local Position context menu with Edit Parameters...?
+
+Parameters node?
+---
+It may be wrong to have the motion at the top-level of a scene.
+Maybe having bodies is all you ever want to do -- no animation.
+So you can first think in terms of "I need to add some objects to the
+scene".  Then later, you decide you want to be able to add animation.
+How does this integrate with the charmapper idea?  You need to have the
+concept of a scene state -- a "frame".  This allows you to differentiate
+between the initial state and the solved state.

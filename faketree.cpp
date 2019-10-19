@@ -54,7 +54,6 @@ FakeTree::Item &
   FakeTree::Item &new_item =
     insertItemIn(parent_item.children,new_item_index);
   new_item.label = label_properties.text;
-  new_item.label_is_editable = label_properties.is_editable;
   return new_item;
 }
 

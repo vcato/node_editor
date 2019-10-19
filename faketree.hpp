@@ -37,12 +37,10 @@ struct FakeTreeItem {
   bool is_expanded;
   std::string label;
   std::vector<FakeTreeItem> children;
-  bool label_is_editable;
   std::unique_ptr<FakeWidget> value_widget_ptr;
 
   FakeTreeItem()
-  : is_expanded(true),
-    label_is_editable(false)
+  : is_expanded(true)
   {
   }
 

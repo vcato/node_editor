@@ -24,11 +24,7 @@ struct CreateChildItemVisitor : Wrapper::SubclassVisitor {
 
   static LabelProperties labelProperties(const Wrapper &wrapper)
   {
-    return
-      LabelProperties{
-        /*text*/wrapper.label(),
-        /*can_be_edited*/false
-      };
+    return LabelProperties{/*text*/wrapper.label()};
   }
 
   CreateChildItemVisitor(

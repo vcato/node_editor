@@ -50,16 +50,10 @@ QLabel&
   )
 {
   const std::string &label = label_properties.text;
-  bool label_is_editable = label_properties.is_editable;
 
-  if (label_is_editable) {
-    assert(false); // not handled
-  }
-  else {
-    QLabel &label_widget = createWidget<QLabel>(layout);
-    setLabelWidgetText(label_widget,label);
-    return label_widget;
-  }
+  QLabel &label_widget = createWidget<QLabel>(layout);
+  setLabelWidgetText(label_widget,label);
+  return label_widget;
 }
 
 
