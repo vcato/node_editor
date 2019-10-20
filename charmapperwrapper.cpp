@@ -1005,13 +1005,13 @@ struct VariableWrapper : NumericWrapper {
       addMaximum(value);
     }
 
-    void addMinimum(int value) const
+    void addMinimum(NumericValue value) const
     {
       variable.maybe_minimum.emplace();
       variable.maybe_minimum->value = value;
     }
 
-    void addMaximum(int value) const
+    void addMaximum(NumericValue value) const
     {
       variable.maybe_maximum.emplace();
       variable.maybe_maximum->value = value;

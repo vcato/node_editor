@@ -64,7 +64,8 @@ struct FloatMapWrapper : NoOperationWrapper<LeafWrapper<NumericWrapper>> {
     wrapper_data.callbacks.changed_func();
   }
 
-  void setValue(int arg,const TreePath &,TreeObserver &) const override
+  void
+    setValue(NumericValue arg,const TreePath &,TreeObserver &) const override
   {
     setValue(arg);
   }

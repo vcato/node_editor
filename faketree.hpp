@@ -17,9 +17,9 @@ struct FakeWidget {
 
 
 struct FakeSlider : FakeWidget {
-  int value = 0;
-  int minimum = 0;
-  int maximum = 100;
+  NumericValue value = 0;
+  NumericValue minimum = 0;
+  NumericValue maximum = 100;
 
   void printOn(std::ostream &) override;
 };
