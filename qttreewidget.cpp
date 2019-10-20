@@ -40,6 +40,8 @@ struct QtTreeWidget::Impl {
       QTreeWidgetItem &item
     )
   {
+    spin_box.setFocusPolicy(Qt::StrongFocus);
+
     spin_box.value_changed_function =
       [&tree_widget,&item](int value){
         tree_widget.handleSpinBoxItemValueChanged(&item,value);
@@ -424,6 +426,12 @@ void
   )
 {
   assert(item_ptr);
+
+  if (!spin_box_item_value_changed_function) {
+    cerr << "spin_box_item_value_changed_function is not set\n";
+    return;
+  }
+
   spin_box_item_value_changed_function(itemPath(*item_ptr),value);
 }
 
@@ -545,6 +553,25 @@ void
     spin_box.setMinimum(minimum_value);
     spin_box.setMaximum(maximum_value);
     spin_box.setValue(value);
+  }
+}
+
+
+void
+  QtTreeWidget::setItemNumericValue(
+    const TreePath &path,
+    NumericValue value
+  )
+{
+  auto *slider_ptr = itemSliderPtr(path);
+  auto *spin_box_ptr = itemSpinBoxPtr(path);
+
+  if (slider_ptr) {
+    slider_ptr->setValue(value);
+  }
+  else {
+    assert(spin_box_ptr);
+    spin_box_ptr->setValue(value);
   }
 }
 

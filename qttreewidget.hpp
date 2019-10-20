@@ -1,3 +1,6 @@
+#ifndef QTTREEWIDGET_HPP_
+#define QTTREEWIDGET_HPP_
+
 #include <QTreeWidget>
 
 #include "qtslider.hpp"
@@ -42,6 +45,12 @@ class QtTreeWidget : public QTreeWidget, public TreeWidget {
         NumericValue minimum_value,
         NumericValue maximum_value
       ) override;
+
+    void
+      setItemNumericValue(
+        const TreePath &,
+        NumericValue value
+      );
 
     void
       setItemLabel(const TreePath &path,const std::string &new_label) override;
@@ -162,3 +171,6 @@ class QtTreeWidget : public QTreeWidget, public TreeWidget {
         const std::string &value
       );
 };
+
+
+#endif /* QTTREEWIDGET_HPP_ */
