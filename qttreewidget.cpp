@@ -714,7 +714,16 @@ void QtTreeWidget::prepareMenu(const QPoint &pos)
     path = itemPath(*widget_item_ptr);
   }
 
+  if (!context_menu_items_callback) {
+    return;
+  }
+
   auto menu_items = context_menu_items_callback(path);
+
+  if (menu_items.empty()) {
+    return;
+  }
+
   QMenu menu;
 
   for (auto &item : menu_items) {
