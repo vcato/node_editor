@@ -14,7 +14,6 @@
 #include "numericvalue.hpp"
 
 using std::string;
-using std::vector;
 using std::cerr;
 
 struct QtTreeWidget::Impl {
@@ -23,12 +22,21 @@ struct QtTreeWidget::Impl {
     QWidget *value_widget_ptr = nullptr;
   };
 
+  static QtItemWrapperWidget *
+    itemWrapperWidgetPtr(QTreeWidget &tree,QTreeWidgetItem &item)
+  {
+    QWidget *widget_ptr = tree.itemWidget(&item,/*column*/0);
+
+    QtItemWrapperWidget *item_widget_ptr =
+      dynamic_cast<QtItemWrapperWidget*>(widget_ptr);
+
+    return item_widget_ptr;
+  }
+
   static QtItemWrapperWidget &
     itemWrapperWidget(QTreeWidget &tree,QTreeWidgetItem &item)
   {
-    QWidget *widget_ptr = tree.itemWidget(&item,/*column*/0);
-    QtItemWrapperWidget *item_widget_ptr =
-      dynamic_cast<QtItemWrapperWidget*>(widget_ptr);
+    QtItemWrapperWidget *item_widget_ptr = itemWrapperWidgetPtr(tree,item);
     assert(item_widget_ptr);
     return *item_widget_ptr;
   }
@@ -138,6 +146,12 @@ QtTreeWidget::QtTreeWidget()
 {
   assert(header());
   header()->close();
+
+  connect(
+    this,
+    SIGNAL(currentItemChanged(QTreeWidgetItem *,QTreeWidgetItem *)),
+    SLOT(selectionChangedSlot())
+  );
 }
 
 
@@ -234,7 +248,7 @@ void
   QtTreeWidget::createEnumerationItem(
     const TreePath &new_item_path,
     const LabelProperties &label_properties,
-    const vector<string> &options,
+    const EnumerationOptions &options,
     int value
   )
 {
@@ -270,7 +284,7 @@ QTreeWidgetItem&
     QTreeWidgetItem &parent_item,
     int index,
     const LabelProperties &label_properties,
-    const std::vector<std::string> &enumeration_names,
+    const vector<std::string> &enumeration_names,
     int value
   )
 {
@@ -356,7 +370,7 @@ void
 
 
 
-QTreeWidgetItem &QtTreeWidget::itemFromPath(const std::vector<int> &path) const
+QTreeWidgetItem &QtTreeWidget::itemFromPath(const vector<int> &path) const
 {
   int path_length = path.size();
 
@@ -384,7 +398,7 @@ QTreeWidgetItem &QtTreeWidget::itemFromPath(const std::vector<int> &path) const
 }
 
 
-void QtTreeWidget::buildPath(vector<int> &path,QTreeWidgetItem &item)
+void QtTreeWidget::buildPath(vector<int> &path,QTreeWidgetItem &item) const
 {
   QTreeWidgetItem *parent_item_ptr = item.parent();
 
@@ -398,7 +412,7 @@ void QtTreeWidget::buildPath(vector<int> &path,QTreeWidgetItem &item)
 }
 
 
-std::vector<int> QtTreeWidget::itemPath(QTreeWidgetItem &item)
+vector<int> QtTreeWidget::itemPath(QTreeWidgetItem &item) const
 {
   vector<int> path;
   buildPath(path,item);
@@ -415,7 +429,7 @@ void
   assert(item_ptr);
 
   TreePath path = itemPath(*item_ptr);
-  combobox_item_index_changed_function(path,index);
+  enumeration_item_index_changed_callback(path,index);
 }
 
 
@@ -427,12 +441,12 @@ void
 {
   assert(item_ptr);
 
-  if (!spin_box_item_value_changed_function) {
+  if (!spin_box_item_value_changed_callback) {
     cerr << "spin_box_item_value_changed_function is not set\n";
     return;
   }
 
-  spin_box_item_value_changed_function(itemPath(*item_ptr),value);
+  spin_box_item_value_changed_callback(itemPath(*item_ptr),value);
 }
 
 
@@ -443,7 +457,7 @@ void
   )
 {
   assert(item_ptr);
-  slider_item_value_changed_function(itemPath(*item_ptr),value);
+  slider_item_value_changed_callback(itemPath(*item_ptr),value);
 }
 
 
@@ -454,7 +468,7 @@ void
   )
 {
   assert(item_ptr);
-  line_edit_item_value_changed_function(itemPath(*item_ptr),value);
+  line_edit_item_value_changed_callback(itemPath(*item_ptr),value);
 }
 
 
@@ -485,8 +499,15 @@ void QtTreeWidget::changeItemToSpinBox(const TreePath &path)
 QLabel *QtTreeWidget::itemLabelPtr(const TreePath &path)
 {
   QTreeWidgetItem &item = itemFromPath(path);
-  Impl::QtItemWrapperWidget &item_widget = Impl::itemWrapperWidget(*this,item);
-  QLabel *label_widget_ptr = item_widget.label_widget_ptr;
+
+  Impl::QtItemWrapperWidget *item_widget_ptr =
+    Impl::itemWrapperWidgetPtr(*this,item);
+
+  if (!item_widget_ptr) {
+    return nullptr;
+  }
+
+  QLabel *label_widget_ptr = item_widget_ptr->label_widget_ptr;
   return label_widget_ptr;
 }
 
@@ -580,8 +601,14 @@ void
   QtTreeWidget::setItemLabel(const TreePath &path,const std::string &new_label)
 {
   QLabel *label_widget_ptr = itemLabelPtr(path);
-  assert(label_widget_ptr);
-  setLabelWidgetText(*label_widget_ptr,new_label);
+
+  if (label_widget_ptr) {
+    setLabelWidgetText(*label_widget_ptr,new_label);
+  }
+  else {
+    QTreeWidgetItem &item = itemFromPath(path);
+    setItemText(item,new_label);
+  }
 }
 
 
@@ -624,11 +651,40 @@ void QtTreeWidget::removeChildItems(const TreePath &path)
 
 void QtTreeWidget::selectItem(const TreePath &path)
 {
-  itemFromPath(path).setSelected(true);
+  _ignore_selelection_changed = true;
+  setCurrentItem(&itemFromPath(path));
+  _ignore_selelection_changed = false;
 }
 
 
 void QtTreeWidget::setItemExpanded(const TreePath &path,bool new_expanded_state)
 {
   itemFromPath(path).setExpanded(new_expanded_state);
+}
+
+
+void QtTreeWidget::selectionChangedSlot()
+{
+  if (_ignore_selelection_changed) return;
+
+  if (selection_changed_callback) {
+    selection_changed_callback();
+  }
+}
+
+
+Optional<TreePath> QtTreeWidget::selectedItem() const
+{
+  QTreeWidgetItem *item_ptr = currentItem();
+
+  if (!item_ptr) {
+    return {};
+  }
+
+  return itemPath(*item_ptr);
+}
+
+
+QtTreeWidget::~QtTreeWidget()
+{
 }

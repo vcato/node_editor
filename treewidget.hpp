@@ -5,9 +5,13 @@
 #include <functional>
 #include "treepath.hpp"
 #include "numericvalue.hpp"
+#include "optional.hpp"
+#include "vector.hpp"
 
 
 struct TreeWidget {
+  using EnumerationOptions = vector<std::string>;
+
   struct LabelProperties {
     std::string text;
   };
@@ -31,7 +35,7 @@ struct TreeWidget {
     createEnumerationItem(
       const TreePath &new_item_path,
       const LabelProperties &,
-      const std::vector<std::string> &options,
+      const EnumerationOptions &options,
       int value
     ) = 0;
 
@@ -59,10 +63,24 @@ struct TreeWidget {
   virtual void
     setItemLabel(const TreePath &path,const std::string &new_label) = 0;
 
+  virtual void selectItem(const TreePath &path) = 0;
   virtual void removeItem(const TreePath &path) = 0;
+  virtual Optional<TreePath> selectedItem() const = 0;
 
   std::function<void(const TreePath &,NumericValue)>
-    spin_box_item_value_changed_function;
+    spin_box_item_value_changed_callback;
+
+  std::function<void()> selection_changed_callback;
+
+  std::function<void(const TreePath &,int index)>
+    enumeration_item_index_changed_callback;
+
+  std::function<void(const TreePath &,int index)>
+    slider_item_value_changed_callback;
+
+  std::function<void(const TreePath &,const std::string &value)>
+    line_edit_item_value_changed_callback;
+
 };
 
 #endif /* TREEWIDGET_HPP_ */

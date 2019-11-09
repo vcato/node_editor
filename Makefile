@@ -110,7 +110,7 @@ VIEWPORTDRAW = viewportdraw.o $(VIEWPORTGEO)
 QTDIAGRAMEDITOR = qtdiagrameditor.o moc_qtdiagrameditor.o \
   $(VIEWPORTGEO) $(VIEWPORTDRAW) $(DRAW) $(QTMENU)
 QTDIAGRAMEDITORWINDOW = qtdiagrameditorwindow.o $(QTDIAGRAMEDITOR)
-QTTREEWIDGET = qttreewidget.o
+QTTREEWIDGET = qttreewidget.o moc_qttreewidget.o
 QTTREEEDITOR = qttreeeditor.o moc_qttreeeditor.o \
   $(QTTREEWIDGETITEM) $(QTSLIDER) $(QTSPINBOX) $(QTCOMBOBOX) $(QTLINEEDIT) \
   $(TREEEDITOR) $(QTDIAGRAMEDITORWINDOW) $(QTTREEWIDGET)

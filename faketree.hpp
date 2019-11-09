@@ -128,6 +128,16 @@ struct FakeTree : TreeWidget {
 
   void setItemNumericValue( const TreePath &, NumericValue value );
 
+  void selectItem(const TreePath &) override
+  {
+    assert(false); // not implemented
+  }
+
+  Optional<TreePath> selectedItem() const override
+  {
+    assert(false); // not implemented
+  }
+
   void
     setItemNumericValue(
       const TreePath &,

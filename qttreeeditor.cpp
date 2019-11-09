@@ -25,22 +25,22 @@ QtTreeEditor::QtTreeEditor()
     SLOT(prepareMenuSlot(const QPoint &))
   );
 
-  combobox_item_index_changed_function =
+  enumeration_item_index_changed_callback =
     [this](const TreePath &path,int index){
       treeComboBoxItemIndexChanged(path,index);
     };
 
-  spin_box_item_value_changed_function =
+  spin_box_item_value_changed_callback =
     [this](const TreePath &path,int index){
       treeSpinBoxItemValueChanged(path,index);
     };
 
-  slider_item_value_changed_function =
+  slider_item_value_changed_callback =
     [this](const TreePath &path,int value){
       treeSliderItemValueChanged(path,value);
     };
 
-  line_edit_item_value_changed_function =
+  line_edit_item_value_changed_callback =
     [this](const TreePath &path,const string& value){
       treeLineEditItemValueChanged(path,value);
     };
