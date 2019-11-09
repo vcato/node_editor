@@ -16,12 +16,10 @@ class QtTreeEditor : public QtTreeWidget, public TreeEditor {
 
   private slots:
     void itemSelectionChangedSlot();
-    void prepareMenuSlot(const QPoint &pos);
 
   private:
     using LabelProperties = TreeWidget::LabelProperties;
 
-    void prepareMenu(const QPoint &pos);
     DiagramEditorWindow& createDiagramEditor() override;
     int itemChildCount(const TreePath &parent_item) const override;
     QTreeWidgetItem* findSelectedItem();

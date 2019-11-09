@@ -24,10 +24,7 @@ struct TreeEditor {
     void itemValueChanged(const TreePath &);
 
   protected:
-    struct MenuItem {
-      std::string label;
-      std::function<void()> callback;
-    };
+    using MenuItem = TreeWidget::MenuItem;
 
     using LabelProperties = TreeWidget::LabelProperties;
 
@@ -41,7 +38,7 @@ struct TreeEditor {
 
     void diagramEditorClosed(DiagramEditorWindow &);
     void openDiagramEditor(const TreePath &);
-    std::vector<MenuItem> contextMenuItems(const TreePath &path);
+    vector<MenuItem> contextMenuItems(const TreePath &path);
 
     virtual void removeChildItems(const TreePath &path) = 0;
 

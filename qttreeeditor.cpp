@@ -1,7 +1,5 @@
 #include "qttreeeditor.hpp"
 
-#include <QMenu>
-#include "qtmenu.hpp"
 #include "qtdiagrameditorwindow.hpp"
 
 
@@ -11,18 +9,10 @@ using std::string;
 
 QtTreeEditor::QtTreeEditor()
 {
-  setContextMenuPolicy(Qt::CustomContextMenu);
-
   connect(
     this,
     SIGNAL(itemSelectionChanged()),
     SLOT(itemSelectionChangedSlot())
-  );
-
-  connect(
-    this,
-    SIGNAL(customContextMenuRequested(const QPoint &)),
-    SLOT(prepareMenuSlot(const QPoint &))
   );
 
   enumeration_item_index_changed_callback =
@@ -43,6 +33,11 @@ QtTreeEditor::QtTreeEditor()
   line_edit_item_value_changed_callback =
     [this](const TreePath &path,const string& value){
       treeLineEditItemValueChanged(path,value);
+    };
+
+  context_menu_items_callback =
+    [this](const TreePath &path){
+      return contextMenuItems(path);
     };
 }
 
@@ -114,34 +109,6 @@ DiagramEditorWindow& QtTreeEditor::createDiagramEditor()
   window_ptr->setAttribute( Qt::WA_DeleteOnClose );
   window_ptr->show();
   return *window_ptr;
-}
-
-
-void QtTreeEditor::prepareMenu(const QPoint &pos)
-{
-  QtTreeEditor &tree_editor = *this;
-  QTreeWidgetItem *widget_item_ptr = tree_editor.itemAt(pos);
-  TreePath path;
-
-  if (widget_item_ptr) {
-    path = itemPath(*widget_item_ptr);
-  }
-
-  vector<MenuItem> menu_items = contextMenuItems(path);
-
-  QMenu menu;
-
-  for (auto &item : menu_items) {
-    createAction(menu,item.label,item.callback);
-  }
-
-  menu.exec(tree_editor.mapToGlobal(pos));
-}
-
-
-void QtTreeEditor::prepareMenuSlot(const QPoint &pos)
-{
-  prepareMenu(pos);
 }
 
 
