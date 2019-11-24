@@ -68,7 +68,7 @@ void MainWindow::_openProjectPressed()
     return;
   }
 
-  treeEditor().setWorldState(scan_result.state());
+  treeEditor().setWorldState(scan_result.asValue());
 }
 
 

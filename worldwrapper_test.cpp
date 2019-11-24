@@ -151,8 +151,8 @@ static WrapperState stateFromText(const string &text)
 {
   istringstream stream(text);
   ScanStateResult scan_result = scanStateFrom(stream);
-  assert(scan_result.isState());
-  const WrapperState &state = scan_result.state();
+  assert(scan_result.isValue());
+  const WrapperState &state = scan_result.asValue();
   return state;
 }
 

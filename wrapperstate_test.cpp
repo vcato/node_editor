@@ -42,8 +42,8 @@ static WrapperState stateFromText(const char *text)
 {
   istringstream stream(text);
   ScanStateResult scan_result = scanStateFrom(stream);
-  assert(scan_result.isState());
-  return scan_result.state();
+  assert(scan_result.isValue());
+  return scan_result.asValue();
 }
 
 

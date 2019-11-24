@@ -1,7 +1,6 @@
 #ifndef STREAMPARSER_HPP_
 #define STREAMPARSER_HPP_
 
-
 #include <iostream>
 
 

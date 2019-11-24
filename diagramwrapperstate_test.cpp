@@ -15,7 +15,7 @@ static WrapperState stateFromText(const char *test_text)
 {
   istringstream stream(test_text);
   ScanStateResult scan_result = scanStateFrom(stream);
-  return scan_result.state();
+  return scan_result.asValue();
 }
 
 

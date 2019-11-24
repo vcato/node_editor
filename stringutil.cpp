@@ -1,6 +1,7 @@
 #include "stringutil.hpp"
 
 #include <cassert>
+#include <vector>
 #include <sstream>
 
 using std::vector;
@@ -48,22 +49,4 @@ string withoutRight(const string &text,size_t n)
 {
   assert(text.length()>=n);
   return text.substr(0,text.length()-n);
-}
-
-
-vector<string> split(const string &text)
-{
-  istringstream stream(text);
-  vector<string> result;
-  string line;
-  while (getline(stream,line)) {
-    result.push_back(line);
-  }
-  return result;
-}
-
-
-string quoted(const string &s)
-{
-  return '"' + s + '"';
 }

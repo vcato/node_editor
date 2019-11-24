@@ -5,7 +5,7 @@
 #include "insertitemin.hpp"
 #include "printindent.hpp"
 #include "ostreamvector.hpp"
-#include "wrappervaluetypes.hpp"
+#include "wrappervaluelimits.hpp"
 
 
 using std::string;

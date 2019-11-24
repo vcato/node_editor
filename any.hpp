@@ -129,43 +129,43 @@ struct AnyPolicy {
     AnyPolicy()
     : _type(void_type)
     {
-      createObject(_value.void_value,Void());
+      createObject(_possible_values.void_value,Void());
     }
 
     AnyPolicy(float arg)
     : _type(float_type)
     {
-      createObject(_value.float_value,arg);
+      createObject(_possible_values.float_value,arg);
     }
 
     AnyPolicy(const std::string &arg)
     : _type(string_type)
     {
-      createObject(_value.string_value,arg);
+      createObject(_possible_values.string_value,arg);
     }
 
     AnyPolicy(std::vector<Any> &&arg)
     : _type(vector_type)
     {
-      createObject(_value.vector_value,std::move(arg));
+      createObject(_possible_values.vector_value,std::move(arg));
     }
 
     AnyPolicy(Object &&arg)
     : _type(object_type)
     {
-      createObject(_value.object_value,std::move(arg));
+      createObject(_possible_values.object_value,std::move(arg));
     }
 
     AnyPolicy(Class *arg)
     : _type(class_ptr_type)
     {
-      createObject(_value.class_ptr_value,arg);
+      createObject(_possible_values.class_ptr_value,arg);
     }
 
     AnyPolicy(Function arg)
     : _type(function_type)
     {
-      createObject(_value.function_value,std::move(arg));
+      createObject(_possible_values.function_value,std::move(arg));
     }
 
     bool isVoid() const { return _type==void_type; }
@@ -198,47 +198,47 @@ struct AnyPolicy {
     Void asVoid() const
     {
       assert(_type==void_type);
-      return _value.void_value;
+      return _possible_values.void_value;
     }
 
     float asFloat() const
     {
       assert(_type==float_type);
-      return _value.float_value;
+      return _possible_values.float_value;
     }
 
     const std::string &asString() const
     {
       assert(_type==string_type);
-      return _value.string_value;
+      return _possible_values.string_value;
     }
 
     const std::vector<Any> &asVector() const
     {
       assert(_type==vector_type);
-      return _value.vector_value;
+      return _possible_values.vector_value;
     }
 
     const Object &asObject() const
     {
       assert(_type==object_type);
-      return _value.object_value;
+      return _possible_values.object_value;
     }
 
     const Class *asClassPtr() const
     {
       assert(_type==class_ptr_type);
-      return _value.class_ptr_value;
+      return _possible_values.class_ptr_value;
     }
 
     const Function &asFunction() const
     {
       assert(_type==function_type);
-      return _value.function_value;
+      return _possible_values.function_value;
     }
 
   protected:
-    union Value {
+    union PossibleValues {
       Void void_value;
       float float_value;
       std::string string_value;
@@ -247,28 +247,28 @@ struct AnyPolicy {
       Class *class_ptr_value;
       Function function_value;
 
-      Value() {}
-      ~Value() {}
+      PossibleValues() {}
+      ~PossibleValues() {}
     };
 
     template <typename V>
     static auto withMemberPtrFor(Type t,const V& v)
     {
       switch (t) {
-        case float_type:  return v(&Value::float_value);
-        case void_type:   return v(&Value::void_value);
-        case string_type: return v(&Value::string_value);
-        case vector_type: return v(&Value::vector_value);
-        case object_type: return v(&Value::object_value);
-        case class_ptr_type: return v(&Value::class_ptr_value);
-        case function_type: return v(&Value::function_value);
+        case float_type:  return v(&PossibleValues::float_value);
+        case void_type:   return v(&PossibleValues::void_value);
+        case string_type: return v(&PossibleValues::string_value);
+        case vector_type: return v(&PossibleValues::vector_value);
+        case object_type: return v(&PossibleValues::object_value);
+        case class_ptr_type: return v(&PossibleValues::class_ptr_value);
+        case function_type: return v(&PossibleValues::function_value);
       }
 
       assert(false);
     }
 
     Type _type;
-    Value _value;
+    PossibleValues _possible_values;
 };
 
 

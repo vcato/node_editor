@@ -22,7 +22,7 @@ static WrapperState stateFromText(const char *text)
   istringstream stream(text);
   ScanStateResult result = scanStateFrom(stream);
   assert(!result.isError());
-  return result.state();
+  return result.asValue();
 }
 
 

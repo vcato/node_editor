@@ -356,7 +356,7 @@ static void testSettingWorldState()
   istringstream stream(text);
   ScanStateResult scan_result = scanStateFrom(stream);
   assert(!scan_result.isError());
-  const WrapperState &state = scan_result.state();
+  const WrapperState &state = scan_result.asValue();
   editor.setWorldState(state);
   assert(!editor.tree_member.root.children.empty());
 }

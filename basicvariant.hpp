@@ -15,7 +15,7 @@ template <typename Policy>
 class BasicVariant : public Policy {
   private:
     using Self = BasicVariant;
-    using Value = typename Policy::Value;
+    using PossibleValues = typename Policy::PossibleValues;
 
   public:
     using Type = typename Policy::Type;
@@ -52,7 +52,9 @@ class BasicVariant : public Policy {
       else {
         Self::withMemberPtrFor(
           this->_type,
-          MemberMoveAssignment{this->_value,std::move(arg._value)}
+          MemberMoveAssignment{
+            this->_possible_values, std::move(arg._possible_values)
+          }
         );
       }
 
@@ -68,7 +70,7 @@ class BasicVariant : public Policy {
       else {
         Self::withMemberPtrFor(
           this->_type,
-          MemberCopyAssignment{this->_value,arg._value}
+          MemberCopyAssignment{this->_possible_values, arg._possible_values}
         );
       }
 
@@ -82,7 +84,7 @@ class BasicVariant : public Policy {
       return
         Self::withMemberPtrFor(
           this->_type,
-          MemberEquality{this->_value,arg._value}
+          MemberEquality{this->_possible_values,arg._possible_values}
         );
     }
 
@@ -98,70 +100,72 @@ class BasicVariant : public Policy {
     {
       Self::withMemberPtrFor(
         this->_type,
-        [&](auto Value::*member_ptr){ return f(this->_value.*member_ptr); }
+        [&](auto PossibleValues::*member_ptr){
+          return f(this->_possible_values.*member_ptr);
+        }
       );
     }
 
   private:
     struct MemberCopyAssignment {
-      Value &a;
-      const Value &b;
+      PossibleValues &a;
+      const PossibleValues &b;
 
       template <typename T>
-      void operator()(T Value::*p) const
+      void operator()(T PossibleValues::*p) const
       {
         (a.*p) = (b.*p);
       }
     };
 
     struct MemberMoveAssignment {
-      Value &a;
-      Value &&b;
+      PossibleValues &a;
+      PossibleValues &&b;
 
       template <typename T>
-      void operator()(T Value::*p) const
+      void operator()(T PossibleValues::*p) const
       {
         (a.*p) = std::move(b.*p);
       }
     };
 
     struct MemberCopy {
-      Value &a;
-      const Value &b;
+      PossibleValues &a;
+      const PossibleValues &b;
 
       template <typename T>
-      void operator()(T Value::*p) const
+      void operator()(T PossibleValues::*p) const
       {
         createObject(a.*p,b.*p);
       }
     };
 
     struct MemberMove {
-      Value &a;
-      Value &&b;
+      PossibleValues &a;
+      PossibleValues &&b;
 
       template <typename T>
-      void operator()(T Value::*p) const
+      void operator()(T PossibleValues::*p) const
       {
         createObject(a.*p,std::move(b.*p));
       }
     };
 
     struct MemberEquality {
-      const Value &a,&b;
+      const PossibleValues &a,&b;
 
       template <typename T>
-      bool operator()(T Value::*p) const
+      bool operator()(T PossibleValues::*p) const
       {
         return (a.*p) == (b.*p);
       }
     };
 
     struct MemberDestroy {
-      Value &_value;
+      PossibleValues &_value;
 
       template <typename T>
-      void operator()(T Value::*p) const
+      void operator()(T PossibleValues::*p) const
       {
         (_value.*p).~T();
       }
@@ -173,7 +177,7 @@ class BasicVariant : public Policy {
 
       Self::withMemberPtrFor(
         this->_type,
-        MemberMove{this->_value,std::move(arg._value)}
+        MemberMove{this->_possible_values,std::move(arg._possible_values)}
       );
     }
 
@@ -183,7 +187,7 @@ class BasicVariant : public Policy {
 
       Self::withMemberPtrFor(
         this->_type,
-        MemberCopy{this->_value,arg._value}
+        MemberCopy{this->_possible_values, arg._possible_values}
       );
     }
 
@@ -191,7 +195,7 @@ class BasicVariant : public Policy {
     {
       Self::withMemberPtrFor(
         this->_type,
-        MemberDestroy{this->_value}
+        MemberDestroy{this->_possible_values}
       );
     }
 };

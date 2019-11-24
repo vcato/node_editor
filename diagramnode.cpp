@@ -3,6 +3,7 @@
 #include <cassert>
 #include "statementtext.hpp"
 #include "linetext.hpp"
+#include "splitlines.hpp"
 
 using std::vector;
 using std::string;
@@ -215,7 +216,7 @@ void Node::setText(const std::string &text)
     return;
   }
 
-  vector<string> lines = split(text);
+  vector<string> lines = splitLines(text);
 
   for (const auto &line : lines) {
     node.lines.push_back(Node::Line(line));

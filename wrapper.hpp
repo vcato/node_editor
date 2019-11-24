@@ -10,6 +10,7 @@
 #include "wrapperstate.hpp"
 #include "optional.hpp"
 #include "observeddiagram.hpp"
+#include "wrappervaluelimits.hpp"
 
 
 class Diagram;
