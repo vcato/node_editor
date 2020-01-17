@@ -1,7 +1,6 @@
 #ifndef STRINGPARSER_HPP_
 #define STRINGPARSER_HPP_
 
-
 #include <cassert>
 #include <string>
 #include "optional.hpp"
@@ -9,6 +8,11 @@
 
 class StringParser {
   public:
+    struct Range;
+    using Index = int;
+
+    const std::string &text;
+
     inline StringParser(const std::string &text_arg,int &index_arg);
     inline char peekChar() const;
     inline bool atEnd() const;
@@ -17,11 +21,18 @@ class StringParser {
     inline bool skipNumber() const;
     inline void skipWhitespace() const;
     inline bool getIdentifier(std::string &identifier) const;
-    bool getNumber(float &number) const;
-    int index() const { return _index; }
+    Index index() const { return _index; }
+    Optional<Range> maybeNumberRange() const;
+    std::string rangeText(const Range &range) const;
+
+    struct Range {
+      Index begin;
+      Index end;
+    };
 
   private:
-    const std::string &text;
+    struct Impl;
+
     int &_index;
 
     static bool isWhitespace(char c)

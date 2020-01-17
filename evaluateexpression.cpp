@@ -2,6 +2,7 @@
 
 #include "maybepoint2d.hpp"
 #include "anyio.hpp"
+#include "maybeint.hpp"
 
 
 using std::vector;
@@ -58,8 +59,6 @@ Optional<Any>
 
 Optional<Any> ExpressionEvaluator::evaluatePrimary() const
 {
-  float value = 0;
-
   if (parser.peekChar()=='(') {
     parser.skipChar();
     Optional<Any> result = evaluateExpression();
@@ -77,8 +76,16 @@ Optional<Any> ExpressionEvaluator::evaluatePrimary() const
     return result;
   }
 
-  if (parser.getNumber(value)) {
-    return Optional<Any>(Any(value));
+  if (Optional<StringParser::Range> maybe_range = parser.maybeNumberRange()) {
+    // This could throw an exception.  We should probably catch it and
+    // return false.
+    Optional<int> maybe_number = maybeInt(parser.rangeText(*maybe_range));
+
+    if (!maybe_number) {
+      assert(false); // not tested
+    }
+
+    return Optional<Any>(Any(*maybe_number));
   }
 
   if (parser.peekChar()=='$') {

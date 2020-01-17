@@ -1,29 +1,30 @@
 #include "stringparser.hpp"
 
-#include "maybeint.hpp"
+using std::string;
 
 
-bool StringParser::getNumber(float &number) const
+struct StringParser::Impl {
+};
+
+
+string StringParser::rangeText(const Range &range) const
 {
-  skipWhitespace();
+  return text.substr(range.begin, range.end - range.begin);
+}
 
-  int start = _index;
 
-  if (!skipNumber()) {
-    return false;
+auto StringParser::maybeNumberRange() const -> Optional<Range>
+{
+  const StringParser &self = *this;
+  self.skipWhitespace();
+
+  Index start = self._index;
+
+  if (!self.skipNumber()) {
+    return {};
   }
 
-  int end = _index;
+  Index end = self._index;
 
-  // This could throw an exception.  We should probably catch it and
-  // return false.
-  Optional<int> maybe_number = maybeInt(text.substr(start,end-start));
-
-  if (!maybe_number) {
-    assert(false); // not tested
-  }
-
-  number = *maybe_number;
-
-  return true;
+  return Range{start, end};
 }
