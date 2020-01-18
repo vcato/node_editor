@@ -20,9 +20,9 @@ class StringParser {
     inline bool skipChar() const;
     inline bool skipNumber() const;
     inline void skipWhitespace() const;
-    inline bool getIdentifier(std::string &identifier) const;
     Index index() const { return _index; }
     Optional<Range> maybeNumberRange() const;
+    Optional<Range> maybeIdentifierRange() const;
     std::string rangeText(const Range &range) const;
 
     struct Range {
@@ -129,20 +129,6 @@ void StringParser::skipWhitespace() const
   while (isWhitespace(peekChar())) {
     ++_index;
   }
-}
-
-
-bool StringParser::getIdentifier(std::string &identifier) const
-{
-  if (!isBeginIdentifierChar(peekChar())) {
-    return false;
-  }
-
-  int start = _index;
-  skipIdentifier();
-  int end = _index;
-  identifier = text.substr(start,end-start);
-  return true;
 }
 
 

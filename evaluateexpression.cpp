@@ -127,9 +127,11 @@ Optional<Any> ExpressionEvaluator::evaluatePrimary() const
     return Optional<Any>(std::move(vector_value));
   }
 
-  string identifier;
+  Optional<StringParser::Range> maybe_identifier_range =
+    parser.maybeIdentifierRange();
 
-  if (parser.getIdentifier(identifier)) {
+  if (maybe_identifier_range) {
+    string identifier = parser.rangeText(*maybe_identifier_range);
     return evaluatePrimaryStartingWithIdentifier(identifier);
   }
 
@@ -197,40 +199,42 @@ Optional<Any>
   }
 
   for (;;) {
-    string identifier;
+    Optional<StringParser::Range> maybe_identifier_range =
+      parser.maybeIdentifierRange();
 
-    if (parser.getIdentifier(identifier)) {
-      if (parser.peekChar()=='=') {
-        const string &parameter_name = identifier;
-        parser.skipChar();
-        Optional<Any> value = evaluateExpression();
+    if (!maybe_identifier_range) {
+      assert(false);
+    }
 
-        if (!value) {
-          // This is the case where we got an error evaluating the
-          // expression used to generate the value for the parameter.
-          return {};
-        }
+    string identifier = parser.rangeText(*maybe_identifier_range);
 
-        named_parameters[parameter_name] = std::move(*value);
-      }
-      else {
-        assert(false);
-      }
+    if (parser.peekChar() == '=') {
+      const string &parameter_name = identifier;
+      parser.skipChar();
+      Optional<Any> value = evaluateExpression();
 
-      if (parser.peekChar()==',') {
-        parser.skipChar();
-      }
-      else if (parser.peekChar()==')') {
-        parser.skipChar();
-        break;
-      }
-      else {
-        error_stream << "Missing ','\n";
+      if (!value) {
+        // This is the case where we got an error evaluating the
+        // expression used to generate the value for the parameter.
         return {};
       }
+
+      named_parameters[parameter_name] = std::move(*value);
     }
     else {
       assert(false);
+    }
+
+    if (parser.peekChar()==',') {
+      parser.skipChar();
+    }
+    else if (parser.peekChar()==')') {
+      parser.skipChar();
+      break;
+    }
+    else {
+      error_stream << "Missing ','\n";
+      return {};
     }
   }
 
@@ -429,8 +433,14 @@ Optional<Any>
 Optional<Any>
   ExpressionEvaluator::evaluateMember(const Any &first_term) const
 {
-  string member_name;
-  parser.getIdentifier(member_name);
+  Optional<StringParser::Range> maybe_identifier_range =
+    parser.maybeIdentifierRange();
+
+  if (!maybe_identifier_range) {
+    assert(false); // not tested
+  }
+
+  string member_name = parser.rangeText(*maybe_identifier_range);
 
   if (Optional<Point2D> maybe_point2d = maybePoint2D(first_term)) {
     if (member_name=="x") {

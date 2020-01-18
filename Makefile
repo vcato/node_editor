@@ -61,7 +61,7 @@ ANYIO = anyio.o $(PRINTINDENT)
 DIAGRAMEVALUATIONSTATE = diagramevaluationstate.o
 ANY = any.o
 STRINGUTIL = stringutil.o
-LINETEXT = linetext.o $(STRINGUTIL)
+LINETEXT = linetext.o $(STRINGPARSER) $(STRINGUTIL)
 STATEMENTTEXT = statementtext.o
 SPLITLINES = splitlines.o
 

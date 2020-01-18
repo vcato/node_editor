@@ -32,9 +32,12 @@ Optional<Any>
     executor.parent_environment_ptr
   };
 
-  string identifier;
+  Optional<StringParser::Range> maybe_identifier_range =
+    parser.maybeIdentifierRange();
 
-  if (parser.getIdentifier(identifier)) {
+  if (maybe_identifier_range) {
+    string identifier = parser.rangeText(*maybe_identifier_range);
+
     if (identifier=="show") {
       if (parser.peekChar()!='(') {
         error_stream << "Missing '(' after show\n";

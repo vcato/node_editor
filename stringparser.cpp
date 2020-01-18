@@ -28,3 +28,18 @@ auto StringParser::maybeNumberRange() const -> Optional<Range>
 
   return Range{start, end};
 }
+
+
+auto
+StringParser::maybeIdentifierRange() const
+-> Optional<Range>
+{
+  if (!isBeginIdentifierChar(peekChar())) {
+    return {};
+  }
+
+  int start = _index;
+  skipIdentifier();
+  int end = _index;
+  return Range{start, end};
+}

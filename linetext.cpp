@@ -28,16 +28,17 @@ static bool isAssignment(const std::string &text)
 
   StringParser parser{text,index};
 
-  {
-    string identifier;
+  Optional<StringParser::Range> maybe_identifier_range =
+    parser.maybeIdentifierRange();
 
-    if (!parser.getIdentifier(identifier)) {
-      return false;
-    }
+  if (!maybe_identifier_range) {
+    return false;
+  }
 
-    if (identifier=="let") {
-      return true;
-    }
+  string identifier = parser.rangeText(*maybe_identifier_range);
+
+  if (identifier=="let") {
+    return true;
   }
 
   parser.skipWhitespace();
