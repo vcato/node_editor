@@ -7,7 +7,7 @@ struct EvaluatorInterface {
   virtual bool evaluateVariable(const StringRange &identifier_range) = 0;
   virtual bool evaluateNumber(const StringRange &number_range) = 0;
   virtual bool evaluateDollar() = 0;
-  virtual void makeVector(int n_elements) = 0;
+  virtual bool evaluateVector(int n_elements) = 0;
   virtual bool evaluateAddition() = 0;
   virtual bool evaluateSubtraction() = 0;
   virtual bool evaluateMultiplication() = 0;
@@ -26,9 +26,9 @@ struct ExpressionParser
   EvaluatorInterface &evaluator;
 
   ExpressionParser(
-    std::ostream &error_stream,
     StringParser &string_parser,
-    EvaluatorInterface &evaluator
+    EvaluatorInterface &evaluator,
+    std::ostream &error_stream
   )
   : error_stream(error_stream),
     string_parser(string_parser),
@@ -42,14 +42,14 @@ struct ExpressionParser
 private:
   void skipChar() const;
   char peekChar() const;
-  bool parsePrimary() const;
   bool parsePrimaryStartingWithIdentifier(const StringRange &) const;
+  bool parsePrimary() const;
   bool parsePostfix() const;
   bool parseFactor() const;
+  bool parseTerm() const;
   bool extendPostfix() const;
   bool extendFactor() const;
   bool extendTerm() const;
   bool parseFunctionArgument() const;
   bool parseFunctionArguments(int &n_arguments) const;
-  bool parseFunctionCall() const;
 };

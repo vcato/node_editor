@@ -395,7 +395,7 @@ struct Evaluator : EvaluatorInterface {
     assert(false);
   }
 
-  void makeVector(int n_elements) override
+  bool evaluateVector(int n_elements) override
   {
     vector<Any> v;
 
@@ -405,6 +405,7 @@ struct Evaluator : EvaluatorInterface {
 
     stack.erase(stack.end()-n_elements, stack.end());
     push(Any(std::move(v)));
+    return true;
   }
 
   void evaluateNoName() override
@@ -438,7 +439,7 @@ Optional<Any> evaluateExpression(const ExpressionEvaluatorData &data)
 
   bool could_parse =
     ExpressionParser(
-      data.error_stream, data.parser, evaluator
+      data.parser, evaluator, data.error_stream
     ).parseExpression();
 
   if (!could_parse) {
@@ -460,7 +461,7 @@ Optional<Any>
 
   bool could_parse =
     ExpressionParser(
-      data.error_stream, data.parser, evaluator
+      data.parser, evaluator, data.error_stream
     ).parseStartingWithIdentifier(identifier_range);
 
   if (!could_parse) {

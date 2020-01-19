@@ -38,3 +38,4 @@ qtslider_manualtest
 maybeint_test
 diagramevaluationstate_test
 evaluatestatement_test
+expressionparser_test

@@ -20,11 +20,7 @@ bool
     const StringRange &identifier_range
   ) const
 {
-  if (!evaluator.evaluateVariable(identifier_range)) {
-    return false;
-  }
-
-  return true;
+  return evaluator.evaluateVariable(identifier_range);
 }
 
 
@@ -37,7 +33,7 @@ bool ExpressionParser::parsePrimary() const
       return {};
     }
 
-    if (peekChar()!=')') {
+    if (peekChar() != ')') {
       error_stream << "Missing ')'\n";
       return {};
     }
@@ -46,21 +42,13 @@ bool ExpressionParser::parsePrimary() const
     return true;
   }
 
-  if (Optional<StringParser::Range> maybe_range = string_parser.maybeNumberRange()) {
-    if (!evaluator.evaluateNumber(*maybe_range)) {
-      assert(false); // not tested
-    }
-
-    return true;
+  if (Optional<StringRange> maybe_range = string_parser.maybeNumberRange()) {
+    return evaluator.evaluateNumber(*maybe_range);
   }
 
   if (peekChar()=='$') {
-    if (!evaluator.evaluateDollar()) {
-      assert(false); // not tested
-    }
-
     skipChar();
-    return true;
+    return evaluator.evaluateDollar();
   }
 
   if (peekChar()=='[') {
@@ -68,10 +56,7 @@ bool ExpressionParser::parsePrimary() const
 
     int n_elements = 0;
 
-    if (peekChar()==']') {
-      skipChar();
-    }
-    else {
+    if (peekChar() != ']') {
       for (;;) {
         if (!parseExpression()) {
           return false;
@@ -80,21 +65,29 @@ bool ExpressionParser::parsePrimary() const
         ++n_elements;
 
         if (peekChar()==']') {
-          skipChar();
           break;
         }
 
         if (peekChar()==',') {
           skipChar();
         }
+        else {
+          //assert(false); // not tested
+        }
       }
     }
 
-    evaluator.makeVector(n_elements);
+    assert(peekChar() == ']');
+    skipChar();
+
+    if (!evaluator.evaluateVector(n_elements)) {
+      return false;
+    }
+
     return true;
   }
 
-  Optional<StringParser::Range> maybe_identifier_range =
+  Optional<StringRange> maybe_identifier_range =
     string_parser.maybeIdentifierRange();
 
   if (maybe_identifier_range) {
@@ -102,7 +95,7 @@ bool ExpressionParser::parsePrimary() const
   }
 
   if (string_parser.atEnd()) {
-    error_stream << "Unexpected end of expression.\n";
+    error_stream << "Unexpected end of expression\n";
     return false;
   }
 
@@ -122,6 +115,10 @@ bool
   }
 
   if (!extendPostfix()) {
+    return false;
+  }
+
+  if (!extendFactor()) {
     return false;
   }
 
@@ -170,42 +167,29 @@ bool ExpressionParser::parseFunctionArgument() const
 bool ExpressionParser::parseFunctionArguments(int &n_arguments) const
 {
   if (peekChar()==')') {
+    return true;
   }
-  else {
-    for (;;) {
-      if (!parseFunctionArgument()) {
-        return false;
-      }
 
-      ++n_arguments;
+  for (;;) {
+    if (!parseFunctionArgument()) {
+      return false;
+    }
 
-      if (peekChar() == ',') {
-        skipChar();
-      }
-      else if (peekChar() == ')') {
-        skipChar();
-        break;
-      }
-      else {
-        error_stream << "Missing ','\n";
-        return false;
-      }
+    ++n_arguments;
+
+    if (peekChar() == ',') {
+      skipChar();
+    }
+    else if (peekChar() == ')') {
+      break;
+    }
+    else {
+      error_stream << "Missing ','\n";
+      return false;
     }
   }
 
   return true;
-}
-
-
-bool ExpressionParser::parseFunctionCall() const
-{
-  int n_arguments = 0;
-
-  if (!parseFunctionArguments(n_arguments)) {
-    return false;
-  }
-
-  return evaluator.evaluateCall(n_arguments);
 }
 
 
@@ -219,7 +203,7 @@ bool ExpressionParser::extendPostfix() const
         string_parser.maybeIdentifierRange();
 
       if (!maybe_identifier_range) {
-        assert(false); // not tested
+        return false;
       }
 
       if (!evaluator.evaluateMember(*maybe_identifier_range)) {
@@ -229,7 +213,16 @@ bool ExpressionParser::extendPostfix() const
     else if (peekChar()=='(') {
       skipChar();
 
-      if (!parseFunctionCall()) {
+      int n_arguments = 0;
+
+      if (!parseFunctionArguments(n_arguments)) {
+        return false;
+      }
+
+      assert(peekChar() == ')');
+      skipChar();
+
+      if (!evaluator.evaluateCall(n_arguments)) {
         return false;
       }
     }
@@ -332,7 +325,7 @@ bool ExpressionParser::parseFactor() const
 }
 
 
-bool ExpressionParser::parseExpression() const
+bool ExpressionParser::parseTerm() const
 {
   if (!parseFactor()) {
     return false;
@@ -343,4 +336,10 @@ bool ExpressionParser::parseExpression() const
   }
 
   return true;
+}
+
+
+bool ExpressionParser::parseExpression() const
+{
+  return parseTerm();
 }

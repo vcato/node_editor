@@ -14,6 +14,7 @@ run_unit_tests: \
   diagramevaluationstate_test.pass \
   fileaccessor_test.pass \
   charmapperobjects_test.pass \
+  expressionparser_test.pass \
   evaluateexpression_test.pass \
   evaluatestatement_test.pass \
   evaluatediagram_test.pass \
@@ -53,8 +54,9 @@ SCENEWINDOW = scenewindow.o $(SCENETREE) $(SCENEVIEWER)
 STRINGPARSER = stringparser.o
 MAYBEPOINT2D = maybepoint2d.o
 CONTAINS = contains.o
-EVALUATEEXPRESSION = evaluateexpression.o expressionparser.o \
-  $(STRINGPARSER) $(MAYBEPOINT2D) $(CONTAINS)
+EXPRESSIONPARSER = expressionparser.o $(STRINGPARSER)
+EVALUATEEXPRESSION = evaluateexpression.o $(EXPRESSIONPARSER) \
+  $(MAYBEPOINT2D) $(CONTAINS)
 EVALUATESTATEMENT = evaluatestatement.o $(EVALUATEEXPRESSION)
 PRINTINDENT = printindent.o
 ANYIO = anyio.o $(PRINTINDENT)
@@ -149,6 +151,9 @@ moc_%.cpp: %.hpp
 
 main: main.o \
   $(QTMAINWINDOW) $(QTWORLD) $(WRAPPER) $(WORLDWRAPPER)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+expressionparser_test: expressionparser_test.o $(EXPRESSIONPARSER)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 evaluateexpression_test: evaluateexpression_test.o \

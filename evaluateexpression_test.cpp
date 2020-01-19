@@ -107,27 +107,6 @@ static void testInvalidExpression(const string &expression)
 }
 
 
-static void
-  testInvalidExpression(
-    const string &expression,
-    const string &expected_error_message
-  )
-{
-  Tester tester;
-  Optional<Any> maybe_result = evaluateStringWithTester(expression,tester);
-  assert(!maybe_result);
-  bool error_output_is_correct =
-    startsWith(tester.errorOutput(),expected_error_message);
-
-  if (!error_output_is_correct) {
-    cerr << "Error output: " << tester.errorOutput() << "\n";
-    cerr << "expected    : " << expected_error_message << "\n";
-  }
-
-  assert(error_output_is_correct);
-}
-
-
 static void test(const string &expression,const Any &expected_result)
 {
   Optional<Any> maybe_result = evaluateString(expression);
@@ -471,16 +450,8 @@ int main()
   test("2*3+4",2*3+4);
   test("2*3 + 4*5", 2*3 + 4*5);
 
-  testInvalidExpression("[,2]");
-  testInvalidExpression("2*[[],2]");
-  testInvalidExpression("[]*[]");
-  testInvalidExpression("2*","Unexpected end of expression.");
-  testInvalidExpression("[[],2] + [3,4]");
-  testInvalidExpression("[1,2] + [[],4]");
   testInvalidExpression("[1,2] + [3,4,5]");
   testInvalidExpression("[1,2] + 5");
-  testInvalidExpression("[1,2] +");
-  testInvalidExpression("1.x");
   testInvalidExpression("[1,2] - 3");
   testInvalidExpression("[1,2] - [3]");
   testInvalidExpression("[1,2] - [[],3]");

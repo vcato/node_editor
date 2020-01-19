@@ -116,6 +116,14 @@ bool StringParser::skipNumber() const
     ++_index;
   }
 
+  if (peekChar() == '.') {
+    ++_index;
+
+    while (isDigit(peekChar())) {
+      ++_index;
+    }
+  }
+
   return true;
 }
 
