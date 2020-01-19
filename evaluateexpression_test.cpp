@@ -366,6 +366,44 @@ static void testCallingMemberFunctionWithArgument()
 }
 
 
+static void testCallingFunctionWithTwoArguments()
+{
+  string expression = "f(1,2)";
+
+  auto f =
+    [](const vector<Any> &args) -> Optional<Any> {
+      assert(args.size() == 2);
+      assert(args[0].asFloat() == 1);
+      assert(args[1].asFloat() == 2);
+      return Any(3);
+    };
+
+  Tester tester;
+  tester.environment["f"] = Function{f};
+  Optional<Any> result = evaluateStringWithTester(expression, tester);
+  assert(result->asFloat() == 3);
+}
+
+
+static void testCallingFunctionWithVariableParameter()
+{
+  string expression = "f(a)";
+
+  auto f =
+    [](const vector<Any> &args) -> Optional<Any> {
+      assert(args.size() == 1);
+      assert(args[0].asFloat() == 5);
+      return Any(6);
+    };
+
+  Tester tester;
+  tester.environment["a"] = 5;
+  tester.environment["f"] = Function{f};
+  Optional<Any> result = evaluateStringWithTester(expression, tester);
+  assert(result->asFloat() == 6);
+}
+
+
 static void testBodyPositionWithLocal()
 {
   Tester tester;
@@ -465,6 +503,8 @@ int main()
   testCallingFunctionWithMissingCloseParen();
   testCallingMemberFunctionWithNoArguments();
   testCallingMemberFunctionWithArgument();
+  testCallingFunctionWithTwoArguments();
+  testCallingFunctionWithVariableParameter();
   testBodyPositionWithLocal();
   testObjectConstructionWithMissingComma();
 }

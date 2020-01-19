@@ -291,6 +291,99 @@ struct Evaluator {
     return false;
   }
 
+  bool
+  evaluateObjectConstruction(
+    const Class &the_class, int n_arguments, int n_extra
+  )
+  {
+    Evaluator &evaluator = *this;
+    ostream &error_stream = data.error_stream;
+    vector<Any> arguments;
+    map<string,Any> named_arguments;
+    auto iter = evaluator.stack.end() - n_arguments*2;
+
+    for (int i=0; i!=n_arguments; ++i) {
+      string parameter_name = std::move(*iter++).asString();
+      named_arguments[parameter_name] = std::move(*iter++);
+    }
+
+    evaluator.stack.erase(evaluator.stack.end() - n_arguments*2 - n_extra, evaluator.stack.end());
+
+    assert(arguments.empty());
+    Optional<Object> maybe_object =
+      the_class.maybeMakeObject(named_arguments,error_stream);
+
+    if (!maybe_object) {
+      return false;
+    }
+
+    evaluator.push(Any(std::move(*maybe_object)));
+    return true;
+  }
+
+  bool
+  evaluateFunctionCall(
+    const Any &first_term, const int n_arguments, const int n_extra
+  )
+  {
+    Evaluator &evaluator = *this;
+    vector<Any> arguments;
+    map<string,Any> named_arguments;
+
+    {
+      auto iter = evaluator.stack.end() - n_arguments*2;
+
+      for (int i=0; i!=n_arguments; ++i) {
+        if (iter->isVoid()) {
+          ++iter;
+          arguments.push_back(std::move(*iter++));
+        }
+        else {
+          string parameter_name = std::move(*iter++).asString();
+          named_arguments[parameter_name] = std::move(*iter++);
+        }
+      }
+
+      evaluator.stack.erase(evaluator.stack.end() - n_arguments*2 - n_extra, evaluator.stack.end());
+    }
+
+    Optional<Any> maybe_result = first_term.asFunction()(arguments);
+
+    if (!maybe_result) {
+      return false;
+    }
+
+    evaluator.push(std::move(*maybe_result));
+    return true;
+  }
+
+  bool evaluateCall(const int n_arguments)
+  {
+    Evaluator &evaluator = *this;
+    ostream &error_stream = data.error_stream;
+    Any &first_term = *(evaluator.stack.end() - n_arguments*2 - 1);
+
+    if (first_term.isClassPtr()) {
+      const Class *class_ptr = first_term.asClassPtr();
+      assert(class_ptr);
+      const Class &the_class = *class_ptr;
+
+      return
+        evaluator.evaluateObjectConstruction(
+          the_class, n_arguments, /*n_extra*/1
+        );
+    }
+    else if (first_term.isFunction()) {
+      return
+        evaluator.evaluateFunctionCall(first_term, n_arguments, /*n_extra*/1);
+    }
+
+    // We had [term '('], but term wasn't a class or a function.
+    // What type did it have?
+    error_stream << "first_term.typeName():" << first_term.typeName() << "\n";
+    assert(false);
+  }
+
   void makeVector(int n_elements)
   {
     vector<Any> v;
@@ -301,6 +394,16 @@ struct Evaluator {
 
     stack.erase(stack.end()-n_elements, stack.end());
     push(Any(std::move(v)));
+  }
+
+  void evaluateNoName()
+  {
+    push(Any()); // name for unnamed argument
+  }
+
+  void evaluateName(const string &identifier)
+  {
+    push(identifier);
   }
 
   void push(Any arg)
@@ -318,13 +421,20 @@ struct Evaluator {
 }
 
 
-
 namespace {
-struct ExpressionEvaluator : ExpressionEvaluatorData {
+struct ExpressionParser
+{
+  ostream &error_stream;
+  StringParser &parser;
   Evaluator &evaluator;
 
-  ExpressionEvaluator(const ExpressionEvaluatorData &data, Evaluator &evaluator)
-  : ExpressionEvaluatorData(data),
+  ExpressionParser(
+    ostream &error_stream,
+    StringParser &parser,
+    Evaluator &evaluator
+  )
+  : error_stream(error_stream),
+    parser(parser),
     evaluator(evaluator)
   {
   }
@@ -340,16 +450,17 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
   bool parseMultiplication() const;
   bool parseDivision() const;
   bool parseMember() const;
+  bool parseFunctionArgument() const;
+  bool parseFunctionArguments(int &n_arguments) const;
   bool parseFunctionCall() const;
   bool parsePostfix() const;
   bool parsePostfixStartingWith() const;
-  bool parseObjectConstruction(const Class &) const;
 };
 }
 
 
 bool
-  ExpressionEvaluator::parsePrimaryStartingWithIdentifier(
+  ExpressionParser::parsePrimaryStartingWithIdentifier(
     const string &identifier
   ) const
 {
@@ -362,7 +473,7 @@ bool
 }
 
 
-bool ExpressionEvaluator::parsePrimary() const
+bool ExpressionParser::parsePrimary() const
 {
   if (parser.peekChar()=='(') {
     parser.skipChar();
@@ -448,7 +559,7 @@ bool ExpressionEvaluator::parsePrimary() const
 
 
 bool
-  ExpressionEvaluator::parseStartingWithIdentifier(
+  ExpressionParser::parseStartingWithIdentifier(
     const string &identifier
   ) const
 {
@@ -468,75 +579,7 @@ bool
 }
 
 
-bool ExpressionEvaluator::parseObjectConstruction(const Class &the_class) const
-{
-  map<string,Any> named_parameters;
-
-  if (parser.peekChar()==')') {
-    Optional<Object> maybe_object =
-      the_class.maybeMakeObject(named_parameters,error_stream);
-
-    if (!maybe_object) {
-      return false;
-    }
-
-    assert(false);
-  }
-
-  for (;;) {
-    Optional<StringParser::Range> maybe_identifier_range =
-      parser.maybeIdentifierRange();
-
-    if (!maybe_identifier_range) {
-      assert(false);
-    }
-
-    string identifier = parser.rangeText(*maybe_identifier_range);
-
-    if (parser.peekChar() == '=') {
-      const string &parameter_name = identifier;
-      parser.skipChar();
-
-      if (!parseExpression()) {
-        // This is the case where we got an error evaluating the
-        // expression used to generate the value for the parameter.
-        return false;
-      }
-
-      named_parameters[parameter_name] = evaluator.pop();
-    }
-    else {
-      assert(false);
-    }
-
-    if (parser.peekChar()==',') {
-      parser.skipChar();
-    }
-    else if (parser.peekChar()==')') {
-      parser.skipChar();
-      break;
-    }
-    else {
-      error_stream << "Missing ','\n";
-      return false;
-    }
-  }
-
-  Optional<Object> maybe_object =
-    the_class.maybeMakeObject(named_parameters,error_stream);
-
-  if (!maybe_object) {
-    cerr << "Failed to make object\n";
-    return false;
-  }
-  else {
-    evaluator.push(Any(std::move(*maybe_object)));
-    return true;
-  }
-}
-
-
-bool ExpressionEvaluator::parseAddition() const
+bool ExpressionParser::parseAddition() const
 {
   if (!parseFactor()) {
     return false;
@@ -546,7 +589,7 @@ bool ExpressionEvaluator::parseAddition() const
 }
 
 
-bool ExpressionEvaluator::parseSubtraction() const
+bool ExpressionParser::parseSubtraction() const
 {
   if (!parseFactor()) {
     return false;
@@ -556,7 +599,7 @@ bool ExpressionEvaluator::parseSubtraction() const
 }
 
 
-bool ExpressionEvaluator::parseMultiplication() const
+bool ExpressionParser::parseMultiplication() const
 {
   if (!parsePostfix()) {
     return false;
@@ -566,7 +609,7 @@ bool ExpressionEvaluator::parseMultiplication() const
 }
 
 
-bool ExpressionEvaluator::parseDivision() const
+bool ExpressionParser::parseDivision() const
 {
   if (!parsePostfix()) {
     return false;
@@ -576,7 +619,7 @@ bool ExpressionEvaluator::parseDivision() const
 }
 
 
-bool ExpressionEvaluator::parseMember() const
+bool ExpressionParser::parseMember() const
 {
   Optional<StringParser::Range> maybe_identifier_range =
     parser.maybeIdentifierRange();
@@ -591,65 +634,86 @@ bool ExpressionEvaluator::parseMember() const
 }
 
 
-bool ExpressionEvaluator::parseFunctionCall() const
+bool ExpressionParser::parseFunctionArgument() const
 {
-  Any first_term = evaluator.pop();
+  Optional<StringParser::Range> maybe_identifier_range =
+    parser.maybeIdentifierRange();
 
-  if (first_term.isClassPtr()) {
-    const Class *class_ptr = first_term.asClassPtr();
-    assert(class_ptr);
-    return parseObjectConstruction(*class_ptr);
-  }
+  if (!maybe_identifier_range) {
+    evaluator.evaluateNoName();
 
-  if (first_term.isFunction()) {
-    if (parser.peekChar()==')') {
-      vector<Any> arguments;
-      Optional<Any> maybe_result = first_term.asFunction()(arguments);
-
-      if (!maybe_result) {
-        assert(false);
-      }
-
-      evaluator.push(std::move(*maybe_result));
-      return true;
+    if (!parseExpression()) {
+      return false;
     }
-    else {
+  }
+  else {
+    string identifier = parser.rangeText(*maybe_identifier_range);
+
+    if (parser.peekChar() == '=') {
+      parser.skipChar();
+      evaluator.evaluateName(identifier);
+
       if (!parseExpression()) {
         return false;
       }
+    }
+    else {
+      evaluator.evaluateNoName();
 
-      Any first_argument = evaluator.pop();
-
-      if (parser.peekChar()!=')') {
-        assert(false);
-      }
-
-      vector<Any> arguments;
-      arguments.push_back(std::move(first_argument));
-      parser.skipChar();
-
-      Optional<Any> maybe_result = first_term.asFunction()(arguments);
-
-      if (!maybe_result) {
+      if (!parseStartingWithIdentifier(identifier)) {
         return false;
       }
-
-      evaluator.push(std::move(*maybe_result));
-      return true;
     }
   }
 
-  // We had [term '('], but term wasn't a class or a function.
-  // What type did it have?
-  cerr << "first_term.typeName():" << first_term.typeName() << "\n";
-  assert(false);
+  return true;
 }
 
 
-bool ExpressionEvaluator::parsePostfixStartingWith() const
+bool ExpressionParser::parseFunctionArguments(int &n_arguments) const
 {
-  Optional<Any> maybe_first_term;
+  if (parser.peekChar()==')') {
+  }
+  else {
+    for (;;) {
+      if (!parseFunctionArgument()) {
+        return false;
+      }
 
+      ++n_arguments;
+
+      if (parser.peekChar() == ',') {
+        parser.skipChar();
+      }
+      else if (parser.peekChar() == ')') {
+        parser.skipChar();
+        break;
+      }
+      else {
+        error_stream << "Missing ','\n";
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+
+bool ExpressionParser::parseFunctionCall() const
+{
+  int n_arguments = 0;
+
+  if (!parseFunctionArguments(n_arguments)) {
+    return false;
+  }
+
+  return evaluator.evaluateCall(n_arguments);
+}
+
+
+bool ExpressionParser::parsePostfixStartingWith() const
+{
   for (;;) {
     if (parser.peekChar()=='.') {
       parser.skipChar();
@@ -674,7 +738,7 @@ bool ExpressionEvaluator::parsePostfixStartingWith() const
 }
 
 
-bool ExpressionEvaluator::parseTermStartingWith() const
+bool ExpressionParser::parseTermStartingWith() const
 {
   for (;;) {
     parser.skipWhitespace();
@@ -702,7 +766,7 @@ bool ExpressionEvaluator::parseTermStartingWith() const
 }
 
 
-bool ExpressionEvaluator::parsePostfix() const
+bool ExpressionParser::parsePostfix() const
 {
   if (!parsePrimary()) {
     return false;
@@ -712,7 +776,7 @@ bool ExpressionEvaluator::parsePostfix() const
 }
 
 
-bool ExpressionEvaluator::parseFactor() const
+bool ExpressionParser::parseFactor() const
 {
   if (!parsePostfix()) {
     return false;
@@ -742,7 +806,7 @@ bool ExpressionEvaluator::parseFactor() const
 }
 
 
-bool ExpressionEvaluator::parseExpression() const
+bool ExpressionParser::parseExpression() const
 {
   if (!parseFactor()) {
     return false;
@@ -760,7 +824,7 @@ Optional<Any> evaluateExpression(const ExpressionEvaluatorData &data)
 {
   Evaluator evaluator(data);
 
-  if (!ExpressionEvaluator(data, evaluator).parseExpression()) {
+  if (!ExpressionParser(data.error_stream, data.parser, evaluator).parseExpression()) {
     return {};
   }
 
@@ -777,7 +841,7 @@ Optional<Any>
   Evaluator evaluator(data);
 
   bool could_parse =
-    ExpressionEvaluator(data, evaluator).parseStartingWithIdentifier(
+    ExpressionParser(data.error_stream, data.parser, evaluator).parseStartingWithIdentifier(
       identifier
     );
 
