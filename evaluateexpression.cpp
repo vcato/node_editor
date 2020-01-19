@@ -90,18 +90,12 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
   {
   }
 
-  Optional<Any> evaluateExpression() const;
   bool parseExpression() const;
   bool parsePrimary() const;
-
-  Optional<Any>
-    evaluatePrimaryStartingWithIdentifier(const string &) const;
-
-  Optional<Any>
-    evaluateFactorStartingWith(Optional<Any> maybe_first_term) const;
+  bool parsePrimaryStartingWithIdentifier(const string &) const;
 
   bool parseFactor() const;
-  Optional<Any> evaluateStartingWithIdentifier(const string &) const;
+  bool parseStartingWithIdentifier(const string &identifier) const;
   Optional<Any> evaluateTermStartingWith(Optional<Any> maybe_first_term) const;
   Optional<Any> evaluateAddition(const Any &first_term) const;
   Optional<Any> evaluateSubtraction(const Any &first_term) const;
@@ -117,17 +111,17 @@ struct ExpressionEvaluator : ExpressionEvaluatorData {
 }
 
 
-Optional<Any>
-  ExpressionEvaluator::evaluatePrimaryStartingWithIdentifier(
+bool
+  ExpressionEvaluator::parsePrimaryStartingWithIdentifier(
     const string &identifier
   ) const
 {
   if (!evaluator.evaluateVariable(identifier)) {
     error_stream << "Unknown name: " << identifier << "\n";
-    return {};
+    return false;
   }
 
-  return evaluator.pop();
+  return true;
 }
 
 
@@ -176,13 +170,10 @@ bool ExpressionEvaluator::parsePrimary() const
     }
     else {
       for (;;) {
-        Optional<Any> maybe_value = evaluateExpression();
-
-        if (!maybe_value) {
+        if (!parseExpression()) {
           return false;
         }
 
-        evaluator.push(std::move(*maybe_value));
         ++n_elements;
 
         if (parser.peekChar()==']') {
@@ -205,16 +196,7 @@ bool ExpressionEvaluator::parsePrimary() const
 
   if (maybe_identifier_range) {
     string identifier = parser.rangeText(*maybe_identifier_range);
-
-    Optional<Any> maybe_result =
-      evaluatePrimaryStartingWithIdentifier(identifier);
-
-    if (!maybe_result) {
-      return false;
-    }
-
-    evaluator.push(std::move(*maybe_result));
-    return true;
+    return parsePrimaryStartingWithIdentifier(identifier);
   }
 
   if (parser.atEnd()) {
@@ -250,17 +232,29 @@ static Optional<Any>
 }
 
 
-Optional<Any>
-  ExpressionEvaluator::evaluateStartingWithIdentifier(
+bool
+  ExpressionEvaluator::parseStartingWithIdentifier(
     const string &identifier
   ) const
 {
-  Optional<Any> result =
-    evaluatePrimaryStartingWithIdentifier(identifier);
+  if (!parsePrimaryStartingWithIdentifier(identifier)) {
+    return false;
+  }
 
-  result = evaluatePostfixStartingWith(std::move(result));
-  result = evaluateTermStartingWith(std::move(result));
-  return result;
+  Optional<Any> result = evaluatePostfixStartingWith(evaluator.pop());
+
+  if (!result) {
+    return false;
+  }
+
+  result = evaluateTermStartingWith(std::move(*result));
+
+  if (!result) {
+    return false;
+  }
+
+  evaluator.push(std::move(*result));
+  return true;
 }
 
 
@@ -293,15 +287,14 @@ Optional<Any>
     if (parser.peekChar() == '=') {
       const string &parameter_name = identifier;
       parser.skipChar();
-      Optional<Any> value = evaluateExpression();
 
-      if (!value) {
+      if (!parseExpression()) {
         // This is the case where we got an error evaluating the
         // expression used to generate the value for the parameter.
         return {};
       }
 
-      named_parameters[parameter_name] = std::move(*value);
+      named_parameters[parameter_name] = evaluator.pop();
     }
     else {
       assert(false);
@@ -570,18 +563,18 @@ Optional<Any>
       return maybe_result;
     }
     else {
-      Optional<Any> maybe_first_argument = evaluateExpression();
-
-      if (!maybe_first_argument) {
+      if (!parseExpression()) {
         return {};
       }
+
+      Any first_argument = evaluator.pop();
 
       if (parser.peekChar()!=')') {
         assert(false);
       }
 
       vector<Any> arguments;
-      arguments.push_back(*maybe_first_argument);
+      arguments.push_back(std::move(first_argument));
       parser.skipChar();
 
       return first_term.asFunction()(arguments);
@@ -646,31 +639,6 @@ Optional<Any>
 
 
 Optional<Any>
-  ExpressionEvaluator::evaluateFactorStartingWith(
-    Optional<Any> maybe_first_factor
-  ) const
-{
-  while (maybe_first_factor) {
-    const Any &first_factor = *maybe_first_factor;
-
-    if (parser.peekChar()=='*') {
-      parser.skipChar();
-      maybe_first_factor = evaluateMultiplication(first_factor);
-    }
-    else if (parser.peekChar()=='/') {
-      parser.skipChar();
-      maybe_first_factor = evaluateDivision(first_factor);
-    }
-    else {
-      break;
-    }
-  }
-
-  return maybe_first_factor;
-}
-
-
-Optional<Any>
   ExpressionEvaluator::evaluateTermStartingWith(
     Optional<Any> maybe_first_term
   ) const
@@ -713,13 +681,29 @@ bool ExpressionEvaluator::parseFactor() const
     return false;
   }
 
-  Optional<Any> maybe_result = evaluateFactorStartingWith(evaluator.pop());
+  Optional<Any> maybe_first_factor = evaluator.pop();
 
-  if (!maybe_result) {
-    return false;
+  while (maybe_first_factor) {
+    const Any &first_factor = *maybe_first_factor;
+
+    if (parser.peekChar()=='*') {
+      parser.skipChar();
+      maybe_first_factor = evaluateMultiplication(first_factor);
+    }
+    else if (parser.peekChar()=='/') {
+      parser.skipChar();
+      maybe_first_factor = evaluateDivision(first_factor);
+    }
+    else {
+      break;
+    }
   }
 
-  evaluator.push(std::move(*maybe_result));
+  if (!maybe_first_factor) {
+    return {};
+  }
+
+  evaluator.push(std::move(*maybe_first_factor));
   return true;
 }
 
@@ -738,16 +722,6 @@ bool ExpressionEvaluator::parseExpression() const
 
   evaluator.push(std::move(*result));
   return true;
-}
-
-
-Optional<Any> ExpressionEvaluator::evaluateExpression() const
-{
-  if (!parseExpression()) {
-    return {};
-  }
-
-  return evaluator.pop();
 }
 
 
@@ -770,8 +744,15 @@ Optional<Any>
   )
 {
   Evaluator evaluator(data);
-  return
-    ExpressionEvaluator(data, evaluator).evaluateStartingWithIdentifier(
+
+  bool could_parse =
+    ExpressionEvaluator(data, evaluator).parseStartingWithIdentifier(
       identifier
     );
+
+  if (!could_parse) {
+    return {};
+  }
+
+  return evaluator.pop();
 }
