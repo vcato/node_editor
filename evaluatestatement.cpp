@@ -90,6 +90,7 @@ Optional<Any>
       if (maybe_result) {
         Environment &env =
           allocate_environment_function(executor.parent_environment_ptr);
+
         env[variable_name] = *maybe_result;
 
         // We have to make the newly allocated environment be the current
@@ -104,7 +105,8 @@ Optional<Any>
       return Any();
     }
 
-    return evaluateExpressionStartingWithIdentifier(data,identifier);
+    return
+      evaluateExpressionStartingWithIdentifier(data, *maybe_identifier_range);
   }
 
   return evaluateExpression(data);

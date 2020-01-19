@@ -53,7 +53,7 @@ SCENEWINDOW = scenewindow.o $(SCENETREE) $(SCENEVIEWER)
 STRINGPARSER = stringparser.o
 MAYBEPOINT2D = maybepoint2d.o
 CONTAINS = contains.o
-EVALUATEEXPRESSION = evaluateexpression.o \
+EVALUATEEXPRESSION = evaluateexpression.o expressionparser.o \
   $(STRINGPARSER) $(MAYBEPOINT2D) $(CONTAINS)
 EVALUATESTATEMENT = evaluatestatement.o $(EVALUATEEXPRESSION)
 PRINTINDENT = printindent.o

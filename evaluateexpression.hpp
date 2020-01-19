@@ -17,5 +17,5 @@ extern Optional<Any> evaluateExpression(const ExpressionEvaluatorData &data);
 extern Optional<Any>
   evaluateExpressionStartingWithIdentifier(
     const ExpressionEvaluatorData &data,
-    const std::string &identifier
+    const StringRange &identifier_range
   );

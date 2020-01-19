@@ -4,12 +4,13 @@
 #include <cassert>
 #include <string>
 #include "optional.hpp"
+#include "stringrange.hpp"
 
 
 class StringParser {
   public:
-    struct Range;
-    using Index = int;
+    using Range = StringRange;
+    using Index = StringIndex;
 
     const std::string &text;
 
@@ -24,11 +25,6 @@ class StringParser {
     Optional<Range> maybeNumberRange() const;
     Optional<Range> maybeIdentifierRange() const;
     std::string rangeText(const Range &range) const;
-
-    struct Range {
-      Index begin;
-      Index end;
-    };
 
   private:
     struct Impl;

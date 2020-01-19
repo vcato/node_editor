@@ -3,7 +3,7 @@
 #include "maybepoint2d.hpp"
 #include "anyio.hpp"
 #include "maybeint.hpp"
-
+#include "expressionparser.hpp"
 
 using std::vector;
 using std::cerr;
@@ -34,14 +34,21 @@ static Optional<Any>
 
 
 namespace {
-struct Evaluator {
+struct Evaluator : EvaluatorInterface {
   const ExpressionEvaluatorData &data;
   vector<Any> stack;
 
   Evaluator(const ExpressionEvaluatorData &data) : data(data) {}
 
-  bool evaluateNumber(const string &text)
+  string rangeText(const StringRange &range)
   {
+    return data.parser.rangeText(range);
+  }
+
+  bool evaluateNumber(const StringRange &number_range)
+  {
+    const string &text = rangeText(number_range);
+
     // This could throw an exception.  We should probably catch it and
     // return false.
     Optional<int> maybe_number = maybeInt(text);
@@ -54,19 +61,22 @@ struct Evaluator {
     return true;
   }
 
-  bool evaluateDollar()
+  bool evaluateDollar() override
   {
     push(Any(data.input_values[data.input_index]));
     ++data.input_index;
     return true;
   }
 
-  bool evaluateVariable(const string &identifier)
+  bool evaluateVariable(const StringRange &identifer_range) override
   {
+    const string &identifier = rangeText(identifer_range);
+
     Optional<Any> maybe_value =
       variableValue(identifier, data.environment_ptr);
 
     if (!maybe_value) {
+      data.error_stream << "Unknown name: " << identifier << "\n";
       return false;
     }
 
@@ -74,8 +84,9 @@ struct Evaluator {
     return true;
   }
 
-  bool evaluateMember(const string &member_name)
+  bool evaluateMember(const StringRange &name_range) override
   {
+    const string &member_name = rangeText(name_range);
     Evaluator &evaluator = *this;
     ostream &error_stream = data.error_stream;
     Any first_term = evaluator.pop();
@@ -110,7 +121,7 @@ struct Evaluator {
     return true;
   }
 
-  bool evaluateAddition()
+  bool evaluateAddition() override
   {
     Evaluator &evaluator = *this;
     ostream &error_stream = data.error_stream;
@@ -157,7 +168,7 @@ struct Evaluator {
     return true;
   }
 
-  bool evaluateSubtraction()
+  bool evaluateSubtraction() override
   {
     Evaluator &evaluator = *this;
     ostream &error_stream = data.error_stream;
@@ -201,7 +212,7 @@ struct Evaluator {
     return true;
   }
 
-  bool evaluateMultiplication()
+  bool evaluateMultiplication() override
   {
     Evaluator &evaluator = *this;
     ostream &error_stream = data.error_stream;
@@ -254,7 +265,7 @@ struct Evaluator {
     return false;
   }
 
-  bool evaluateDivision()
+  bool evaluateDivision() override
   {
     Evaluator &evaluator = *this;
     ostream &error_stream = data.error_stream;
@@ -357,7 +368,7 @@ struct Evaluator {
     return true;
   }
 
-  bool evaluateCall(const int n_arguments)
+  bool evaluateCall(const int n_arguments) override
   {
     Evaluator &evaluator = *this;
     ostream &error_stream = data.error_stream;
@@ -384,7 +395,7 @@ struct Evaluator {
     assert(false);
   }
 
-  void makeVector(int n_elements)
+  void makeVector(int n_elements) override
   {
     vector<Any> v;
 
@@ -396,14 +407,14 @@ struct Evaluator {
     push(Any(std::move(v)));
   }
 
-  void evaluateNoName()
+  void evaluateNoName() override
   {
     push(Any()); // name for unnamed argument
   }
 
-  void evaluateName(const string &identifier)
+  void evaluateName(const StringRange &range) override
   {
-    push(identifier);
+    push(rangeText(range));
   }
 
   void push(Any arg)
@@ -421,410 +432,16 @@ struct Evaluator {
 }
 
 
-namespace {
-struct ExpressionParser
-{
-  ostream &error_stream;
-  StringParser &parser;
-  Evaluator &evaluator;
-
-  ExpressionParser(
-    ostream &error_stream,
-    StringParser &parser,
-    Evaluator &evaluator
-  )
-  : error_stream(error_stream),
-    parser(parser),
-    evaluator(evaluator)
-  {
-  }
-
-  bool parseExpression() const;
-  bool parsePrimary() const;
-  bool parsePrimaryStartingWithIdentifier(const string &) const;
-  bool parseFactor() const;
-  bool parseStartingWithIdentifier(const string &identifier) const;
-  bool parseTermStartingWith() const;
-  bool parseAddition() const;
-  bool parseSubtraction() const;
-  bool parseMultiplication() const;
-  bool parseDivision() const;
-  bool parseMember() const;
-  bool parseFunctionArgument() const;
-  bool parseFunctionArguments(int &n_arguments) const;
-  bool parseFunctionCall() const;
-  bool parsePostfix() const;
-  bool parsePostfixStartingWith() const;
-};
-}
-
-
-bool
-  ExpressionParser::parsePrimaryStartingWithIdentifier(
-    const string &identifier
-  ) const
-{
-  if (!evaluator.evaluateVariable(identifier)) {
-    error_stream << "Unknown name: " << identifier << "\n";
-    return false;
-  }
-
-  return true;
-}
-
-
-bool ExpressionParser::parsePrimary() const
-{
-  if (parser.peekChar()=='(') {
-    parser.skipChar();
-
-    if (!parseExpression()) {
-      return {};
-    }
-
-    if (parser.peekChar()!=')') {
-      error_stream << "Missing ')'\n";
-      return {};
-    }
-
-    parser.skipChar();
-    return true;
-  }
-
-  if (Optional<StringParser::Range> maybe_range = parser.maybeNumberRange()) {
-    if (!evaluator.evaluateNumber(parser.rangeText(*maybe_range))) {
-      assert(false); // not tested
-    }
-
-    return true;
-  }
-
-  if (parser.peekChar()=='$') {
-    if (!evaluator.evaluateDollar()) {
-      assert(false); // not tested
-    }
-
-    parser.skipChar();
-    return true;
-  }
-
-  if (parser.peekChar()=='[') {
-    parser.skipChar();
-
-    int n_elements = 0;
-
-    if (parser.peekChar()==']') {
-      parser.skipChar();
-    }
-    else {
-      for (;;) {
-        if (!parseExpression()) {
-          return false;
-        }
-
-        ++n_elements;
-
-        if (parser.peekChar()==']') {
-          parser.skipChar();
-          break;
-        }
-
-        if (parser.peekChar()==',') {
-          parser.skipChar();
-        }
-      }
-    }
-
-    evaluator.makeVector(n_elements);
-    return true;
-  }
-
-  Optional<StringParser::Range> maybe_identifier_range =
-    parser.maybeIdentifierRange();
-
-  if (maybe_identifier_range) {
-    string identifier = parser.rangeText(*maybe_identifier_range);
-    return parsePrimaryStartingWithIdentifier(identifier);
-  }
-
-  if (parser.atEnd()) {
-    error_stream << "Unexpected end of expression.\n";
-    return false;
-  }
-
-  error_stream << "Unexpected '" << parser.peekChar() << "'\n";
-
-  return false;
-}
-
-
-bool
-  ExpressionParser::parseStartingWithIdentifier(
-    const string &identifier
-  ) const
-{
-  if (!parsePrimaryStartingWithIdentifier(identifier)) {
-    return false;
-  }
-
-  if (!parsePostfixStartingWith()) {
-    return false;
-  }
-
-  if (!parseTermStartingWith()) {
-    return false;
-  }
-
-  return true;
-}
-
-
-bool ExpressionParser::parseAddition() const
-{
-  if (!parseFactor()) {
-    return false;
-  }
-
-  return evaluator.evaluateAddition();
-}
-
-
-bool ExpressionParser::parseSubtraction() const
-{
-  if (!parseFactor()) {
-    return false;
-  }
-
-  return evaluator.evaluateSubtraction();
-}
-
-
-bool ExpressionParser::parseMultiplication() const
-{
-  if (!parsePostfix()) {
-    return false;
-  }
-
-  return evaluator.evaluateMultiplication();
-}
-
-
-bool ExpressionParser::parseDivision() const
-{
-  if (!parsePostfix()) {
-    return false;
-  }
-
-  return evaluator.evaluateDivision();
-}
-
-
-bool ExpressionParser::parseMember() const
-{
-  Optional<StringParser::Range> maybe_identifier_range =
-    parser.maybeIdentifierRange();
-
-  if (!maybe_identifier_range) {
-    assert(false); // not tested
-  }
-
-  string member_name = parser.rangeText(*maybe_identifier_range);
-
-  return evaluator.evaluateMember(member_name);
-}
-
-
-bool ExpressionParser::parseFunctionArgument() const
-{
-  Optional<StringParser::Range> maybe_identifier_range =
-    parser.maybeIdentifierRange();
-
-  if (!maybe_identifier_range) {
-    evaluator.evaluateNoName();
-
-    if (!parseExpression()) {
-      return false;
-    }
-  }
-  else {
-    string identifier = parser.rangeText(*maybe_identifier_range);
-
-    if (parser.peekChar() == '=') {
-      parser.skipChar();
-      evaluator.evaluateName(identifier);
-
-      if (!parseExpression()) {
-        return false;
-      }
-    }
-    else {
-      evaluator.evaluateNoName();
-
-      if (!parseStartingWithIdentifier(identifier)) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-
-bool ExpressionParser::parseFunctionArguments(int &n_arguments) const
-{
-  if (parser.peekChar()==')') {
-  }
-  else {
-    for (;;) {
-      if (!parseFunctionArgument()) {
-        return false;
-      }
-
-      ++n_arguments;
-
-      if (parser.peekChar() == ',') {
-        parser.skipChar();
-      }
-      else if (parser.peekChar() == ')') {
-        parser.skipChar();
-        break;
-      }
-      else {
-        error_stream << "Missing ','\n";
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-
-bool ExpressionParser::parseFunctionCall() const
-{
-  int n_arguments = 0;
-
-  if (!parseFunctionArguments(n_arguments)) {
-    return false;
-  }
-
-  return evaluator.evaluateCall(n_arguments);
-}
-
-
-bool ExpressionParser::parsePostfixStartingWith() const
-{
-  for (;;) {
-    if (parser.peekChar()=='.') {
-      parser.skipChar();
-
-      if (!parseMember()) {
-        return false;
-      }
-    }
-    else if (parser.peekChar()=='(') {
-      parser.skipChar();
-
-      if (!parseFunctionCall()) {
-        return false;
-      }
-    }
-    else {
-      break;
-    }
-  }
-
-  return true;
-}
-
-
-bool ExpressionParser::parseTermStartingWith() const
-{
-  for (;;) {
-    parser.skipWhitespace();
-
-    if (parser.peekChar()=='+') {
-      parser.skipChar();
-
-      if (!parseAddition()) {
-        return false;
-      }
-    }
-    else if (parser.peekChar()=='-') {
-      parser.skipChar();
-
-      if (!parseSubtraction()) {
-        return false;
-      }
-    }
-    else {
-      break;
-    }
-  }
-
-  return true;
-}
-
-
-bool ExpressionParser::parsePostfix() const
-{
-  if (!parsePrimary()) {
-    return false;
-  }
-
-  return parsePostfixStartingWith();
-}
-
-
-bool ExpressionParser::parseFactor() const
-{
-  if (!parsePostfix()) {
-    return false;
-  }
-
-  for (;;) {
-    if (parser.peekChar()=='*') {
-      parser.skipChar();
-
-      if (!parseMultiplication()) {
-        return false;
-      }
-    }
-    else if (parser.peekChar()=='/') {
-      parser.skipChar();
-
-      if (!parseDivision()) {
-        return false;
-      }
-    }
-    else {
-      break;
-    }
-  }
-
-  return true;
-}
-
-
-bool ExpressionParser::parseExpression() const
-{
-  if (!parseFactor()) {
-    return false;
-  }
-
-  if (!parseTermStartingWith()) {
-    return false;
-  }
-
-  return true;
-}
-
-
 Optional<Any> evaluateExpression(const ExpressionEvaluatorData &data)
 {
   Evaluator evaluator(data);
 
-  if (!ExpressionParser(data.error_stream, data.parser, evaluator).parseExpression()) {
+  bool could_parse =
+    ExpressionParser(
+      data.error_stream, data.parser, evaluator
+    ).parseExpression();
+
+  if (!could_parse) {
     return {};
   }
 
@@ -835,15 +452,16 @@ Optional<Any> evaluateExpression(const ExpressionEvaluatorData &data)
 Optional<Any>
   evaluateExpressionStartingWithIdentifier(
     const ExpressionEvaluatorData &data,
-    const string &identifier
+    const StringRange &identifier_range
   )
 {
   Evaluator evaluator(data);
+  const string &identifier = data.parser.rangeText(identifier_range);
 
   bool could_parse =
-    ExpressionParser(data.error_stream, data.parser, evaluator).parseStartingWithIdentifier(
-      identifier
-    );
+    ExpressionParser(
+      data.error_stream, data.parser, evaluator
+    ).parseStartingWithIdentifier(identifier_range);
 
   if (!could_parse) {
     return {};
