@@ -17,31 +17,18 @@ class StringParser {
     inline StringParser(const std::string &text_arg,int &index_arg);
     inline char peekChar() const;
     inline bool atEnd() const;
+    Index index() const { return _index; }
+
     inline bool skipIdentifier() const;
     inline bool skipChar() const;
-    inline bool skipNumber() const;
     inline void skipWhitespace() const;
-    Index index() const { return _index; }
-    Optional<Range> maybeNumberRange() const;
-    Optional<Range> maybeIdentifierRange() const;
-    std::string rangeText(const Range &range) const;
+    inline Optional<Range> maybeIdentifierRange() const;
+    static bool isDigit(char c) { return (c>='0' && c<='9'); }
 
   private:
-    struct Impl;
-
     int &_index;
 
-    static bool isWhitespace(char c)
-    {
-      if (c==' ') return true;
-      return false;
-    }
-
-    static bool isDigit(char c)
-    {
-      if (c>='0' && c<='9') return true;
-      return false;
-    }
+    static bool isWhitespace(char c) { return (c==' '); }
 
     static bool isBeginIdentifierChar(char c)
     {
@@ -108,31 +95,24 @@ bool StringParser::skipChar() const
 }
 
 
-bool StringParser::skipNumber() const
-{
-  if (!isDigit(peekChar())) return false;
-
-  while (isDigit(peekChar())) {
-    ++_index;
-  }
-
-  if (peekChar() == '.') {
-    ++_index;
-
-    while (isDigit(peekChar())) {
-      ++_index;
-    }
-  }
-
-  return true;
-}
-
-
 void StringParser::skipWhitespace() const
 {
   while (isWhitespace(peekChar())) {
     ++_index;
   }
+}
+
+
+inline Optional<StringRange> StringParser::maybeIdentifierRange() const
+{
+  if (!isBeginIdentifierChar(peekChar())) {
+    return {};
+  }
+
+  int start = _index;
+  skipIdentifier();
+  int end = _index;
+  return Range{start, end};
 }
 
 

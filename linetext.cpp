@@ -8,6 +8,7 @@
 #include "optional.hpp"
 #include "stringparser.hpp"
 #include "evaluateexpression.hpp"
+#include "rangetext.hpp"
 
 
 using std::cerr;
@@ -35,7 +36,7 @@ static bool isAssignment(const std::string &text)
     return false;
   }
 
-  string identifier = parser.rangeText(*maybe_identifier_range);
+  string identifier = rangeText(*maybe_identifier_range, parser.text);
 
   if (identifier=="let") {
     return true;

@@ -3,6 +3,43 @@
 using std::string;
 
 
+static bool skipNumber(const StringParser &self)
+{
+  if (!self.isDigit(self.peekChar())) return false;
+
+  while (self.isDigit(self.peekChar())) {
+    self.skipChar();
+  }
+
+  if (self.peekChar() == '.') {
+    self.skipChar();
+
+    while (self.isDigit(self.peekChar())) {
+      self.skipChar();
+    }
+  }
+
+  return true;
+}
+
+
+static Optional<StringRange>
+maybeNumberRange(const StringParser &self)
+{
+  self.skipWhitespace();
+
+  StringIndex start = self.index();
+
+  if (!skipNumber(self)) {
+    return {};
+  }
+
+  StringIndex end = self.index();
+
+  return StringRange{start, end};
+}
+
+
 void ExpressionParser::skipChar() const
 {
   string_parser.skipChar();
@@ -42,7 +79,7 @@ bool ExpressionParser::parsePrimary() const
     return true;
   }
 
-  if (Optional<StringRange> maybe_range = string_parser.maybeNumberRange()) {
+  if (Optional<StringRange> maybe_range = maybeNumberRange(string_parser)) {
     return evaluator.evaluateNumber(*maybe_range);
   }
 

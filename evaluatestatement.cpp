@@ -3,6 +3,7 @@
 #include "stringparser.hpp"
 #include "evaluateexpression.hpp"
 #include "anyio.hpp"
+#include "rangetext.hpp"
 
 using std::string;
 using std::vector;
@@ -36,7 +37,7 @@ Optional<Any>
     parser.maybeIdentifierRange();
 
   if (maybe_identifier_range) {
-    string identifier = parser.rangeText(*maybe_identifier_range);
+    string identifier = rangeText(*maybe_identifier_range, parser.text);
 
     if (identifier=="show") {
       if (parser.peekChar()!='(') {

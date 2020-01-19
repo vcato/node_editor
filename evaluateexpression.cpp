@@ -4,6 +4,7 @@
 #include "anyio.hpp"
 #include "maybeint.hpp"
 #include "expressionparser.hpp"
+#include "rangetext.hpp"
 
 using std::vector;
 using std::cerr;
@@ -42,7 +43,7 @@ struct Evaluator : EvaluatorInterface {
 
   string rangeText(const StringRange &range)
   {
-    return data.parser.rangeText(range);
+    return ::rangeText(range, data.parser.text);
   }
 
   bool evaluateNumber(const StringRange &number_range)
@@ -457,7 +458,7 @@ Optional<Any>
   )
 {
   Evaluator evaluator(data);
-  const string &identifier = data.parser.rangeText(identifier_range);
+  const string &identifier = rangeText(identifier_range, data.parser.text);
 
   bool could_parse =
     ExpressionParser(

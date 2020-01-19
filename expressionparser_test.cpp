@@ -1,6 +1,7 @@
 #include "expressionparser.hpp"
 
 #include <sstream>
+#include "rangetext.hpp"
 
 
 using std::string;
@@ -38,7 +39,7 @@ struct FakeEvaluator : EvaluatorInterface {
 
   string rangeText(const StringRange &number_range)
   {
-    return string_parser.rangeText(number_range);
+    return ::rangeText(number_range, string_parser.text);
   }
 
   virtual bool evaluateVariable(const StringRange &identifier_range)
