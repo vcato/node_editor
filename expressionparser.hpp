@@ -19,37 +19,38 @@ struct EvaluatorInterface {
 };
 
 
-struct ExpressionParser
+class ExpressionParser
 {
-  std::ostream &error_stream;
-  StringParser &string_parser;
-  EvaluatorInterface &evaluator;
+  public:
+    std::ostream &error_stream;
+    StringParser &string_parser;
+    EvaluatorInterface &evaluator;
 
-  ExpressionParser(
-    StringParser &string_parser,
-    EvaluatorInterface &evaluator,
-    std::ostream &error_stream
-  )
-  : error_stream(error_stream),
-    string_parser(string_parser),
-    evaluator(evaluator)
-  {
-  }
+    ExpressionParser(
+      StringParser &string_parser,
+      EvaluatorInterface &evaluator,
+      std::ostream &error_stream
+    )
+    : error_stream(error_stream),
+      string_parser(string_parser),
+      evaluator(evaluator)
+    {
+    }
 
-  bool parseExpression() const;
-  bool parseStartingWithIdentifier(const StringRange &) const;
+    bool parseExpression() const;
+    bool parseStartingWithIdentifier(const StringRange &) const;
 
-private:
-  void skipChar() const;
-  char peekChar() const;
-  bool parsePrimaryStartingWithIdentifier(const StringRange &) const;
-  bool parsePrimary() const;
-  bool parsePostfix() const;
-  bool parseFactor() const;
-  bool parseTerm() const;
-  bool extendPostfix() const;
-  bool extendFactor() const;
-  bool extendTerm() const;
-  bool parseFunctionArgument() const;
-  bool parseFunctionArguments(int &n_arguments) const;
+  private:
+    void skipChar() const;
+    char peekChar() const;
+    bool parsePrimaryStartingWithIdentifier(const StringRange &) const;
+    bool parsePrimary() const;
+    bool parsePostfix() const;
+    bool parseFactor() const;
+    bool parseTerm() const;
+    bool extendPostfix() const;
+    bool extendFactor() const;
+    bool extendTerm() const;
+    bool parseFunctionArgument() const;
+    bool parseFunctionArguments(int &n_arguments) const;
 };

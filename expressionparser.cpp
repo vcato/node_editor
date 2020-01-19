@@ -110,23 +110,11 @@ bool
     const StringRange &identifier_range
   ) const
 {
-  if (!parsePrimaryStartingWithIdentifier(identifier_range)) {
-    return false;
-  }
-
-  if (!extendPostfix()) {
-    return false;
-  }
-
-  if (!extendFactor()) {
-    return false;
-  }
-
-  if (!extendTerm()) {
-    return false;
-  }
-
-  return true;
+  return
+    parsePrimaryStartingWithIdentifier(identifier_range) &&
+    extendPostfix() &&
+    extendFactor() &&
+    extendTerm();
 }
 
 
